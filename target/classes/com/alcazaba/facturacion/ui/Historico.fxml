@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane prefHeight="600.0" prefWidth="1000.0"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.alcazaba.facturacion.ui.HistoricoController">
+    <top>
+        <VBox spacing="8" style="-fx-padding: 12;">
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label text="Serie"/>
+                <ComboBox fx:id="comboSerie" prefWidth="120"/>
+                <Label text="Cliente/NIF"/>
+                <TextField fx:id="txtCliente" prefWidth="200" promptText="Nombre o NIF"/>
+                <Label text="Desde"/>
+                <DatePicker fx:id="fechaDesde"/>
+                <Label text="Hasta"/>
+                <DatePicker fx:id="fechaHasta"/>
+            </HBox>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Label text="Importe desde"/>
+                <TextField fx:id="txtImporteDesde" prefWidth="100"/>
+                <Label text="Hasta"/>
+                <TextField fx:id="txtImporteHasta" prefWidth="100"/>
+                <Label text="Estado"/>
+                <ComboBox fx:id="comboEstado" prefWidth="120"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Button onAction="#buscar" text="Buscar"/>
+                <Button onAction="#volver" text="Volver"/>
+            </HBox>
+        </VBox>
+    </top>
+    <center>
+        <TableView fx:id="tabla">
+            <columns>
+                <TableColumn fx:id="colFecha" prefWidth="90" text="Fecha"/>
+                <TableColumn fx:id="colNumero" prefWidth="110" text="Número"/>
+                <TableColumn fx:id="colVersion" prefWidth="70" text="Versión"/>
+                <TableColumn fx:id="colCliente" prefWidth="220" text="Cliente"/>
+                <TableColumn fx:id="colNif" prefWidth="120" text="NIF"/>
+                <TableColumn fx:id="colBase" prefWidth="100" text="Base"/>
+                <TableColumn fx:id="colIva" prefWidth="100" text="IVA"/>
+                <TableColumn fx:id="colTotal" prefWidth="110" text="Total"/>
+                <TableColumn fx:id="colEstado" prefWidth="90" text="Estado"/>
+            </columns>
+            <columnResizePolicy>
+                <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+            </columnResizePolicy>
+        </TableView>
+    </center>
+</BorderPane>

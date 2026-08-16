@@ -1,0 +1,94 @@
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.fusesource.jansi.internal.JansiLoader in an unnamed module (file:/C:/Users/usuario/.m2/wrapper/dists/apache-maven-3.9.9-bin/33b4b2b4/apache-maven-3.9.9/lib/jansi-2.4.1.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper (file:/C:/Users/usuario/.m2/wrapper/dists/apache-maven-3.9.9-bin/33b4b2b4/apache-maven-3.9.9/lib/guava-33.2.1-jre.jar)
+WARNING: Please consider reporting this to the maintainers of class com.google.common.util.concurrent.AbstractFuture$UnsafeAtomicHelper
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by com.sun.glass.utils.NativeLibLoader in module javafx.graphics (file:/C:/Users/usuario/.m2/repository/org/openjfx/javafx-graphics/21.0.6/javafx-graphics-21.0.6-win.jar)
+WARNING: Use --enable-native-access=javafx.graphics to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+WARNING: A restricted method in java.lang.System has been called
+WARNING: java.lang.System::load has been called by org.sqlite.SQLiteJDBCLoader in an unnamed module (file:/C:/Users/usuario/.m2/repository/org/xerial/sqlite-jdbc/3.46.1.0/sqlite-jdbc-3.46.1.0.jar)
+WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::allocateMemory has been called by com.sun.marlin.OffHeapArray (file:/C:/Users/usuario/.m2/repository/org/openjfx/javafx-graphics/21.0.6/javafx-graphics-21.0.6-win.jar)
+WARNING: Please consider reporting this to the maintainers of class com.sun.marlin.OffHeapArray
+WARNING: sun.misc.Unsafe::allocateMemory will be removed in a future release
+Exception in thread "JavaFX Application Thread" java.lang.ClassCastException: class java.lang.String cannot be cast to class com.alcazaba.facturacion.model.Cliente (java.lang.String is in module java.base of loader 'bootstrap'; com.alcazaba.facturacion.model.Cliente is in unnamed module of loader 'app')
+	at com.alcazaba.facturacion.ui.EditorController.lambda$1(EditorController.java:334)
+	at javafx.base@21.0.6/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:86)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21.0.6/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21.0.6/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21.0.6/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21.0.6/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:49)
+	at javafx.base@21.0.6/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21.0.6/javafx.scene.Node.fireEvent(Node.java:8875)
+	at javafx.controls@21.0.6/javafx.scene.control.skin.ComboBoxListViewSkin.lambda$new$7(ComboBoxListViewSkin.java:187)
+	at javafx.controls@21.0.6/com.sun.javafx.scene.control.ListenerHelper$4.changed(ListenerHelper.java:219)
+	at javafx.base@21.0.6/com.sun.javafx.binding.ExpressionHelper$Generic.fireValueChangedEvent(ExpressionHelper.java:386)
+	at javafx.base@21.0.6/com.sun.javafx.binding.ExpressionHelper.fireValueChangedEvent(ExpressionHelper.java:91)
+	at javafx.base@21.0.6/javafx.beans.property.ObjectPropertyBase.fireValueChangedEvent(ObjectPropertyBase.java:106)
+	at javafx.base@21.0.6/javafx.beans.property.ObjectPropertyBase.markInvalid(ObjectPropertyBase.java:113)
+	at javafx.base@21.0.6/javafx.beans.property.ObjectPropertyBase.set(ObjectPropertyBase.java:147)
+	at javafx.controls@21.0.6/javafx.scene.control.ComboBoxBase.setValue(ComboBoxBase.java:151)
+	at javafx.controls@21.0.6/javafx.scene.control.ComboBox.commitValue(ComboBox.java:463)
+	at javafx.controls@21.0.6/javafx.scene.control.ComboBox.lambda$new$3(ComboBox.java:294)
+	at javafx.base@21.0.6/com.sun.javafx.binding.ExpressionHelper$Generic.fireValueChangedEvent(ExpressionHelper.java:376)
+	at javafx.base@21.0.6/com.sun.javafx.binding.ExpressionHelper.fireValueChangedEvent(ExpressionHelper.java:91)
+	at javafx.base@21.0.6/javafx.beans.property.ReadOnlyBooleanPropertyBase.fireValueChangedEvent(ReadOnlyBooleanPropertyBase.java:78)
+	at javafx.graphics@21.0.6/javafx.scene.Node$FocusPropertyBase.notifyListeners(Node.java:8142)
+	at javafx.graphics@21.0.6/javafx.scene.Node$17.notifyListeners(Node.java:8214)
+	at javafx.graphics@21.0.6/javafx.scene.Node.notifyFocusListeners(Node.java:8163)
+	at javafx.graphics@21.0.6/javafx.scene.Scene$FocusOwnerProperty.invalidated(Scene.java:2253)
+	at javafx.base@21.0.6/javafx.beans.property.ObjectPropertyBase.markInvalid(ObjectPropertyBase.java:112)
+	at javafx.base@21.0.6/javafx.beans.property.ObjectPropertyBase.set(ObjectPropertyBase.java:147)
+	at javafx.graphics@21.0.6/javafx.scene.Scene.setFocusOwner(Scene.java:2304)
+	at javafx.graphics@21.0.6/javafx.scene.Scene.requestFocus(Scene.java:2201)
+	at javafx.graphics@21.0.6/javafx.scene.Node.requestFocus(Node.java:8413)
+	at javafx.controls@21.0.6/com.sun.javafx.scene.control.behavior.TextFieldBehavior.mousePressed(TextFieldBehavior.java:231)
+	at javafx.controls@21.0.6/com.sun.javafx.scene.control.inputmap.InputMap.handle(InputMap.java:274)
+	at javafx.base@21.0.6/com.sun.javafx.event.CompositeEventHandler$NormalEventHandlerRecord.handleBubblingEvent(CompositeEventHandler.java:247)
+	at javafx.base@21.0.6/com.sun.javafx.event.CompositeEventHandler.dispatchBubblingEvent(CompositeEventHandler.java:80)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:232)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventHandlerManager.dispatchBubblingEvent(EventHandlerManager.java:189)
+	at javafx.base@21.0.6/com.sun.javafx.event.CompositeEventDispatcher.dispatchBubblingEvent(CompositeEventDispatcher.java:59)
+	at javafx.base@21.0.6/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:58)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21.0.6/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21.0.6/com.sun.javafx.event.BasicEventDispatcher.dispatchEvent(BasicEventDispatcher.java:56)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventDispatchChainImpl.dispatchEvent(EventDispatchChainImpl.java:114)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventUtil.fireEventImpl(EventUtil.java:74)
+	at javafx.base@21.0.6/com.sun.javafx.event.EventUtil.fireEvent(EventUtil.java:54)
+	at javafx.base@21.0.6/javafx.event.Event.fireEvent(Event.java:198)
+	at javafx.graphics@21.0.6/javafx.scene.Scene$MouseHandler.process(Scene.java:3984)
+	at javafx.graphics@21.0.6/javafx.scene.Scene.processMouseEvent(Scene.java:1890)
+	at javafx.graphics@21.0.6/javafx.scene.Scene$ScenePeerListener.mouseEvent(Scene.java:2708)
+	at javafx.graphics@21.0.6/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:411)
+	at javafx.graphics@21.0.6/com.sun.javafx.tk.quantum.GlassViewEventHandler$MouseEventNotification.run(GlassViewEventHandler.java:301)
+	at java.base/java.security.AccessController.doPrivileged(AccessController.java:138)
+	at javafx.graphics@21.0.6/com.sun.javafx.tk.quantum.GlassViewEventHandler.lambda$handleMouseEvent$2(GlassViewEventHandler.java:450)
+	at javafx.graphics@21.0.6/com.sun.javafx.tk.quantum.QuantumToolkit.runWithoutRenderLock(QuantumToolkit.java:424)
+	at javafx.graphics@21.0.6/com.sun.javafx.tk.quantum.GlassViewEventHandler.handleMouseEvent(GlassViewEventHandler.java:449)
+	at javafx.graphics@21.0.6/com.sun.glass.ui.View.handleMouseEvent(View.java:551)
+	at javafx.graphics@21.0.6/com.sun.glass.ui.View.notifyMouse(View.java:937)
+	at javafx.graphics@21.0.6/com.sun.glass.ui.win.WinApplication._runLoop(Native Method)
+	at javafx.graphics@21.0.6/com.sun.glass.ui.win.WinApplication.lambda$runLoop$3(WinApplication.java:185)
+	at java.base/java.lang.Thread.run(Thread.java:1474)

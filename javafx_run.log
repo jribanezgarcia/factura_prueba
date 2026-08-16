@@ -1,0 +1,19 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------------< com.alcazaba:facturacion >----------------------
+[INFO] Building Facturacion 1.0.0
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> javafx:0.0.8:run (default-cli) > process-classes @ facturacion >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ facturacion ---
+[INFO] Copying 8 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ facturacion ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] <<< javafx:0.0.8:run (default-cli) < process-classes @ facturacion <<<
+[INFO] 
+[INFO] 
+[INFO] --- javafx:0.0.8:run (default-cli) @ facturacion ---
