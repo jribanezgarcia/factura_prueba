@@ -87,6 +87,6 @@
 
 - [x] 12.1 Conectar el botón de Copia de seguridad al `BackupService` con diálogo de destino
 - [x] 12.2 Revisión final: verificaciones de histórico, anuladas, rectificativas, atajos y cierre con cambios sin guardar
-- [ ] 12.3 Validar el cambio completo con `openspec validate` y dejar la implementación lista para pruebas
+- [x] 12.3 Validar el cambio completo con `openspec validate` y dejar la implementación lista para pruebas
 - [x] 12.4 Corregir el filtro de Histórico para que los límites de importe vacíos no se interpreten como 0 €
 - [x] 12.5 Mostrar los clientes activos al abrir el desplegable de cliente en el editor

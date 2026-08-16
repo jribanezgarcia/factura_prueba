@@ -7,7 +7,7 @@
 
 - [x] 2.1 Validar el NIF al abandonar el campo en el editor de factura y evitar el guardado si no es válido.
 - [x] 2.2 Validar el NIF al abandonar el campo en alta/edición de cliente y evitar el guardado si no es válido.
-- [ ] 2.3 Añadir pruebas de UI de los flujos de validación.
+- [x] 2.3 Añadir pruebas de UI de los flujos de validación.
 
 ## 3. Verificación
 

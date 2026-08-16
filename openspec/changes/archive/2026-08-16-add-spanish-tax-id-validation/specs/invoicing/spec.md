@@ -12,6 +12,20 @@ La aplicación SHALL permitir gestionar una ficha de clientes con nombre/razón 
 - **WHEN** el usuario intenta guardar un cliente con un NIF no vacío inválido
 - **THEN** la aplicación no guarda el cliente e informa del error
 
+#### Scenario: Borrado físico de cliente sin facturas
+- **WHEN** el usuario elimina un cliente que no tiene facturas asociadas
+- **THEN** el cliente se elimina físicamente de la base de datos
+
+#### Scenario: Bloqueo de borrado de cliente con facturas
+- **WHEN** el usuario intenta eliminar un cliente que tiene facturas asociadas
+- **THEN** la aplicación no permite el borrado y ofrece marcar el cliente como inactivo
+
+#### Scenario: Cliente inactivo en histórico
+- **WHEN** el usuario busca en el histórico facturas de un cliente inactivo
+- **THEN** las facturas aparecen y son consultables
+
+## NEW Requirements
+
 ### Requirement: Datos de cliente en el editor de factura
 
 Al crear o editar una factura, la aplicación SHALL validar el NIF no vacío del cliente como DNI, NIE o NIF/CIF español al abandonar el campo mediante Enter o cambio de foco, y SHALL impedir guardar la factura si el documento es inválido.
