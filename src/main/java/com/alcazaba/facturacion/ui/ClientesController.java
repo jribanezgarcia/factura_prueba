@@ -176,6 +176,11 @@ public class ClientesController implements Vista {
     }
 
     private Cliente fichaCliente(Cliente original) {
+        Dialog<Cliente> dialogo = construirFicha(original);
+        return dialogo.showAndWait().orElse(null);
+    }
+
+    Dialog<Cliente> construirFicha(Cliente original) {
         Dialog<Cliente> dialogo = new Dialog<>();
         dialogo.setTitle(original == null ? "Nuevo cliente" : "Editar cliente");
         dialogo.setHeaderText(original == null ? "Alta de cliente" : "Datos del cliente");
@@ -185,7 +190,9 @@ public class ClientesController implements Vista {
 
         TextField txtNombre = new TextField();
         txtNombre.setPromptText("Nombre o razón social");
+        txtNombre.setId("txtNombreFicha");
         TextField txtNif = new TextField();
+        txtNif.setId("txtNifFicha");
         TextField txtDireccion = new TextField();
         TextField txtCp = new TextField();
         TextField txtLocalidad = new TextField();
@@ -217,6 +224,7 @@ public class ClientesController implements Vista {
         dialogo.getDialogPane().setContent(grid);
 
         Node botonGuardar = dialogo.getDialogPane().lookupButton(guardar);
+        botonGuardar.setId("btnGuardarFicha");
         botonGuardar.setDisable(true);
         txtNombre.textProperty().addListener((o, a, b) ->
                 botonGuardar.setDisable(b == null || b.trim().isEmpty()));
@@ -267,7 +275,7 @@ public class ClientesController implements Vista {
             return c;
         });
 
-        return dialogo.showAndWait().orElse(null);
+        return dialogo;
     }
 
     @FXML
