@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\usuario\\\\Desktop\\\\PROYECTOS\\\\Biblioteca7\" -Recurse -Force | Select-Object @{Name=\"Ruta\";Expression={$_.FullName.Replace\\(\"C:\\\\Users\\\\usuario\\\\Desktop\\\\PROYECTOS\\\\Biblioteca7\", \"\"\\)}}, @{Name=\"Tipo\";Expression={if\\($_.PSIsContainer\\){\"📁\"}else{\"📄\"}}} | Sort-Object Ruta | Format-Table -AutoSize)"
+    ]
+  }
+}
