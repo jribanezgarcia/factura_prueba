@@ -136,12 +136,16 @@ public class FacturaService {
 
             String numero = numeroService.formarNumero(serie, factura.getCorrelativo(), fecha);
             FacturaVersion ultima = versionRepository.ultimaVersion(facturaId);
+            FacturaVersion guardada;
             if (versionAbiertaId != null && ultima != null && versionAbiertaId.longValue() == ultima.getId().longValue()) {
-                return versionadoService.sobrescribirVersion(ultima.getId(), fecha, numero, EstadoFactura.EMITIDA,
+                guardada = versionadoService.sobrescribirVersion(ultima.getId(), fecha, numero, EstadoFactura.EMITIDA,
+                        descuento, observaciones, referencia, cliente, lineas);
+            } else {
+                guardada = versionadoService.crearVersion(facturaId, fecha, numero, EstadoFactura.EMITIDA,
                         descuento, observaciones, referencia, cliente, lineas);
             }
-            return versionadoService.crearVersion(facturaId, fecha, numero, EstadoFactura.EMITIDA,
-                    descuento, observaciones, referencia, cliente, lineas);
+            Database.commit();
+            return guardada;
         } catch (SQLException | ValidationException | RuntimeException e) {
             Database.rollback();
             throw e;

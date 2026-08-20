@@ -91,7 +91,6 @@ public class PdfService {
         izq.add(new Chunk(rectificativa ? "RECTIFICATIVA" : "FACTURA", F_TITULO));
         izq.add(new Phrase("\nNúmero: ", F_SUBTITULO));
         izq.add(new Phrase(nz(vc.version().getNumero()), F_TEXTO_BOLD));
-        izq.add(new Phrase("   (v" + vc.version().getVersionNum() + ")", F_SUBTITULO));
         izq.add(new Phrase("\nFecha: ", F_SUBTITULO));
         izq.add(new Phrase(Formatos.fecha(vc.version().getFechaFactura()), F_TEXTO_BOLD));
         if (rectificativa) {

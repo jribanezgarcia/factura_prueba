@@ -1,61 +1,194 @@
-# Continuación — estado al 12/08/2026
+# Continuacion del proyecto de facturacion
 
-## Estado OpenSpec
+Estado actualizado: 20/08/2026
 
-- `add-invoicing-app`: implementación y revisión manual completadas (12.1, 12.2, 12.4 y 12.5).
-  Falta únicamente la tarea **12.3**, validación formal y archivo del cambio; no archivar todavía.
-- `add-spanish-tax-id-validation`: validador e integración implementados. Quedan pendientes las
-  pruebas UI automatizadas (2.3); las pruebas unitarias y la comprobación manual están confirmadas.
+Este documento sirve como traspaso para continuar con cualquier IA. El proyecto se esta construyendo con OpenCode/OpenSpec. Antes de tocar codigo, leer:
 
-## Corregido y confirmado hoy
+- `facturacion_openspec_explore.md`
+- `openspec/specs/invoicing/spec.md`
+- este archivo
 
-1. **Histórico vacío con facturas existentes**: los límites de importe vacíos se convertían a `0 €`,
-   ocultando cualquier factura positiva. Ahora un importe vacío no aplica límite y `C-5/8` aparece
-   correctamente al buscar.
-2. **Cliente no borrable `75238360a`**: se comprobó directamente en SQLite que corresponde a
-   `cristina flores checa` y tiene la factura emitida `C-5/8`, versión 1. El bloqueo de borrado era
-   correcto; el problema era el filtro del Histórico.
-3. **Validación documental**: añadida `DocumentoFiscalValidator` para DNI, NIE y NIF/CIF español.
-   El campo NIF admite estar vacío; si no lo está, se valida al pulsar Enter, al abandonar el campo y
-   antes de guardar una factura o ficha de cliente. Los valores inválidos se marcan en rojo, muestran
-   aviso y no se guardan. Ejemplo: `75238360A` es inválido; la letra correcta es `R`.
-4. **Selector de cliente**: al pulsar la flecha muestra los clientes activos; al escribir continúa
-   filtrando de forma incremental por nombre o NIF.
-5. **Foco en líneas**: Descripción → Enter → Precio de la misma línea permanece corregido y confirmado.
-   Las trazas de diagnóstico se han desactivado (`DIAGNOSTICO_FOCO = false`).
+## Estado general
 
-## Verificación actual
+Aplicacion JavaFX de facturacion local para Windows.
 
-- Suite Maven: **26/26 tests en verde**.
-- El usuario confirmó las pruebas manuales de la aplicación, incluida la corrección del Histórico,
-  validación de NIF y selector de clientes.
-- Maven cacheado (no está en PATH):
-  `C:\Users\usuario\.m2\wrapper\dists\apache-maven-3.9.9-bin\33b4b2b4\apache-maven-3.9.9\bin\mvn.cmd`
+Stack actual:
 
-## Próximos pasos
+- Java 21
+- JavaFX/FXML
+- Maven
+- SQLite/JDBC
+- OpenPDF
+- JUnit 5
+- Arquitectura por capas: `ui`, `service`, `repository`, `model`, `db`, `pdf`, `util`
 
-1. Añadir pruebas UI automatizadas para el aviso y bloqueo de NIF inválido (tarea 2.3 de
-   `add-spanish-tax-id-validation`).
-2. Ejecutar la validación formal de OpenSpec de ambos cambios y, solo con confirmación explícita,
-   archivarlos.
-3. Continuar con la mejora de diseño de la UI y del PDF, prioridad indicada por el usuario.
+La especificacion activa esta en:
 
-## Decisiones de producto ya acordadas (no re-preguntar)
+- `openspec/specs/invoicing/spec.md`
 
-- Número mostrado con barra y guion entre código-correlativo (`C-59/7`, `R-1`); nombre de archivo
-  PDF con guion (`C-59-7_v1.pdf`).
-- El correlativo es la identidad; el mes deriva de la fecha. Al cambiar la fecha en una factura
-  guardada, el número se recalcula con el mes nuevo y se guarda como snapshot.
-- Modo normal de precios = importes netos (sin IVA); se permite entrada de total con IVA
-  (base = total/(1+tipo)).
-- Descuento global entero 0–100 (default 0%), aplicado antes del IVA, repartido proporcionalmente
-  entre bases con ajuste de céntimos en la mayor base.
-- Versionado (CAMBIADO por el usuario): al editar la **última** versión, Guardar pide confirmación y
-  **sobrescribe esa versión** (mismo número de versión); al editar una **versión anterior** se crea vN+1
-  y las versiones anteriores a la más reciente nunca se modifican. Anular/restaurar también crean versión.
-- Numeración: continuar hacia delante por defecto (configurable por serie); restauración bloqueada
-  si el correlativo está ocupado por una activa.
-- Pie legal libre y configurable, sin contenido obligatorio.
-- Número editable en creación (parsear correlativo escrito manualmente); en ediciones posteriores
-  el correlativo queda fijo.
-- Series iniciales C (Cocinas), P (Puertas), R (Rectificativas); IVA 21%, 10%, Exento; empresa id=1.
+Cambios OpenSpec archivados:
+
+- `openspec/changes/archive/2026-08-16-add-invoicing-app`
+- `openspec/changes/archive/2026-08-16-add-spanish-tax-id-validation`
+
+## Cambios realizados hoy
+
+### 1. Commit explicito al editar facturas
+
+Archivo:
+
+- `src/main/java/com/alcazaba/facturacion/service/FacturaService.java`
+
+Se corrigio `guardarEditada(...)` para que no devuelva antes de confirmar la transaccion.
+
+Antes:
+
+- sobrescribia/creaba version y hacia `return` dentro del `try`;
+- el commit quedaba implicito al llamar `Database.endTransaction()` y cambiar `autoCommit` a `true`.
+
+Ahora:
+
+- guarda el resultado en una variable;
+- ejecuta `Database.commit()`;
+- devuelve la factura/version guardada.
+
+Tests ejecutados:
+
+- `FacturaServiceTest`: 2 tests, 0 fallos.
+- suite completa: 30 tests, 0 fallos antes del siguiente cambio.
+
+### 2. Historico ordenado por numero de factura
+
+Decision del usuario:
+
+> El historico debe estar ordenado por numero de factura, puesto que si estan ordenados por numero por fecha tambien deben de estar ordenados.
+
+Archivos tocados:
+
+- `src/main/java/com/alcazaba/facturacion/repository/HistorialRepository.java`
+- `src/main/java/com/alcazaba/facturacion/service/HistorialService.java`
+- `src/test/java/com/alcazaba/facturacion/service/HistorialServiceTest.java`
+
+Cambio:
+
+- el `ORDER BY` del historico pasa de ordenar por fecha primero a ordenar por:
+  - serie;
+  - correlativo;
+  - version;
+  - fecha como desempate final.
+
+No se ordena alfabeticamente por el texto del numero para evitar errores tipo `C-10` antes que `C-2`.
+
+Test nuevo:
+
+- `HistorialServiceTest.buscaOrdenadoPorNumeroDeFactura`
+- crea `C-2/9` y `C-1/10` con fechas inversas;
+- comprueba que el historico devuelve primero `C-1/10`.
+
+Verificacion:
+
+- suite completa: 31 tests, 0 fallos, `BUILD SUCCESS`.
+
+Comando Maven usado:
+
+```bat
+C:\Users\juan\.m2\wrapper\dists\apache-maven-3.8.5-bin\5i5jha092a3i37g0paqnfr15e0\apache-maven-3.8.5\bin\mvn.cmd test
+```
+
+Maven no esta en `PATH`.
+
+### 3. Exportacion PDF sin informacion de version
+
+Decision del usuario:
+
+- mantener todo el versionado interno y visible de la aplicacion;
+- no mostrar la version en el PDF exportado;
+- no incluir `_vN` en el nombre del archivo PDF exportado.
+
+Archivos tocados:
+
+- `src/main/java/com/alcazaba/facturacion/pdf/PdfService.java`
+- `src/main/java/com/alcazaba/facturacion/ui/EditorController.java`
+
+Cambios:
+
+- el bloque `Numero:` del PDF ya no muestra `(vN)`;
+- el nombre sugerido pasa de `numero_vN.pdf` a `numero.pdf`.
+
+El versionado sigue funcionando en la base de datos, el historico, la interfaz y los servicios internos.
+
+## Funcionalidades afectadas si se quitan versiones
+
+- `Editor.fxml`
+- `EditorController`
+- `Versiones.fxml`
+- `VersionesController`
+- `Vista`
+- `Navegador`
+- `HistorialRepository`
+- `HistorialService`
+- `HistorialFila`
+- `Historico.fxml`
+- `HistoricoController`
+- `FacturaService`
+- `VersionadoService`
+- `VersionRepository`
+- `EstadoService`
+- `RectificativaService`
+- `PdfService`
+- tests de servicios y UI
+- `openspec/specs/invoicing/spec.md`
+
+## Riesgos/deudas conocidos
+
+### Git sucio
+
+Hay artefactos compilados en `target/classes` apareciendo modificados y tambien `.idea/`.
+
+Antes de continuar mucho mas, conviene:
+
+- revisar/crear `.gitignore`;
+- ignorar `target/`;
+- decidir si `.idea/` debe quedar fuera;
+- no borrar ni revertir cambios sin confirmar con el usuario.
+
+### OpenSpec
+
+La spec activa sigue incluyendo versionado, lo cual coincide con la decision actual del usuario.
+
+El cambio realizado solo afecta a la presentacion y al nombre del PDF exportado; no requiere eliminar ni modificar el modelo de versiones.
+
+### Series iniciales
+
+El documento inicial decia que las series no tenian que crearse automaticamente, pero la migracion actual si crea:
+
+- C
+- P
+- R
+
+La continuidad previa ya lo trataba como decision aceptada. No tocar salvo que el usuario lo reabra.
+
+## Estado de pruebas
+
+Ultima ejecucion completa:
+
+- fecha: 20/08/2026
+- resultado: 31 tests, 0 fallos, 0 errores, `BUILD SUCCESS`
+
+Avisos observados durante tests:
+
+- warnings de Java sobre APIs nativas/restringidas;
+- warning de JavaFX por configuracion en classpath/modulos;
+- SLF4J sin binder, cae a NOP logger.
+
+No bloquearon la suite.
+
+## Proximo paso recomendado
+
+Probar manualmente la exportacion desde la interfaz y comprobar que:
+
+1. el PDF no muestra ninguna referencia a la version;
+2. el archivo se propone como `numero.pdf`;
+3. el historial y la pantalla de versiones siguen mostrando el versionado normalmente.
+
+Despues de esa comprobacion, se puede hacer un commit de los cambios si el usuario lo solicita.

@@ -9,7 +9,7 @@ import java.util.List;
 
 /**
  * Consultas del historico con filtros combinados (serie, cliente/NIF, fechas,
- * importes y estado), una fila por version y ordenadas por fecha y numero.
+ * importes y estado), una fila por version y ordenadas por numero de factura.
  */
 public class HistorialService {
 
