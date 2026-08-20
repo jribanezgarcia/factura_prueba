@@ -1,9 +1,9 @@
-package examen;
+package com.alcazaba.facturacion;
 
 import javafx.application.Application;
 
 public class Launcher {
     public static void main(String[] args) {
-        Application.launch(MainApp.class, args);
+        Application.launch(Main.class, args);
     }
 }

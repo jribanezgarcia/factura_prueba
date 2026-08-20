@@ -54,7 +54,7 @@ public class HistorialRepository {
             sql.append(" AND v.estado = ?");
             params.add(f.getEstado().name());
         }
-        sql.append(" ORDER BY v.fecha_factura, s.codigo, f.correlativo, v.version_num");
+        sql.append(" ORDER BY s.codigo, f.correlativo, v.version_num, v.fecha_factura");
 
         List<HistorialFila> lista = new ArrayList<>();
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql.toString())) {

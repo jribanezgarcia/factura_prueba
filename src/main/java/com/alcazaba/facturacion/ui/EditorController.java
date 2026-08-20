@@ -996,7 +996,7 @@ public class EditorController implements Vista {
         }
         Serie serie = servicios.series.getById(vc.factura().getSerieId());
         String num = vc.version().getNumero().replace('/', '-');
-        String nombre = num + "_v" + vc.version().getVersionNum() + ".pdf";
+        String nombre = num + ".pdf";
         return base.resolve(String.valueOf(vc.version().getFechaFactura().getYear()))
                 .resolve(serie.getCodigo())
                 .resolve(nombre);
