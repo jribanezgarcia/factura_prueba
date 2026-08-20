@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Tema 2 Final · Biblioteca8 — 7 pantallas</title>
+<style>
+  :root{
+    --bg:#C7C8CA; --surface:#FFFFFF; --accent:#296796; --accent-strong:#1A55A8;
+    --text:#1F2937; --muted:#6B7280; --border:#D8DBDF; --barra:#E4E7EA;
+    --danger:#C0392B; --success:#1E7E5A; --warning:#B7791F;
+    --radius:4px; --shadow:0 1px 4px rgba(0,0,0,.14);
+    --font:'Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:#E8EAED;color:var(--text);padding:26px 18px 60px}
+  .jump{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);border:1px solid var(--border);box-shadow:var(--shadow);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:26px}
+  .jump a{color:var(--accent-strong);text-decoration:none;font-size:12px;padding:4px 9px;border:1px solid var(--border);border-radius:3px}
+  .jump a:hover{background:var(--accent);color:#fff}
+  .jump .g{margin-left:auto;color:var(--muted);font-size:11px}
+  .screen{margin:0 auto 44px;max-width:1080px}
+  .etiqueta{display:inline-block;font-size:11px;color:#fff;background:var(--accent);padding:4px 10px;border-radius:3px;margin-bottom:12px}
+  .window{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;position:relative}
+  .titlebar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--accent);color:#FCF9F9;font-size:12px}
+  .dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%}
+  .dots i:nth-child(1){background:#F0B2A8}.dots i:nth-child(2){background:#F5D79A}.dots i:nth-child(3){background:#A8D0B5}
+  .appname{font-weight:600}
+  .titlebar .spacer{flex:1}
+  .topnav{background:var(--accent);display:flex;align-items:center;justify-content:center;gap:34px;padding:12px 0 14px}
+  .topnav .item{color:#FCF9F9;font-size:22px;text-decoration:none;line-height:1}
+  .topnav .item:hover{color:#fff}
+  .topnav .item.activo{color:#fff}
+  .topnav .item.activo::after{content:"";display:block;width:18px;height:3px;background:#fff;margin:5px auto 0;border-radius:2px}
+  .main{padding:16px;display:flex;flex-direction:column;gap:12px;background:#F5F6F8}
+  .btn{border:none;border-radius:3px;padding:8px 13px;font-size:13px;cursor:pointer}
+  .btn.p{background:var(--accent);color:#fff}.btn.p:hover{background:var(--accent-strong)}
+  .btn.g{background:#fff;color:var(--text);border:1px solid var(--border)}.btn.g:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.d{background:#fff;color:var(--danger);border:1px solid #E9B7AE}
+  .barra-acciones{background:var(--barra);border:1px solid var(--border);border-radius:var(--radius);padding:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .barra-acciones .btn.g{background:#B0B4B8;color:#F3F5F6;border:1px solid #98A1AA}.barra-acciones .btn.g:hover{background:#9EA2A7;color:#F3F5F6}
+  .barra-acciones .btn.d{background:#B0B4B8;color:#F3F5F6;border:1px solid #C9AEB6}.barra-acciones .btn.d:hover{background:#9EA2A7;color:#F3F5F6}
+  .toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .toolbar .spacer{flex:1}
+  h2{font-size:18px;font-weight:600}
+  .grid{display:grid;gap:10px}
+  .grid.c2{grid-template-columns:repeat(2,1fr)}.grid.c4{grid-template-columns:repeat(4,1fr)}.grid.c6{grid-template-columns:repeat(6,1fr)}
+  .campo{display:flex;flex-direction:column;gap:4px}
+  .campo label{font-size:11px;font-weight:600;color:var(--muted)}
+  .campo input,.campo select{height:34px;border:1px solid var(--border);border-radius:3px;padding:0 9px;font-size:13px}
+  .campo input:focus,.campo select:focus{outline:none;border-color:var(--accent)}
+  .campo.span2{grid-column:span 2}.campo.span3{grid-column:span 3}.campo.span4{grid-column:span 4}.campo.span5{grid-column:span 5}.campo.span6{grid-column:span 6}
+  .panel{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;padding:9px 12px;background:#E8EEF3;color:var(--accent-strong);font-weight:600;font-size:12px}
+  td{padding:9px 12px;border-top:1px solid var(--border)}
+  tr:nth-child(even){background:#FAFBFC}
+  .tabla-prod td{background:#F7F8F9}
+  .tabla-prod tr:hover td{background:#EFF1F3}
+  .num{font-weight:600;color:var(--accent)}
+  .estado{font-size:11px;font-weight:600;padding:3px 9px;border-radius:2px}
+  .estado.a{background:#E7F3EC;color:var(--success)}
+  .estado.n{background:#FBEFD6;color:var(--warning)}
+  .menu-lista{display:flex;flex-direction:column;gap:4px;flex:1}
+  .menu-lista a{display:flex;align-items:center;gap:18px;text-decoration:none;color:var(--accent);padding:11px 18px;border-radius:6px;font-size:15px;font-weight:600}
+  .menu-lista a:hover{background:#E8EEF3}
+  .menu-lista a .icono{font-size:34px;line-height:1;color:var(--accent);width:48px;text-align:center;flex-shrink:0}
+  .menu-lista a .icono svg{width:34px;height:34px;vertical-align:middle}
+  .menu-lista a small{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px}
+  .topnav .item svg{width:22px;height:22px;display:inline-block;vertical-align:middle}
+  .totales{background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;font-size:13px}
+  .totales .r{display:flex;justify-content:space-between;padding:10px 14px;background:#EDF0F2}
+  .totales .r span:last-child{font-weight:600;color:var(--text)}
+  .totales .g{display:flex;justify-content:space-between;padding:12px 14px;background:var(--accent);color:#F3F5F6;font-size:16px;font-weight:700}
+  .totales .g span{color:#F3F5F6}
+  textarea{border:1px solid var(--border);border-radius:3px;padding:8px;font-size:13px;width:100%;resize:none;font-family:var(--font)}
+  .fila{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .fila label{font-size:12px;color:var(--muted)}
+  .fila .spacer{flex:1}
+  .zona{background:#fff;border:1px dashed var(--border);border-radius:var(--radius);padding:12px}
+  .zona b{font-size:13px}
+  .zona .muted{color:var(--muted);font-size:12px}
+  .modal-fondo{position:absolute;inset:0;background:rgba(31,41,55,.45);display:flex;align-items:center;justify-content:center;z-index:20}
+  .modal{background:#fff;border-radius:6px;box-shadow:0 14px 40px rgba(0,0,0,.35);width:340px;overflow:hidden}
+  .modal .m-head{background:var(--accent);color:#FCF9F9;padding:12px 16px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px}
+  .modal .m-body{padding:18px 16px;font-size:13.5px;color:var(--text)}
+  .modal .m-pie{display:flex;justify-content:flex-end;gap:8px;padding:0 16px 16px}
+</style>
+</head>
+<body>
+<nav class="jump">
+  <span style="color:var(--accent);font-weight:600;font-size:12px">Tema 2 FINAL · Biblioteca8</span>
+  <a href="#s1">Menú</a><a href="#s2">Editor</a><a href="#s3">Histórico</a><a href="#s4">Clientes</a><a href="#s5">Config</a><a href="#s6">Versiones</a><a href="#s7">Backup</a>
+  <span class="g">logo izq + lista menú der · logo ×2 en editor · filas gris suave · total azul · iconos sin relleno</span>
+  <a href="index.html">← Galería</a>
+</nav>
+
+<section class="screen" id="s1">
+  <span class="etiqueta">Pantalla 1/7 · Menú principal</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Facturación</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">Fecha de trabajo: 20/08/2026</span></div>
+    <div class="main" style="padding:28px 30px">
+      <div style="display:flex;align-items:center;gap:52px">
+        <div style="flex:0 0 260px;text-align:center">
+          <div style="width:260px;height:260px;border-radius:var(--radius);overflow:hidden;background:#fff;border:1px solid var(--border)"><img src="logo.png" alt="" style="width:100%;height:100%;object-fit:contain"></div>
+          <div style="margin-top:16px;font-size:19px;font-weight:600;color:var(--text)">Alcazaba Cocinas, S.L.</div>
+          <div style="color:var(--muted);font-size:12px;margin-top:4px">NIF B-12345678 · Serie C · siguiente C-60/8</div>
+        </div>
+        <div class="menu-lista">
+          <a href="#s2" title="Nueva factura"><span class="icono">✎</span><span>Nueva factura<small>Crear o editar una factura de la serie activa</small></span></a>
+          <a href="#s3" title="Histórico"><span class="icono">⌕</span><span>Histórico<small>Consultar y buscar todas las facturas</small></span></a>
+          <a href="#s4" title="Clientes"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span><span>Clientes<small>Gestionar el catálogo de clientes</small></span></a>
+          <a href="#s5" title="Configuración"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span><span>Configuración<small>Datos de empresa, cabecera, IVA y series</small></span></a>
+          <a href="#s7" title="Copia de seguridad"><span class="icono">▤</span><span>Copia de seguridad<small>Fotografía completa de la base de datos</small></span></a>
+          <a class="salir" href="#" title="Salir"><span class="icono">⏻</span><span>Salir<small>Cierra la aplicación</small></span></a>
+        </div>
+      </div>
+    </div>
+    <div class="modal-fondo">
+      <div class="modal">
+        <div class="m-head">⏻ Salir de la aplicación</div>
+        <div class="m-body">¿Seguro que deseas salir? Se cerrará el programa.</div>
+        <div class="m-pie"><button class="btn g">No</button><button class="btn p">Sí, salir</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s2">
+  <span class="etiqueta">Pantalla 2/7 · Nueva factura (Editor)</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Editor de factura</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">Alcazaba Cocinas S.L.</span></div>
+    <div class="topnav">
+      <a class="item" href="#s1" title="Menú principal">⌂</a>
+      <a class="item activo" href="#s2" title="Nueva factura">+</a>
+      <a class="item" href="#s3" title="Histórico">⌕</a>
+      <a class="item" href="#s4" title="Clientes"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+      <a class="item" href="#s5" title="Configuración"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></a>
+      <a class="item" href="#s7" title="Copia de seguridad">▤</a>
+      <a class="item" href="#s1" title="Salir">⏻</a>
+    </div>
+    <div class="main">
+      <div class="barra-acciones">
+        <button class="btn p">Guardar</button><button class="btn g">Exportar PDF</button><button class="btn g">Versiones</button>
+        <button class="btn g">Rectificativa</button><button class="btn d">Anular</button><button class="btn g">Restaurar</button>
+        <div class="spacer"></div><button class="btn g">Nueva</button><button class="btn g">Volver</button>
+      </div>
+      <div class="fila" style="gap:12px">
+        <div style="width:92px;height:92px;border-radius:var(--radius);overflow:hidden;background:#fff;border:1px solid var(--border)"><img src="logo.png" alt="" style="width:100%;height:100%;object-fit:contain"></div>
+        <h2>Nueva factura</h2><span class="estado a">ACTIVA</span>
+      </div>
+      <div class="grid c6">
+        <div class="campo"><label>Serie</label><select><option>C · Cocinas</option></select></div>
+        <div class="campo"><label>Fecha</label><input type="date" value="2026-08-20"></div>
+        <div class="campo"><label>Número</label><input value="C-60/8"></div>
+        <div class="campo span3"><label>Cliente</label><input value="Carpintería del Sur, S.L."></div>
+        <div class="campo span2"><label>Nombre</label><input value="Carpintería del Sur, S.L."></div>
+        <div class="campo span2"><label>NIF</label><input value="B-41658972"></div>
+        <div class="campo span2"><label>Dirección</label><input value="Pol. Ind. La Isla, nave 12"></div>
+        <div class="campo"><label>CP</label><input value="41007"></div>
+        <div class="campo"><label>Localidad</label><input value="Sevilla"></div>
+        <div class="campo span2"><label>Provincia</label><input value="Sevilla"></div>
+        <div class="campo span6"><label>Referencia rectifica</label><input placeholder="(solo rectificativas)"></div>
+      </div>
+      <div class="panel">
+        <div class="toolbar" style="padding:8px;border-bottom:1px solid var(--border)">
+          <button class="btn g">+ Añadir línea</button><button class="btn g">Eliminar (Supr)</button>
+          <label style="font-size:12px"><input type="checkbox" checked style="accent-color:var(--accent)"> Total con IVA incluido</label>
+          <div class="spacer"></div><label>Descuento</label><input value="0" style="width:50px;height:28px;border:1px solid var(--border);border-radius:3px;padding:0 6px">%
+        </div>
+        <table class="tabla-prod">
+          <tr><th>Cant.</th><th>Descripción</th><th>Precio</th><th>Total</th><th>IVA</th></tr>
+          <tr><td>2</td><td>Mueble de cocina modelo Alba, 60cm</td><td>245,00 €</td><td>490,00 €</td><td>21%</td></tr>
+          <tr><td>1</td><td>Encimera silestone blanco 2,4m</td><td>320,00 €</td><td>320,00 €</td><td>21%</td></tr>
+          <tr><td>3</td><td>Puerta de interior lacada blanca</td><td>95,50 €</td><td>286,50 €</td><td>21%</td></tr>
+        </table>
+      </div>
+      <div class="grid c2">
+        <div class="campo"><label>Observaciones</label><textarea rows="3">Entrega prevista el 05/09/2026.</textarea></div>
+        <div class="totales">
+          <div class="r"><span>Base imponible</span><span>906,20 €</span></div>
+          <div class="r"><span>IVA 21%</span><span>190,30 €</span></div>
+          <div class="r g"><span>Total</span><span>1.096,50 €</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s3">
+  <span class="etiqueta">Pantalla 3/7 · Histórico</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Histórico de facturas</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">27 resultados</span></div>
+    <div class="topnav">
+      <a class="item" href="#s1" title="Menú principal">⌂</a>
+      <a class="item" href="#s2" title="Nueva factura">+</a>
+      <a class="item activo" href="#s3" title="Histórico">⌕</a>
+      <a class="item" href="#s4" title="Clientes"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+      <a class="item" href="#s5" title="Configuración"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></a>
+      <a class="item" href="#s7" title="Copia de seguridad">▤</a>
+      <a class="item" href="#s1" title="Salir">⏻</a>
+    </div>
+    <div class="main">
+      <div class="fila"><label>Serie</label><select style="height:30px;border:1px solid var(--border);border-radius:3px;padding:0 6px"><option>Todas</option></select>
+        <label>Cliente/NIF</label><input placeholder="Nombre o NIF" style="width:200px;height:30px;border:1px solid var(--border);border-radius:3px;padding:0 8px">
+        <label>Desde</label><input type="date" value="2026-01-01" style="height:30px;border:1px solid var(--border);border-radius:3px">
+        <label>Hasta</label><input type="date" value="2026-08-20" style="height:30px;border:1px solid var(--border);border-radius:3px"></div>
+      <div class="fila"><label>Importe</label><input style="width:90px;height:30px;border:1px solid var(--border);border-radius:3px;padding:0 8px"><label>a</label><input style="width:90px;height:30px;border:1px solid var(--border);border-radius:3px;padding:0 8px"><label>Estado</label><select style="height:30px;border:1px solid var(--border);border-radius:3px;padding:0 6px"><option>Todos</option></select>
+        <div class="spacer"></div><button class="btn p">Buscar</button><button class="btn g">Volver</button></div>
+      <div class="panel">
+        <table>
+          <tr><th>Fecha</th><th>Número</th><th>Versión</th><th>Cliente</th><th>NIF</th><th>Base</th><th>IVA</th><th>Total</th><th>Estado</th></tr>
+          <tr><td>20/08/2026</td><td class="num">C-59/8</td><td>v1</td><td>Carpintería del Sur, S.L.</td><td>B-41658972</td><td>906,20 €</td><td>190,30 €</td><td>1.096,50 €</td><td><span class="estado a">ACTIVA</span></td></tr>
+          <tr><td>18/08/2026</td><td class="num">C-58/8</td><td>v2</td><td>Inmob. Guadalquivir</td><td>B-91234567</td><td>4.120,00 €</td><td>865,20 €</td><td>4.985,20 €</td><td><span class="estado a">ACTIVA</span></td></tr>
+          <tr><td>15/08/2026</td><td class="num">P-35/8</td><td>v1</td><td>Hermanos Vega Muebles</td><td>B-84520119</td><td>1.320,50 €</td><td>277,31 €</td><td>1.597,81 €</td><td><span class="estado a">ACTIVA</span></td></tr>
+          <tr><td>02/08/2026</td><td class="num">C-56/8</td><td>v1</td><td>Restaurante La Alcazaba</td><td>B-12345678</td><td>645,00 €</td><td>135,45 €</td><td>780,45 €</td><td><span class="estado n">ANULADA</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s4">
+  <span class="etiqueta">Pantalla 4/7 · Clientes</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Clientes</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">12 clientes</span></div>
+    <div class="topnav">
+      <a class="item" href="#s1" title="Menú principal">⌂</a>
+      <a class="item" href="#s2" title="Nueva factura">+</a>
+      <a class="item" href="#s3" title="Histórico">⌕</a>
+      <a class="item activo" href="#s4" title="Clientes"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+      <a class="item" href="#s5" title="Configuración"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></a>
+      <a class="item" href="#s7" title="Copia de seguridad">▤</a>
+      <a class="item" href="#s1" title="Salir">⏻</a>
+    </div>
+    <div class="main">
+      <div class="fila"><input placeholder="Buscar por nombre o NIF..." style="flex:1;max-width:360px;height:32px;border:1px solid var(--border);border-radius:3px;padding:0 10px"><div class="spacer"></div>
+        <button class="btn p">+ Nuevo</button><button class="btn g">Editar</button><button class="btn d">Eliminar</button><button class="btn g">Volver</button></div>
+      <div class="panel">
+        <table>
+          <tr><th>Nombre</th><th>NIF</th><th>Localidad</th><th>Estado</th></tr>
+          <tr><td>Carpintería del Sur, S.L.</td><td>B-41658972</td><td>Sevilla</td><td><span class="estado a">ACTIVO</span></td></tr>
+          <tr><td>Inmobiliaria Guadalquivir</td><td>B-91234567</td><td>Sevilla</td><td><span class="estado a">ACTIVO</span></td></tr>
+          <tr><td>Hermanos Vega Muebles</td><td>B-84520119</td><td>Dos Hermanas</td><td><span class="estado a">ACTIVO</span></td></tr>
+          <tr><td>Muebles Martín</td><td>B-33221100</td><td>Coria del Río</td><td><span class="estado n">INACTIVO</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s5">
+  <span class="etiqueta">Pantalla 5/7 · Configuración</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Configuración</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">Alcazaba Cocinas S.L.</span></div>
+    <div class="topnav">
+      <a class="item" href="#s1" title="Menú principal">⌂</a>
+      <a class="item" href="#s2" title="Nueva factura">+</a>
+      <a class="item" href="#s3" title="Histórico">⌕</a>
+      <a class="item" href="#s4" title="Clientes"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+      <a class="item activo" href="#s5" title="Configuración"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></a>
+      <a class="item" href="#s7" title="Copia de seguridad">▤</a>
+      <a class="item" href="#s1" title="Salir">⏻</a>
+    </div>
+    <div class="main">
+      <div class="barra-acciones">
+        <button class="btn p">Empresa</button><button class="btn g">Cabecera</button><button class="btn g">Pie</button><button class="btn g">IVA</button><button class="btn g">Series</button><button class="btn g">PDFs</button>
+      </div>
+      <div class="grid c4">
+        <div class="campo span2"><label>Nombre / razón social</label><input value="Alcazaba Cocinas, S.L."></div>
+        <div class="campo"><label>NIF</label><input value="B-12345678"></div>
+        <div class="campo"><label>Actividad</label><input value="Fabricación y montaje de cocinas"></div>
+        <div class="campo span4"><label>Dirección</label><input value="Av. de la Constitución, 45 · 41004 Sevilla"></div>
+        <div class="campo"><label>Email</label><input value="info@alcazabacocinas.es"></div>
+        <div class="campo"><label>Teléfono</label><input value="954 00 00 00"></div>
+        <div class="campo span2"><label>Modo de cabecera</label><select><option>Texto con datos de empresa</option></select></div>
+      </div>
+      <div class="fila" style="justify-content:flex-end"><button class="btn p">Guardar configuración</button><button class="btn g">Volver</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s6">
+  <span class="etiqueta">Pantalla 6/7 · Versiones</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Versiones</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">C-58/8</span></div>
+    <div class="topnav">
+      <a class="item" href="#s1" title="Menú principal">⌂</a>
+      <a class="item" href="#s2" title="Nueva factura">+</a>
+      <a class="item" href="#s3" title="Histórico">⌕</a>
+      <a class="item" href="#s4" title="Clientes"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+      <a class="item" href="#s5" title="Configuración"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></a>
+      <a class="item" href="#s7" title="Copia de seguridad">▤</a>
+      <a class="item" href="#s1" title="Salir">⏻</a>
+    </div>
+    <div class="main">
+      <h2>Versiones de la factura</h2>
+      <div style="color:var(--muted);font-size:12px">Factura C-58/8 · Inmobiliaria Guadalquivir · NIF B-91234567</div>
+      <div class="panel">
+        <table>
+          <tr><th>Versión</th><th>Fecha factura</th><th>Guardado</th><th>Estado</th><th>Total</th></tr>
+          <tr><td class="num">v3</td><td>18/08/2026</td><td>19/08/2026 17:42</td><td><span class="estado a">ACTIVA</span></td><td>4.985,20 €</td></tr>
+          <tr><td class="num">v2</td><td>16/08/2026</td><td>18/08/2026 09:15</td><td><span class="estado a">ACTIVA</span></td><td>4.120,00 €</td></tr>
+          <tr><td class="num">v1</td><td>14/08/2026</td><td>14/08/2026 11:02</td><td><span class="estado a">ACTIVA</span></td><td>3.890,00 €</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s7">
+  <span class="etiqueta">Pantalla 7/7 · Copia de seguridad</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Copia de seguridad</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">Alcazaba Cocinas S.L.</span></div>
+    <div class="topnav">
+      <a class="item" href="#s1" title="Menú principal">⌂</a>
+      <a class="item" href="#s2" title="Nueva factura">+</a>
+      <a class="item" href="#s3" title="Histórico">⌕</a>
+      <a class="item" href="#s4" title="Clientes"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></a>
+      <a class="item" href="#s5" title="Configuración"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></a>
+      <a class="item activo" href="#s7" title="Copia de seguridad">▤</a>
+      <a class="item" href="#s1" title="Salir">⏻</a>
+    </div>
+    <div class="main">
+      <h2>Copia de seguridad</h2>
+      <div style="color:var(--muted);font-size:12px">Fotografía completa de la base de datos: facturas_AAAAMMDD_HHMMSS.db</div>
+      <div class="zona"><div style="flex:1"><b>D:\Copias\Facturacion\backups</b><div class="muted">carpeta de destino</div></div><button class="btn g">Seleccionar carpeta...</button></div>
+      <div><button class="btn p">Crear copia de seguridad</button></div>
+      <div class="zona" style="border-color:#B7DCC8;color:var(--success);font-size:12px">✓ Copia creada: facturas_20260820_124530.db (2,4 MB)</div>
+    </div>
+  </div>
+</section>
+</body>
+</html>

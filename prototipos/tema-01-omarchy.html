@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Tema 1 · Omarchy — 7 pantallas</title>
+<style>
+  :root{
+    --bg:#060B1E; --surface:#131A3A; --surface-2:#1B2350;
+    --text:#FFCEAD; --muted:#6D7DB6; --accent:#7D82D9; --accent-strong:#9A9EE8;
+    --danger:#ED5B5A; --warning:#E9BB4F; --success:#92A593;
+    --border:rgba(125,130,217,.22);
+    --radius:10px; --shadow:0 10px 30px rgba(0,0,0,.45);
+    --font:'Cascadia Mono','Consolas','Courier New',monospace;
+    --density:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:#030610;color:var(--text);padding:26px 18px 60px}
+  .jump{position:sticky;top:0;z-index:50;background:rgba(6,11,30,.95);border:1px solid var(--border);border-radius:0 0 var(--radius) var(--radius);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:26px}
+  .jump a{color:var(--accent-strong);text-decoration:none;font-size:12px;padding:4px 9px;border:1px solid var(--border);border-radius:6px}
+  .jump a:hover{background:var(--accent);color:#060B1E}
+  .jump .g{margin-left:auto;color:var(--muted);font-size:11px}
+  .screen{margin:0 auto 44px;max-width:1080px}
+  .etiqueta{display:inline-block;font-size:11px;color:var(--muted);border:1px solid var(--border);padding:4px 10px;border-radius:20px;margin-bottom:12px;background:rgba(19,26,58,.6)}
+  .window{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+  .titlebar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--border);font-size:12px}
+  .dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%}
+  .dots i:nth-child(1){background:#ED5B5A}.dots i:nth-child(2){background:#E9BB4F}.dots i:nth-child(3){background:#92A593}
+  .appname{font-weight:600;color:var(--muted)}
+  .titlebar .spacer{flex:1}
+  .chip{color:var(--muted);border:1px solid var(--border);padding:3px 9px;border-radius:16px;font-size:11px}
+  .shell{display:flex;min-height:480px}
+  .sidebar{width:150px;background:var(--surface);border-right:1px solid var(--border);padding:14px 10px;display:flex;flex-direction:column;gap:4px;flex-shrink:0}
+  .sidebar .logo{width:44px;height:44px;border-radius:10px;overflow:hidden;background:var(--surface-2);margin:0 auto 12px}
+  .sidebar .logo img{width:100%;height:100%;object-fit:contain}
+  .sidebar a{color:var(--muted);text-decoration:none;font-size:11px;padding:7px 10px;border-radius:6px}
+  .sidebar a.activo,.sidebar a:hover{background:var(--accent);color:#060B1E}
+  .sidebar .spacer{flex:1}
+  .main{flex:1;padding:var(--density);overflow:auto;display:flex;flex-direction:column;gap:12px}
+  .btn{border:none;border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;font-family:var(--font)}
+  .btn.p{background:var(--accent);color:#060B1E}.btn.p:hover{background:var(--accent-strong)}
+  .btn.g{background:var(--surface);color:var(--text);border:1px solid var(--border)}.btn.g:hover{border-color:var(--accent)}
+  .btn.d{background:var(--surface);color:var(--danger);border:1px solid rgba(237,91,90,.4)}
+  .toolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .toolbar .spacer{flex:1}
+  h2{font-size:16px;font-weight:600}
+  .grid{display:grid;gap:8px}
+  .grid.c2{grid-template-columns:repeat(2,1fr)}.grid.c4{grid-template-columns:repeat(4,1fr)}.grid.c6{grid-template-columns:repeat(6,1fr)}
+  .campo{display:flex;flex-direction:column;gap:3px}
+  .campo label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .campo input,.campo select{height:30px;background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:0 8px;font-size:12px;color:var(--text);font-family:var(--font)}
+  .campo input:focus,.campo select:focus{outline:none;border-color:var(--accent)}
+  .campo.span2{grid-column:span 2}.campo.span3{grid-column:span 3}.campo.span4{grid-column:span 4}.campo.span5{grid-column:span 5}.campo.span6{grid-column:span 6}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:11.5px}
+  th{text-align:left;padding:8px 10px;background:var(--surface-2);color:var(--accent-strong);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+  td{padding:8px 10px;border-top:1px solid var(--border)}
+  .num{color:var(--accent-strong);font-weight:600}
+  .estado{font-size:10px;padding:2px 8px;border-radius:12px}
+  .estado.a{background:rgba(146,165,147,.2);color:var(--success)}
+  .estado.n{background:rgba(233,187,79,.2);color:var(--warning)}
+  .menu-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .menu-cards a{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;color:var(--text);text-decoration:none;font-size:12px;display:flex;justify-content:space-between;align-items:center}
+  .menu-cards a:hover{background:var(--accent);color:#060B1E}
+  .totales{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;font-size:12px}
+  .totales .r{display:flex;justify-content:space-between;padding:2px 0}
+  .totales .g{font-size:15px;font-weight:700;border-top:1px solid var(--border);margin-top:4px;padding-top:6px;color:var(--accent-strong)}
+  textarea{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text);font-family:var(--font);font-size:11px;width:100%;resize:none}
+  .fila{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .fila label{font-size:11px;color:var(--muted)}
+  .fila .spacer{flex:1}
+  .zona{background:var(--surface);border:1px dashed var(--border);border-radius:var(--radius);padding:12px}
+  .zona b{font-size:12px}
+  .zona .muted{color:var(--muted);font-size:11px}
+</style>
+</head>
+<body>
+<nav class="jump">
+  <span style="color:var(--accent);font-size:12px">Tema 1 · Omarchy</span>
+  <a href="#s1">Menú</a><a href="#s2">Editor</a><a href="#s3">Histórico</a><a href="#s4">Clientes</a><a href="#s5">Config</a><a href="#s6">Versiones</a><a href="#s7">Backup</a>
+  <span class="g">sidebar izquierda · fuente mono · radio 10px</span>
+  <a href="index.html">← Galería</a>
+</nav>
+
+<section class="screen" id="s1">
+  <span class="etiqueta">Pantalla 1/7 · Menú principal</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Facturación</span><div class="spacer"></div><span class="chip">20/08/2026</span></div>
+    <div class="shell">
+      <div class="sidebar">
+        <div class="logo"><img src="logo.png" alt=""></div>
+        <a class="activo" href="#">⌂ Menú</a><a href="#s2">+ Factura</a><a href="#s3">⌕ Histórico</a><a href="#s4">👤 Clientes</a><a href="#s5">⚙ Config</a><a href="#s6">⧉ Versiones</a><a href="#s7">▤ Backup</a>
+        <div class="spacer"></div>
+        <a href="#">⏻ Salir</a>
+      </div>
+      <div class="main">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:64px;height:64px;border-radius:14px;overflow:hidden;background:var(--surface)"><img src="logo.png" alt="" style="width:100%;height:100%;object-fit:contain"></div>
+          <div><h2>Facturación</h2><div style="color:var(--muted);font-size:11px">Alcazaba Cocinas S.L. · NIF B-12345678 · Sevilla</div></div>
+        </div>
+        <div class="fila"><label>Fecha de trabajo</label><input type="date" value="2026-08-20" style="height:30px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0 8px"></div>
+        <div class="menu-cards">
+          <a href="#s2">Nueva factura <span>→</span></a><a href="#s3">Histórico <span>→</span></a>
+          <a href="#s4">Clientes <span>→</span></a><a href="#s5">Configuración <span>→</span></a>
+          <a href="#s7">Copia de seguridad <span>→</span></a>
+        </div>
+        <div style="color:var(--muted);font-size:10px">Serie C · siguiente C-60/8</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s2">
+  <span class="etiqueta">Pantalla 2/7 · Nueva factura (Editor)</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Editor</span><div class="spacer"></div><span class="chip">Alcazaba Cocinas S.L.</span></div>
+    <div class="shell">
+      <div class="sidebar">
+        <div class="logo"><img src="logo.png" alt=""></div>
+        <a href="#s1">⌂ Menú</a><a class="activo" href="#s2">+ Factura</a><a href="#s3">⌕ Histórico</a><a href="#s4">👤 Clientes</a><a href="#s5">⚙ Config</a><a href="#s6">⧉ Versiones</a><a href="#s7">▤ Backup</a>
+        <div class="spacer"></div><a href="#">⏻ Salir</a>
+      </div>
+      <div class="main">
+        <div class="toolbar">
+          <button class="btn p">Guardar</button><button class="btn g">Exportar PDF</button><button class="btn g">Versiones</button>
+          <button class="btn g">Rectificativa</button><button class="btn d">Anular</button><button class="btn g">Restaurar</button>
+          <div class="spacer"></div><button class="btn g">Nueva</button><button class="btn g">Volver</button>
+        </div>
+        <div class="fila" style="gap:12px">
+          <div style="width:44px;height:44px;border-radius:10px;overflow:hidden;background:var(--surface)"><img src="logo.png" alt="" style="width:100%;height:100%;object-fit:contain"></div>
+          <h2>Nueva factura</h2>
+          <span class="estado a">ACTIVA</span>
+        </div>
+        <div class="grid c6">
+          <div class="campo"><label>Serie</label><select><option>C · Cocinas</option></select></div>
+          <div class="campo"><label>Fecha</label><input type="date" value="2026-08-20"></div>
+          <div class="campo"><label>Número</label><input value="C-60/8"></div>
+          <div class="campo span3"><label>Cliente</label><input value="Carpintería del Sur, S.L."></div>
+          <div class="campo span2"><label>Nombre</label><input value="Carpintería del Sur, S.L."></div>
+          <div class="campo span2"><label>NIF</label><input value="B-41658972"></div>
+          <div class="campo span2"><label>Dirección</label><input value="Pol. Ind. La Isla, nave 12"></div>
+          <div class="campo"><label>CP</label><input value="41007"></div>
+          <div class="campo"><label>Localidad</label><input value="Sevilla"></div>
+          <div class="campo span2"><label>Provincia</label><input value="Sevilla"></div>
+          <div class="campo span6"><label>Referencia rectifica</label><input placeholder="(solo rectificativas)"></div>
+        </div>
+        <div class="panel">
+          <div class="toolbar" style="padding:8px;border-bottom:1px solid var(--border)">
+            <button class="btn g">+ Añadir línea</button><button class="btn g">Eliminar (Supr)</button>
+            <label style="font-size:11px"><input type="checkbox" checked style="accent-color:var(--accent)"> Total con IVA incluido</label>
+            <div class="spacer"></div><label>Descuento</label><input value="0" style="width:50px;height:26px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0 6px">%
+          </div>
+          <table>
+            <tr><th>Cant.</th><th>Descripción</th><th>Precio</th><th>Total</th><th>IVA</th></tr>
+            <tr><td>2</td><td>Mueble de cocina modelo Alba, 60cm</td><td>245,00 €</td><td>490,00 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Encimera silestone blanco 2,4m</td><td>320,00 €</td><td>320,00 €</td><td>21%</td></tr>
+            <tr><td>3</td><td>Puerta de interior lacada blanca</td><td>95,50 €</td><td>286,50 €</td><td>21%</td></tr>
+          </table>
+        </div>
+        <div class="grid c2">
+          <div class="campo"><label>Observaciones</label><textarea rows="3">Entrega prevista el 05/09/2026.</textarea></div>
+          <div class="totales">
+            <div class="r"><span>Base</span><span>906,20 €</span></div>
+            <div class="r"><span>IVA 21%</span><span>190,30 €</span></div>
+            <div class="r g"><span>Total</span><span>1.096,50 €</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s3">
+  <span class="etiqueta">Pantalla 3/7 · Histórico</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Histórico</span><div class="spacer"></div><span class="chip">27 resultados</span></div>
+    <div class="shell">
+      <div class="sidebar">
+        <div class="logo"><img src="logo.png" alt=""></div>
+        <a href="#s1">⌂ Menú</a><a href="#s2">+ Factura</a><a class="activo" href="#s3">⌕ Histórico</a><a href="#s4">👤 Clientes</a><a href="#s5">⚙ Config</a><a href="#s6">⧉ Versiones</a><a href="#s7">▤ Backup</a>
+        <div class="spacer"></div><a href="#">⏻ Salir</a>
+      </div>
+      <div class="main">
+        <div class="fila"><label>Serie</label><select style="height:28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0 6px"><option>Todas</option></select>
+        <label>Cliente/NIF</label><input placeholder="Nombre o NIF" style="width:200px"><label>Desde</label><input type="date" value="2026-01-01"><label>Hasta</label><input type="date" value="2026-08-20"></div>
+        <div class="fila"><label>Importe</label><input style="width:90px"><label>a</label><input style="width:90px"><label>Estado</label><select style="height:28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:0 6px"><option>Todos</option></select>
+        <div class="spacer"></div><button class="btn p">Buscar</button><button class="btn g">Volver</button></div>
+        <div class="panel">
+          <table>
+            <tr><th>Fecha</th><th>Número</th><th>Ver</th><th>Cliente</th><th>NIF</th><th>Base</th><th>IVA</th><th>Total</th><th>Estado</th></tr>
+            <tr><td>20/08</td><td class="num">C-59/8</td><td>v1</td><td>Carpintería del Sur</td><td>B-41658972</td><td>906,20</td><td>190,30</td><td>1.096,50 €</td><td><span class="estado a">ACTIVA</span></td></tr>
+            <tr><td>18/08</td><td class="num">C-58/8</td><td>v2</td><td>Inmob. Guadalquivir</td><td>B-91234567</td><td>4.120,00</td><td>865,20</td><td>4.985,20 €</td><td><span class="estado a">ACTIVA</span></td></tr>
+            <tr><td>15/08</td><td class="num">P-35/8</td><td>v1</td><td>Hermanos Vega</td><td>B-84520119</td><td>1.320,50</td><td>277,31</td><td>1.597,81 €</td><td><span class="estado a">ACTIVA</span></td></tr>
+            <tr><td>02/08</td><td class="num">C-56/8</td><td>v1</td><td>Restaurante La Alcazaba</td><td>B-12345678</td><td>645,00</td><td>135,45</td><td>780,45 €</td><td><span class="estado n">ANULADA</span></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s4">
+  <span class="etiqueta">Pantalla 4/7 · Clientes</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Clientes</span><div class="spacer"></div><span class="chip">12 clientes</span></div>
+    <div class="shell">
+      <div class="sidebar">
+        <div class="logo"><img src="logo.png" alt=""></div>
+        <a href="#s1">⌂ Menú</a><a href="#s2">+ Factura</a><a href="#s3">⌕ Histórico</a><a class="activo" href="#s4">👤 Clientes</a><a href="#s5">⚙ Config</a><a href="#s6">⧉ Versiones</a><a href="#s7">▤ Backup</a>
+        <div class="spacer"></div><a href="#">⏻ Salir</a>
+      </div>
+      <div class="main">
+        <div class="fila"><input placeholder="Buscar por nombre o NIF..." style="flex:1;max-width:360px"><div class="spacer"></div>
+          <button class="btn p">+ Nuevo</button><button class="btn g">Editar</button><button class="btn d">Eliminar</button><button class="btn g">Volver</button></div>
+        <div class="panel">
+          <table>
+            <tr><th>Nombre</th><th>NIF</th><th>Localidad</th><th>Estado</th></tr>
+            <tr><td>Carpintería del Sur, S.L.</td><td>B-41658972</td><td>Sevilla</td><td><span class="estado a">ACTIVO</span></td></tr>
+            <tr><td>Inmobiliaria Guadalquivir</td><td>B-91234567</td><td>Sevilla</td><td><span class="estado a">ACTIVO</span></td></tr>
+            <tr><td>Hermanos Vega Muebles</td><td>B-84520119</td><td>Dos Hermanas</td><td><span class="estado a">ACTIVO</span></td></tr>
+            <tr><td>Muebles Martín</td><td>B-33221100</td><td>Coria del Río</td><td><span class="estado n">INACTIVO</span></td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s5">
+  <span class="etiqueta">Pantalla 5/7 · Configuración</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Configuración</span><div class="spacer"></div><span class="chip">Alcazaba Cocinas S.L.</span></div>
+    <div class="shell">
+      <div class="sidebar">
+        <div class="logo"><img src="logo.png" alt=""></div>
+        <a href="#s1">⌂ Menú</a><a href="#s2">+ Factura</a><a href="#s3">⌕ Histórico</a><a href="#s4">👤 Clientes</a><a class="activo" href="#s5">⚙ Config</a><a href="#s6">⧉ Versiones</a><a href="#s7">▤ Backup</a>
+        <div class="spacer"></div><a href="#">⏻ Salir</a>
+      </div>
+      <div class="main">
+        <div class="toolbar"><button class="btn p">Empresa</button><button class="btn g">Cabecera</button><button class="btn g">Pie</button><button class="btn g">IVA</button><button class="btn g">Series</button><button class="btn g">PDFs</button></div>
+        <div class="grid c4">
+          <div class="campo span2"><label>Nombre</label><input value="Alcazaba Cocinas, S.L."></div>
+          <div class="campo"><label>NIF</label><input value="B-12345678"></div>
+          <div class="campo"><label>Actividad</label><input value="Cocinas"></div>
+          <div class="campo span4"><label>Dirección</label><input value="Av. Constitución, 45 · 41004 Sevilla"></div>
+          <div class="campo"><label>Email</label><input value="info@alcazabacocinas.es"></div>
+          <div class="campo"><label>Teléfono</label><input value="954 00 00 00"></div>
+          <div class="campo span2"><label>Cabecera</label><select><option>Texto con datos de empresa</option></select></div>
+        </div>
+        <div class="fila" style="justify-content:flex-end"><button class="btn p">Guardar configuración</button><button class="btn g">Volver</button></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s6">
+  <span class="etiqueta">Pantalla 6/7 · Versiones</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Versiones</span><div class="spacer"></div><span class="chip">C-58/8</span></div>
+    <div class="shell">
+      <div class="sidebar">
+        <div class="logo"><img src="logo.png" alt=""></div>
+        <a href="#s1">⌂ Menú</a><a href="#s2">+ Factura</a><a href="#s3">⌕ Histórico</a><a href="#s4">👤 Clientes</a><a href="#s5">⚙ Config</a><a class="activo" href="#s6">⧉ Versiones</a><a href="#s7">▤ Backup</a>
+        <div class="spacer"></div><a href="#">⏻ Salir</a>
+      </div>
+      <div class="main">
+        <h2>Versiones de la factura</h2>
+        <div class="panel">
+          <table>
+            <tr><th>Versión</th><th>Fecha factura</th><th>Guardado</th><th>Estado</th><th>Total</th></tr>
+            <tr><td class="num">v3</td><td>18/08/2026</td><td>19/08/2026 17:42</td><td><span class="estado a">ACTIVA</span></td><td>4.985,20 €</td></tr>
+            <tr><td class="num">v2</td><td>16/08/2026</td><td>18/08/2026 09:15</td><td><span class="estado a">ACTIVA</span></td><td>4.120,00 €</td></tr>
+            <tr><td class="num">v1</td><td>14/08/2026</td><td>14/08/2026 11:02</td><td><span class="estado a">ACTIVA</span></td><td>3.890,00 €</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" id="s7">
+  <span class="etiqueta">Pantalla 7/7 · Copia de seguridad</span>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Backup</span><div class="spacer"></div><span class="chip">Alcazaba Cocinas S.L.</span></div>
+    <div class="shell">
+      <div class="sidebar">
+        <div class="logo"><img src="logo.png" alt=""></div>
+        <a href="#s1">⌂ Menú</a><a href="#s2">+ Factura</a><a href="#s3">⌕ Histórico</a><a href="#s4">👤 Clientes</a><a href="#s5">⚙ Config</a><a href="#s6">⧉ Versiones</a><a class="activo" href="#s7">▤ Backup</a>
+        <div class="spacer"></div><a href="#">⏻ Salir</a>
+      </div>
+      <div class="main">
+        <h2>Copia de seguridad</h2>
+        <div style="color:var(--muted);font-size:11px">Fotografía completa de la base de datos: facturas_AAAAMMDD_HHMMSS.db</div>
+        <div class="zona"><div style="flex:1"><b>D:\Copias\Facturacion\backups</b><div class="muted">carpeta de destino</div></div><button class="btn g">Seleccionar carpeta...</button></div>
+        <div><button class="btn p">Crear copia de seguridad</button></div>
+        <div class="zona" style="border-color:rgba(146,165,147,.5);color:var(--success);font-size:11px">✓ Copia creada: facturas_20260820_124530.db (2,4 MB)</div>
+      </div>
+    </div>
+  </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prototipos — Facturación</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #f4f5f7;
+    color: #1f2430;
+    padding: 40px 24px 64px;
+  }
+  h1 { font-size: 26px; font-weight: 600; margin-bottom: 6px; }
+  p.sub { color: #6b7280; margin-bottom: 32px; max-width: 900px; line-height: 1.5; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; max-width: 1200px; }
+  a.card {
+    display: block; text-decoration: none; color: inherit;
+    background: #fff; border: 1px solid #e5e7eb; border-radius: 14px;
+    padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.06);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  a.card:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.10); }
+  .swatch { display: flex; gap: 6px; margin: 12px 0; }
+  .swatch span { width: 26px; height: 26px; border-radius: 50%; border: 1px solid rgba(0,0,0,.12); }
+  .meta { list-style: none; margin-top: 10px; display: grid; gap: 3px; }
+  .meta li { font-size: 12.5px; color: #374151; }
+  .meta li b { color: #1f2430; }
+  .tag {
+    display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .5px;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 20px; margin-top: 10px;
+  }
+  .num { font-size: 13px; color: #6b7280; }
+</style>
+</head>
+<body>
+  <h1>Prototipos de interfaz — Facturación JavaFX</h1>
+  <p class="sub">7 temas, cada uno con las 7 pantallas (Menú principal, Nueva factura, Histórico, Clientes, Configuración, Versiones, Backup).
+  Cada tema combina una paleta con una disposición de menús, una tipografía y una forma de ventana/controles distintas.
+  Puedes mezclar: por ejemplo «colores de la 1 + distribución de la 3».</p>
+  <div class="grid">
+
+    <a class="card" href="tema-02-final.html" style="border:2px solid #1A55A8;box-shadow:0 8px 24px rgba(41,103,150,.18)">
+      <div class="num">ELECCIÓN · Tema 2 FINAL (Biblioteca8 modificado)</div>
+      <div class="swatch">
+        <span style="background:#296796"></span><span style="background:#1A55A8"></span>
+        <span style="background:#C7C8CA"></span><span style="background:#FFFFFF"></span><span style="background:#E4E7EA"></span>
+      </div>
+      <b>Tema elegido</b> con los cambios acordados.
+      <ul class="meta">
+        <li><b>Logo ×4</b> en el menú principal (220px)</li>
+        <li><b>Sin enlaces duplicados</b>: el menú grande solo en la 1ª pantalla</li>
+        <li><b>Salir en todas</b> + diálogo de confirmación al cerrar</li>
+        <li><b>Iconos sin relleno ni fondo</b>, monocromo, todos del mismo azul (clientes y engranaje con trazado relleno)</li>
+        <li><b>Navegación</b>: iconos blancos sobre azul (usuario con trazado relleno)</li>
+        <li><b>Tooltips</b>: al pasar el ratón sobre un icono del menú sale el nombre (ej. «Configuración»)</li>
+        <li><b>Menú principal</b>: logo grande a la izquierda + lista de botones a la derecha</li>
+        <li><b>Editor</b>: logo ×2 (92px), filas de productos con fondo gris muy suave, Base/IVA grisáceos y línea de Total azul con texto blanco agrisado</li>
+        <li><b>Barras grises</b> de acciones en Nueva factura y Configuración, con botones en gris algo más oscuro y texto blanco agrisado</li>
+      </ul>
+      <div class="tag" style="background:#1A55A8;color:#fff">FINAL</div>
+    </a>
+
+    <a class="card" href="tema-01-omarchy.html">
+      <div class="num">Tema 1 · Omarchy</div>
+      <div class="swatch">
+        <span style="background:#060B1E"></span><span style="background:#131A3A"></span>
+        <span style="background:#7D82D9"></span><span style="background:#FFCEAD"></span><span style="background:#6D7DB6"></span>
+      </div>
+      <b>Paleta</b>: oscuro navy + lavanda + durazno (Ethereal de Omarchy).
+      <ul class="meta">
+        <li><b>Layout:</b> barra lateral izquierda con logo y menú vertical</li>
+        <li><b>Tipografía:</b> monoespaciada (Cascadia Mono / Consolas)</li>
+        <li><b>Forma:</b> radio 10px, compacta</li>
+      </ul>
+      <div class="tag" style="background:#060B1E;color:#FFCEAD">oscuro · lado izq</div>
+    </a>
+
+    <a class="card" href="tema-02-biblioteca8.html">
+      <div class="num">Tema 2 · Biblioteca8</div>
+      <div class="swatch">
+        <span style="background:#296796"></span><span style="background:#1A55A8"></span>
+        <span style="background:#C7C8CA"></span><span style="background:#FFFFFF"></span><span style="background:#1F2937"></span>
+      </div>
+      <b>Paleta</b>: azul corporativo sobre gris claro.
+      <ul class="meta">
+        <li><b>Layout:</b> barra superior con iconos circulares centrados</li>
+        <li><b>Tipografía:</b> Segoe UI</li>
+        <li><b>Forma:</b> radio 4px, esquinas marcadas</li>
+      </ul>
+      <div class="tag" style="background:#296796;color:#fff">claro · top central</div>
+    </a>
+
+    <a class="card" href="tema-03-esmeralda.html">
+      <div class="num">Tema 3 · Esmeralda</div>
+      <div class="swatch">
+        <span style="background:#FFFFFF"></span><span style="background:#10B981"></span>
+        <span style="background:#ECFDF5"></span><span style="background:#1F2937"></span><span style="background:#059669"></span>
+      </div>
+      <b>Paleta</b>: blanco limpio + verde esmeralda.
+      <ul class="meta">
+        <li><b>Layout:</b> tarjetas grandes centradas en tarjeta hero</li>
+        <li><b>Tipografía:</b> Inter / Segoe UI</li>
+        <li><b>Forma:</b> radio 16px, aireada y grande</li>
+      </ul>
+      <div class="tag" style="background:#10B981;color:#06281e">claro · tarjetas</div>
+    </a>
+
+    <a class="card" href="tema-04-terracota.html">
+      <div class="num">Tema 4 · Terracota</div>
+      <div class="swatch">
+        <span style="background:#FBF1EA"></span><span style="background:#E07A5F"></span>
+        <span style="background:#C2542C"></span><span style="background:#3D2C29"></span><span style="background:#FFFFFF"></span>
+      </div>
+      <b>Paleta</b>: crema cálido + terracota.
+      <ul class="meta">
+        <li><b>Layout:</b> masthead con logo + navegación centrada con subrayado</li>
+        <li><b>Tipografía:</b> serif (Georgia) para títulos</li>
+        <li><b>Forma:</b> radio 8px</li>
+      </ul>
+      <div class="tag" style="background:#C2542C;color:#fff">claro cálido · nav centrada</div>
+    </a>
+
+    <a class="card" href="tema-05-negro-dorado.html">
+      <div class="num">Tema 5 · Negro y dorado</div>
+      <div class="swatch">
+        <span style="background:#121212"></span><span style="background:#D4AF37"></span>
+        <span style="background:#1E1E1E"></span><span style="background:#F4E9C4"></span><span style="background:#3A2E0F"></span>
+      </div>
+      <b>Paleta</b>: negro elegante + dorado.
+      <ul class="meta">
+        <li><b>Layout:</b> ribbon superior tipo pestañas (tabs)</li>
+        <li><b>Tipografía:</b> Playfair Display para títulos + Segoe UI</li>
+        <li><b>Forma:</b> radio 2px, aristas finas</li>
+      </ul>
+      <div class="tag" style="background:#D4AF37;color:#121212">oscuro · tabs top</div>
+    </a>
+
+    <a class="card" href="tema-06-sakura.html">
+      <div class="num">Tema 6 · Sakura</div>
+      <div class="swatch">
+        <span style="background:#FFF7F9"></span><span style="background:#E8A0BF"></span>
+        <span style="background:#B5567E"></span><span style="background:#5B2A41"></span><span style="background:#FFFFFF"></span>
+      </div>
+      <b>Paleta</b>: rosa pastel suave.
+      <ul class="meta">
+        <li><b>Layout:</b> logo a la izquierda + píldoras de navegación a la derecha</li>
+        <li><b>Tipografía:</b> Segoe UI</li>
+        <li><b>Forma:</b> radio 24px, muy redondeada (píldoras)</li>
+      </ul>
+      <div class="tag" style="background:#B5567E;color:#fff">claro pastel · pills derecha</div>
+    </a>
+
+    <a class="card" href="tema-07-neon.html">
+      <div class="num">Tema 7 · Neón</div>
+      <div class="swatch">
+        <span style="background:#0B0B1A"></span><span style="background:#8B5CF6"></span>
+        <span style="background:#22D3EE"></span><span style="background:#141430"></span><span style="background:#E9E9FF"></span>
+      </div>
+      <b>Paleta</b>: oscuro futurista + violeta y cian.
+      <ul class="meta">
+        <li><b>Layout:</b> barra de navegación inferior</li>
+        <li><b>Tipografía:</b> Segoe UI, títulos con gradiente neón</li>
+        <li><b>Forma:</b> radio 14px, glassmorphism con brillos</li>
+      </ul>
+      <div class="tag" style="background:#8B5CF6;color:#fff">oscuro · nav inferior</div>
+    </a>
+
+  </div>
+</body>
+</html>
