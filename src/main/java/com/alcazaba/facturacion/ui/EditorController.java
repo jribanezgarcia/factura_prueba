@@ -34,9 +34,12 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
@@ -84,7 +87,15 @@ public class EditorController implements Vista {
     @FXML
     private Label lblEstado;
     @FXML
-    private Label lblResumen;
+    private Label lblBaseTotal;
+    @FXML
+    private Label lblIvaTotal;
+    @FXML
+    private Label lblTotal;
+    @FXML
+    private ImageView logo;
+    @FXML
+    private HBox barraNavegacion;
     @FXML
     private Label lblReferencia;
     @FXML
@@ -154,6 +165,8 @@ public class EditorController implements Vista {
     public void alIniciar() {
         cargando = true;
         try {
+            barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "editor"));
+            cargarLogo();
             cargarSeries();
             cargarFechaInicial();
             cargarTiposIva();
@@ -172,6 +185,28 @@ public class EditorController implements Vista {
             cargando = false;
         }
         actualizarResumen();
+    }
+
+    private void cargarLogo() {
+        try {
+            Empresa empresa = servicios.config.getEmpresa();
+            String ruta = empresa.getLogoPath();
+            if (ruta == null || ruta.isBlank()) {
+                return;
+            }
+            File f = new File(ruta);
+            if (!f.exists()) {
+                return;
+            }
+            Image img = new Image(f.toURI().toString());
+            if (img.isError()) {
+                return;
+            }
+            logo.setImage(img);
+            logo.setFitWidth(92);
+            logo.setPreserveRatio(true);
+        } catch (Exception ignored) {
+        }
     }
 
     /**
@@ -701,26 +736,9 @@ public class EditorController implements Vista {
 
     private void actualizarResumen() {
         ResumenFactura r = CalculoService.resumen(lineas, descuento);
-        StringBuilder sb = new StringBuilder();
-        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
-            sb.append(g.getNombre());
-            if (g.isExento()) {
-                if (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()) {
-                    sb.append(" (").append(g.getMotivoExencion()).append(")");
-                }
-            } else {
-                sb.append(" ").append(g.getPorcentaje()).append("%");
-            }
-            sb.append(": base ").append(Formatos.moneda(g.getBase()))
-                    .append(" / IVA ").append(Formatos.moneda(g.getCuota())).append('\n');
-        }
-        sb.append("Base total: ").append(Formatos.moneda(r.getBaseTotal())).append('\n');
-        sb.append("IVA total: ").append(Formatos.moneda(r.getIvaTotal())).append('\n');
-        if (descuento > 0) {
-            sb.append("Descuento: ").append(descuento).append("%\n");
-        }
-        sb.append("TOTAL: ").append(Formatos.moneda(r.getTotal()));
-        lblResumen.setText(sb.toString());
+        lblBaseTotal.setText(Formatos.moneda(r.getBaseTotal()));
+        lblIvaTotal.setText(Formatos.moneda(r.getIvaTotal()));
+        lblTotal.setText(Formatos.moneda(r.getTotal()));
     }
 
     // ------------------------------------------------------------------

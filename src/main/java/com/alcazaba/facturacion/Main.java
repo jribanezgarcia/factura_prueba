@@ -79,6 +79,10 @@ public class Main extends Application {
                 e.consume();
                 return;
             }
+            if (!Dialogos.confirmar("Salir", "¿Seguro que deseas salir de la aplicación?")) {
+                e.consume();
+                return;
+            }
             if (actual != null) {
                 actual.alCerrar();
             }

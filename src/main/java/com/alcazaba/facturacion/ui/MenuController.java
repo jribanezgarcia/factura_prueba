@@ -1,19 +1,24 @@
 package com.alcazaba.facturacion.ui;
 
+import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.service.Servicios;
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 
+import java.io.File;
 import java.time.LocalDate;
 
 /**
  * Menu principal: Nueva factura, Historico, Clientes, Configuracion, Copia de
  * seguridad y Salir. Muestra la fecha de trabajo, que se usa al crear facturas
- * y se recuerda entre sesiones.
+ * y se recuerda entre sesiones. El logo y los datos de empresa salen de la
+ * configuracion.
  */
 public class MenuController implements Vista {
 
@@ -24,6 +29,12 @@ public class MenuController implements Vista {
 
     @FXML
     private DatePicker fechaTrabajo;
+    @FXML
+    private ImageView logo;
+    @FXML
+    private Label lblEmpresa;
+    @FXML
+    private Label lblEmpresaInfo;
 
     @Override
     public void setServicios(Servicios s) {
@@ -38,6 +49,7 @@ public class MenuController implements Vista {
     @Override
     public void alIniciar() {
         cargarFechaTrabajo();
+        cargarEmpresa();
         atajos();
     }
 
@@ -60,6 +72,37 @@ public class MenuController implements Vista {
             }
         } catch (Exception ignored) {
         }
+    }
+
+    private void cargarEmpresa() {
+        try {
+            Empresa e = servicios.config.getEmpresa();
+            if (e.getNombre() != null && !e.getNombre().isBlank()) {
+                lblEmpresa.setText(e.getNombre());
+            }
+            if (e.getNif() != null && !e.getNif().isBlank()) {
+                lblEmpresaInfo.setText("NIF " + e.getNif());
+            }
+            cargarLogo(e.getLogoPath());
+        } catch (Exception ignored) {
+        }
+    }
+
+    private void cargarLogo(String ruta) {
+        if (ruta == null || ruta.isBlank()) {
+            return;
+        }
+        File f = new File(ruta);
+        if (!f.exists()) {
+            return;
+        }
+        Image img = new Image(f.toURI().toString());
+        if (img.isError()) {
+            return;
+        }
+        logo.setImage(img);
+        logo.setFitWidth(260);
+        logo.setPreserveRatio(true);
     }
 
     public LocalDate fechaTrabajo() {
@@ -100,6 +143,6 @@ public class MenuController implements Vista {
 
     @FXML
     private void salir() {
-        Platform.exit();
+        nav.stage().close();
     }
 }

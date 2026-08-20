@@ -1,0 +1,58 @@
+.root {
+    -fx-background: #FAF4F6;
+    -fx-base: #FFFFFF;
+    -fx-accent: #B5567E;
+    -fx-focus-color: #B5567E;
+    -fx-faint-focus-color: rgba(181, 86, 126, 0.18);
+    -fx-control-inner-background: #FFFFFF;
+    -fx-text-background-color: #3F2A33;
+}
+
+.titulo { -fx-text-fill: #3F2A33; }
+.muted { -fx-text-fill: #9A7D88; }
+.chip-anulada { -fx-text-fill: #C4455A; }
+
+.nav-bar { -fx-background-color: #B5567E; }
+.nav-button .nav-icon { -fx-fill: #FFFFFF; }
+.nav-button:hover { -fx-background-color: rgba(255, 255, 255, 0.15); }
+.nav-button.activo { -fx-border-color: transparent transparent #FFFFFF transparent; }
+
+.action-bar { -fx-background-color: #F6E3EC; -fx-border-color: #F0DFE6; }
+
+.primary-button { -fx-background-color: #B5567E; -fx-text-fill: #FFFFFF; }
+.primary-button:hover { -fx-background-color: #93375E; }
+.default-button { -fx-background-color: #FFFFFF; -fx-text-fill: #3F2A33; -fx-border-color: #F0DFE6; }
+.default-button:hover { -fx-border-color: #B5567E; -fx-text-fill: #93375E; }
+.danger-button { -fx-background-color: #FFFFFF; -fx-text-fill: #C4455A; -fx-border-color: #F2CBD3; }
+.action-button { -fx-background-color: #FFFFFF; -fx-text-fill: #93375E; -fx-border-color: #F0DFE6; }
+.action-button:hover { -fx-background-color: #F6E3EC; -fx-text-fill: #93375E; }
+.action-danger-button { -fx-background-color: #FFFFFF; -fx-text-fill: #C4455A; -fx-border-color: #F2CBD3; }
+.action-danger-button:hover { -fx-background-color: #F6E3EC; -fx-text-fill: #C4455A; }
+
+.table-view { -fx-background-color: #FFFFFF; -fx-border-color: #F0DFE6; }
+.table-view .column-header-background { -fx-background-color: #F6E3EC; }
+.table-view .column-header .label { -fx-text-fill: #93375E; }
+.table-view .table-row-cell { -fx-background-color: #FFFFFF; }
+.table-view .table-row-cell:odd { -fx-background-color: #FBF4F7; }
+.table-view .table-row-cell:hover { -fx-background-color: #F6EBF0; }
+.table-view .table-row-cell:selected { -fx-background-color: #EDD0DC; }
+.table-view .placeholder .label { -fx-text-fill: #9A7D88; }
+
+.tabla-productos .table-row-cell { -fx-background-color: #FBF4F7; }
+.tabla-productos .table-row-cell:odd { -fx-background-color: #FBF4F7; }
+.tabla-productos .table-row-cell:hover { -fx-background-color: #F6EBF0; }
+.tabla-productos .table-row-cell:selected { -fx-background-color: #EDD0DC; }
+
+.totales { -fx-background-color: #FFFFFF; -fx-border-color: #F0DFE6; }
+.total-fila { -fx-background-color: #F7EEF2; }
+.total-fila .label { -fx-text-fill: #3F2A33; }
+.total-grande { -fx-background-color: #B5567E; }
+.total-grande .label { -fx-text-fill: #FFFFFF; -fx-font-weight: bold; }
+
+.menu-logo-box { -fx-background-color: #FFFFFF; -fx-border-color: #F0DFE6; }
+.empresa-nombre { -fx-text-fill: #3F2A33; }
+.empresa-info { -fx-text-fill: #9A7D88; }
+.menu-item:hover { -fx-background-color: #F6E3EC; }
+.menu-item .icono { -fx-fill: #B5567E; }
+.menu-item .nombre { -fx-text-fill: #93375E; }
+.menu-item .descripcion { -fx-text-fill: #9A7D88; }

@@ -6,24 +6,27 @@
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.BackupController">
     <top>
-        <VBox spacing="8" style="-fx-padding: 12;">
-            <Label style="-fx-font-size: 18px; -fx-font-weight: bold;" text="Copia de seguridad"/>
-            <Label text="La copia guarda una fotografía completa de la base de datos (facturas_AAAAMMDD_HHMMSS.db)."/>
-            <HBox spacing="8" alignment="CENTER_LEFT">
-                <Button onAction="#seleccionarDestino" text="Seleccionar carpeta de destino..."/>
-                <Label fx:id="lblDestino" text="(ninguna carpeta seleccionada)" style="-fx-text-fill: #666666;"/>
-            </HBox>
+        <VBox>
+            <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+            <VBox spacing="8" styleClass="zona-contenido">
+                <Label styleClass="titulo" text="Copia de seguridad"/>
+                <Label text="La copia guarda una fotografía completa de la base de datos (facturas_AAAAMMDD_HHMMSS.db)."/>
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <Button onAction="#seleccionarDestino" styleClass="default-button" text="Seleccionar carpeta de destino..."/>
+                    <Label fx:id="lblDestino" text="(ninguna carpeta seleccionada)" styleClass="muted"/>
+                </HBox>
+            </VBox>
         </VBox>
     </top>
     <center>
-        <VBox spacing="8" style="-fx-padding: 12;" alignment="TOP_CENTER">
-            <Button fx:id="btnCrear" disable="true" onAction="#crear" text="Crear copia de seguridad"/>
+        <VBox spacing="8" styleClass="zona-contenido" alignment="TOP_CENTER">
+            <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button" text="Crear copia de seguridad"/>
             <Label fx:id="lblResultado" wrapText="true"/>
         </VBox>
     </center>
     <bottom>
-        <HBox alignment="CENTER_RIGHT" style="-fx-padding: 12;">
-            <Button onAction="#volver" text="Volver"/>
+        <HBox alignment="CENTER_RIGHT" styleClass="zona-contenido">
+            <Button onAction="#volver" styleClass="default-button" text="Volver"/>
         </HBox>
     </bottom>
 </BorderPane>

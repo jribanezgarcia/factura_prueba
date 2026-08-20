@@ -22,6 +22,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
 import javafx.event.ActionEvent;
 
@@ -55,6 +56,8 @@ public class ClientesController implements Vista {
     private TableColumn<Cliente, String> colLocalidad;
     @FXML
     private TableColumn<Cliente, String> colEstado;
+    @FXML
+    private HBox barraNavegacion;
 
     @Override
     public void setServicios(Servicios s) {
@@ -68,6 +71,7 @@ public class ClientesController implements Vista {
 
     @Override
     public void alIniciar() {
+        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "clientes"));
         colNombre.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getNombre()));
         colNif.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getNif()));
         colLocalidad.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getLocalidad()));

@@ -2,6 +2,11 @@
 
 ## Instrucciones para OpenCode / OpenSpec
 
+**Regla obligatoria:** todo el trabajo en este proyecto se realiza SIEMPRE
+con el flujo OpenSpec (`/opsx-propose` → `/opsx-apply-change` →
+`/opsx-sync-specs` → `/opsx-archive-change`). No se toca código ni la spec
+fuera de ese flujo. El CLI `openspec` ya está instalado.
+
 Este documento describe el objetivo y los requisitos conocidos de una
 nueva aplicación de facturación. Se utilizará como contexto para
 `/opsx:explore`.

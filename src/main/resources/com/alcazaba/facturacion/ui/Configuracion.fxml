@@ -9,12 +9,15 @@
         <ToggleGroup fx:id="grupoCabecera"/>
     </fx:define>
     <top>
-        <Label style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 12 12 4 12;" text="Configuración"/>
+        <VBox>
+            <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+            <Label styleClass="titulo" text="Configuración"/>
+        </VBox>
     </top>
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-padding: 8;">
+        <TabPane tabClosingPolicy="UNAVAILABLE">
             <Tab text="Empresa">
-                <GridPane hgap="8" vgap="6" style="-fx-padding: 16;">
+                <GridPane hgap="8" vgap="6" styleClass="zona-contenido">
                     <Label text="Nombre / razón social"/>
                     <TextField fx:id="txtNombre" prefWidth="340" GridPane.columnIndex="1"/>
                     <Label text="NIF" GridPane.rowIndex="1"/>
@@ -33,10 +36,12 @@
                     <TextField fx:id="txtEmail" prefWidth="220" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
                     <Label text="Teléfono" GridPane.rowIndex="5"/>
                     <TextField fx:id="txtTelefono" prefWidth="160" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                    <Label text="Tema de la aplicación" GridPane.rowIndex="6"/>
+                    <ComboBox fx:id="comboTema" prefWidth="240" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
                 </GridPane>
             </Tab>
             <Tab text="Cabecera">
-                <GridPane hgap="8" vgap="6" style="-fx-padding: 16;">
+                <GridPane hgap="8" vgap="6" styleClass="zona-contenido">
                     <Label text="Modo de cabecera"/>
                     <VBox spacing="4" GridPane.columnIndex="1" GridPane.columnSpan="3">
                         <RadioButton fx:id="rbTexto" toggleGroup="$grupoCabecera" text="Texto con datos de empresa"/>
@@ -44,7 +49,7 @@
                     </VBox>
                     <Label text="Logo" GridPane.rowIndex="1"/>
                     <TextField fx:id="txtLogoPath" editable="false" prefWidth="360" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                    <Button onAction="#seleccionarLogo" text="Elegir imagen..." GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <Button onAction="#seleccionarLogo" styleClass="default-button" text="Elegir imagen..." GridPane.columnIndex="2" GridPane.rowIndex="1"/>
                     <Label text="Posición X (pt)" GridPane.rowIndex="2"/>
                     <TextField fx:id="txtLogoX" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                     <Label text="Posición Y (pt)" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
@@ -56,13 +61,13 @@
                 </GridPane>
             </Tab>
             <Tab text="Pie">
-                <VBox spacing="8" style="-fx-padding: 16;">
+                <VBox spacing="8" styleClass="zona-contenido">
                     <Label text="Texto legal del pie (se repite en todas las páginas de los PDF)."/>
                     <TextArea fx:id="txtPieLegal" prefRowCount="8" wrapText="true"/>
                 </VBox>
             </Tab>
             <Tab text="IVA">
-                <VBox spacing="8" style="-fx-padding: 16;">
+                <VBox spacing="8" styleClass="zona-contenido">
                     <TableView fx:id="tablaIva" prefHeight="240">
                         <columns>
                             <TableColumn fx:id="colIvaNombre" prefWidth="180" text="Nombre"/>
@@ -82,16 +87,16 @@
                         <Label text="Motivo"/>
                         <TextField fx:id="txtIvaMotivo" prefWidth="200"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Button onAction="#nuevoIva" text="Nuevo"/>
-                        <Button onAction="#guardarIva" text="Guardar"/>
-                        <Button onAction="#inactivarIva" text="Inactivar/Activar"/>
+                        <Button onAction="#nuevoIva" styleClass="default-button" text="Nuevo"/>
+                        <Button onAction="#guardarIva" styleClass="primary-button" text="Guardar"/>
+                        <Button onAction="#inactivarIva" styleClass="default-button" text="Inactivar/Activar"/>
                     </HBox>
-                    <Label fx:id="lblIvaAviso" text="El porcentaje de un tipo ya usado en el histórico no se puede modificar."
-                           style="-fx-text-fill: #666666;"/>
+                    <Label fx:id="lblIvaAviso" styleClass="muted"
+                           text="El porcentaje de un tipo ya usado en el histórico no se puede modificar."/>
                 </VBox>
             </Tab>
             <Tab text="Series">
-                <VBox spacing="8" style="-fx-padding: 16;">
+                <VBox spacing="8" styleClass="zona-contenido">
                     <TableView fx:id="tablaSeries" prefHeight="240">
                         <columns>
                             <TableColumn fx:id="colSerieCodigo" prefWidth="80" text="Código"/>
@@ -114,16 +119,16 @@
                         <Label text="Siguiente número"/>
                         <TextField fx:id="txtSerieSiguiente" prefWidth="80"/>
                         <Region HBox.hgrow="ALWAYS"/>
-                        <Button onAction="#nuevoSerie" text="Nuevo"/>
-                        <Button onAction="#guardarSerie" text="Guardar"/>
+                        <Button onAction="#nuevoSerie" styleClass="default-button" text="Nuevo"/>
+                        <Button onAction="#guardarSerie" styleClass="primary-button" text="Guardar"/>
                     </HBox>
                 </VBox>
             </Tab>
             <Tab text="PDFs">
-                <GridPane hgap="8" vgap="6" style="-fx-padding: 16;">
+                <GridPane hgap="8" vgap="6" styleClass="zona-contenido">
                     <Label text="Carpeta automática de almacenamiento"/>
                     <TextField fx:id="txtCarpetaAuto" editable="false" prefWidth="420" GridPane.columnIndex="1"/>
-                    <Button onAction="#seleccionarCarpetaAuto" text="Elegir carpeta..." GridPane.columnIndex="2"/>
+                    <Button onAction="#seleccionarCarpetaAuto" styleClass="default-button" text="Elegir carpeta..." GridPane.columnIndex="2"/>
                     <Label text="Última carpeta de exportación" GridPane.rowIndex="1"/>
                     <TextField fx:id="txtUltimaCarpeta" editable="false" prefWidth="420" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                 </GridPane>
@@ -131,9 +136,9 @@
         </TabPane>
     </center>
     <bottom>
-        <HBox spacing="8" alignment="CENTER_RIGHT" style="-fx-padding: 12;">
-            <Button onAction="#guardar" text="Guardar configuración"/>
-            <Button onAction="#volver" text="Volver"/>
+        <HBox spacing="8" alignment="CENTER_RIGHT" styleClass="zona-contenido">
+            <Button onAction="#guardar" styleClass="primary-button" text="Guardar configuración"/>
+            <Button onAction="#volver" styleClass="default-button" text="Volver"/>
         </HBox>
     </bottom>
 </BorderPane>
