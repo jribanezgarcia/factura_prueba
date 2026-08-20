@@ -15,6 +15,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.HBox;
 
 import java.util.List;
 
@@ -30,6 +31,8 @@ public class VersionesController implements Vista {
 
     @FXML
     private Label lblTitulo;
+    @FXML
+    private HBox barraNavegacion;
     @FXML
     private TableView<FacturaVersion> tabla;
     @FXML
@@ -55,6 +58,7 @@ public class VersionesController implements Vista {
 
     @Override
     public void alIniciar() {
+        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "versiones"));
         colVersion.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>("v" + c.getValue().getVersionNum()));
         colFecha.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.fecha(c.getValue().getFechaFactura())));
         colGuardado.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.fechaHora(c.getValue().getFechaGuardado())));

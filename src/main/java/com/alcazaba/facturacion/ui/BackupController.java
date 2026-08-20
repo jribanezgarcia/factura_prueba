@@ -6,6 +6,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 
 import java.io.File;
@@ -26,6 +27,8 @@ public class BackupController implements Vista {
     private Label lblResultado;
     @FXML
     private Button btnCrear;
+    @FXML
+    private HBox barraNavegacion;
 
     @Override
     public void setServicios(Servicios s) {
@@ -35,6 +38,11 @@ public class BackupController implements Vista {
     @Override
     public void setNavegador(Navegador n) {
         this.nav = n;
+    }
+
+    @Override
+    public void alIniciar() {
+        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "backup"));
     }
 
     @FXML

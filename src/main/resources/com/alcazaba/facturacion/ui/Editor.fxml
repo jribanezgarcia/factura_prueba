@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <BorderPane prefHeight="620.0" prefWidth="1000.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.EditorController">
     <top>
         <VBox>
-            <ToolBar>
-                <Button fx:id="btnGuardar" onAction="#guardar" text="Guardar"/>
-                <Button fx:id="btnExportar" onAction="#exportarPdf" text="Exportar PDF"/>
-                <Button fx:id="btnVersiones" onAction="#verVersiones" text="Versiones"/>
-                <Button fx:id="btnRectificativa" onAction="#crearRectificativa" text="Crear rectificativa"/>
-                <Button fx:id="btnAnular" onAction="#anular" text="Anular"/>
-                <Button fx:id="btnRestaurar" onAction="#restaurar" text="Restaurar"/>
+            <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+            <HBox styleClass="cabecera-linea">
+                <ImageView fx:id="logo" preserveRatio="true"/>
+                <Label fx:id="lblTitulo" styleClass="titulo" text="Nueva factura"/>
+                <Label fx:id="lblEstado" visible="false" managed="false" styleClass="chip-anulada" text="ANULADA"/>
+            </HBox>
+            <ToolBar styleClass="action-bar">
+                <Button fx:id="btnGuardar" onAction="#guardar" styleClass="primary-button" text="Guardar"/>
+                <Button fx:id="btnExportar" onAction="#exportarPdf" styleClass="action-button" text="Exportar PDF"/>
+                <Button fx:id="btnVersiones" onAction="#verVersiones" styleClass="action-button" text="Versiones"/>
+                <Button fx:id="btnRectificativa" onAction="#crearRectificativa" styleClass="action-button" text="Crear rectificativa"/>
+                <Button fx:id="btnAnular" onAction="#anular" styleClass="action-danger-button" text="Anular"/>
+                <Button fx:id="btnRestaurar" onAction="#restaurar" styleClass="action-button" text="Restaurar"/>
                 <Region HBox.hgrow="ALWAYS"/>
-                <Button onAction="#nuevaFactura" text="Nueva factura"/>
-                <Button onAction="#volver" text="Volver"/>
+                <Button onAction="#nuevaFactura" styleClass="action-button" text="Nueva factura"/>
+                <Button onAction="#volver" styleClass="action-button" text="Volver"/>
             </ToolBar>
-            <Label fx:id="lblTitulo" style="-fx-font-size: 18px; -fx-font-weight: bold; -fx-padding: 8 12 4 12;" text="Nueva factura"/>
-            <Label fx:id="lblEstado" visible="false" managed="false" text="ANULADA"
-                   style="-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #b00020; -fx-padding: 0 12 4 12;"/>
-            <GridPane fx:id="cabecera" hgap="8" vgap="6" style="-fx-padding: 4 12 8 12;">
+            <GridPane hgap="8" vgap="6" styleClass="grid-cabecera">
                 <Label text="Serie"/>
                 <ComboBox fx:id="comboSerie" prefWidth="120" GridPane.columnIndex="1"/>
                 <Label text="Fecha" GridPane.columnIndex="2"/>
@@ -48,17 +52,17 @@
         </VBox>
     </top>
     <center>
-        <VBox spacing="6" style="-fx-padding: 4 12 8 12;">
+        <VBox spacing="6" styleClass="zona-contenido">
             <HBox spacing="8" alignment="CENTER_LEFT">
-                <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" text="Añadir línea"/>
-                <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" text="Eliminar línea (Supr)"/>
+                <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" styleClass="action-button" text="Añadir línea"/>
+                <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" styleClass="action-button" text="Eliminar línea (Supr)"/>
                 <CheckBox fx:id="chkTotalConIva" text="Total de línea con IVA incluido"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="Descuento"/>
                 <TextField fx:id="txtDescuento" prefWidth="60" promptText="0"/>
                 <Label text="\%"/>
             </HBox>
-            <TableView fx:id="tablaLineas" editable="true">
+            <TableView fx:id="tablaLineas" editable="true" styleClass="tabla-productos">
                 <columns>
                     <TableColumn fx:id="colCantidad" prefWidth="70" text="Cant."/>
                     <TableColumn fx:id="colDescripcion" prefWidth="360" text="Descripción"/>
@@ -73,16 +77,28 @@
         </VBox>
     </center>
     <bottom>
-        <VBox spacing="6" style="-fx-padding: 4 12 10 12;">
+        <VBox spacing="6" styleClass="zona-contenido">
             <HBox spacing="16" alignment="TOP_LEFT">
-                <VBox spacing="4">
-                    <Label text="Resumen" style="-fx-font-weight: bold;"/>
-                    <Label fx:id="lblResumen" style="-fx-font-family: 'Consolas', monospace; -fx-font-size: 12px;"/>
-                </VBox>
-                <Region HBox.hgrow="ALWAYS"/>
-                <VBox spacing="4" HBox.hgrow="ALWAYS" maxWidth="360">
+                <VBox spacing="4" HBox.hgrow="ALWAYS">
                     <Label text="Observaciones"/>
                     <TextArea fx:id="txtObservaciones" prefRowCount="4" wrapText="true"/>
+                </VBox>
+                <VBox styleClass="totales" minWidth="260.0" maxWidth="300.0">
+                    <HBox styleClass="total-fila" alignment="CENTER_LEFT">
+                        <Label text="Base imponible"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblBaseTotal" styleClass="valor"/>
+                    </HBox>
+                    <HBox styleClass="total-fila" alignment="CENTER_LEFT">
+                        <Label text="IVA total"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblIvaTotal" styleClass="valor"/>
+                    </HBox>
+                    <HBox styleClass="total-grande" alignment="CENTER_LEFT">
+                        <Label text="Total"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblTotal" styleClass="valor"/>
+                    </HBox>
                 </VBox>
             </HBox>
         </VBox>

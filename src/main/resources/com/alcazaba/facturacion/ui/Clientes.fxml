@@ -6,16 +6,19 @@
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.ClientesController">
     <top>
-        <VBox spacing="8" style="-fx-padding: 12;">
-            <HBox spacing="8" alignment="CENTER_LEFT">
-                <TextField fx:id="txtBusqueda" prefWidth="280" promptText="Buscar por nombre o NIF..."/>
-                <Label fx:id="lblConteo" text=""/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Button onAction="#nuevo" text="Nuevo"/>
-                <Button onAction="#editar" text="Editar"/>
-                <Button onAction="#eliminar" text="Eliminar"/>
-                <Button onAction="#volver" text="Volver"/>
-            </HBox>
+        <VBox>
+            <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+            <VBox spacing="8" styleClass="zona-contenido">
+                <HBox spacing="8" alignment="CENTER_LEFT">
+                    <TextField fx:id="txtBusqueda" prefWidth="280" promptText="Buscar por nombre o NIF..."/>
+                    <Label fx:id="lblConteo" text=""/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button onAction="#nuevo" styleClass="primary-button" text="Nuevo"/>
+                    <Button onAction="#editar" styleClass="default-button" text="Editar"/>
+                    <Button onAction="#eliminar" styleClass="danger-button" text="Eliminar"/>
+                    <Button onAction="#volver" styleClass="default-button" text="Volver"/>
+                </HBox>
+            </VBox>
         </VBox>
     </top>
     <center>

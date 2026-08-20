@@ -8,6 +8,18 @@ Este documento sirve como traspaso para continuar con cualquier IA. El proyecto 
 - `openspec/specs/invoicing/spec.md`
 - este archivo
 
+## REGLA OBLIGATORIA: usar OpenSpec siempre
+
+Todo trabajo en este proyecto (nuevas funcionalidades, cambios, fixes, redisenos de interfaz, temas, etc.) se realiza SIEMPRE con el flujo OpenSpec a traves de las skills/commands de opencode (`/opsx-*`): primero `/opsx-propose`, despues `/opsx-apply-change`, luego `/opsx-sync-specs` y por ultimo `/opsx-archive-change`.
+
+No se permite:
+
+- tocar codigo ni spec fuera del flujo OpenSpec;
+- modificar `openspec/specs/invoicing/spec.md` a mano sin pasar por `/opsx-sync-specs`;
+- implementar cambios sin su cambio OpenSpec correspondiente (ni siquiera redisenos "rapidos");
+
+El CLI `openspec` ya esta instalado (version 1.10.0). Cualquier IA que trabaje en este proyecto debe seguir este flujo en todas las sesiones.
+
 ## Estado general
 
 Aplicacion JavaFX de facturacion local para Windows.
@@ -30,6 +42,10 @@ Cambios OpenSpec archivados:
 
 - `openspec/changes/archive/2026-08-16-add-invoicing-app`
 - `openspec/changes/archive/2026-08-16-add-spanish-tax-id-validation`
+- `openspec/changes/archive/2026-08-20-pdf-export-sin-version`
+- `openspec/changes/archive/2026-08-20-temas-y-navegacion`
+
+El rediseño de temas se formalizo en OpenSpec el 20/08/2026 (cambio `2026-08-20-temas-y-navegacion`, archivado tras `propose` → `sync-specs`).
 
 ## Cambios realizados hoy
 
@@ -117,6 +133,35 @@ Cambios:
 
 El versionado sigue funcionando en la base de datos, el historico, la interfaz y los servicios internos.
 
+### 4. Rediseno de interfaz: temas, barra de navegacion y cabecera de empresa
+
+Commit `dee0eb1` (maquetas de temas + spec PDF sin version). Despues de ese commit se empezo la integracion real de los temas en la aplicacion. **Este trabajo NO esta commiteado** (el 20/08/2026 se formalizo en OpenSpec con el cambio `2026-08-20-temas-y-navegacion`, ya archivado; falta solo el commit de codigo).
+
+Archivos nuevos (sin commitear):
+
+- `src/main/java/com/alcazaba/facturacion/ui/ThemeManager.java`
+- `src/main/java/com/alcazaba/facturacion/ui/BarraNavegacion.java`
+- `src/main/resources/com/alcazaba/facturacion/themes/` (base.css + 7 temas)
+
+Que hace cada cosa:
+
+- **ThemeManager**: sistema de temas. Cada tema es un CSS con sus colores que se aplica junto a `base.css`. El tema activo se recuerda en la tabla de preferencias (clave `tema`, por defecto `biblioteca8`). Aplica el tema al cargar cada vista y permite guardarlo desde Configuracion.
+- **BarraNavegacion**: barra superior con iconos SVG que aparece en todas las pantallas salvo el menu principal. Botones: Menu, Nueva factura, Historico, Clientes, Configuracion, Copia de seguridad y Salir.
+- **Temas**: `biblioteca8`, `omarchy`, `esmeralda`, `terracota`, `negro-dorado`, `sakura`, `neon`.
+
+Archivos modificados (sin commitear):
+
+- `Main.java`: al cerrar la ventana pide confirmacion "¿Seguro que deseas salir?".
+- `Navegador.java`: aplica `ThemeManager.aplicar(scene, servicios)` al crear cada escena.
+- `MenuController.java`: muestra logo, nombre y NIF de la empresa en el menu principal.
+- `EditorController.java`: anade barra de navegacion, logo de empresa, y el resumen deja de ser un texto en bloque y pasa a labels separados `lblBaseTotal`, `lblIvaTotal`, `lblTotal`.
+- `ConfiguracionController.java`: selector de tema (`ComboBox`) que aplica el tema al vuelo y lo guarda al pulsar Guardar.
+- Todos los FXML de las vistas: incluyen la barra de navegacion y los nuevos campos.
+
+Verificacion:
+
+- suite completa: 31 tests, 0 fallos, `BUILD SUCCESS` (ejecutada despues de los cambios de temas).
+
 ## Funcionalidades afectadas si se quitan versiones
 
 - `Editor.fxml`
@@ -152,11 +197,15 @@ Antes de continuar mucho mas, conviene:
 - decidir si `.idea/` debe quedar fuera;
 - no borrar ni revertir cambios sin confirmar con el usuario.
 
+Ademas, los cambios del rediseno de temas (seccion 4) estan pendientes de commit.
+
 ### OpenSpec
 
 La spec activa sigue incluyendo versionado, lo cual coincide con la decision actual del usuario.
 
 El cambio realizado solo afecta a la presentacion y al nombre del PDF exportado; no requiere eliminar ni modificar el modelo de versiones.
+
+El rediseno de temas se formalizo el 20/08/2026 con el cambio `2026-08-20-temas-y-navegacion` (propose → sync-specs → archive). La spec principal ya lo refleja (requisitos "Temas y apariencia", "Identidad de empresa en la interfaz", y las modificaciones en "Menú y navegación", "Configuración" e "IVA").
 
 ### Series iniciales
 
@@ -183,12 +232,29 @@ Avisos observados durante tests:
 
 No bloquearon la suite.
 
-## Proximo paso recomendado
+## Como seguir usando OpenSpec desde opencode
 
-Probar manualmente la exportacion desde la interfaz y comprobar que:
+El proyecto usa OpenSpec a traves de las skills de opencode (`/opsx-propose`, `/opsx-apply-change`, `/opsx-sync-specs`, `/opsx-archive-change`) que estan en `.opencode/skills/openspec-*`. Esas skills llaman al CLI `openspec` por debajo.
 
-1. el PDF no muestra ninguna referencia a la version;
-2. el archivo se propone como `numero.pdf`;
-3. el historial y la pantalla de versiones siguen mostrando el versionado normalmente.
+**IMPORTANTE: el CLI `openspec` ya esta instalado** (version 1.10.0, instalado con `npm install -g @fission-ai/openspec@latest`). Si en otra maquina hiciera falta: `npm install -g @fission-ai/openspec@latest`. Verificar con `openspec --version`. Alternativas: `pnpm add -g`, `bun add -g` o `yarn global add` (mismo paquete `@fission-ai/openspec`).
 
-Despues de esa comprobacion, se puede hacer un commit de los cambios si el usuario lo solicita.
+El flujo OpenSpec dentro de opencode es:
+
+1. `/opsx-propose` → el usuario describe lo que quiere; se generan proposal, spec (delta), design y tasks.
+2. `/opsx-apply-change` → la IA implementa los tasks en el codigo.
+3. `/opsx-sync-specs` → se pliega la delta a la spec principal (`openspec/specs/invoicing/spec.md`).
+4. `/opsx-archive-change` → se archiva el cambio en `openspec/changes/archive/`.
+
+Cada cambio vive en `openspec/changes/<fecha>-<nombre>/` con un `.openspec.yaml` y se mueve a `archive/` al archivarse. La spec principal es el unico fuente de verdad persistente.
+
+## Proximo paso recomendado (para la siguiente sesion)
+
+Los cambios de temas (seccion 4) estan implementados, compilan, los tests pasan y el cambio OpenSpec `2026-08-20-temas-y-navegacion` ya esta formalizado y archivado. Plan para la siguiente sesion, en orden:
+
+1. **Probar manualmente la interfaz** con los temas:
+   - el selector de tema en Configuracion cambia el tema al vuelo y se recuerda al reiniciar;
+   - la barra de navegacion aparece en todas las pantallas salvo el menu principal;
+   - logo y datos de empresa salen en el menu principal y en el editor;
+   - el resumen del editor muestra base/IVA/total por separado;
+   - al cerrar la ventana pide confirmacion.
+2. **Commit de los cambios de temas** si el usuario lo solicita.

@@ -10,6 +10,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -17,8 +18,10 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.RadioButton;
+import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.util.StringConverter;
 
 import java.io.File;
 import java.util.List;
@@ -82,6 +85,10 @@ public class ConfiguracionController implements Vista {
     private TextField txtCarpetaAuto;
     @FXML
     private TextField txtUltimaCarpeta;
+    @FXML
+    private HBox barraNavegacion;
+    @FXML
+    private ComboBox<String> comboTema;
 
     @FXML
     private TableView<TipoIva> tablaIva;
@@ -137,6 +144,8 @@ public class ConfiguracionController implements Vista {
 
     @Override
     public void alIniciar() {
+        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "configuracion"));
+        cargarTema();
         try {
             empresa = servicios.config.getEmpresa();
         } catch (Exception e) {
@@ -146,6 +155,27 @@ public class ConfiguracionController implements Vista {
         cargarIvas();
         cargarSeries();
         cargarPdfs();
+    }
+
+    private void cargarTema() {
+        comboTema.getItems().setAll(ThemeManager.temas());
+        comboTema.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(String tema) {
+                return tema == null ? "" : ThemeManager.etiqueta(tema);
+            }
+
+            @Override
+            public String fromString(String s) {
+                return s;
+            }
+        });
+        comboTema.setValue(ThemeManager.temaActivo());
+        comboTema.valueProperty().addListener((o, a, b) -> {
+            if (b != null) {
+                ThemeManager.seleccionar(nav.stage().getScene(), b);
+            }
+        });
     }
 
     // ------------------------------------------------------------------
@@ -235,6 +265,7 @@ public class ConfiguracionController implements Vista {
             recogerEmpresa();
             servicios.config.saveEmpresa(empresa);
             servicios.config.setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
+            ThemeManager.guardar(servicios);
             Dialogos.info("Configuración", "Configuración guardada.");
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudo guardar: " + e.getMessage());
