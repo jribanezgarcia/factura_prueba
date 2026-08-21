@@ -47,6 +47,10 @@ Cambios OpenSpec archivados:
 
 El rediseño de temas se formalizo en OpenSpec el 20/08/2026 (cambio `2026-08-20-temas-y-navegacion`, archivado tras `propose` → `sync-specs`).
 
+Cambio OpenSpec activo (sin archivar, pendiente de `/opsx-archive-change`):
+
+- `openspec/changes/2026-08-20-alineacion-menu-e-iconos` (declara `skip_specs`, no toca la spec)
+
 ## Cambios realizados hoy
 
 ### 1. Commit explicito al editar facturas
@@ -111,7 +115,11 @@ Comando Maven usado:
 C:\Users\juan\.m2\wrapper\dists\apache-maven-3.8.5-bin\5i5jha092a3i37g0paqnfr15e0\apache-maven-3.8.5\bin\mvn.cmd test
 ```
 
-Maven no esta en `PATH`.
+Maven no esta en `PATH`. En esta sesion funciono:
+
+```bat
+C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd test
+```
 
 ### 3. Exportacion PDF sin informacion de version
 
@@ -162,6 +170,42 @@ Verificacion:
 
 - suite completa: 31 tests, 0 fallos, `BUILD SUCCESS` (ejecutada despues de los cambios de temas).
 
+### 5. Alineacion del menu principal y iconos
+
+Cambio OpenSpec: `2026-08-20-alineacion-menu-e-iconos` (propose + apply hechos el 20/08/2026; sin sync de spec por `skip_specs`; pendiente de archive).
+
+Prototipos generados (solo referencia visual, no se compilan):
+
+- `prototipos/ajustes-menu-iconos.html` (v1)
+- `prototipos/ajustes-menu-iconos-v2.html` (v2, el aprobado)
+- `prototipos/index.html` actualizado con ambos
+
+Decisiones del usuario:
+
+- menu en dos columnas alineadas arriba (Variante A): el borde superior del logo debe coincidir con el de "Nueva factura";
+- icono Historico: lista/expediente (material `assignment`);
+- icono Copia de seguridad: disquete con flecha hacia arriba (material `save_alt`), confirmado buscando "icono disquete copia de seguridad";
+- icono "Nueva factura" en la barra de navegacion: lapiz.
+
+Archivos tocados:
+
+- `src/main/resources/com/alcazaba/facturacion/ui/MenuPrincipal.fxml`: HBox `TOP_LEFT`; caja del logo `260x120` (min `240x110`); iconos Historico y Copia de seguridad actualizados.
+- `src/main/java/com/alcazaba/facturacion/ui/BarraNavegacion.java`: `ICONO_NUEVA` = lapiz, `ICONO_HISTORICO` = assignment, `ICONO_BACKUP` = `save_alt`.
+
+Bug de alineacion detectado y corregido:
+
+- el HBox del centro estira las columnas a toda la altura de la ventana (`fillHeight` por defecto);
+- la columna del logo tenia `alignment="CENTER"` y quedaba centrada verticalmente ~136px por debajo del borde superior;
+- la columna de botones si estaba arriba; por eso el logo no coincidia con el mockup;
+- arreglo: `alignment="TOP_LEFT"` en la columna del logo (`MenuPrincipal.fxml`).
+
+Verificacion:
+
+- test temporal de diagnostico (`MenuLayoutDiagTest`, borrado despues) midio la geometria real: desfase caja-boton = 0.0px, el logo llena la caja (260x119.8 en 260x120);
+- suite completa: 31 tests, 0 fallos, `BUILD SUCCESS`.
+
+Nota: la imagen del logo real es `logos/ChatGPT Image 12 ago 2026, 18_08_01.png` (1847x851) y la base de datos apunta a ella (`%APPDATA%\Facturacion\facturas.db`, tabla `empresa`, `cabecera_modo=LOGO`).
+
 ## Funcionalidades afectadas si se quitan versiones
 
 - `Editor.fxml`
@@ -197,7 +241,7 @@ Antes de continuar mucho mas, conviene:
 - decidir si `.idea/` debe quedar fuera;
 - no borrar ni revertir cambios sin confirmar con el usuario.
 
-Ademas, los cambios del rediseno de temas (seccion 4) estan pendientes de commit.
+Ademas, estan pendientes de commit los cambios del rediseno de temas (seccion 4) y la alineacion del menu e iconos (seccion 5).
 
 ### OpenSpec
 
@@ -249,12 +293,27 @@ Cada cambio vive en `openspec/changes/<fecha>-<nombre>/` con un `.openspec.yaml`
 
 ## Proximo paso recomendado (para la siguiente sesion)
 
-Los cambios de temas (seccion 4) estan implementados, compilan, los tests pasan y el cambio OpenSpec `2026-08-20-temas-y-navegacion` ya esta formalizado y archivado. Plan para la siguiente sesion, en orden:
+### 1. Confirmar la alineacion del logo (pendiente de probar a mano)
 
-1. **Probar manualmente la interfaz** con los temas:
-   - el selector de tema en Configuracion cambia el tema al vuelo y se recuerda al reiniciar;
-   - la barra de navegacion aparece en todas las pantallas salvo el menu principal;
-   - logo y datos de empresa salen en el menu principal y en el editor;
-   - el resumen del editor muestra base/IVA/total por separado;
-   - al cerrar la ventana pide confirmacion.
-2. **Commit de los cambios de temas** si el usuario lo solicita.
+La correccion de alineacion (seccion 5) esta implementada y verificada con medicion de geometria, pero falta que el usuario ejecute la aplicacion y confirme visualmente que el borde superior del logo coincide con el de "Nueva factura" (como el mockup `prototipos/ajustes-menu-iconos-v2.html`).
+
+### 2. Archivar el cambio OpenSpec `2026-08-20-alineacion-menu-e-iconos`
+
+Cuando el usuario confirme el resultado:
+
+1. `/opsx-archive-change` para `2026-08-20-alineacion-menu-e-iconos` (declara `skip_specs`, asi que no hace falta `/opsx-sync-specs`).
+
+### 3. Revisar el estado de git
+
+Sigue pendiente commitear todo el trabajo sin commitear:
+
+- los cambios de temas (seccion 4);
+- la alineacion e iconos (seccion 5).
+
+La rama `main` va 2 commits por delante de `origin/main` (sin pushear; el usuario indico que NO se haga push). Antes de continuar, conviene decidir con el usuario: commitear los cambios pendientes, revisar `.gitignore` (hay artefactos de `target/` y `.idea/`) y si `.idea/` debe quedar fuera.
+
+### 4. Recordatorios de estado
+
+- La spec activa (`openspec/specs/invoicing/spec.md`) sigue incluyendo versionado (decision aceptada).
+- La migracion crea las series C, P y R por defecto (decision aceptada, no tocar).
+- Verificacion de la ultima suite: 31 tests, 0 fallos, `BUILD SUCCESS`.
