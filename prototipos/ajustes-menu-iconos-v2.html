@@ -1,0 +1,168 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Ajustes v2 · Alineación logo + iconos (lápiz y flecha)</title>
+<style>
+  :root{
+    --bg:#C7C8CA; --surface:#FFFFFF; --accent:#296796; --accent-strong:#1A55A8;
+    --text:#1F2937; --muted:#6B7280; --border:#D8DBDF; --barra:#E4E7EA;
+    --danger:#C0392B; --success:#1E7E5A; --warning:#B7791F;
+    --radius:4px; --shadow:0 1px 4px rgba(0,0,0,.14);
+    --font:'Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:#E8EAED;color:var(--text);padding:26px 18px 70px}
+  .jump{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);border:1px solid var(--border);box-shadow:var(--shadow);padding:10px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:28px}
+  .jump a{color:var(--accent-strong);text-decoration:none;font-size:12px;padding:4px 9px;border:1px solid var(--border);border-radius:3px}
+  .jump a:hover{background:var(--accent);color:#fff}
+  .jump .g{margin-left:auto;color:var(--muted);font-size:11px}
+  section{margin:0 auto 52px;max-width:1080px}
+  .etiqueta{display:inline-block;font-size:12px;color:#fff;background:var(--accent);padding:5px 12px;border-radius:3px;margin-bottom:6px}
+  h2{font-size:20px;font-weight:600;margin:4px 0 4px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:18px;max-width:960px;line-height:1.5}
+  .window{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+  .titlebar{display:flex;align-items:center;gap:10px;padding:9px 14px;background:var(--accent);color:#FCF9F9;font-size:12px}
+  .dots{display:flex;gap:6px}.dots i{width:10px;height:10px;border-radius:50%}
+  .dots i:nth-child(1){background:#F0B2A8}.dots i:nth-child(2){background:#F5D79A}.dots i:nth-child(3){background:#A8D0B5}
+  .appname{font-weight:600}
+  .titlebar .spacer{flex:1}
+  .main{padding:20px 30px 26px;background:#F5F6F8}
+  .main p.cap{font-size:11px;color:var(--muted);letter-spacing:.4px;text-transform:uppercase;font-weight:600;margin-bottom:16px}
+  .menu-lista{display:flex;flex-direction:column;gap:4px}
+  .menu-lista a{display:flex;align-items:center;gap:18px;text-decoration:none;color:var(--accent);padding:11px 18px;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer}
+  .menu-lista a:hover{background:#E8EEF3}
+  .menu-lista a .icono{width:48px;text-align:center;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+  .menu-lista a .icono svg{width:34px;height:34px}
+  .menu-lista a small{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:2px}
+  .emp-nombre{font-size:19px;font-weight:600;color:var(--text);text-align:center}
+  .emp-info{color:var(--muted);font-size:12px;text-align:center;margin-top:4px}
+  .colsA{display:flex;align-items:flex-start;gap:52px}
+  .colsA .colLogo{flex:0 0 260px;display:flex;flex-direction:column;align-items:center;gap:12px}
+  .logo-caja{width:260px;height:120px;border-radius:var(--radius);overflow:hidden;background:#fff;border:1px solid var(--border)}
+  .logo-caja img{width:100%;height:100%;object-fit:contain}
+  .colsA .menu-lista{flex:1;max-width:430px}
+  .guia{display:flex;align-items:center;gap:6px;color:var(--success);font-size:11.5px;font-weight:600;margin-bottom:10px}
+  .guia::before{content:"▬";font-size:14px;transform:rotate(90deg)}
+  .guia-linea{border-top:2px dashed var(--danger);margin-top:4px;margin-bottom:4px;opacity:.7}
+  .topnav{background:var(--accent);display:flex;align-items:center;justify-content:center;gap:34px;padding:12px 0 14px}
+  .topnav .item{color:#FCF9F9;font-size:22px;line-height:1;width:26px;height:26px;display:flex;align-items:center;justify-content:center}
+  .topnav .item svg{width:22px;height:22px}
+  .topnav .item.activo::after{content:"";display:block;width:18px;height:3px;background:#fff;margin:4px auto 0;border-radius:2px}
+  .icon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin-top:6px}
+  .ic{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:12px}
+  .ic.elegido{border:2px solid #1E7E5A}
+  .ic .num{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted)}
+  .ic.elegido .num{color:var(--success)}
+  .ic h4{font-size:14px;font-weight:600}
+  .ic .size{font-size:11px;color:var(--muted)}
+  .preview-menu{width:96px;height:96px;border:1px dashed var(--border);border-radius:6px;background:#FAFBFC;display:flex;align-items:center;justify-content:center;color:var(--accent)}
+  .preview-menu svg{width:34px;height:34px}
+  .preview-nav{background:var(--accent);border-radius:4px;padding:8px 14px;display:inline-flex;align-items:center;color:#FCF9F9}
+  .preview-nav svg{width:22px;height:22px}
+  .chip-reco{font-size:10.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;background:#1E7E5A;color:#fff;border-radius:20px;padding:2px 9px;margin-left:6px;vertical-align:middle}
+  .mono{font-size:11.5px;color:var(--muted);font-family:Consolas,monospace;word-break:break-all;line-height:1.4;background:#F3F4F6;border:1px solid var(--border);border-radius:3px;padding:8px}
+</style>
+</head>
+<body>
+<nav class="jump">
+  <span style="color:var(--accent);font-weight:600;font-size:12px">Ajustes v2 · Alineación + iconos</span>
+  <a href="#sec1">1 · Menú (logo ↔ Nueva factura)</a>
+  <a href="#sec2">2 · Barra de navegación (lápiz)</a>
+  <a href="#sec3">3 · Copia de seguridad (flecha ↑)</a>
+  <span class="g">paleta Biblioteca8</span>
+  <a href="index.html">← Galería</a>
+</nav>
+
+<!-- ============ 1 · MENÚ ============ -->
+<section id="sec1">
+  <span class="etiqueta">1/3 · Menú principal</span>
+  <h2>El principio del logo alineado con «Nueva factura»</h2>
+  <p class="sub">La caja del logo queda exactamente con la proporción del logo real (260×120), sin hueco arriba: el borde superior del logo coincide con el borde superior del botón «Nueva factura».</p>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Facturación</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">Fecha de trabajo: 20/08/2026</span></div>
+    <div class="main">
+      <p class="cap">Columnas alineadas arriba · logo sin hueco superior</p>
+      <div class="guia">El borde superior del logo = borde superior del botón «Nueva factura»</div>
+      <div class="colsA">
+        <div class="colLogo">
+          <div class="logo-caja"><img src="logo.png" alt="Logo empresa"></div>
+          <div>
+            <div class="emp-nombre">Alcazaba Cocinas, S.L.</div>
+            <div class="emp-info">NIF B-12345678 · Serie C · siguiente C-60/8</div>
+          </div>
+        </div>
+        <div class="menu-lista">
+          <a title="Nueva factura"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span><span>Nueva factura<small>Crear o editar una factura de la serie activa</small></span></a>
+          <a title="Histórico"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></span><span>Histórico<small>Consultar y buscar todas las facturas</small></span></a>
+          <a title="Clientes"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span><span>Clientes<small>Gestionar el catálogo de clientes</small></span></a>
+          <a title="Configuración"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span><span>Configuración<small>Datos de empresa, cabecera, IVA y series</small></span></a>
+          <a title="Copia de seguridad"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg></span><span>Copia de seguridad<small>Fotografía completa de la base de datos</small></span></a>
+          <a title="Salir"><span class="icono"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></span><span>Salir<small>Cierra la aplicación</small></span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 2 · BARRA ============ -->
+<section id="sec2">
+  <span class="etiqueta">2/3 · Barra de navegación</span>
+  <h2>«Nueva factura» con lápiz, igual que en el menú</h2>
+  <p class="sub">El icono común a todas las pantallas pasa de «+» a lápiz, coherente con el menú principal.</p>
+  <div class="window">
+    <div class="titlebar"><div class="dots"><i></i><i></i><i></i></div><span class="appname">Histórico de facturas</span><div class="spacer"></div><span style="font-size:11px;opacity:.92">27 resultados</span></div>
+    <div class="topnav">
+      <span class="item" title="Menú principal"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
+      <span class="item" title="Nueva factura (lápiz)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></span>
+      <span class="item activo" title="Histórico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></span>
+      <span class="item" title="Clientes"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg></span>
+      <span class="item" title="Configuración"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.05-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span>
+      <span class="item" title="Copia de seguridad"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg></span>
+      <span class="item" title="Salir"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg></span>
+    </div>
+    <div class="main"><p class="cap">Barra de navegación · Nueva factura con lápiz</p></div>
+  </div>
+</section>
+
+<!-- ============ 3 · COPIA DE SEGURIDAD ============ -->
+<section id="sec3">
+  <span class="etiqueta">3/3 · Icono Copia de seguridad</span>
+  <h2>Con una flecha hacia arriba</h2>
+  <p class="sub">Tres opciones: disquete con flecha arriba, flecha arriba simple o nube con flecha arriba. Aplicadas también al menú principal.</p>
+  <div class="icon-grid">
+
+    <div class="ic elegido">
+      <span class="num">Opción 1</span>
+      <h4>Disquete con flecha ↑ <span class="chip-reco">Rec.</span></h4>
+      <div class="preview-menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 3h10l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><rect x="7" y="3" width="6" height="4" rx=".5" fill="currentColor" stroke="none"/><rect x="6.5" y="12" width="7" height="6" rx="1"/><path d="M11 6v5l2-2m0 0-2 2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="size">Menú: 34px</div>
+      <div class="preview-nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 3h10l4 4v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><rect x="7" y="3" width="6" height="4" rx=".5" fill="currentColor" stroke="none"/><rect x="6.5" y="12" width="7" height="6" rx="1"/><path d="M11 6v5l2-2m0 0-2 2" stroke="currentColor" stroke-width="1.6"/></svg></div>
+      <div class="size">Navegación: 22px · blanco</div>
+      <div class="mono">Disquete con flecha hacia arriba dentro del cuerpo (2 SVGPath apilados).</div>
+    </div>
+
+    <div class="ic">
+      <span class="num">Opción 2</span>
+      <h4>Flecha hacia arriba</h4>
+      <div class="preview-menu"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg></div>
+      <div class="size">Menú: 34px</div>
+      <div class="preview-nav"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg></div>
+      <div class="size">Navegación: 22px · blanco</div>
+      <div class="mono">M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z</div>
+    </div>
+
+    <div class="ic">
+      <span class="num">Opción 3</span>
+      <h4>Nube con flecha ↑</h4>
+      <div class="preview-menu"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+      <div class="size">Menú: 34px</div>
+      <div class="preview-nav"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z"/></svg></div>
+      <div class="size">Navegación: 22px · blanco</div>
+      <div class="mono">M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z</div>
+    </div>
+
+  </div>
+</section>
+</body>
+</html>
