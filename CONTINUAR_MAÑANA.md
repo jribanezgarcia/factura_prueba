@@ -1,6 +1,6 @@
 # Continuacion del proyecto de facturacion
 
-Estado actualizado: 20/08/2026
+Estado actualizado: 21/08/2026
 
 Este documento sirve como traspaso para continuar con cualquier IA. El proyecto se esta construyendo con OpenCode/OpenSpec. Antes de tocar codigo, leer:
 
@@ -44,12 +44,10 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-16-add-spanish-tax-id-validation`
 - `openspec/changes/archive/2026-08-20-pdf-export-sin-version`
 - `openspec/changes/archive/2026-08-20-temas-y-navegacion`
+- `openspec/changes/archive/2026-08-20-alineacion-menu-e-iconos` (archivado el 21/08/2026)
+- `openspec/changes/archive/2026-08-21-confirmar-salida-barra-navegacion` (archivado el 21/08/2026)
 
-El rediseño de temas se formalizo en OpenSpec el 20/08/2026 (cambio `2026-08-20-temas-y-navegacion`, archivado tras `propose` → `sync-specs`).
-
-Cambio OpenSpec activo (sin archivar, pendiente de `/opsx-archive-change`):
-
-- `openspec/changes/2026-08-20-alineacion-menu-e-iconos` (declara `skip_specs`, no toca la spec)
+No hay cambios OpenSpec activos.
 
 ## Cambios realizados hoy
 
@@ -143,9 +141,9 @@ El versionado sigue funcionando en la base de datos, el historico, la interfaz y
 
 ### 4. Rediseno de interfaz: temas, barra de navegacion y cabecera de empresa
 
-Commit `dee0eb1` (maquetas de temas + spec PDF sin version). Despues de ese commit se empezo la integracion real de los temas en la aplicacion. **Este trabajo NO esta commiteado** (el 20/08/2026 se formalizo en OpenSpec con el cambio `2026-08-20-temas-y-navegacion`, ya archivado; falta solo el commit de codigo).
+Commit `dee0eb1` (maquetas de temas + spec PDF sin version). Despues de ese commit se empezo la integracion real de los temas en la aplicacion, formalizada el 20/08/2026 en OpenSpec con el cambio `2026-08-20-temas-y-navegacion` (archivado) y commiteada como `d9ffd86`.
 
-Archivos nuevos (sin commitear):
+Archivos nuevos:
 
 - `src/main/java/com/alcazaba/facturacion/ui/ThemeManager.java`
 - `src/main/java/com/alcazaba/facturacion/ui/BarraNavegacion.java`
@@ -157,7 +155,7 @@ Que hace cada cosa:
 - **BarraNavegacion**: barra superior con iconos SVG que aparece en todas las pantallas salvo el menu principal. Botones: Menu, Nueva factura, Historico, Clientes, Configuracion, Copia de seguridad y Salir.
 - **Temas**: `biblioteca8`, `omarchy`, `esmeralda`, `terracota`, `negro-dorado`, `sakura`, `neon`.
 
-Archivos modificados (sin commitear):
+Archivos modificados:
 
 - `Main.java`: al cerrar la ventana pide confirmacion "¿Seguro que deseas salir?".
 - `Navegador.java`: aplica `ThemeManager.aplicar(scene, servicios)` al crear cada escena.
@@ -206,6 +204,47 @@ Verificacion:
 
 Nota: la imagen del logo real es `logos/ChatGPT Image 12 ago 2026, 18_08_01.png` (1847x851) y la base de datos apunta a ella (`%APPDATA%\Facturacion\facturas.db`, tabla `empresa`, `cabecera_modo=LOGO`).
 
+## Cambios realizados el 21/08/2026
+
+### 6. Correccion del centrado del menu principal
+
+El usuario confirmo que la alineacion logo/botones era correcta, pero el bloque completo quedaba pegado al margen superior izquierdo en vez de centrado en la pantalla (el `HBox` central llena toda la zona y con `TOP_LEFT` ancla a la esquina).
+
+Arreglo (solo `MenuPrincipal.fxml`):
+
+- `HBox` central envuelto en un `StackPane`;
+- al `HBox`: se mantuvo `alignment="TOP_LEFT"` y se anadio `maxWidth="-Infinity" maxHeight="-Infinity"` (equivale a `USE_PREF_SIZE`; FXML no acepta el nombre simbolico, provoca `NumberFormatException`);
+- al `VBox` de botones: `prefWidth="430.0"` fijo (antes crecia por `hgrow` hasta ~424 con la ventana de 760).
+
+Verificado visualmente por el usuario y suite: 31 tests, 0 fallos.
+
+Commit `655a425`. El cambio `2026-08-20-alineacion-menu-e-iconos` se archivo (`skip_specs`, sin sync).
+
+### 7. Confirmacion de salida desde la barra de navegacion
+
+Decision del usuario:
+
+> Quiero que siempre que se pulse Salir en el menu de navegacion (la barra comun a todas las pantallas) salga un aviso de estas seguro de cerrar la aplicacion.
+
+Bug latente descubierto al analizarlo: `BarraNavegacion.java` llamaba a `stage.close()` directamente; en JavaFX el `close()` programatico NO dispara `onCloseRequest`, asi que salir desde la barra no preguntaba, no controlaba cambios sin guardar, no guardaba preferencias de ventana ni liberaba el lock.
+
+Cambio OpenSpec: `2026-08-21-confirmar-salida-barra-navegacion` (propose + apply + sync-specs + archive, todo el 21/08/2026).
+
+Archivo tocado:
+
+- `src/main/java/com/alcazaba/facturacion/ui/BarraNavegacion.java`: la accion del boton Salir pasa de `nav.stage().close()` a `nav.stage().fireEvent(new WindowEvent(nav.stage(), WindowEvent.WINDOW_CLOSE_REQUEST))`.
+
+Con eso el cierre reutiliza el handler central de `Main.java`: `puedeCerrar()` (dialogo Guardar/Descartar/Cancelar), `Dialogos.confirmar("Salir", "¿Seguro que deseas salir de la aplicación?")`, `alCerrar()`, preferencias de ventana y lock.
+
+Spec actualizada: requisito "Menú y navegación" cubre ahora cerrar la ventana o pulsar Salir en la barra, con escenario nuevo "Salir desde la barra de navegación con confirmación".
+
+Verificacion:
+
+- suite completa: 31 tests, 0 fallos, `BUILD SUCCESS`;
+- comportamiento confirmado por el usuario ejecutando la aplicacion.
+
+Commit `c0ad088`.
+
 ## Funcionalidades afectadas si se quitan versiones
 
 - `Editor.fxml`
@@ -232,16 +271,9 @@ Nota: la imagen del logo real es `logos/ChatGPT Image 12 ago 2026, 18_08_01.png`
 
 ### Git sucio
 
-Hay artefactos compilados en `target/classes` apareciendo modificados y tambien `.idea/`.
+Resuelto el 20/08/2026 con el commit `1fef8c8` (`.gitignore` ignora `target/`, `.idea/` y artefactos locales). No quedan cambios pendientes de commit: el rediseno de temas esta en `d9ffd86`, la alineacion e iconos en `655a425` y la confirmacion de salida en `c0ad088`.
 
-Antes de continuar mucho mas, conviene:
-
-- revisar/crear `.gitignore`;
-- ignorar `target/`;
-- decidir si `.idea/` debe quedar fuera;
-- no borrar ni revertir cambios sin confirmar con el usuario.
-
-Ademas, estan pendientes de commit los cambios del rediseno de temas (seccion 4) y la alineacion del menu e iconos (seccion 5).
+No borrar ni revertir cambios sin confirmar con el usuario.
 
 ### OpenSpec
 
@@ -293,27 +325,13 @@ Cada cambio vive en `openspec/changes/<fecha>-<nombre>/` con un `.openspec.yaml`
 
 ## Proximo paso recomendado (para la siguiente sesion)
 
-### 1. Confirmar la alineacion del logo (pendiente de probar a mano)
+### 1. Estado de git
 
-La correccion de alineacion (seccion 5) esta implementada y verificada con medicion de geometria, pero falta que el usuario ejecute la aplicacion y confirme visualmente que el borde superior del logo coincide con el de "Nueva factura" (como el mockup `prototipos/ajustes-menu-iconos-v2.html`).
+Todo el trabajo del 20 y 21/08/2026 esta commiteado. La rama `main` va 4 commits por delante de `origin/main` (sin pushear; el usuario indico que NO se haga push). No hay cambios sin commitear.
 
-### 2. Archivar el cambio OpenSpec `2026-08-20-alineacion-menu-e-iconos`
-
-Cuando el usuario confirme el resultado:
-
-1. `/opsx-archive-change` para `2026-08-20-alineacion-menu-e-iconos` (declara `skip_specs`, asi que no hace falta `/opsx-sync-specs`).
-
-### 3. Revisar el estado de git
-
-Sigue pendiente commitear todo el trabajo sin commitear:
-
-- los cambios de temas (seccion 4);
-- la alineacion e iconos (seccion 5).
-
-La rama `main` va 2 commits por delante de `origin/main` (sin pushear; el usuario indico que NO se haga push). Antes de continuar, conviene decidir con el usuario: commitear los cambios pendientes, revisar `.gitignore` (hay artefactos de `target/` y `.idea/`) y si `.idea/` debe quedar fuera.
-
-### 4. Recordatorios de estado
+### 2. Recordatorios de estado
 
 - La spec activa (`openspec/specs/invoicing/spec.md`) sigue incluyendo versionado (decision aceptada).
 - La migracion crea las series C, P y R por defecto (decision aceptada, no tocar).
 - Verificacion de la ultima suite: 31 tests, 0 fallos, `BUILD SUCCESS`.
+- No hay cambios OpenSpec activos: cualquier trabajo nuevo empieza por `/opsx-propose`.
