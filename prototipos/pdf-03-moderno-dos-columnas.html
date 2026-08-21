@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PDF 3 · Moderno dos columnas</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f4f5f7;color:#1f2430;padding:28px 24px 64px}
+  .jump{position:sticky;top:0;z-index:50;background:#fff;border:1px solid #e5e7eb;padding:10px 14px;margin-bottom:24px;display:flex;gap:10px;align-items:center}
+  .jump a{color:#296796;text-decoration:none;font-size:13px;font-weight:600}
+  .jump b{font-size:14px}
+  h2{font-size:17px;font-weight:600;margin:0 auto 14px;max-width:840px}
+  .page{width:840px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 2px 10px rgba(0,0,0,.08);margin:0 auto;padding:30px 38px 26px;font-family:'Segoe UI',Arial,sans-serif;color:#24303F}
+  .nota{max-width:840px;margin:-6px auto 36px;background:#fff;border-left:4px solid #296796;padding:10px 14px;font-size:12.5px;line-height:1.55;color:#374151}
+  .nota b{color:#111}
+
+  .cab{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:3px solid #2E6DA4}
+  .cab .izq{display:flex;gap:14px;align-items:center}
+  .logo-caja{width:170px;height:60px;background:#F0F4F8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#7A8698}
+  .emp-nombre{font-size:18px;font-weight:700;color:#1B2735}
+  .emp-linea{font-size:12px;color:#5A6675;margin-top:2px}
+  .factura-id{text-align:right}
+  .factura-id .t{font-size:13px;font-weight:700;letter-spacing:2.5px;color:#2E6DA4;text-transform:uppercase}
+  .factura-id .n{font-size:22px;font-weight:800;color:#1B2735;margin-top:1px}
+  .factura-id .f{font-size:12.5px;color:#5A6675}
+
+  .tarjetas{display:flex;gap:18px;margin-top:20px}
+  .tarjeta{border:1px solid #E1E6EC;border-radius:10px;padding:14px 16px;background:#FBFCFD;flex:1.3}
+  .tarjeta.datos{flex:1}
+  .rotulo{font-size:10px;font-weight:800;letter-spacing:1.2px;color:#2E6DA4;text-transform:uppercase;margin-bottom:9px}
+  .fila{display:flex;font-size:12.8px;margin-bottom:4px}
+  .fila .etq{color:#77828F;width:104px;flex-shrink:0}
+  .fila b{color:#16202C;font-weight:600}
+  .nuevo{background:#DFF2E4;color:#1E7A46;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:6px}
+
+  table.lineas{width:100%;border-collapse:collapse;margin-top:22px;font-size:12.8px}
+  table.lineas thead th{background:#EFF4F9;color:#33404F;font-size:10.5px;letter-spacing:.7px;text-transform:uppercase;padding:8px 10px;border-bottom:2px solid #2E6DA4}
+  table.lineas td{padding:9px 10px;border-bottom:1px solid #EDF0F3;vertical-align:top}
+  table.lineas tr:hover td{background:#F7FAFC}
+  td.num,th.num{text-align:right}
+  th.c-iva{width:56px;text-align:center}td.c-iva{text-align:center}
+  th.c-sub{width:110px}
+  .subdesc{color:#77828F;font-size:11.3px;display:block;margin-top:1px}
+
+  .zona-inf{display:flex;gap:26px;margin-top:20px;align-items:flex-start}
+  .obs{flex:1;font-size:12.3px;color:#44505D;background:#FBFCFD;border-left:3px solid #C9D6E3;padding:10px 13px;border-radius:0 8px 8px 0}
+  .obs .t{font-weight:700;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#2E6DA4;margin-bottom:4px}
+  .tot-tarjeta{width:330px;border:1px solid #E1E6EC;border-radius:10px;padding:6px 16px 0;background:#fff;box-shadow:0 1px 4px rgba(20,35,60,.06)}
+  .tot-fila{display:flex;justify-content:space-between;padding:6px 0;font-size:12.8px;border-bottom:1px dashed #E7EBEF}
+  .tot-fila:last-of-type{border-bottom:none}
+  .tot-fila .l{color:#5A6675}
+  .tot-total{display:flex;justify-content:space-between;align-items:center;background:#2E6DA4;color:#fff;margin:4px -16px 0;border-radius:0 0 10px 10px;padding:10px 16px;font-size:16.5px;font-weight:700}
+
+  .pie-doc{margin-top:22px;padding-top:9px;border-top:1px solid #E1E6EC;display:flex;justify-content:space-between;gap:26px;font-size:8.8px;line-height:1.4;color:#8894A1;text-align:justify}
+</style>
+</head>
+<body>
+<div class="jump"><a href="index.html">← Volver</a><b>PDF 3 · Moderno dos columnas</b><span style="color:#6b7280;font-size:12.5px">tarjetas, IVA por línea y totales flotantes</span></div>
+
+<div class="page">
+  <div class="cab">
+    <div class="izq">
+      <div class="logo-caja">[ LOGO ]</div>
+      <div>
+        <div class="emp-nombre">Comercial ALCAZABA, S.C.</div>
+        <div class="emp-linea">COCINAS, PUERTAS ACORAZADAS, INTERIOR, ARMARIOS</div>
+        <div class="emp-linea">Tel. 950 00 00 00 · cial.alcazaba@hotmail.com</div>
+      </div>
+    </div>
+    <div class="factura-id">
+      <div class="t">Factura</div>
+      <div class="n">C-59/7</div>
+      <div class="f">14/07/2026</div>
+    </div>
+  </div>
+
+  <div class="tarjetas">
+    <div class="tarjeta">
+      <div class="rotulo">Cliente</div>
+      <div class="fila"><span class="etq">Nombre</span><b>MARIA MARTAGON AVALOS</b></div>
+      <div class="fila"><span class="etq">NIF</span>49122168X</div>
+      <div class="fila"><span class="etq">Dirección</span>C/ PROFESOR MULIAN Nº 41 1º A 6</div>
+      <div class="fila"><span class="etq">Población</span>04009 ALMERIA (ALMERÍA)</div>
+      <div class="fila"><span class="etq">Teléfono</span><span>600 00 00 00<span class="nuevo">NUEVO DATO</span></span></div>
+    </div>
+    <div class="tarjeta datos">
+      <div class="rotulo">Datos de la factura</div>
+      <div class="fila"><span class="etq">Serie / Nº</span>C-59/7</div>
+      <div class="fila"><span class="etq">Fecha</span>14/07/2026</div>
+      <div class="fila"><span class="etq">Forma de pago</span>Transferencia<span class="nuevo" style="margin-left:6px">NUEVO DATO</span></div>
+      <div class="fila"><span class="etq">Vencimiento</span>14/08/2026<span class="nuevo" style="margin-left:6px">NUEVO DATO</span></div>
+      <div class="fila"><span class="etq">Realizada por</span>AURORA<span class="nuevo" style="margin-left:6px">NUEVO DATO</span></div>
+    </div>
+  </div>
+
+  <table class="lineas">
+    <thead>
+      <tr><th style="width:52px" class="num">Cant.</th><th>Descripción</th><th style="width:100px" class="num">Precio</th><th class="c-iva">IVA</th><th style="width:96px" class="num">Base</th><th class="c-sub num">Total línea</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="num">1</td>
+        <td>ARMARIO EMPOTRADO 248X335 4P CORREDERAS<span class="subdesc">SEGÚN DISEÑO Y MEDIDAS EN BLANCO REVERSO - (AURORA)</span></td>
+        <td class="num">3.128,10 €</td>
+        <td class="c-iva">21%</td>
+        <td class="num">3.128,10 €</td>
+        <td class="num"><b>3.785,00 €</b></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="zona-inf">
+    <div class="obs">
+      <div class="t">Observaciones</div>
+      Instalación realizada por Aurora. Plazo de entrega estimado: 4 semanas desde la confirmación de medidas.
+    </div>
+    <div class="tot-tarjeta">
+      <div class="tot-fila"><span class="l">Base 21%</span><span>3.128,10 €</span></div>
+      <div class="tot-fila"><span class="l">IVA 21%</span><span>656,90 €</span></div>
+      <div class="tot-fila"><span class="l">Base total</span><span>3.128,10 €</span></div>
+      <div class="tot-fila"><span class="l">Descuento</span><span>—</span></div>
+      <div class="tot-total"><span>TOTAL</span><span>3.785,00 €</span></div>
+    </div>
+  </div>
+
+  <div class="pie-doc">
+    <span>Protección de datos: sus datos son tratados por COMERCIAL ALCAZABA, S.C. para la gestión contable y fiscal. Puede ejercer sus derechos escribiendo a cial.alcazaba@hotmail.com.</span>
+    <span>Página 1 de 1</span>
+  </div>
+</div>
+
+<div class="nota"><b>Respecto al PDF actual:</b> dos tarjetas (cliente / datos de factura) · teléfono del cliente y «realizada por» como campos nuevos · tabla con IVA % y <b>total de línea con IVA incluido</b> · totales en tarjeta flotante con desglose por tipo · observaciones en bloque lateral · estética redondeada acorde a la app.</div>
+</body>
+</html>

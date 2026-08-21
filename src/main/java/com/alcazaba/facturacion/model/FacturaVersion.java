@@ -22,6 +22,10 @@ public class FacturaVersion {
     private String cliCp;
     private String cliLocalidad;
     private String cliProvincia;
+    private String cliEmail;
+    private String formaPago;
+    private LocalDate vencimiento;
+    private String realizadaPor;
     private BigDecimal baseTotal = BigDecimal.ZERO;
     private BigDecimal ivaTotal = BigDecimal.ZERO;
     private BigDecimal total = BigDecimal.ZERO;
@@ -152,6 +156,38 @@ public class FacturaVersion {
 
     public void setCliProvincia(String cliProvincia) {
         this.cliProvincia = cliProvincia;
+    }
+
+    public String getCliEmail() {
+        return cliEmail;
+    }
+
+    public void setCliEmail(String cliEmail) {
+        this.cliEmail = cliEmail;
+    }
+
+    public String getFormaPago() {
+        return formaPago;
+    }
+
+    public void setFormaPago(String formaPago) {
+        this.formaPago = formaPago;
+    }
+
+    public LocalDate getVencimiento() {
+        return vencimiento;
+    }
+
+    public void setVencimiento(LocalDate vencimiento) {
+        this.vencimiento = vencimiento;
+    }
+
+    public String getRealizadaPor() {
+        return realizadaPor;
+    }
+
+    public void setRealizadaPor(String realizadaPor) {
+        this.realizadaPor = realizadaPor;
     }
 
     public BigDecimal getBaseTotal() {

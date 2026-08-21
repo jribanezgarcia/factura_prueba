@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PDF 1 · Clásico Excel</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f4f5f7;color:#1f2430;padding:28px 24px 64px}
+  .jump{position:sticky;top:0;z-index:50;background:#fff;border:1px solid #e5e7eb;padding:10px 14px;margin-bottom:24px;display:flex;gap:10px;align-items:center}
+  .jump a{color:#296796;text-decoration:none;font-size:13px;font-weight:600}
+  .jump b{font-size:14px}
+  h2{font-size:17px;font-weight:600;margin:0 auto 14px;max-width:840px}
+  .page{width:840px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 2px 10px rgba(0,0,0,.08);margin:0 auto;padding:34px 38px;font-family:'Calibri','Segoe UI',Arial,sans-serif;color:#111}
+  .nota{max-width:840px;margin:-6px auto 36px;background:#fff;border-left:4px solid #296796;padding:10px 14px;font-size:12.5px;line-height:1.55;color:#374151}
+  .nota b{color:#111}
+
+  .cab{display:flex;justify-content:space-between;align-items:flex-start}
+  .cab .emp .logo{height:58px;width:180px;background:#EEF1F5;border:1px dashed #B9C2CE;display:flex;align-items:center;justify-content:center;font-size:11px;color:#7A8698;margin-bottom:6px}
+  .emp-nombre{font-size:19px;font-weight:700;color:#1F2A44}
+  .emp-act{font-size:12.5px;color:#333;margin-top:2px}
+  .titulo{text-align:right}
+  .titulo .t{font-size:30px;font-weight:700;letter-spacing:2px;color:#1F2A44}
+  .titulo .n{font-size:13px;margin-top:4px}
+  .titulo .n b{font-size:15px}
+
+  .facturar-a{margin-top:26px;font-size:12px;font-weight:700;letter-spacing:.6px;color:#444}
+  .datos{display:flex;gap:34px;margin-top:6px;font-size:13.5px}
+  .datos .colA{flex:1.25}
+  .datos .colB{flex:1}
+  .fila{display:flex;margin-bottom:5px}
+  .fila .etq{color:#555;width:118px;flex-shrink:0}
+  .fila b{font-weight:600}
+  .etq-mini{font-size:10.5px;color:#777;letter-spacing:.5px;text-transform:uppercase}
+
+  table.lineas{width:100%;border-collapse:collapse;margin-top:24px;font-size:13px}
+  table.lineas th{border:1px solid #9AA4B2;background:#F2F4F7;padding:6px 8px;font-size:12px;letter-spacing:.4px}
+  table.lineas td{border:1px solid #C6CCD4;padding:7px 8px;vertical-align:top}
+  th.c-cant{width:70px}th.c-desc{}th.c-pre{width:120px}th.c-tot{width:130px}
+  td.num,th.num{text-align:right}
+  .subdesc{color:#555;font-size:12px}
+  .trabajador{color:#888;font-style:italic;font-size:12px}
+
+  .totales{display:flex;justify-content:flex-end;margin-top:22px}
+  table.res{border-collapse:collapse;font-size:13.5px;min-width:340px}
+  table.res td{padding:4px 10px}
+  table.res td.l{color:#333;border-right:1px solid #C6CCD4;text-align:left}
+  table.res td.v{text-align:right;min-width:110px}
+  tr.f-total td{border-top:1px solid #333;font-weight:700;font-size:16px;padding-top:7px}
+  .dto{color:#666}
+
+  .rgpd{margin-top:34px;border:1px solid #C6CCD4;padding:12px 14px;font-size:9.6px;line-height:1.45;color:#333;text-align:justify}
+  .pie-doc{display:flex;justify-content:space-between;margin-top:14px;font-size:10px;color:#888}
+</style>
+</head>
+<body>
+<div class="jump"><a href="index.html">← Volver</a><b>PDF 1 · Clásico Excel</b><span style="color:#6b7280;font-size:12.5px">réplica fiel de la hoja de cálculo</span></div>
+
+<div class="page">
+  <div class="cab">
+    <div class="emp">
+      <div class="logo">[ LOGO ]</div>
+      <div class="emp-nombre">Comercial ALCAZABA, S.C.</div>
+      <div class="emp-act">COCINAS, PUERTAS ACORAZADAS, INTERIOR, ARMARIOS</div>
+      <div class="emp-act">NIF: B-04······ · Tel. 950 00 00 00 · cial.alcazaba@hotmail.com</div>
+    </div>
+    <div class="titulo">
+      <div class="t">FACTURA</div>
+      <div class="n"><span class="etq-mini">Nº Factura</span><br><b>C-59/7</b></div>
+      <div class="n"><span class="etq-mini">Fecha</span><br><b>14/07/2026</b></div>
+    </div>
+  </div>
+
+  <div class="facturar-a">FACTURAR A:</div>
+  <div class="datos">
+    <div class="colA">
+      <div class="fila"><span class="etq">Nombre:</span><b>MARIA MARTAGON AVALOS</b></div>
+      <div class="fila"><span class="etq">NIF:</span>49122168X</div>
+      <div class="fila"><span class="etq">Dirección:</span>C/ PROFESOR MULIAN Nº 41 1º A 6</div>
+    </div>
+    <div class="colB">
+      <div class="fila"><span class="etq">Localidad:</span>ALMERIA</div>
+      <div class="fila"><span class="etq">Provincia:</span>ALMERÍA</div>
+      <div class="fila"><span class="etq">Código Postal:</span>04009</div>
+    </div>
+  </div>
+
+  <table class="lineas">
+    <tr><th class="c-cant num">CANTIDAD</th><th class="c-desc">DESCRIPCIÓN</th><th class="c-pre num">PRECIO</th><th class="c-tot num">TOTAL</th></tr>
+    <tr>
+      <td class="num">1</td>
+      <td>ARMARIO EMPOTRADO 248X335 4P CORREDERAS<br><span class="subdesc">SEGÚN DISEÑO Y MEDIDAS EN BLANCO REVERSO - <span class="trabajador">(AURORA)</span></span></td>
+      <td class="num">3.128,10 €</td>
+      <td class="num"><b>3.785,00 €</b></td>
+    </tr>
+  </table>
+
+  <div class="totales">
+    <table class="res">
+      <tr><td class="l">BASE</td><td class="v">3.128,10 €</td></tr>
+      <tr><td class="l">IVA 21%</td><td class="v">656,90 €</td></tr>
+      <tr><td class="l dto">DESCUENTO</td><td class="v dto">—</td></tr>
+      <tr class="f-total"><td class="l">TOTAL</td><td class="v">3.785,00 €</td></tr>
+    </table>
+  </div>
+
+  <div class="rgpd">En cumplimiento de la normativa vigente en materia de Protección de Datos de Carácter Personal, le informamos que los datos personales que nos proporciona son tratados por COMERCIAL ALCAZABA, S.C. con la finalidad de llevar a cabo la gestión contable y fiscal. Los datos personales, proporcionados, se conservarán mientras se mantenga la relación comercial y/o prestación de servicios, no se solicitará su supresión por el interesado o durante el plazo que fija la normativa aplicable en la materia. La legitimación para el tratamiento de datos se basa en la relación contractual establecida entre las partes y/o prestación de los servicios solicitados. Los destinatarios de los datos, serán Organismos o personas directamente relacionadas con el responsable, Administración Tributaria y entidades bancarias. El interesado puede ejercer los derechos de acceso a sus datos personales, rectificación, supresión (derecho al olvido), limitación de tratamiento, oposición, portabilidad, derecho a no ser objeto de decisiones automatizadas, así como la revocación del consentimiento prestado. Para ello podrá dirigir un escrito al Responsable, o en su caso, al Delegado de Protección de Datos, a cial.alcazaba@hotmail.com, adjuntando documento que acredite su identidad. Además, el interesado puede dirigirse a la Autoridad de Control en materia de Protección de Datos, para obtener información adicional o presentar una reclamación.</div>
+  <div class="pie-doc"><span>Comercial ALCAZABA, S.C.</span><span>Página 1 de 1</span></div>
+</div>
+
+<div class="nota"><b>Respecto al PDF actual:</b> logo + nombre + actividad juntos en la cabecera · etiqueta «FACTURAR A:» con campos etiquetados · fecha y nº junto a la cabecera · columna TOTAL con IVA incluido por línea · resumen BASE / IVA / DESCUENTO / TOTAL · texto legal RGPD completo · teléfono y email de empresa visibles aunque haya logo.</div>
+</body>
+</html>

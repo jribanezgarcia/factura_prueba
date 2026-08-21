@@ -29,7 +29,7 @@ La aplicación SHALL permitir gestionar una ficha de clientes con nombre/razón 
 
 ### Requirement: Búsqueda de clientes al crear factura
 
-Al crear o editar una factura, el usuario SHALL poder buscar un cliente por nombre/razón social o NIF con búsqueda incremental mientras escribe. Al seleccionar un cliente, sus datos SHALL cargarse en la factura. Los datos del cliente SHALL poder modificarse desde la factura, y esos cambios SHALL actualizar también la ficha general del cliente.
+Al crear o editar una factura, el usuario SHALL poder buscar un cliente por nombre/razón social o NIF con búsqueda incremental mientras escribe. Al seleccionar un cliente, sus datos —incluido el email— SHALL cargarse en la factura. Los datos del cliente (email incluido) SHALL poder modificarse desde la factura, y esos cambios SHALL actualizar también la ficha general del cliente. La ficha general de clientes SHALL incluir el campo email.
 
 #### Scenario: Búsqueda incremental
 - **WHEN** el usuario escribe caracteres en el campo de búsqueda de cliente
@@ -41,15 +41,15 @@ Al crear o editar una factura, el usuario SHALL poder buscar un cliente por nomb
 
 #### Scenario: Selección de cliente
 - **WHEN** el usuario selecciona un cliente de la lista
-- **THEN** nombre/razón social, NIF, dirección, código postal, localidad y provincia se cargan en la factura
+- **THEN** nombre/razón social, NIF, dirección, código postal, localidad, provincia y email se cargan en la factura
 
 #### Scenario: Modificación del cliente desde la factura
-- **WHEN** el usuario modifica un dato de cliente dentro de la factura y guarda
+- **WHEN** el usuario modifica un dato de cliente (email incluido) dentro de la factura y guarda
 - **THEN** la ficha general del cliente queda actualizada con ese dato
 
 ### Requirement: Facturas normales
 
-La aplicación SHALL permitir crear y editar facturas normales con número, fecha, cliente, líneas, descuento general, IVA, observaciones y totales. La fecha de la factura SHALL ser editable mediante un selector/calendario. La introducción de líneas SHALL ser similar a trabajar con una hoja de cálculo.
+La aplicación SHALL permitir crear y editar facturas normales con número, fecha, cliente, líneas, descuento general, IVA, observaciones, totales y tres datos de pago opcionales: forma de pago, fecha de vencimiento y realizada por. Estos datos de pago SHALL quedar guardados en la versión de la factura y SHALL aparecer en el PDF solo cuando estén rellenos. La fecha de la factura SHALL ser editable mediante un selector/calendario. La introducción de líneas SHALL ser similar a trabajar con una hoja de cálculo.
 
 #### Scenario: Crear factura con datos completos
 - **WHEN** el usuario crea una factura con cliente, líneas, descuento, IVA y observaciones y la guarda
@@ -58,6 +58,10 @@ La aplicación SHALL permitir crear y editar facturas normales con número, fech
 #### Scenario: Editar factura emitida
 - **WHEN** el usuario modifica la versión actual de una factura en estado Emitida y guarda
 - **THEN** tras la confirmación, la versión actual se sobrescribe con los cambios
+
+#### Scenario: Datos de pago opcionales
+- **WHEN** el usuario guarda una factura dejando vacíos forma de pago, vencimiento y realizada por
+- **THEN** la factura se guarda igualmente y el PDF no incluye esas filas
 
 ### Requirement: Líneas de factura
 
@@ -257,7 +261,7 @@ La aplicación SHALL proporcionar los atajos Ctrl+N para Nueva factura, Ctrl+S p
 
 ### Requirement: Configuración
 
-La aplicación SHALL tener una pantalla de Configuración que permita configurar: los datos de la empresa (nombre, NIF, dirección, código postal, localidad, provincia y resto de datos necesarios para la cabecera); la cabecera del documento en dos modos, texto con datos de empresa o imagen/logo (el logo se selecciona desde un archivo y permite ajustar tamaño y posición, y los datos de empresa se guardan siempre aunque la cabecera visible use solo el logo); el pie con texto legal libre configurable por el usuario, sin contenido obligatorio (el texto del Excel existente solo sirve como referencia inicial opcional); el tema de apariencia de la interfaz; los tipos de IVA; las series (crear/configurar, ver y modificar el siguiente número, y configurar la reutilización de números anulados); y las carpetas de PDF (carpeta automática de almacenamiento y última carpeta utilizada). La aplicación SHALL recordar preferencias de trabajo: última serie utilizada, tamaño/posición de ventana, última carpeta de exportación y tema de apariencia.
+La aplicación SHALL tener una pantalla de Configuración que permita configurar: los datos de la empresa (nombre, NIF, dirección, código postal, localidad, provincia y resto de datos necesarios para la cabecera); la cabecera del documento en dos modos, texto con datos de empresa o imagen/logo (el logo se selecciona desde un archivo y permite ajustar tamaño y posición, y los datos de empresa se guardan siempre aunque la cabecera visible use solo el logo); el pie con texto legal libre configurable por el usuario, sin contenido obligatorio (el texto del Excel existente solo sirve como referencia inicial opcional); el tema de apariencia de la interfaz; los tipos de IVA; las series (crear/configurar, ver y modificar el siguiente número, y configurar la reutilización de números anulados); las carpetas de PDF (carpeta automática de almacenamiento y última carpeta utilizada); y el color de acento usado en los PDF exportados mediante un selector de color. El color SHALL guardarse como preferencia `color_pdf`; si nunca se configura, los PDF SHALL usar arena Alcazaba (`#B08D57`), y del color elegido SHALL derivarse el resto de tonos del documento. La aplicación SHALL recordar preferencias de trabajo: última serie utilizada, tamaño/posición de ventana, última carpeta de exportación y tema de apariencia.
 
 #### Scenario: Configurar empresa
 - **WHEN** el usuario guarda los datos de la empresa en Configuración
@@ -279,9 +283,22 @@ La aplicación SHALL tener una pantalla de Configuración que permita configurar
 - **WHEN** el usuario selecciona un tema en Configuración y guarda
 - **THEN** el tema se aplica de inmediato y queda guardado para las siguientes sesiones
 
+#### Scenario: Cambiar el color del PDF
+- **WHEN** el usuario elige un color en Configuración y guarda
+- **THEN** los nuevos PDF usan ese color de acento y sus tonos derivados
+- **AND** si se restablece el valor por defecto o la preferencia no existe, se usa `#B08D57`
+
 ### Requirement: Exportación a PDF
 
-La aplicación SHALL exportar facturas a PDF en A4 vertical, con diseño moderno y profesional inspirado en la información del documento actual sin necesidad de copiarlo. La cabecera SHALL usar el texto de empresa o el logo según configuración. El pie legal SHALL ser configurable y repetirse en todas las páginas. Si hay varias páginas, SHALL repetirse la cabecera y el pie y SHALL aparecer `Página X de Y`. Las descripciones largas SHALL ajustarse automáticamente. Los importes SHALL usar formato español (`1.250,50 €`) y las fechas formato español (`11/08/2026`). Una factura anulada SHALL poder exportarse y SHALL aparecer claramente marcada como `ANULADA`. Si se exporta una versión concreta, el contenido SHALL corresponder exactamente a esa versión. El PDF SHALL usar la configuración actual de empresa, logo, cabecera y pie legal. Los PDF generados SHALL permanecer como documentos independientes. La estructura de almacenamiento SHALL ser `Facturas/AAAA/SERIE/` (p. ej. `Facturas/2026/C/`) y el nombre SHALL ser `CODIGO-CORRELATIVO-MES.pdf` (p. ej. `C-59-7.pdf`), sustituyendo la barra por un guion en el nombre de archivo. El nombre del archivo SHALL NOT incluir la versión de la factura.
+La aplicación SHALL exportar facturas a PDF en A4 vertical con el diseño aprobado inspirado en el documento Excel de la empresa:
+
+- Cabecera en todas las páginas: logo al doble del tamaño configurado (modo logo) o datos de empresa (modo texto), con el NIF de la empresa destacado en línea propia; a la derecha la palabra FACTURA, el número completo (Serie/Nº) y la fecha.
+- Dos tarjetas bicolor bajo la cabecera: «FACTURAR A» con nombre, NIF, dirección, población y email del cliente (esta última fila solo si existe email); «DATOS DE PAGO» con forma de pago, vencimiento y realizada por (solo las filas rellenas). La cabecera de cada tarjeta SHALL ir con fondo del color de acento y texto blanco, y el cuerpo SHALL ir en blanco.
+- Tabla de líneas con celdas bordeadas estilo hoja de cálculo: Cant / Descripción / Precio / IVA % / Total. El Total por línea SHALL incluir el IVA (base × (1 + IVA%)); las líneas exentas SHALL mostrar su importe sin IVA. La descripción SHALL mostrarse siempre en un único estilo, aunque ocupe varias líneas.
+- Resumen de totales alineado a la derecha con desglose por tipo de IVA (base y cuota), descuento global si es mayor que cero y fila TOTAL destacada con fondo del color de acento.
+- Observaciones en caja clara; pie legal configurable dentro de un recuadro con borde de color, repetido en todas las páginas; `Página X de Y` en cada página.
+
+El resto se mantiene como estaba: descripciones largas ajustadas automáticamente, importes formato español (`1.250,50 €`), fechas formato español (`11/08/2026`), marca `ANULADA` destacada en facturas anuladas, correspondencia exacta con la versión exportada, uso de la configuración actual de empresa/logo/cabecera/pie legal, documentos independientes, estructura `Facturas/AAAA/SERIE/` y nombre `CODIGO-CORRELATIVO-MES.pdf` sin indicar versión. El color de acento SHALL tomarse de la preferencia `color_pdf`, con valor por defecto arena Alcazaba (`#B08D57`) si no está configurada.
 
 #### Scenario: Exportar factura de varias páginas
 - **WHEN** el usuario exporta una factura con descripciones largas que ocupa varias páginas
@@ -298,6 +315,18 @@ La aplicación SHALL exportar facturas a PDF en A4 vertical, con diseño moderno
 #### Scenario: Nombres de archivo
 - **WHEN** el usuario exporta la factura C-59/8
 - **THEN** se genera el archivo `Facturas/2026/C/C-59-8.pdf`
+
+#### Scenario: Tarjetas bicolor con email y datos de pago opcionales
+
+- **WHEN** el usuario exporta una factura cuyo cliente tiene email y con forma de pago, vencimiento y realizada por rellenados
+- **THEN** la tarjeta «Facturar a» muestra el email del cliente y la tarjeta «Datos de pago» muestra los tres valores
+- **AND** si el cliente no tiene email o los datos de pago están vacíos, esas filas no aparecen en el PDF
+
+#### Scenario: Total por línea con IVA incluido
+
+- **WHEN** el PDF contiene una línea con base 100,00 € e IVA 21 %
+- **THEN** la columna Total de esa línea muestra 121,00 €
+- **AND** las líneas exentas muestran su importe sin IVA añadido
 
 ### Requirement: Persistencia local
 

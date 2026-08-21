@@ -3,6 +3,7 @@ package com.alcazaba.facturacion.ui;
 import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.model.TipoIva;
+import com.alcazaba.facturacion.pdf.PdfService;
 import com.alcazaba.facturacion.service.Servicios;
 import com.alcazaba.facturacion.util.Formatos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -10,6 +11,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -89,6 +91,8 @@ public class ConfiguracionController implements Vista {
     private HBox barraNavegacion;
     @FXML
     private ComboBox<String> comboTema;
+    @FXML
+    private ColorPicker colorPdf;
 
     @FXML
     private TableView<TipoIva> tablaIva;
@@ -244,9 +248,20 @@ public class ConfiguracionController implements Vista {
             txtCarpetaAuto.setText(nz(auto));
             String ultima = servicios.config.getPreferencia(PREV_EXPORT);
             txtUltimaCarpeta.setText(nz(ultima));
+            colorPdf.setValue(colorGuardado(servicios.config.getPreferencia(PdfService.PREF_COLOR)));
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudieron cargar las carpetas de PDF: " + e.getMessage());
         }
+    }
+
+    private javafx.scene.paint.Color colorGuardado(String hex) {
+        try {
+            if (hex != null && !hex.isBlank()) {
+                return javafx.scene.paint.Color.web(hex.trim());
+            }
+        } catch (Exception ignored) {
+        }
+        return javafx.scene.paint.Color.web(PdfService.COLOR_DEFECTO);
     }
 
     @FXML
@@ -265,6 +280,12 @@ public class ConfiguracionController implements Vista {
             recogerEmpresa();
             servicios.config.saveEmpresa(empresa);
             servicios.config.setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
+            javafx.scene.paint.Color c = colorPdf.getValue();
+            String hex = String.format("#%02X%02X%02X",
+                    (int) Math.round(c.getRed() * 255),
+                    (int) Math.round(c.getGreen() * 255),
+                    (int) Math.round(c.getBlue() * 255));
+            servicios.config.setPreferencia(PdfService.PREF_COLOR, hex);
             ThemeManager.guardar(servicios);
             Dialogos.info("Configuración", "Configuración guardada.");
         } catch (Exception e) {

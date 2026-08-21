@@ -2,6 +2,7 @@ package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.db.Database;
 import com.alcazaba.facturacion.model.Cliente;
+import com.alcazaba.facturacion.model.DatosPago;
 import com.alcazaba.facturacion.model.EstadoFactura;
 import com.alcazaba.facturacion.model.Factura;
 import com.alcazaba.facturacion.model.FacturaVersion;
@@ -93,7 +94,8 @@ public class EstadoService {
 
             versionadoService.crearVersion(fId, base.getFechaFactura(), base.getNumero(), nuevo,
                     base.getDescuentoPorcentaje(), base.getObservaciones(), base.getReferenciaRectifica(),
-                    cliente, lineas);
+                    cliente, lineas,
+                    new DatosPago(base.getFormaPago(), base.getVencimiento(), base.getRealizadaPor()));
             Database.commit();
         } catch (SQLException | ValidationException | RuntimeException e) {
             Database.rollback();
@@ -119,6 +121,7 @@ public class EstadoService {
         c.setCp(base.getCliCp());
         c.setLocalidad(base.getCliLocalidad());
         c.setProvincia(base.getCliProvincia());
+        c.setEmail(base.getCliEmail());
         return c;
     }
 }

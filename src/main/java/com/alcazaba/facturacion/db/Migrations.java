@@ -16,7 +16,8 @@ import java.util.List;
 public final class Migrations {
 
     private static final List<String> SCRIPTS = List.of(
-            "db/migrations/001_init.sql"
+            "db/migrations/001_init.sql",
+            "db/migrations/002_datos_factura_pdf.sql"
     );
 
     private Migrations() {

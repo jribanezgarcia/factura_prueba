@@ -201,6 +201,8 @@ public class ClientesController implements Vista {
         TextField txtCp = new TextField();
         TextField txtLocalidad = new TextField();
         TextField txtProvincia = new TextField();
+        TextField txtEmail = new TextField();
+        txtEmail.setPromptText("correo@ejemplo.es");
         CheckBox chkActivo = new CheckBox("Cliente activo");
 
         if (original != null) {
@@ -210,6 +212,7 @@ public class ClientesController implements Vista {
             txtCp.setText(original.getCp());
             txtLocalidad.setText(original.getLocalidad());
             txtProvincia.setText(original.getProvincia());
+            txtEmail.setText(original.getEmail() == null ? "" : original.getEmail());
             chkActivo.setSelected(original.isActivo());
         } else {
             chkActivo.setSelected(true);
@@ -224,7 +227,8 @@ public class ClientesController implements Vista {
         grid.addRow(3, new Label("CP"), txtCp);
         grid.addRow(4, new Label("Localidad"), txtLocalidad);
         grid.addRow(5, new Label("Provincia"), txtProvincia);
-        grid.add(chkActivo, 0, 6, 2, 1);
+        grid.addRow(6, new Label("Email"), txtEmail);
+        grid.add(chkActivo, 0, 7, 2, 1);
         dialogo.getDialogPane().setContent(grid);
 
         Node botonGuardar = dialogo.getDialogPane().lookupButton(guardar);
@@ -275,6 +279,8 @@ public class ClientesController implements Vista {
             c.setCp(txtCp.getText().trim());
             c.setLocalidad(txtLocalidad.getText().trim());
             c.setProvincia(txtProvincia.getText().trim());
+            String email = txtEmail.getText() == null ? "" : txtEmail.getText().trim();
+            c.setEmail(email);
             c.setActivo(chkActivo.isSelected());
             return c;
         });

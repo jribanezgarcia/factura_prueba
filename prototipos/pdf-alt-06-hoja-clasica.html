@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALT 6 · Hoja clásica arena</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--arena-500:#B08D57;--arena-600:#96744A;--arena-700:#6B4F35;--arena-300:#E3D3B4;--arena-200:#F0E6D4;--tinta:#3A332B}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f4f5f7;color:#1f2430;padding:28px 24px 64px}
+  .jump{position:sticky;top:0;z-index:50;background:#fff;border:1px solid #e5e7eb;padding:10px 14px;margin-bottom:24px;display:flex;gap:10px;align-items:center}
+  .jump a{color:var(--arena-600);text-decoration:none;font-size:13px;font-weight:600}
+  .jump b{font-size:14px}
+  h2{font-size:17px;font-weight:600;margin:0 auto 14px;max-width:840px}
+  .page{width:840px;background:#fff;border:1px solid var(--arena-300);box-shadow:0 2px 10px rgba(0,0,0,.08);margin:0 auto;padding:32px 40px 26px;font-family:'Calibri','Segoe UI',Arial,sans-serif;color:var(--tinta)}
+  .nota{max-width:840px;margin:-6px auto 36px;background:#fff;border-left:4px solid var(--arena-500);padding:10px 14px;font-size:12.5px;line-height:1.55;color:#374151}
+  .nota b{color:#111}
+
+  .cab{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid var(--arena-500);padding-bottom:14px}
+  .izq{display:flex;gap:14px}
+  .logo-caja{width:150px;height:56px;background:var(--arena-200);border:1px solid var(--arena-400);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10.5px;color:#A99B85}
+  .emp-nombre{font-size:19px;font-weight:700;color:var(--arena-700)}
+  .emp-linea{font-size:12.2px;color:#5F5548;margin-top:3px}
+  .factura-id{text-align:right;font-size:13px}
+  .factura-id .t{font-size:26px;font-weight:800;letter-spacing:2px;color:var(--arena-700)}
+  .factura-id .n{margin-top:5px}
+  .factura-id .n small{display:block;font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--arena-600)}
+  .factura-id .n b{font-size:14.5px}
+
+  table.lineas{width:100%;border-collapse:collapse;margin-top:22px;font-size:13px}
+  table.lineas th{background:var(--arena-200);border:1px solid var(--arena-400);padding:6px 9px;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--arena-700);text-align:left}
+  table.lineas td{border:1px solid var(--arena-300);padding:8px 9px;vertical-align:top}
+  td.num,th.num{text-align:right}
+  th.c-cant{width:66px}th.c-pre{width:104px}th.c-totl{width:110px}th.c-iva{width:50px;text-align:center}
+  td.c-iva{text-align:center;color:#8A7D6C}
+  .subdesc{color:#8A7D6C;font-size:11.8px}
+
+  .zona-inf{display:flex;gap:30px;margin-top:20px;align-items:flex-start}
+  .pago-caja{flex:1;border:1px solid var(--arena-300);border-radius:4px;padding:10px 13px;font-size:12.3px;background:var(--arena-100)}
+  .rotulo{font-size:9.5px;font-weight:800;letter-spacing:1.2px;text-transform:uppercase;color:var(--arena-600);margin-bottom:6px}
+  .fila{display:flex;margin-bottom:3px}
+  .fila .etq{color:#8A7D6C;width:106px;flex-shrink:0}
+  .nuevo{background:#fff;border:1px solid var(--arena-400);color:var(--arena-600);font-size:8.5px;font-weight:700;padding:0 5px;border-radius:8px;margin-left:5px}
+
+  .totales{min-width:320px}
+  table.res{border-collapse:collapse;font-size:13.3px;width:100%}
+  table.res td{padding:5px 10px;border-bottom:1px solid var(--arena-300)}
+  table.res td.l{color:#5F5548}
+  table.res td.v{text-align:right;min-width:108px}
+  tr.f-total td{background:var(--arena-500);color:#fff;font-weight:800;font-size:15.5px;border:none;padding-top:7px;padding-bottom:7px}
+  .obs-linea{font-size:11.8px;color:#6E6257;margin-top:8px}
+
+  .rgpd{margin-top:24px;border:1px solid var(--arena-300);border-left:4px solid var(--arena-500);padding:10px 13px;font-size:9.4px;line-height:1.45;color:#5F5548;text-align:justify}
+  .pie-doc{display:flex;justify-content:space-between;margin-top:10px;font-size:9.5px;color:#A99B85}
+</style>
+</head>
+<body>
+<div class="jump"><a href="index.html">← Volver</a><b>ALT 6 · Hoja clásica arena</b><span style="color:#6b7280;font-size:12.5px">aire de hoja de cálculo con bordes y celdas</span></div>
+
+<div class="page">
+  <div class="cab">
+    <div class="izq">
+      <div class="logo-caja">[ LOGO ]</div>
+      <div>
+        <div class="emp-nombre">Comercial ALCAZABA, S.C.</div>
+        <div class="emp-linea">COCINAS, PUERTAS ACORAZADAS, INTERIOR, ARMARIOS</div>
+        <div class="emp-linea">NIF: B-04······ · Tel. 950 00 00 00 · cial.alcazaba@hotmail.com</div>
+      </div>
+    </div>
+    <div class="factura-id">
+      <div class="t">FACTURA</div>
+      <div class="n"><small>Serie / Nº</small><b>C-59/7</b></div>
+      <div class="n"><small>Fecha</small><b>14/07/2026</b></div>
+    </div>
+  </div>
+
+  <table class="lineas">
+    <tr><th class="c-cant num">CANT.</th><th>DESCRIPCIÓN</th><th class="c-pre num">PRECIO</th><th class="c-iva">IVA</th><th class="c-totl num">TOTAL (c/IVA)</th></tr>
+    <tr>
+      <td class="num">1</td>
+      <td><b>MARIA MARTAGON AVALOS</b> · NIF 49122168X · C/ PROFESOR MULIAN Nº 41 1º A 6 · 04009 ALMERIA (ALMERÍA)<br>
+      maria.martagon@correo.es<span class="nuevo" style="margin-left:5px">EMAIL NUEVO DATO</span></td>
+      <td class="num">—</td>
+      <td class="c-iva">—</td>
+      <td class="num">—</td>
+    </tr>
+    <tr>
+      <td class="num">1</td>
+      <td>ARMARIO EMPOTRADO 248X335 4P CORREDERAS<span class="subdesc"><br>SEGÚN DISEÑO Y MEDIDAS EN BLANCO REVERSO - (AURORA)</span></td>
+      <td class="num">3.128,10 €</td>
+      <td class="c-iva">21%</td>
+      <td class="num"><b>3.785,00 €</b></td>
+    </tr>
+  </table>
+
+  <div class="zona-inf">
+    <div style="flex:1">
+      <div class="pago-caja">
+        <div class="rotulo">Pago</div>
+        <div class="fila"><span class="etq">Forma de pago</span>Transferencia<span class="nuevo">NUEVO DATO</span></div>
+        <div class="fila"><span class="etq">Vencimiento</span>14/08/2026<span class="nuevo">NUEVO DATO</span></div>
+        <div class="fila"><span class="etq">Realizada por</span>AURORA<span class="nuevo">NUEVO DATO</span></div>
+      </div>
+      <div class="obs-linea"><b>Observaciones:</b> Instalación realizada por Aurora. Plazo de entrega estimado: 4 semanas desde la confirmación de medidas.</div>
+    </div>
+    <div class="totales">
+      <table class="res">
+        <tr><td class="l">BASE</td><td class="v">3.128,10 €</td></tr>
+        <tr><td class="l">IVA 21%</td><td class="v">656,90 €</td></tr>
+        <tr><td class="l">DESCUENTO</td><td class="v">—</td></tr>
+        <tr class="f-total"><td>TOTAL</td><td style="text-align:right">3.785,00 €</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="rgpd">En cumplimiento de la normativa vigente en materia de Protección de Datos de Carácter Personal, le informamos que los datos personales que nos proporciona son tratados por COMERCIAL ALCAZABA, S.C. con la finalidad de llevar a cabo la gestión contable y fiscal. Los datos personales se conservarán mientras se mantenga la relación comercial. Puede ejercer los derechos de acceso, rectificación, supresión, limitación, oposición y portabilidad dirigiendo un escrito a cial.alcazaba@hotmail.com adjuntando documento que acredite su identidad.</div>
+  <div class="pie-doc"><span>Comercial ALCAZABA, S.C.</span><span>Página 1 de 1</span></div>
+</div>
+
+<div class="nota"><b>Carácter (alternativa):</b> el más cercano a tu hoja de cálculo — celdas con borde, cabeceras en mayúsculas, fila del cliente dentro de la tabla como en el Excel — pero ordenado: cliente arriba, línea después.<br><b>Datos:</b> fecha y Serie/Nº solo arriba a la derecha · email del cliente · sin duplicaciones.<br><b>Color:</b> cabeceras de tabla y fila TOTAL usan el color configurable.</div>
+</body>
+</html>

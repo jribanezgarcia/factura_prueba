@@ -9,6 +9,7 @@ public class Cliente {
     private String cp;
     private String localidad;
     private String provincia;
+    private String email;
     private boolean activo = true;
 
     public Cliente() {
@@ -68,6 +69,14 @@ public class Cliente {
 
     public void setProvincia(String provincia) {
         this.provincia = provincia;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public boolean isActivo() {

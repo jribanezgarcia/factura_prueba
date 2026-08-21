@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PDF 5 · Formal serif</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f4f5f7;color:#1f2430;padding:28px 24px 64px}
+  .jump{position:sticky;top:0;z-index:50;background:#fff;border:1px solid #e5e7eb;padding:10px 14px;margin-bottom:24px;display:flex;gap:10px;align-items:center}
+  .jump a{color:#296796;text-decoration:none;font-size:13px;font-weight:600}
+  .jump b{font-size:14px}
+  h2{font-size:17px;font-weight:600;margin:0 auto 14px;max-width:840px}
+  .page{width:840px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 2px 10px rgba(0,0,0,.08);margin:0 auto;padding:36px 46px 30px;font-family:'Georgia','Times New Roman',serif;color:#1A1A1A}
+  .nota{max-width:840px;margin:-6px auto 36px;background:#fff;border-left:4px solid #296796;padding:10px 14px;font-size:12.5px;line-height:1.55;color:#374151}
+  .nota b{color:#111}
+
+  .cab{text-align:center;padding-bottom:14px;border-bottom:2.5px double #1A1A1A}
+  .emp-nombre{font-size:23px;letter-spacing:1.5px;text-transform:uppercase}
+  .emp-act{font-size:11.5px;letter-spacing:2.5px;text-transform:uppercase;color:#555;margin-top:4px}
+  .emp-datos{font-size:11px;color:#777;margin-top:3px}
+  .logo-caja{width:190px;height:54px;background:#F5F5F2;border:1px solid #DDD;display:flex;align-items:center;justify-content:center;font-size:10px;color:#999;margin:0 auto 8px}
+
+  .doc-num{display:flex;justify-content:center;margin-top:18px}
+  .doc-caja{border:1px solid #1A1A1A;outline:1px solid #1A1A1A;outline-offset:3px;padding:8px 34px;text-align:center}
+  .doc-caja .t{font-size:15px;letter-spacing:5px;text-transform:uppercase}
+  .doc-caja .n{font-size:19px;font-weight:700;margin-top:2px}
+  .doc-caja .f{font-size:11.5px;color:#555;margin-top:1px}
+
+  .seccion{margin-top:22px}
+  .rotulo{font-size:9.5px;letter-spacing:3px;text-transform:uppercase;color:#888;border-bottom:1px solid #CCC;padding-bottom:3px;margin-bottom:8px}
+  .cliente{display:flex;gap:40px;font-size:13px}
+  .cliente .col{flex:1}
+  .fila{display:flex;margin-bottom:4px}
+  .fila .etq{width:110px;flex-shrink:0;font-variant:small-caps;letter-spacing:.8px;color:#666;font-size:12px}
+  .nuevo{background:#F0EFE9;color:#7A7458;font-size:8.5px;letter-spacing:.5px;padding:1px 6px;border-radius:2px;margin-left:7px;font-family:'Segoe UI',sans-serif}
+
+  table.lineas{width:100%;border-collapse:collapse;margin-top:8px;font-size:13px}
+  table.lineas thead th{border-top:2px solid #1A1A1A;border-bottom:1px solid #1A1A1A;padding:6px 8px;font-size:9.5px;letter-spacing:2px;text-transform:uppercase;text-align:left}
+  table.lineas thead th.num{text-align:right}
+  table.lineas tbody tr:last-child td{border-bottom:2px solid #1A1A1A}
+  table.lineas td{padding:8px;vertical-align:top}
+  td.num,th.num{text-align:right}
+  th.c-tot{width:120px}th.c-pre{width:108px}th.c-iva{width:50px;text-align:center}
+  td.c-iva{text-align:center;font-size:11.5px;color:#666}
+  .subdesc{color:#777;font-size:11.3px;font-style:italic}
+
+  .totales{display:flex;justify-content:flex-end;margin-top:16px}
+  table.res{border-collapse:collapse;font-size:13px;min-width:330px}
+  table.res td{padding:4px 12px}
+  table.res td.l{font-variant:small-caps;letter-spacing:.6px;color:#444;border-bottom:1px dotted #BBB}
+  table.res td.v{text-align:right;min-width:105px;border-bottom:1px dotted #BBB}
+  tr.f-total td{border:none;padding-top:10px}
+  tr.f-total .caja-total{border:2.5px double #1A1A1A;padding:7px 18px;font-size:16.5px;font-weight:700;letter-spacing:1px}
+  tr.f-total td.v2{text-align:right}
+  tr.f-total .imp{font-size:16.5px;font-weight:700}
+
+  .firma{display:flex;justify-content:space-between;align-items:flex-end;margin-top:44px;font-size:11.5px;color:#555}
+  .firma .lugar{text-align:left}
+  .firma .sello{width:230px;border-top:1px solid #1A1A1A;padding-top:5px;text-align:center;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#777}
+
+  .pie-doc{margin-top:26px;border-top:1px solid #CCC;padding-top:9px;display:flex;justify-content:space-between;gap:30px;font-size:8.7px;line-height:1.45;color:#777;text-align:justify;font-family:'Segoe UI',Arial,sans-serif}
+</style>
+</head>
+<body>
+<div class="jump"><a href="index.html">← Volver</a><b>PDF 5 · Formal serif</b><span style="color:#6b7280;font-size:12.5px">documento oficial en blanco y negro</span></div>
+
+<div class="page">
+  <div class="cab">
+    <div class="logo-caja">[ LOGO ]</div>
+    <div class="emp-nombre">Comercial ALCAZABA, S.C.</div>
+    <div class="emp-act">Cocinas · Puertas acorazadas · Interior · Armarios</div>
+    <div class="emp-datos">Tel. 950 00 00 00 · cial.alcazaba@hotmail.com</div>
+  </div>
+
+  <div class="doc-num">
+    <div class="doc-caja">
+      <div class="t">Factura</div>
+      <div class="n">C-59/7</div>
+      <div class="f">Almería, 14 de julio de 2026</div>
+    </div>
+  </div>
+
+  <div class="seccion">
+    <div class="rotulo">Facturar a</div>
+    <div class="cliente">
+      <div class="col">
+        <div class="fila"><span class="etq">Nombre</span><b>MARIA MARTAGON AVALOS</b></div>
+        <div class="fila"><span class="etq">NIF</span>49122168X</div>
+        <div class="fila"><span class="etq">Dirección</span>C/ PROFESOR MULIAN Nº 41 1º A 6</div>
+      </div>
+      <div class="col">
+        <div class="fila"><span class="etq">Localidad</span>ALMERIA</div>
+        <div class="fila"><span class="etq">Provincia</span>ALMERÍA</div>
+        <div class="fila"><span class="etq">Código postal</span>04009</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seccion">
+    <table class="lineas">
+      <thead>
+        <tr><th style="width:56px" class="num">Cant.</th><th>Descripción</th><th class="c-pre num">Precio</th><th class="c-iva">IVA</th><th class="c-tot num">Total</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td>ARMARIO EMPOTRADO 248X335 4P CORREDERAS<br><span class="subdesc">Según diseño y medidas en blanco reverso — (Aurora)</span></td>
+          <td class="num">3.128,10 €</td>
+          <td class="c-iva">21%</td>
+          <td class="num"><b>3.785,00 €</b></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="totales">
+    <table class="res">
+      <tr><td class="l">Base</td><td class="v">3.128,10 €</td></tr>
+      <tr><td class="l">I.V.A. 21%</td><td class="v">656,90 €</td></tr>
+      <tr><td class="l">Descuento</td><td class="v">—</td></tr>
+      <tr class="f-total">
+        <td class="caja-total">TOTAL</td>
+        <td class="v2 imp">3.785,00 €</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="firma">
+    <div class="lugar">En Almería, a 14 de julio de 2026</div>
+    <div class="sello">Firma y sello del cliente</div>
+  </div>
+
+  <div class="pie-doc">
+    <span>En cumplimiento de la normativa vigente en materia de Protección de Datos de Carácter Personal (RGPD 2016/679 y LOPDGDD 3/2018), le informamos que los datos personales facilitados son tratados por COMERCIAL ALCAZABA, S.C. con la finalidad de llevar a cabo la gestión contable y fiscal. Puede ejercer los derechos de acceso, rectificación, supresión, limitación, oposición y portabilidad dirigiendo un escrito a cial.alcazaba@hotmail.com adjuntando documento que acredite su identidad.</span>
+    <span>Página 1 de 1</span>
+  </div>
+</div>
+
+<div class="nota"><b>Respecto al PDF actual:</b> estética de documento oficial (serif, blanco y negro, filetes dobles) · cabecera centrada con logo + nombre + actividad · número de factura en recuadro doble destacado · fecha redactada «En Almería, a …» · total con IVA por línea · bloque TOTAL con doble borde · espacio de firma y sello del cliente · RGPD completo al pie.</div>
+</body>
+</html>

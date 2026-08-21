@@ -25,8 +25,9 @@ public class VersionRepository {
                 INSERT INTO factura_version (factura_id, version_num, numero, fecha_factura, fecha_guardado,
                     estado, descuento_porcentaje, observaciones, referencia_rectifica,
                     cli_nombre, cli_nif, cli_direccion, cli_cp, cli_localidad, cli_provincia,
+                    cli_email, forma_pago, vencimiento, realizada_por,
                     base_total, iva_total, total)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, v.getFacturaId());
@@ -44,9 +45,13 @@ public class VersionRepository {
             ps.setString(13, v.getCliCp());
             ps.setString(14, v.getCliLocalidad());
             ps.setString(15, v.getCliProvincia());
-            ps.setString(16, v.getBaseTotal() == null ? "0.00" : v.getBaseTotal().toPlainString());
-            ps.setString(17, v.getIvaTotal() == null ? "0.00" : v.getIvaTotal().toPlainString());
-            ps.setString(18, v.getTotal() == null ? "0.00" : v.getTotal().toPlainString());
+            ps.setString(16, nzTexto(v.getCliEmail()));
+            ps.setString(17, nzTexto(v.getFormaPago()));
+            ps.setString(18, v.getVencimiento() == null ? null : FECHA.format(v.getVencimiento()));
+            ps.setString(19, nzTexto(v.getRealizadaPor()));
+            ps.setString(20, v.getBaseTotal() == null ? "0.00" : v.getBaseTotal().toPlainString());
+            ps.setString(21, v.getIvaTotal() == null ? "0.00" : v.getIvaTotal().toPlainString());
+            ps.setString(22, v.getTotal() == null ? "0.00" : v.getTotal().toPlainString());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
@@ -71,7 +76,8 @@ public class VersionRepository {
                     numero = ?, fecha_factura = ?, fecha_guardado = ?, estado = ?,
                     descuento_porcentaje = ?, observaciones = ?, referencia_rectifica = ?,
                     cli_nombre = ?, cli_nif = ?, cli_direccion = ?, cli_cp = ?, cli_localidad = ?,
-                    cli_provincia = ?, base_total = ?, iva_total = ?, total = ?
+                    cli_provincia = ?, cli_email = ?, forma_pago = ?, vencimiento = ?, realizada_por = ?,
+                    base_total = ?, iva_total = ?, total = ?
                 WHERE id = ?
                 """;
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
@@ -88,10 +94,14 @@ public class VersionRepository {
             ps.setString(11, v.getCliCp());
             ps.setString(12, v.getCliLocalidad());
             ps.setString(13, v.getCliProvincia());
-            ps.setString(14, v.getBaseTotal() == null ? "0.00" : v.getBaseTotal().toPlainString());
-            ps.setString(15, v.getIvaTotal() == null ? "0.00" : v.getIvaTotal().toPlainString());
-            ps.setString(16, v.getTotal() == null ? "0.00" : v.getTotal().toPlainString());
-            ps.setLong(17, v.getId());
+            ps.setString(14, nzTexto(v.getCliEmail()));
+            ps.setString(15, nzTexto(v.getFormaPago()));
+            ps.setString(16, v.getVencimiento() == null ? null : FECHA.format(v.getVencimiento()));
+            ps.setString(17, nzTexto(v.getRealizadaPor()));
+            ps.setString(18, v.getBaseTotal() == null ? "0.00" : v.getBaseTotal().toPlainString());
+            ps.setString(19, v.getIvaTotal() == null ? "0.00" : v.getIvaTotal().toPlainString());
+            ps.setString(20, v.getTotal() == null ? "0.00" : v.getTotal().toPlainString());
+            ps.setLong(21, v.getId());
             ps.executeUpdate();
         }
     }
@@ -147,9 +157,18 @@ public class VersionRepository {
         v.setCliCp(rs.getString("cli_cp"));
         v.setCliLocalidad(rs.getString("cli_localidad"));
         v.setCliProvincia(rs.getString("cli_provincia"));
+        v.setCliEmail(rs.getString("cli_email"));
+        v.setFormaPago(rs.getString("forma_pago"));
+        String venc = rs.getString("vencimiento");
+        v.setVencimiento(venc == null || venc.isBlank() ? null : LocalDate.parse(venc, FECHA));
+        v.setRealizadaPor(rs.getString("realizada_por"));
         v.setBaseTotal(new BigDecimal(rs.getString("base_total")));
         v.setIvaTotal(new BigDecimal(rs.getString("iva_total")));
         v.setTotal(new BigDecimal(rs.getString("total")));
         return v;
+    }
+
+    private String nzTexto(String s) {
+        return s == null ? "" : s;
     }
 }

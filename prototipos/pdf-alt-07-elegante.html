@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>ALT 7 · Elegante marrón</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{--arena-500:#B08D57;--arena-400:#CBB08A;--arena-700:#6B4F35;--marron-800:#4A3826;--arena-200:#F0E6D4;--crema:#FBF7EF;--tinta:#3A332B}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f4f5f7;color:#1f2430;padding:28px 24px 64px}
+  .jump{position:sticky;top:0;z-index:50;background:#fff;border:1px solid #e5e7eb;padding:10px 14px;margin-bottom:24px;display:flex;gap:10px;align-items:center}
+  .jump a{color:var(--arena-700);text-decoration:none;font-size:13px;font-weight:600}
+  .jump b{font-size:14px}
+  h2{font-size:17px;font-weight:600;margin:0 auto 14px;max-width:840px}
+  .page{width:840px;background:var(--crema);border:1px solid var(--arena-400);box-shadow:0 2px 10px rgba(0,0,0,.08);margin:0 auto;color:var(--tinta)}
+  .nota{max-width:840px;margin:-6px auto 36px;background:#fff;border-left:4px solid var(--arena-500);padding:10px 14px;font-size:12.5px;line-height:1.55;color:#374151}
+  .nota b{color:#111}
+
+  .banda{background:var(--marron-800);color:var(--crema);padding:22px 40px;display:flex;justify-content:space-between;align-items:center;border-bottom:4px solid var(--arena-500)}
+  .izq{display:flex;gap:16px;align-items:center}
+  .logo-caja{width:140px;height:52px;background:var(--crema);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--arena-700)}
+  .b-nombre{font-family:'Georgia',serif;font-size:19px;letter-spacing:.5px}
+  .b-linea{font-size:11.3px;color:var(--arena-400);margin-top:3px}
+  .factura-id{text-align:right}
+  .factura-id .t{font-family:'Georgia',serif;font-style:italic;font-size:14px;color:var(--arena-400)}
+  .factura-id .n{font-family:'Georgia',serif;font-size:23px;font-weight:700;margin-top:1px}
+  .factura-id .n small{font-family:'Segoe UI',sans-serif;font-size:10px;font-weight:600;color:var(--arena-400);margin-right:6px;letter-spacing:1px;text-transform:uppercase}
+  .factura-id .f{font-size:11.8px;color:var(--arena-400)}
+
+  .cuerpo{padding:24px 40px 26px}
+  .tarjetas{display:flex;gap:20px}
+  .tarjeta{flex:1.3;background:#fff;border:1px solid var(--arena-400);border-top:3px solid var(--arena-500);padding:13px 15px;border-radius:4px}
+  .tarjeta.datos{flex:1}
+  .rotulo{font-family:'Georgia',serif;font-style:italic;font-size:12.5px;color:var(--arena-700);margin-bottom:9px}
+  .fila{display:flex;font-size:12.7px;margin-bottom:4px}
+  .fila .etq{color:#A2937F;width:102px;flex-shrink:0}
+  .fila b{font-weight:600}
+  .nuevo{background:var(--arena-200);color:var(--arena-700);font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;margin-left:6px}
+
+  table.lineas{width:100%;border-collapse:collapse;margin-top:24px;background:#fff;border:1px solid var(--arena-400);font-size:12.9px}
+  table.lineas thead th{background:var(--marron-800);color:var(--arena-400);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;padding:8px 12px;text-align:left}
+  table.lineas td{padding:10px 12px;border-bottom:1px solid var(--arena-200);vertical-align:top}
+  td.num,th.num{text-align:right}
+  th.c-iva{width:50px;text-align:center}td.c-iva{text-align:center;color:#A2937F}
+  th.c-sub{width:104px}
+  .subdesc{color:#A99B85;font-size:11.2px;display:block;margin-top:1px}
+
+  .zona-inf{display:flex;gap:26px;margin-top:22px;align-items:flex-start}
+  .obs{flex:1;font-size:12.2px;color:#5F5548;font-style:italic;padding-left:12px;border-left:3px solid var(--arena-400)}
+  .obs .t{font-family:'Georgia',serif;font-style:normal;font-weight:700;font-size:12px;color:var(--arena-700);margin-bottom:4px}
+  .tot-caja{width:330px;background:#fff;border:1px solid var(--arena-400)}
+  .tot-fila{display:flex;justify-content:space-between;padding:6px 15px;font-size:12.8px;border-bottom:1px dotted var(--arena-400)}
+  .tot-fila .l{color:#8A7D6C}
+  .tot-total{display:flex;justify-content:space-between;background:var(--arena-500);color:#fff;padding:10px 15px;font-family:'Georgia',serif;font-size:17px;font-weight:700}
+
+  .pie-doc{margin-top:26px;background:var(--marron-800);color:var(--arena-400);padding:11px 40px;display:flex;justify-content:space-between;gap:28px;font-size:8.8px;line-height:1.42;text-align:justify}
+</style>
+</head>
+<body>
+<div class="jump"><a href="index.html">← Volver</a><b>ALT 7 · Elegante marrón</b><span style="color:#6b7280;font-size:12.5px">marrón oscuro + crema + arena, aire clásico</span></div>
+
+<div class="page">
+  <div class="banda">
+    <div class="izq">
+      <div class="logo-caja">[ LOGO ]</div>
+      <div>
+        <div class="b-nombre">Comercial ALCAZABA, S.C.</div>
+        <div class="b-linea">COCINAS, PUERTAS ACORAZADAS, INTERIOR, ARMARIOS · Tel. 950 00 00 00</div>
+      </div>
+    </div>
+    <div class="factura-id">
+      <div class="t">Factura</div>
+      <div class="n"><small>Serie/Nº</small>C-59/7</div>
+      <div class="f">14/07/2026</div>
+    </div>
+  </div>
+
+  <div class="cuerpo">
+    <div class="tarjetas">
+      <div class="tarjeta">
+        <div class="rotulo">Cliente</div>
+        <div class="fila"><span class="etq">Nombre</span><b>MARIA MARTAGON AVALOS</b></div>
+        <div class="fila"><span class="etq">NIF</span>49122168X</div>
+        <div class="fila"><span class="etq">Dirección</span>C/ PROFESOR MULIAN Nº 41 1º A 6</div>
+        <div class="fila"><span class="etq">Población</span>04009 ALMERIA (ALMERÍA)</div>
+        <div class="fila"><span class="etq">Email</span><span>maria.martagon@correo.es<span class="nuevo">NUEVO DATO</span></span></div>
+      </div>
+      <div class="tarjeta datos">
+        <div class="rotulo">Datos de pago</div>
+        <div class="fila"><span class="etq">Forma de pago</span>Transferencia<span class="nuevo" style="margin-left:6px">NUEVO DATO</span></div>
+        <div class="fila"><span class="etq">Vencimiento</span>14/08/2026<span class="nuevo" style="margin-left:6px">NUEVO DATO</span></div>
+        <div class="fila"><span class="etq">Realizada por</span>AURORA<span class="nuevo" style="margin-left:6px">NUEVO DATO</span></div>
+      </div>
+    </div>
+
+    <table class="lineas">
+      <thead>
+        <tr><th style="width:48px" class="num">Cant.</th><th>Descripción</th><th style="width:96px" class="num">Precio</th><th class="c-iva">IVA</th><th class="c-sub num">Total línea</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="num">1</td>
+          <td>ARMARIO EMPOTRADO 248X335 4P CORREDERAS<span class="subdesc">SEGÚN DISEÑO Y MEDIDAS EN BLANCO REVERSO - (AURORA)</span></td>
+          <td class="num">3.128,10 €</td>
+          <td class="c-iva">21%</td>
+          <td class="num"><b>3.785,00 €</b></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="zona-inf">
+      <div class="obs">
+        <div class="t">Observaciones</div>
+        Instalación realizada por Aurora. Plazo de entrega estimado: 4 semanas desde la confirmación de medidas.
+      </div>
+      <div class="tot-caja">
+        <div class="tot-fila"><span class="l">Base 21%</span><span>3.128,10 €</span></div>
+        <div class="tot-fila"><span class="l">IVA 21%</span><span>656,90 €</span></div>
+        <div class="tot-fila"><span class="l">Descuento</span><span>—</span></div>
+        <div class="tot-total"><span>TOTAL</span><span>3.785,00 €</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pie-doc">
+    <span>Protección de datos: sus datos son tratados por COMERCIAL ALCAZABA, S.C. para la gestión contable y fiscal. Puede ejercer sus derechos escribiendo a cial.alcazaba@hotmail.com.</span>
+    <span>Página 1 de 1</span>
+  </div>
+</div>
+
+<div class="nota"><b>Carácter (alternativa):</b> el más distintivo — banda superior e inferior en marrón oscuro, cuerpo crema, títulos serif — estilo carpeta de obra elegante. Mantiene la estructura de tarjetas del PDF 3.<br><b>Datos:</b> fecha y Serie/Nº solo en la banda superior · email del cliente · sin duplicaciones.<br><b>Color:</b> marrón oscuro = versión oscura del color configurable; arena = el acento.</div>
+</body>
+</html>

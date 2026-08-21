@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>PDF 4 · Compacto una página</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:#f4f5f7;color:#1f2430;padding:28px 24px 64px}
+  .jump{position:sticky;top:0;z-index:50;background:#fff;border:1px solid #e5e7eb;padding:10px 14px;margin-bottom:24px;display:flex;gap:10px;align-items:center}
+  .jump a{color:#296796;text-decoration:none;font-size:13px;font-weight:600}
+  .jump b{font-size:14px}
+  h2{font-size:17px;font-weight:600;margin:0 auto 14px;max-width:840px}
+  .page{width:840px;background:#fff;border:1px solid #e5e7eb;box-shadow:0 2px 10px rgba(0,0,0,.08);margin:0 auto;padding:24px 34px 20px;font-family:'Calibri','Segoe UI',Arial,sans-serif;color:#20293A}
+  .nota{max-width:840px;margin:-6px auto 36px;background:#fff;border-left:4px solid #296796;padding:10px 14px;font-size:12.5px;line-height:1.55;color:#374151}
+  .nota b{color:#111}
+
+  .cab{display:flex;justify-content:space-between;align-items:center;padding-bottom:10px;border-bottom:2px solid #20293A}
+  .cab .izq{display:flex;gap:12px;align-items:center}
+  .logo-mini{width:92px;height:36px;background:#F1F3F6;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9.5px;color:#8894A4}
+  .emp-nombre{font-size:15.5px;font-weight:700;color:#141C2B}
+  .emp-linea{font-size:10.8px;color:#66707E;margin-top:1px}
+  .factura-id{text-align:right;font-size:12.5px}
+  .factura-id b{font-size:16px}
+  .factura-id .t{font-size:10px;font-weight:700;letter-spacing:1.8px;color:#66707E}
+
+  .fila-datos{display:flex;gap:30px;margin-top:12px;font-size:12.3px}
+  .col-tit{font-size:9.5px;font-weight:800;letter-spacing:1px;color:#8894A4;text-transform:uppercase;margin-bottom:4px}
+  .c1{flex:1.15}.c2{flex:.95}.c3{flex:.85}
+  .linea{margin-bottom:3px;display:flex}
+  .linea .etq{color:#77828A;width:86px;flex-shrink:0}
+  .nuevo{background:#FFF3D6;color:#8A6116;font-size:8.5px;font-weight:700;padding:1px 5px;border-radius:7px;margin-left:5px}
+
+  table.lineas{width:100%;border-collapse:collapse;margin-top:14px;font-size:12.3px}
+  table.lineas th{border-top:1.5px solid #20293A;border-bottom:1px solid #B9C1CC;padding:5px 7px;font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:#444E5E;text-align:left}
+  table.lineas td{padding:6px 7px;border-bottom:1px solid #E7EAEE;vertical-align:top}
+  td.num,th.num{text-align:right}
+  th.c-tot{width:118px}th.c-pre{width:104px}th.c-iva{width:48px;text-align:center}
+  td.c-iva{text-align:center;color:#66707E}
+  .subdesc{color:#77828A;font-size:10.8px}
+
+  .totales-h{display:flex;margin-top:14px;border:1px solid #D6DBE1;border-radius:6px;overflow:hidden;font-size:12.5px}
+  .th-celda{flex:1;padding:7px 12px;border-right:1px solid #E7EAEE;background:#F7F8FA}
+  .th-celda:last-child{border-right:none}
+  .th-celda .l{font-size:9px;font-weight:800;letter-spacing:.8px;color:#77828A;text-transform:uppercase}
+  .th-celda .v{margin-top:2px;text-align:right;font-weight:600}
+  .th-celda.total{background:#20293A;color:#fff;flex:1.25}
+  .th-celda.total .l{color:#AEB8C6}
+  .th-celda.total .v{font-size:16px;font-weight:800}
+
+  .obs{margin-top:12px;font-size:11.5px;color:#44505D}
+  .obs b{font-size:9.5px;letter-spacing:.8px;text-transform:uppercase;color:#77828A}
+
+  .pie-doc{margin-top:14px;padding-top:8px;border-top:1px solid #E7EAEE;display:flex;justify-content:space-between;gap:28px;font-size:8.6px;line-height:1.42;color:#8894A1;text-align:justify}
+</style>
+</head>
+<body>
+<div class="jump"><a href="index.html">← Volver</a><b>PDF 4 · Compacto una página</b><span style="color:#6b7280;font-size:12.5px">todo arriba, totales en fila horizontal</span></div>
+
+<div class="page">
+  <div class="cab">
+    <div class="izq">
+      <div class="logo-mini">[ LOGO ]</div>
+      <div>
+        <div class="emp-nombre">Comercial ALCAZABA, S.C.</div>
+        <div class="emp-linea">COCINAS, PUERTAS ACORAZADAS, INTERIOR, ARMARIOS · Tel. 950 00 00 00 · cial.alcazaba@hotmail.com</div>
+      </div>
+    </div>
+    <div class="factura-id"><span class="t">FACTURA</span><br><b>C-59/7</b> · 14/07/2026</div>
+  </div>
+
+  <div class="fila-datos">
+    <div class="c1">
+      <div class="col-tit">Facturar a</div>
+      <div class="linea"><span class="etq">Nombre</span><b>MARIA MARTAGON AVALOS</b></div>
+      <div class="linea"><span class="etq">NIF</span>49122168X</div>
+      <div class="linea"><span class="etq">Dirección</span>C/ PROFESOR MULIAN Nº 41 1º A 6</div>
+      <div class="linea"><span class="etq">Población</span>04009 ALMERIA (ALMERÍA)</div>
+    </div>
+    <div class="c2">
+      <div class="col-tit">Datos de pago<span style="text-transform:none;letter-spacing:0;font-weight:600"> (nuevo)</span></div>
+      <div class="linea"><span class="etq">Forma de pago</span>Transferencia<span class="nuevo">NUEVO DATO</span></div>
+      <div class="linea"><span class="etq">Vencimiento</span>14/08/2026<span class="nuevo">NUEVO DATO</span></div>
+      <div class="linea"><span class="etq">Realizada por</span>AURORA<span class="nuevo">NUEVO DATO</span></div>
+    </div>
+    <div class="c3">
+      <div class="col-tit">Documento</div>
+      <div class="linea"><span class="etq">Serie / Nº</span>C-59/7</div>
+      <div class="linea"><span class="etq">Fecha</span>14/07/2026</div>
+      <div class="linea"><span class="etq">Estado</span>Emitida</div>
+    </div>
+  </div>
+
+  <table class="lineas">
+    <tr><th style="width:50px" class="num">Cant.</th><th>Descripción</th><th class="c-pre num">Precio</th><th class="c-iva">IVA</th><th class="c-tot num">Total (c/IVA)</th></tr>
+    <tr>
+      <td class="num">1</td>
+      <td>ARMARIO EMPOTRADO 248X335 4P CORREDERAS<span class="subdesc"> — SEGÚN DISEÑO Y MEDIDAS EN BLANCO REVERSO - (AURORA)</span></td>
+      <td class="num">3.128,10 €</td>
+      <td class="c-iva">21%</td>
+      <td class="num"><b>3.785,00 €</b></td>
+    </tr>
+  </table>
+
+  <div class="totales-h">
+    <div class="th-celda"><div class="l">Base</div><div class="v">3.128,10 €</div></div>
+    <div class="th-celda"><div class="l">IVA 21%</div><div class="v">656,90 €</div></div>
+    <div class="th-celda"><div class="l">Descuento</div><div class="v">—</div></div>
+    <div class="th-celda total"><div class="l">Total</div><div class="v">3.785,00 €</div></div>
+  </div>
+
+  <div class="obs"><b>Observaciones:</b> Instalación realizada por Aurora. Plazo de entrega estimado: 4 semanas desde la confirmación de medidas.</div>
+
+  <div class="pie-doc">
+    <span>Protección de datos: sus datos son tratados por COMERCIAL ALCAZABA, S.C. para la gestión contable y fiscal (RGPD 2016/679 y LOPDGDD 3/2018). Puede ejercer los derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a cial.alcazaba@hotmail.com adjuntando documento acreditativo.</span>
+    <span>Página 1 de 1</span>
+  </div>
+</div>
+
+<div class="nota"><b>Respecto al PDF actual:</b> cabecera mínima de una línea · tres columnas de datos arriba (cliente / pago / documento) con forma de pago, vencimiento y «realizada por» como campos nuevos · totales en fila horizontal BASE|IVA|DESCUENTO|TOTAL · pensado para que facturas cortas quepan siempre en una sola página.</div>
+</body>
+</html>
