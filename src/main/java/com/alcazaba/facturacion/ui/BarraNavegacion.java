@@ -5,6 +5,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.shape.SVGPath;
+import javafx.stage.WindowEvent;
 
 /**
  * Barra de navegacion superior con iconos. Aparece en todas las pantallas
@@ -41,7 +42,7 @@ public final class BarraNavegacion {
                 boton("Clientes", ICONO_CLIENTES, () -> nav.mostrar(RUTA_CLIENTES), "clientes".equals(actual)),
                 boton("Configuración", ICONO_CONFIG, () -> nav.mostrar(RUTA_CONFIG), "configuracion".equals(actual)),
                 boton("Copia de seguridad", ICONO_BACKUP, () -> nav.mostrar(RUTA_BACKUP), "backup".equals(actual)),
-                boton("Salir", ICONO_SALIR, () -> nav.stage().close(), false));
+                boton("Salir", ICONO_SALIR, () -> nav.stage().fireEvent(new WindowEvent(nav.stage(), WindowEvent.WINDOW_CLOSE_REQUEST)), false));
         return barra;
     }
 
