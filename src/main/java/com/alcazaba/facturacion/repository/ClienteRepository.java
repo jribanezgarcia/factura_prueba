@@ -53,8 +53,8 @@ public class ClienteRepository {
     }
 
     public long insertar(Cliente c) throws SQLException {
-        String sql = "INSERT INTO cliente (nombre, nif, direccion, cp, localidad, provincia, activo) "
-                + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO cliente (nombre, nif, direccion, cp, localidad, provincia, email, activo) "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, c.getNombre());
             ps.setString(2, c.getNif());
@@ -62,7 +62,8 @@ public class ClienteRepository {
             ps.setString(4, c.getCp());
             ps.setString(5, c.getLocalidad());
             ps.setString(6, c.getProvincia());
-            ps.setInt(7, c.isActivo() ? 1 : 0);
+            ps.setString(7, c.getEmail() == null ? "" : c.getEmail());
+            ps.setInt(8, c.isActivo() ? 1 : 0);
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
@@ -72,7 +73,7 @@ public class ClienteRepository {
     }
 
     public void actualizar(Cliente c) throws SQLException {
-        String sql = "UPDATE cliente SET nombre = ?, nif = ?, direccion = ?, cp = ?, localidad = ?, provincia = ?, activo = ? "
+        String sql = "UPDATE cliente SET nombre = ?, nif = ?, direccion = ?, cp = ?, localidad = ?, provincia = ?, email = ?, activo = ? "
                 + "WHERE id = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, c.getNombre());
@@ -81,8 +82,9 @@ public class ClienteRepository {
             ps.setString(4, c.getCp());
             ps.setString(5, c.getLocalidad());
             ps.setString(6, c.getProvincia());
-            ps.setInt(7, c.isActivo() ? 1 : 0);
-            ps.setLong(8, c.getId());
+            ps.setString(7, c.getEmail() == null ? "" : c.getEmail());
+            ps.setInt(8, c.isActivo() ? 1 : 0);
+            ps.setLong(9, c.getId());
             ps.executeUpdate();
         }
     }
@@ -120,6 +122,8 @@ public class ClienteRepository {
         c.setCp(rs.getString("cp"));
         c.setLocalidad(rs.getString("localidad"));
         c.setProvincia(rs.getString("provincia"));
+        String email = rs.getString("email");
+        c.setEmail(email == null ? "" : email);
         c.setActivo(rs.getInt("activo") == 1);
         return c;
     }

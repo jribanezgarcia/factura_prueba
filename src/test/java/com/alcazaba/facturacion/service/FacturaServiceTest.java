@@ -1,6 +1,8 @@
 package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.db.Database;
+import com.alcazaba.facturacion.model.Cliente;
+import com.alcazaba.facturacion.model.DatosPago;
 import com.alcazaba.facturacion.model.EstadoFactura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
@@ -83,7 +85,7 @@ class FacturaServiceTest {
         assertEquals(new BigDecimal("121.00"), v1.getTotal());
 
         FacturaVersion v = facturaService.guardarEditada(facturaId, v1.getId(), fecha, null,
-                List.of(linea("200.00")), 0, "nueva observacion", null);
+                List.of(linea("200.00")), 0, "nueva observacion", null, null);
 
         assertEquals(v1.getId(), v.getId());
         List<FacturaVersion> versiones = versionadoService.versionesDeFactura(facturaId);
@@ -108,8 +110,54 @@ class FacturaServiceTest {
                 0, null, null, null, List.of(linea("100.00")));
 
         facturaService.guardarEditada(facturaId, v1.getId(), fecha, null,
-                List.of(linea("50.00")), 0, null, null);
+                List.of(linea("50.00")), 0, null, null, null);
 
         assertEquals(3, versionadoService.versionesDeFactura(facturaId).size());
+    }
+
+    @Test
+    void guardaEmailClienteYDatosPagoEnLaVersion() throws Exception {
+        Serie c = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 21);
+        Cliente cli = new Cliente();
+        cli.setNombre("MARIA MARTAGON AVALOS");
+        cli.setNif("49122168X");
+        cli.setEmail("maria.martagon@correo.es");
+        DatosPago dp = new DatosPago("Transferencia", LocalDate.of(2026, 9, 14), "AURORA");
+
+        long facturaId = facturaService.crearFactura(c, fecha, cli, List.of(linea("100.00")),
+                0, null, null, null, dp);
+
+        FacturaVersion v = versionadoService.ultimaVersion(facturaId);
+        assertEquals("maria.martagon@correo.es", v.getCliEmail());
+        assertEquals("Transferencia", v.getFormaPago());
+        assertEquals(LocalDate.of(2026, 9, 14), v.getVencimiento());
+        assertEquals("AURORA", v.getRealizadaPor());
+
+        Cliente guardado = facturaService.cliente(cli.getId());
+        assertEquals("maria.martagon@correo.es", guardado.getEmail());
+    }
+
+    @Test
+    void anularConservaDatosPagoYEmail() throws Exception {
+        Serie c = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 21);
+        Cliente cli = new Cliente();
+        cli.setNombre("CLIENTE PRUEBA");
+        cli.setEmail("cliente@prueba.es");
+        DatosPago dp = new DatosPago("Efectivo", null, "AURORA");
+
+        long facturaId = facturaService.crearFactura(c, fecha, cli, List.of(linea("100.00")),
+                0, null, null, null, dp);
+        EstadoService estadoService = new EstadoService(new FacturaRepository(), serieRepository,
+                new VersionRepository(), lineaRepository, versionadoService,
+                new NumeroService(serieRepository), facturaService);
+        estadoService.anular(facturaId);
+
+        FacturaVersion v = versionadoService.ultimaVersion(facturaId);
+        assertEquals(EstadoFactura.ANULADA, v.getEstado());
+        assertEquals("Efectivo", v.getFormaPago());
+        assertEquals("AURORA", v.getRealizadaPor());
+        assertEquals("cliente@prueba.es", v.getCliEmail());
     }
 }

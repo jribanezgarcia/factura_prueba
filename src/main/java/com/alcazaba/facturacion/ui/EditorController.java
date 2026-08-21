@@ -2,6 +2,7 @@ package com.alcazaba.facturacion.ui;
 
 import com.alcazaba.facturacion.db.Database;
 import com.alcazaba.facturacion.model.Cliente;
+import com.alcazaba.facturacion.model.DatosPago;
 import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.model.EstadoFactura;
 import com.alcazaba.facturacion.model.FacturaVersion;
@@ -119,7 +120,15 @@ public class EditorController implements Vista {
     @FXML
     private TextField cliProvincia;
     @FXML
+    private TextField cliEmail;
+    @FXML
     private TextField txtReferencia;
+    @FXML
+    private TextField txtFormaPago;
+    @FXML
+    private DatePicker vencimiento;
+    @FXML
+    private TextField txtRealizadaPor;
     @FXML
     private TextField txtDescuento;
     @FXML
@@ -246,6 +255,9 @@ public class EditorController implements Vista {
                 txtDescuento.setText(String.valueOf(descuento));
                 txtObservaciones.setText(nz(vc.version().getObservaciones()));
                 txtReferencia.setText(nz(vc.version().getReferenciaRectifica()));
+                txtFormaPago.setText(nz(vc.version().getFormaPago()));
+                vencimiento.setValue(vc.version().getVencimiento());
+                txtRealizadaPor.setText(nz(vc.version().getRealizadaPor()));
 
                 lblTitulo.setText("Factura " + vc.version().getNumero()
                         + " (v" + vc.version().getVersionNum() + ")");
@@ -422,7 +434,7 @@ public class EditorController implements Vista {
     }
 
     private void configurarDetalleCliente() {
-        for (TextField t : new TextField[]{cliNombre, cliNif, cliDireccion, cliCp, cliLocalidad, cliProvincia}) {
+        for (TextField t : new TextField[]{cliNombre, cliNif, cliDireccion, cliCp, cliLocalidad, cliProvincia, cliEmail}) {
             t.textProperty().addListener((o, a, b) -> {
                 if (!cargando) {
                     marcarModificado();
@@ -488,6 +500,21 @@ public class EditorController implements Vista {
             marcarModificado();
         });
         txtObservaciones.textProperty().addListener((o, a, b) -> {
+            if (!cargando) {
+                marcarModificado();
+            }
+        });
+        txtFormaPago.textProperty().addListener((o, a, b) -> {
+            if (!cargando) {
+                marcarModificado();
+            }
+        });
+        vencimiento.valueProperty().addListener((o, a, b) -> {
+            if (!cargando) {
+                marcarModificado();
+            }
+        });
+        txtRealizadaPor.textProperty().addListener((o, a, b) -> {
             if (!cargando) {
                 marcarModificado();
             }
@@ -771,6 +798,9 @@ public class EditorController implements Vista {
         }
         String obs = txtObservaciones.getText();
         String ref = txtReferencia.getText();
+        DatosPago dp = new DatosPago(txtFormaPago.getText() == null ? "" : txtFormaPago.getText().trim(),
+                vencimiento.getValue(),
+                txtRealizadaPor.getText() == null ? "" : txtRealizadaPor.getText().trim());
         try {
             if (facturaAbiertaId == null) {
                 Serie serie = comboSerie.getValue();
@@ -784,7 +814,7 @@ public class EditorController implements Vista {
                             + serie.getCodigo() + " (p. ej. " + serie.getCodigo() + "-1).");
                     return false;
                 }
-                long id = servicios.factura.crearFactura(serie, f, cli, lis, descuento, obs, ref, corr);
+                long id = servicios.factura.crearFactura(serie, f, cli, lis, descuento, obs, ref, corr, dp);
                 guardarSeriePreferida(serie);
                 cargarFactura(id);
                 Dialogos.info("Guardar", "Factura guardada.");
@@ -794,7 +824,7 @@ public class EditorController implements Vista {
                     return false;
                 }
                 FacturaVersion v = servicios.factura.guardarEditada(facturaAbiertaId, versionAbiertaId,
-                        f, cli, lis, descuento, obs, ref);
+                        f, cli, lis, descuento, obs, ref, dp);
                 txtNumero.setText(v.getNumero());
                 lblTitulo.setText("Factura " + v.getNumero() + " (v" + v.getVersionNum() + ")");
                 modificado = false;
@@ -827,8 +857,9 @@ public class EditorController implements Vista {
         String cp = cliCp.getText() == null ? "" : cliCp.getText().trim();
         String loc = cliLocalidad.getText() == null ? "" : cliLocalidad.getText().trim();
         String prov = cliProvincia.getText() == null ? "" : cliProvincia.getText().trim();
+        String mail = cliEmail.getText() == null ? "" : cliEmail.getText().trim();
         boolean vacio = nombre.isEmpty() && nif.isEmpty() && dir.isEmpty() && cp.isEmpty()
-                && loc.isEmpty() && prov.isEmpty();
+                && loc.isEmpty() && prov.isEmpty() && mail.isEmpty();
         if (clienteActual == null && vacio) {
             return null;
         }
@@ -839,6 +870,7 @@ public class EditorController implements Vista {
         c.setCp(cp);
         c.setLocalidad(loc);
         c.setProvincia(prov);
+        c.setEmail(mail);
         return c;
     }
 
@@ -871,6 +903,9 @@ public class EditorController implements Vista {
         cliLocalidad.setDisable(!e);
         cliProvincia.setDisable(!e);
         txtReferencia.setDisable(!e);
+        txtFormaPago.setDisable(!e);
+        vencimiento.setDisable(!e);
+        txtRealizadaPor.setDisable(!e);
         txtDescuento.setDisable(!e);
         txtObservaciones.setDisable(!e);
         chkTotalConIva.setDisable(!e);
@@ -970,11 +1005,12 @@ public class EditorController implements Vista {
                 return;
             }
             Path ruta = f.toPath();
+            final String colorPdf = colorPdfPreferido();
             btnExportar.setDisable(true);
             Task<Path> t = new Task<>() {
                 @Override
                 protected Path call() throws Exception {
-                    new PdfService().exportar(vc, empresa, ruta);
+                    new PdfService().exportar(vc, empresa, ruta, colorPdf);
                     return ruta;
                 }
             };
@@ -996,6 +1032,14 @@ public class EditorController implements Vista {
             new Thread(t).start();
         } catch (Exception e) {
             Dialogos.error("Exportar PDF", "Error: " + e.getMessage());
+        }
+    }
+
+    private String colorPdfPreferido() {
+        try {
+            return servicios.config.getPreferencia(PdfService.PREF_COLOR);
+        } catch (Exception e) {
+            return null;
         }
     }
 
@@ -1045,6 +1089,7 @@ public class EditorController implements Vista {
         cliCp.setText(c == null ? "" : nz(c.getCp()));
         cliLocalidad.setText(c == null ? "" : nz(c.getLocalidad()));
         cliProvincia.setText(c == null ? "" : nz(c.getProvincia()));
+        cliEmail.setText(c == null ? "" : nz(c.getEmail()));
     }
 
     private void recalcularNumero() {

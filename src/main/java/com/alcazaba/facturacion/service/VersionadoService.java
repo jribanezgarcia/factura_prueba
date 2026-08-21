@@ -1,6 +1,7 @@
 package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.model.Cliente;
+import com.alcazaba.facturacion.model.DatosPago;
 import com.alcazaba.facturacion.model.EstadoFactura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
@@ -32,6 +33,13 @@ public class VersionadoService {
     public FacturaVersion crearVersion(long facturaId, LocalDate fecha, String numero, EstadoFactura estado,
                                        int descuento, String observaciones, String referencia,
                                        Cliente cliente, List<LineaFactura> lineas) throws SQLException {
+        return crearVersion(facturaId, fecha, numero, estado, descuento, observaciones, referencia,
+                cliente, lineas, null);
+    }
+
+    public FacturaVersion crearVersion(long facturaId, LocalDate fecha, String numero, EstadoFactura estado,
+                                       int descuento, String observaciones, String referencia,
+                                       Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago) throws SQLException {
         int versionNum = versionRepository.maxVersion(facturaId) + 1;
         ResumenFactura resumen = CalculoService.resumen(lineas, descuento);
 
@@ -45,14 +53,7 @@ public class VersionadoService {
         v.setDescuentoPorcentaje(descuento);
         v.setObservaciones(observaciones);
         v.setReferenciaRectifica(referencia);
-        if (cliente != null) {
-            v.setCliNombre(cliente.getNombre());
-            v.setCliNif(cliente.getNif());
-            v.setCliDireccion(cliente.getDireccion());
-            v.setCliCp(cliente.getCp());
-            v.setCliLocalidad(cliente.getLocalidad());
-            v.setCliProvincia(cliente.getProvincia());
-        }
+        aplicarSnapshot(v, cliente, datosPago);
         v.setBaseTotal(resumen.getBaseTotal());
         v.setIvaTotal(resumen.getIvaTotal());
         v.setTotal(resumen.getTotal());
@@ -79,7 +80,7 @@ public class VersionadoService {
      */
     public FacturaVersion sobrescribirVersion(long versionId, LocalDate fecha, String numero, EstadoFactura estado,
                                               int descuento, String observaciones, String referencia,
-                                              Cliente cliente, List<LineaFactura> lineas) throws SQLException {
+                                              Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago) throws SQLException {
         FacturaVersion v = versionRepository.getById(versionId);
         if (v == null) {
             throw new java.sql.SQLException("La version " + versionId + " no existe");
@@ -93,14 +94,7 @@ public class VersionadoService {
         v.setDescuentoPorcentaje(descuento);
         v.setObservaciones(observaciones);
         v.setReferenciaRectifica(referencia);
-        if (cliente != null) {
-            v.setCliNombre(cliente.getNombre());
-            v.setCliNif(cliente.getNif());
-            v.setCliDireccion(cliente.getDireccion());
-            v.setCliCp(cliente.getCp());
-            v.setCliLocalidad(cliente.getLocalidad());
-            v.setCliProvincia(cliente.getProvincia());
-        }
+        aplicarSnapshot(v, cliente, datosPago);
         v.setBaseTotal(resumen.getBaseTotal());
         v.setIvaTotal(resumen.getIvaTotal());
         v.setTotal(resumen.getTotal());
@@ -114,6 +108,27 @@ public class VersionadoService {
         }
         lineaRepository.insertarLineas(versionId, lineas);
         return v;
+    }
+
+    private void aplicarSnapshot(FacturaVersion v, Cliente cliente, DatosPago datosPago) {
+        if (cliente != null) {
+            v.setCliNombre(cliente.getNombre());
+            v.setCliNif(cliente.getNif());
+            v.setCliDireccion(cliente.getDireccion());
+            v.setCliCp(cliente.getCp());
+            v.setCliLocalidad(cliente.getLocalidad());
+            v.setCliProvincia(cliente.getProvincia());
+            v.setCliEmail(nzTexto(cliente.getEmail()));
+        }
+        if (datosPago != null) {
+            v.setFormaPago(nzTexto(datosPago.formaPago()));
+            v.setVencimiento(datosPago.vencimiento());
+            v.setRealizadaPor(nzTexto(datosPago.realizadaPor()));
+        }
+    }
+
+    private String nzTexto(String s) {
+        return s == null ? "" : s;
     }
 
     public FacturaVersion ultimaVersion(long facturaId) throws SQLException {
