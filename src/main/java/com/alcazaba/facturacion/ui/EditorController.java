@@ -819,12 +819,13 @@ public class EditorController implements Vista {
                 cargarFactura(id);
                 Dialogos.info("Guardar", "Factura guardada.");
             } else {
-                if (!Dialogos.confirmar("Sobrescribir",
-                        "La factura ya está guardada. ¿Desea sobrescribir la versión actual con los cambios?")) {
+                Dialogos.ModoGuardarVersion modo = Dialogos.modoGuardarVersion();
+                if (modo == Dialogos.ModoGuardarVersion.CANCELAR) {
                     return false;
                 }
                 FacturaVersion v = servicios.factura.guardarEditada(facturaAbiertaId, versionAbiertaId,
-                        f, cli, lis, descuento, obs, ref, dp);
+                        f, cli, lis, descuento, obs, ref, dp,
+                        modo == Dialogos.ModoGuardarVersion.NUEVA_VERSION);
                 txtNumero.setText(v.getNumero());
                 lblTitulo.setText("Factura " + v.getNumero() + " (v" + v.getVersionNum() + ")");
                 modificado = false;

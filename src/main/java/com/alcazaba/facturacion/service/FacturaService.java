@@ -110,15 +110,25 @@ public class FacturaService {
         }
     }
 
-    /**
-     * Guarda cambios sobre una factura existente. Si la version abierta es la
-     * actual (ultima), se sobrescribe en su lugar; si se edito una version
-     * anterior, se crea una nueva version con esos datos (snapshot). El
-     * correlativo queda fijo; el mes del numero sigue a la fecha.
-     */
     public FacturaVersion guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
                                          List<LineaFactura> lineas, int descuento,
                                          String observaciones, String referencia, DatosPago datosPago)
+            throws SQLException, ValidationException {
+        return guardarEditada(facturaId, versionAbiertaId, fecha, cliente, lineas, descuento,
+                observaciones, referencia, datosPago, false);
+    }
+
+    /**
+     * Guarda cambios sobre una factura existente. Si la version abierta es la
+     * actual (ultima), se sobrescribe en su lugar; con comoNuevaVersion se crea
+     * siempre una version nueva (vN+1) dejando la anterior intacta. Si se edito
+     * una version anterior, se crea una nueva version con esos datos
+     * (snapshot). El correlativo queda fijo; el mes del numero sigue a la fecha.
+     */
+    public FacturaVersion guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
+                                         List<LineaFactura> lineas, int descuento,
+                                         String observaciones, String referencia, DatosPago datosPago,
+                                         boolean comoNuevaVersion)
             throws SQLException, ValidationException {
         validar(lineas, descuento);
 
@@ -146,7 +156,8 @@ public class FacturaService {
             String numero = numeroService.formarNumero(serie, factura.getCorrelativo(), fecha);
             FacturaVersion ultima = versionRepository.ultimaVersion(facturaId);
             FacturaVersion guardada;
-            if (versionAbiertaId != null && ultima != null && versionAbiertaId.longValue() == ultima.getId().longValue()) {
+            if (!comoNuevaVersion && versionAbiertaId != null && ultima != null
+                    && versionAbiertaId.longValue() == ultima.getId().longValue()) {
                 guardada = versionadoService.sobrescribirVersion(ultima.getId(), fecha, numero, EstadoFactura.EMITIDA,
                         descuento, observaciones, referencia, cliente, lineas, datosPago);
             } else {
