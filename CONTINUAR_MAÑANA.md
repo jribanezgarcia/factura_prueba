@@ -43,6 +43,7 @@ Cambios OpenSpec archivados (ademas de los anteriores):
 - `openspec/changes/archive/2026-08-21-redesign-pdf-factura` (archivado el 21/08/2026)
 - `openspec/changes/archive/2026-08-22-exportar-pdf-desde-historico` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-22-fix-pdf-totales-tarjeta-pago` (archivado el 22/08/2026)
+- `openspec/changes/archive/2026-08-22-pdf-fidelidad-prototipo` (archivado el 22/08/2026)
 
 No hay ningun cambio OpenSpec activo ahora mismo.
 
@@ -72,18 +73,32 @@ Change `fix-pdf-totales-tarjeta-pago`, aplicado sobre `pdf/PdfService.java` + mo
 - Sync de ambas deltas a `openspec/specs/invoicing/spec.md` y archive de ambos cambios.
 - Commit `30e4c36` "Exportar PDF desde el Historico y arreglo de totales, tarjeta de pago y paginacion del PDF, archivados en OpenSpec" (24 archivos).
 
+### 4. Fidelidad del PDF al prototipo (change `pdf-fidelidad-prototipo`, cerrado)
+
+El usuario comparo un PDF real con `prototipos/pdf-fix-v2.html` y reporto solapes y desviaciones. Implementado sobre `pdf/PdfService.java`:
+
+- **Cabecera sin solapes**: columna derecha reservada (`RESERVA_FACTURA = 170pt`); nombre/actividad/contacto se miden con `getWidthPoint` y reducen tamano por pasos hasta caber (minimo 9pt). Serie/Nº y fecha siempre visibles.
+- **Calibri embebida**: `calibri.ttf/calibrib/calibrii/calibriz` desde `%WINDIR%\Fonts`, cacheadas en estaticos; fallback Helvetica. Helpers `baseRegular()/baseNegrita()/baseCursiva()`.
+- **Bordes redondeados**: eventos `PdfPCellEvent` en `TEXTCANVAS`: contorno curvo de tarjetas (7pt) y observaciones (6pt); los rotulos se pintan enteros en el evento (fondo redondeado arriba + titulo redibujado) para que el acento no sobresalga; chip NIF redondeado (2pt).
+- **Pie corregido**: hueco fijo de 2 digitos para el total; ademas contador propio de paginas en `onEndPage` porque el writer contaba una pagina fantasma al cerrar («de 2» en documentos de 1 pagina).
+- **Colores**: neutrales fijos segun prototipo (tinta #3A332B, gris #5F5548, etiquetas #A2937F, valores pago #C4BAAC); derivados del acento intactos.
+- **Verificacion**: bucle visual automatizado (generar muestra -> rasterizar con Windows.Data.Pdf -> comparar con el prototipo), incluido caso de nombre larguisimo sin solape. Suite completa 46/46 en verde.
+- Commit `c2fcd70` "Fidelidad del PDF al prototipo: ..." (8 archivos).
+
 ## Proximos pasos
 
 - Sin cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
 
 ## Git
 
-- Rama `main`, ultimo commit `30e4c36`; va 8 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
+- Rama `main`, ultimo commit `c2fcd70`; va 9 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 44 tests, todos verdes).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 46 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
+- Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
+- `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`.
 - Cierre programatico de ventana: `nav.stage().fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))`.
 - Constructor de `EstadoService` (7 parametros): `(FacturaRepository, SerieRepository, VersionRepository, LineaRepository, VersionadoService, NumeroService, FacturaService)`.
