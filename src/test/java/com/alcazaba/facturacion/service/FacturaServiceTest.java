@@ -116,6 +116,30 @@ class FacturaServiceTest {
     }
 
     @Test
+    void guardarComoNuevaVersionConservaLaAnterior() throws Exception {
+        Serie c = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 11);
+        long facturaId = facturaService.crearFactura(c, fecha, null, List.of(linea("100.00")), 0, null, null);
+
+        FacturaVersion v1 = versionadoService.ultimaVersion(facturaId);
+        assertEquals(new BigDecimal("121.00"), v1.getTotal());
+
+        FacturaVersion v2 = facturaService.guardarEditada(facturaId, v1.getId(), fecha, null,
+                List.of(linea("300.00")), 0, "modificacion", null, null, true);
+
+        assertEquals(2, v2.getVersionNum());
+        List<FacturaVersion> versiones = versionadoService.versionesDeFactura(facturaId);
+        assertEquals(2, versiones.size());
+        FacturaVersion primera = versiones.stream().filter(v -> v.getVersionNum() == 1).findFirst().orElseThrow();
+        assertEquals(v1.getId(), primera.getId());
+        assertEquals(new BigDecimal("121.00"), primera.getTotal());
+        FacturaVersion segunda = versiones.stream().filter(v -> v.getVersionNum() == 2).findFirst().orElseThrow();
+        assertEquals(v2.getId(), segunda.getId());
+        assertEquals(new BigDecimal("363.00"), segunda.getTotal());
+        assertEquals("modificacion", segunda.getObservaciones());
+    }
+
+    @Test
     void guardaEmailClienteYDatosPagoEnLaVersion() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 21);

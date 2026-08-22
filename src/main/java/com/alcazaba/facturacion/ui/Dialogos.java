@@ -11,6 +11,8 @@ public final class Dialogos {
 
     public enum CambiosSinGuardar { GUARDAR, DESCARTAR, CANCELAR }
 
+    public enum ModoGuardarVersion { SOBRESCRIBIR, NUEVA_VERSION, CANCELAR }
+
     /**
      * Implementacion de los dialogos. La implementacion por defecto muestra las
      * ventanas reales de la aplicacion. Los tests pueden sustituirla mediante
@@ -25,6 +27,18 @@ public final class Dialogos {
         boolean confirmar(String titulo, String mensaje);
 
         CambiosSinGuardar confirmarCambiosSinGuardar();
+
+        /**
+         * Pregunta como guardar la edicion de una factura ya guardada. El
+         * mapeo por defecto reutiliza confirmar para no romper las
+         * implementaciones de test existentes: true sobrescribe y false
+         * cancela.
+         */
+        default ModoGuardarVersion modoGuardarVersion() {
+            return confirmar("Guardar cambios",
+                    "La factura ya está guardada. ¿Desea sobrescribir la versión actual con los cambios?")
+                    ? ModoGuardarVersion.SOBRESCRIBIR : ModoGuardarVersion.CANCELAR;
+        }
     }
 
     private static final Impl IMPLEMENTACION_POR_DEFECTO = new Impl() {
@@ -73,6 +87,26 @@ public final class Dialogos {
             }
             return CambiosSinGuardar.CANCELAR;
         }
+
+        @Override
+        public ModoGuardarVersion modoGuardarVersion() {
+            Alert a = new Alert(Alert.AlertType.CONFIRMATION);
+            a.setTitle("Guardar cambios");
+            a.setHeaderText("La factura ya está guardada");
+            a.setContentText("¿Cómo desea guardar los cambios?");
+            ButtonType sobrescribir = new ButtonType("Sobrescribir versión actual", ButtonBar.ButtonData.YES);
+            ButtonType nueva = new ButtonType("Guardar como nueva versión", ButtonBar.ButtonData.NO);
+            ButtonType cancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
+            a.getButtonTypes().setAll(sobrescribir, nueva, cancelar);
+            a.showAndWait();
+            if (a.getResult() == sobrescribir) {
+                return ModoGuardarVersion.SOBRESCRIBIR;
+            }
+            if (a.getResult() == nueva) {
+                return ModoGuardarVersion.NUEVA_VERSION;
+            }
+            return ModoGuardarVersion.CANCELAR;
+        }
     };
 
     private static volatile Impl impl = IMPLEMENTACION_POR_DEFECTO;
@@ -108,5 +142,9 @@ public final class Dialogos {
 
     public static CambiosSinGuardar confirmarCambiosSinGuardar() {
         return impl.confirmarCambiosSinGuardar();
+    }
+
+    public static ModoGuardarVersion modoGuardarVersion() {
+        return impl.modoGuardarVersion();
     }
 }
