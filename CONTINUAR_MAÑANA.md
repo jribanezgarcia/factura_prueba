@@ -45,6 +45,8 @@ Cambios OpenSpec archivados (ademas de los anteriores):
 - `openspec/changes/archive/2026-08-22-fix-pdf-totales-tarjeta-pago` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-22-pdf-fidelidad-prototipo` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-22-pdf-etiquetas-factura-cliente` (archivado el 22/08/2026)
+- `openspec/changes/archive/2026-08-22-pdf-cp-datos-pago-opcional` (archivado el 22/08/2026)
+- `openspec/changes/archive/2026-08-22-guardar-version-nueva-edicion` (archivado el 22/08/2026)
 
 No hay ningun cambio OpenSpec activo ahora mismo.
 
@@ -93,18 +95,37 @@ El usuario comparo un PDF real con `prototipos/pdf-fix-v2.html` y reporto solape
 - Suite 46/46 en verde; bucle visual verificado con rasterización.
 - Commit `5d995f3` "Etiquetas Serie/Nº y Fecha ... archivado en OpenSpec" (8 archivos).
 
+### 6. CP como fila propia y «Datos de pago» ocultable (change `pdf-cp-datos-pago-opcional`, cerrado)
+
+- «Facturar a»: filas independientes etiquetadas — Nombre (negrita) / NIF / Dirección / **Código postal** / **Población** (solo localidad) / **Provincia** / Email; columna de etiquetas 32/68; filas vacías omitidas.
+- «Datos de pago»: si forma de pago, vencimiento y realizada por están vacíos, la tarjeta NO se pinta; «Facturar A» conserva su ancho (49%) con hueco colspan=2 a la derecha.
+- `tarjetaPago` refactorizada: recibe la lista de filas desde el nuevo helper `filasDatosPago(vc)` (se elimina el caso «—»).
+- Tests: ajustados los existentes (la muestra sin pago afirma ahora que «DATOS DE PAGO» no aparece; ojo: la extracción concatena celdas SIN espacio, «04009 ALMERIA» ya no existe como cadena) + 2 nuevos (`datosDePagoVaciosOcultanLaTarjeta`, `codigoPostalYProvinciaFilasPropias`). Suite 48/48.
+- Commit `8ab9683`.
+
+### 7. Guardar como nueva versión (change `guardar-version-nueva-edicion`, cerrado)
+
+**Contexto del problema del usuario**: al modificar una factura emitida, el guardado SOBRESCRIBÍA la única versión en su lugar (comportamiento mandado por la spec anterior) — no quedaba copia independiente exportable de la modificación ni se conservaba la previa.
+
+- Spec delta sobre «Versionado»: al editar la última versión, la aplicación ofrece dos caminos — sobrescribir (mismo vN, flujo actual) o crear nueva versión (vN+1); la versión anterior queda intacta y ambas aparecen en Histórico exportables por separado. Escenario nuevo «Guardar como nueva versión» + «Cancelar el guardado».
+- `FacturaService.guardarEditada`: sobrecarga con `boolean comoNuevaVersion` (la firma antigua delega con false — compatibilidad total). Con true, siempre `versionadoService.crearVersion(...)` aunque versionAbiertaId == ultima.getId().
+- `Dialogos`: enum `ModoGuardarVersion` {SOBRESCRIBIR, NUEVA_VERSION, CANCELAR}; nuevo método en `Impl` como DEFAULT que mapea al antiguo confirmar (true→SOBRESCRIBIR, false→CANCELAR) — las implementaciones de test existentes no se rompen; la implementación real muestra tres botones («Sobrescribir versión actual» / «Guardar como nueva versión» / «Cancelar»).
+- `EditorController`: sustituido el confirmar sí/no por `Dialogos.modoGuardarVersion()`; cancelar aborta; NUEVA_VERSION pasa true al servicio.
+- Test servicio `guardarComoNuevaVersionConservaLaAnterior`: v2 con cambios, v1 intacta (total/observaciones/lineas), ambas listadas. Suite **49/49**.
+- Commit `78624d3`.
+
 ## Proximos pasos
 
 - Sin cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
 
 ## Git
 
-- Rama `main`, ultimo commit `5d995f3`; va 10 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
+- Rama `main`, ultimo commit `78624d3`; va 12 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 46 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 49 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`.
