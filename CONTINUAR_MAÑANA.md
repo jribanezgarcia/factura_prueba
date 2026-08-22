@@ -1,6 +1,6 @@
 # Continuacion del proyecto de facturacion
 
-Estado actualizado: 22/08/2026
+Estado actualizado: 22/08/2026 (tarde)
 
 Este documento sirve como traspaso para continuar con cualquier IA. El proyecto se esta construyendo con OpenCode/OpenSpec. Antes de tocar codigo, leer:
 
@@ -36,59 +36,57 @@ Stack actual:
 
 La especificacion activa esta en:
 
-- `openspec/specs/invoicing/spec.md`
+- `openspec/specs/invoicing/spec.md` (actualizada con los requisitos «Historico» y «Exportacion a PDF» tras el cierre del 22/08)
 
 Cambios OpenSpec archivados (ademas de los anteriores):
 
 - `openspec/changes/archive/2026-08-21-redesign-pdf-factura` (archivado el 21/08/2026)
+- `openspec/changes/archive/2026-08-22-exportar-pdf-desde-historico` (archivado el 22/08/2026)
+- `openspec/changes/archive/2026-08-22-fix-pdf-totales-tarjeta-pago` (archivado el 22/08/2026)
 
-Cambio OpenSpec activo (en implementacion, sin commitear):
+No hay ningun cambio OpenSpec activo ahora mismo.
 
-- `openspec/changes/exportar-pdf-desde-historico/` — exportar PDF directamente desde el Historico, individual y en lote. Tareas 8/9 completadas; queda solo la 4.2 (verificacion manual por el usuario).
+## Sesion del 22/08/2026 (lo hecho hoy, todo cerrado y commiteado)
 
-## Cambios realizados hoy (22/08/2026)
-
-### 1. Cierre del cambio del rediseño del PDF (Fase 0)
-
-- Sync de la delta a `openspec/specs/invoicing/spec.md` (4 requisitos modificados) y archive del change `2026-08-21-redesign-pdf-factura`.
-- Commit `801ff5a` "Rediseño del PDF con tarjetas, datos de pago y color configurable, archivado en OpenSpec" (38 archivos).
-
-### 2. Exportar PDF desde el Histórico (Fase 1, cambio activo `exportar-pdf-desde-historico`)
-
-Implementado y con la suite en verde (39/39 tests):
+### 1. Exportar PDF desde el Historico
 
 - `util/Formatos.java`: nuevo metodo estatico `nombreArchivoPdf(String)` (barra por guion + `.pdf`), usado por editor e historico.
 - Test nuevo `src/test/java/com/alcazaba/facturacion/util/FormatosTest.java`.
 - `ui/Historico.fxml`: boton «Exportar PDF» junto a Buscar.
 - `ui/HistoricoController.java`: seleccion multiple (`SelectionMode.MULTIPLE`, doble clic sigue abriendo); `exportarUna(...)` con FileChooser igual que el editor; `exportarVarias(...)` con DirectoryChooser unico + Task en segundo plano y resumen final (generadas/falladas por fila); reutiliza preferencias `ultima_carpeta_export` y `color_pdf`.
+- Verificado manualmente por el usuario (individual y lote).
 
-### 3. Ronda de revision del PDF exportado (PENDIENTE de aprobar prototipo)
+### 2. Fix visual del PDF segun `prototipos/pdf-fix-v2.html` (aprobado y verificado)
 
-El usuario reviso un PDF real y notifico 3 problemas. Diagnostico hecho y prototipo creado:
+Change `fix-pdf-totales-tarjeta-pago`, aplicado sobre `pdf/PdfService.java` + modelo/calculo:
 
-- **Totales duplicados**: el bloque mostraba `Base 21%/IVA 21%` y ademas `Base total/IVA total`. Nuevo diseno acordado en prototipo: `Base` → `IVA n%` (cuota) → `Descuento n%` solo si existe (restando, cuadre Base − Descuento + IVA = TOTAL) → `TOTAL` en color. Con varios tipos de IVA, cada par Base/IVA y un solo descuento.
-- **Tarjeta «Datos de pago»**: quitar el fondo marron de su cabecera; dejarla blanca con borde fino inferior y texto marron («Facturar a» sigue bicolor como estaba).
-- **Paginacion «Página X de Y»**: causa reproducida en pruebas reales: cuando el bloque de totales no cabe al final, salta entero a una segunda pagina casi vacia y el pie la cuenta. Solucion propuesta: bloque de totales mas compacto y mejor reparto del salto de pagina; el contador siempre refleja paginas reales.
+- **Totales**: sin filas «Base total»/«IVA total»; queda `Base` → `IVA n%` (cuota) → `Descuento n%` solo si existe (restando, en rojo) → `TOTAL` en color. Con un solo tipo de IVA la fila es «Base» a secas; con varios, «Base 21%», etc., y un solo descuento. Cuadre visible: Base − Descuento + IVA = TOTAL (con descuento se muestran las bases brutas).
+- **Modelo**: `ResumenFactura` expone `baseBruta` e `importeDescuento`; `IvaGrupo` expone `baseBruta`. Asignados en `CalculoService.resumen(...)` desde datos que ya tenia (sin divisiones inversas).
+- **Tarjeta «Datos de pago»**: cabecera blanca con borde fino inferior y texto marron oscuro (`cabeceraTarjetaClara`); «Facturar a» sigue bicolor.
+- **Paginacion**: totales mas compactos (ancho 44%, paddings reducidos) y espaciados del cierre menores (`espacio(doc, alto)`); el contador usa plantilla con paginas reales.
+- **Bug latente corregido**: el antiguo `filaResumen` construia la celda de la etiqueta pero devolvia solo la del valor, asi que las etiquetas del resumen («Base», «IVA n%», ...) NUNCA se pintaron en los PDF anteriores. Ahora firma `void filaResumen(PdfPTable t, String etiqueta, String valor)` y anade ambas celdas.
+- Tests nuevos: 3 en `CalculoServiceTest` (bruta/descuento/cuadre) y 2 en `PdfServiceTest` (totales con descuento restando, paginacion real en documento largo).
 
-Prototipo para aprobacion: `prototipos/pdf-fix-v2.html` (zonas cambiadas marcadas con recuadro naranja; tambien enlazado desde `prototipos/index.html`).
+### 3. Cierre OpenSpec y commit
 
-## Proximos pasos (por este orden)
+- Sync de ambas deltas a `openspec/specs/invoicing/spec.md` y archive de ambos cambios.
+- Commit `30e4c36` "Exportar PDF desde el Historico y arreglo de totales, tarjeta de pago y paginacion del PDF, archivados en OpenSpec" (24 archivos).
 
-1. Usuario aprueba o ajusta `prototipos/pdf-fix-v2.html`.
-2. Con la aprobacion, crear change OpenSpec nuevo (`/opsx-propose`, nombre sugerido `fix-pdf-totales-tarjeta-pago`) para los 3 arreglos sobre `pdf/PdfService.java`: limpiar `bloqueTotales` (quitar filas repetidas, fila descuento restando), cabecera clara en `tarjetaPago`, compactar espaciados/paginacion. Aplicarlo y pasar `mvn test`.
-3. Verificacion manual conjunta: exportar una factura y un lote de varias desde el Historico (cierra la tarea 4.2 del cambio activo).
-4. Cerrar ambos cambios: `/opsx-sync-specs` + `/opsx-archive-change` de `exportar-pdf-desde-historico` y del nuevo fix, y commit (SIN push).
+## Proximos pasos
+
+- Sin cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
 
 ## Git
 
-- Rama `main`, ultimo commit `801ff5a`; va 6 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
-- Sin commitear ahora mismo: todo lo del cambio activo `exportar-pdf-desde-historico` (Formatos, FormatosTest, HistoricoController, Historico.fxml, EditorController usando `nombreArchivoPdf`), el change en `openspec/changes/exportar-pdf-desde-historico/`, `prototipos/pdf-fix-v2.html` y `prototipos/index.html`.
+- Rama `main`, ultimo commit `30e4c36`; va 8 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
+- Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 39 tests, todos verdes).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 44 tests, todos verdes).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`.
 - Cierre programatico de ventana: `nav.stage().fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))`.
 - Constructor de `EstadoService` (7 parametros): `(FacturaRepository, SerieRepository, VersionRepository, LineaRepository, VersionadoService, NumeroService, FacturaService)`.
 - En los PDF el `.xlsx` original es referencia de formato: la columna TOTAL lleva IVA incluido (base × 1,21).
+- El texto extraible de un PDF no incluye lo dibujado via plantilla/XObject (p. ej. la cifra final de «Pagina X de Y»): para testear el pie solo se puede afirmar hasta «de »; la cifra completa se comprueba a la vista.
 - No crear dentro del proyecto carpetas/archivos de metadatos de IA ni documentacion no pedida.
