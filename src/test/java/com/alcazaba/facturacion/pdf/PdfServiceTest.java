@@ -93,9 +93,17 @@ class PdfServiceTest {
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
             assertTrue(texto.contains("FACTURA"));
+            assertTrue(texto.contains("SERIE / Nº"));
+            assertTrue(texto.contains("FECHA"));
             assertTrue(texto.contains("C-59/7"));
             assertTrue(texto.contains("14/07/2026"));
             assertTrue(texto.contains("NIF: B04444444"));
+            assertTrue(texto.contains("FACTURAR A"));
+            assertTrue(texto.contains("Nombre"));
+            assertTrue(texto.contains("Dirección"));
+            assertTrue(texto.contains("Población"));
+            assertTrue(texto.contains("04009 ALMERIA"));
+            assertTrue(texto.contains("Email"));
             assertTrue(texto.contains("FACTURAR A"));
             assertTrue(texto.contains("DATOS DE PAGO"));
             assertTrue(texto.contains("MARIA MARTAGON AVALOS"));
