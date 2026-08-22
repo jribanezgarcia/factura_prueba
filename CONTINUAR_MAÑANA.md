@@ -116,11 +116,12 @@ El usuario comparo un PDF real con `prototipos/pdf-fix-v2.html` y reporto solape
 
 ## Proximos pasos
 
-- Sin cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
+- Verificacion manual pendiente del usuario: editar una factura emitida -> Guardar -> comprobar el dialogo «Sobrescribir version actual / Guardar como nueva version»; si elige nueva version, ver en Historico v1 y v2 como filas independientes y exportar ambas.
+- Sin mas cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
 
 ## Git
 
-- Rama `main`, ultimo commit `78624d3`; va 12 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
+- Rama `main`, ultimo commit `bb93397`; **SINCRONIZADA** con `origin/main` (push realizado el 22/08/2026 a peticion del usuario).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
