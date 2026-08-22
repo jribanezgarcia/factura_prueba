@@ -101,11 +101,13 @@ class PdfServiceTest {
             assertTrue(texto.contains("FACTURAR A"));
             assertTrue(texto.contains("Nombre"));
             assertTrue(texto.contains("Dirección"));
+            assertTrue(texto.contains("Código postal"));
             assertTrue(texto.contains("Población"));
-            assertTrue(texto.contains("04009 ALMERIA"));
+            assertTrue(texto.contains("04009"));
+            assertTrue(texto.contains("ALMERIA"));
             assertTrue(texto.contains("Email"));
-            assertTrue(texto.contains("FACTURAR A"));
-            assertTrue(texto.contains("DATOS DE PAGO"));
+            assertFalse(texto.contains("Provincia"));
+            assertFalse(texto.contains("DATOS DE PAGO"));
             assertTrue(texto.contains("MARIA MARTAGON AVALOS"));
             assertTrue(texto.contains("maria.martagon@correo.es"));
             assertFalse(texto.contains("Forma de pago"));
@@ -234,9 +236,46 @@ class PdfServiceTest {
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
+            assertTrue(texto.contains("DATOS DE PAGO"));
             assertTrue(texto.contains("Transferencia"));
             assertTrue(texto.contains("14/08/2026"));
             assertTrue(texto.contains("AURORA"));
+        }
+    }
+
+    @Test
+    void datosDePagoVaciosOcultanLaTarjeta() throws Exception {
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(), List.of(lineaArmario()), null);
+
+        Path destino = tempDir.resolve("sin-pago.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertFalse(texto.contains("DATOS DE PAGO"));
+            assertFalse(texto.contains("Forma de pago"));
+            assertTrue(texto.contains("FACTURAR A"));
+        }
+    }
+
+    @Test
+    void codigoPostalYProvinciaFilasPropias() throws Exception {
+        FacturaVersion v = versionMuestra();
+        v.setCliLocalidad("ALMERIA");
+        v.setCliProvincia("ALMERÍA");
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), v, List.of(lineaArmario()), null);
+
+        Path destino = tempDir.resolve("cp-provincia.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("Código postal"));
+            assertTrue(texto.contains("04009"));
+            assertTrue(texto.contains("Provincia"));
+            assertTrue(texto.contains("ALMERÍA"));
         }
     }
 }

@@ -311,7 +311,7 @@ La aplicación SHALL tener una pantalla de Configuración que permita configurar
 La aplicación SHALL exportar facturas a PDF en A4 vertical con el diseño aprobado inspirado en el documento Excel de la empresa:
 
 - Cabecera en todas las páginas: logo al doble del tamaño configurado (modo logo) o datos de empresa (modo texto), con el NIF de la empresa destacado en línea propia con esquinas redondeadas; a la derecha la palabra FACTURA y debajo, como pares rótulo→valor, `SERIE / Nº` sobre el número completo y `FECHA` sobre la fecha. Los datos de empresa SHALL ocupar una columna propia que SHALL NOT solaparse nunca con el bloque FACTURA: si el nombre o alguna línea excede el ancho disponible, se reduce su tamaño hasta caber. El número completo y la fecha SHALL ser siempre legibles.
-- Dos tarjetas bajo la cabecera con esquinas redondeadas: «FACTURAR A» con los datos del cliente presentados como pares etiqueta→valor — Nombre (destacado en negrita), NIF, Dirección, Población (código postal y localidad, con la provincia entre paréntesis cuando exista) y Email; las filas con campo vacío no aparecen. «DATOS DE PAGO» con forma de pago, vencimiento y realizada por (solo las filas rellenas). La cabecera de «FACTURAR A» SHALL ir con fondo del color de acento y texto blanco; la cabecera de «DATOS DE PAGO» SHALL ir en blanco con un borde fino inferior del color de acento y texto marrón oscuro derivado del acento. Ambos cuerpos SHALL ir en blanco.
+- Dos tarjetas bajo la cabecera con esquinas redondeadas: «FACTURAR A» con los datos del cliente presentados como pares etiqueta→valor, cada dato en su propia fila — Nombre (destacado en negrita), NIF, Dirección, Código postal, Población (la localidad), Provincia y Email; las filas con campo vacío no aparecen. «DATOS DE PAGO» con forma de pago, vencimiento y realizada por (solo las filas rellenas); cuando los tres campos estén vacíos, la tarjeta «Datos de pago» SHALL NOT aparecer y «Facturar A» SHALL conservar su anchura con el espacio restante en blanco. La cabecera de «FACTURAR A» SHALL ir con fondo del color de acento y texto blanco; la cabecera de «DATOS DE PAGO» SHALL ir en blanco con un borde fino inferior del color de acento y texto marrón oscuro derivado del acento. Ambos cuerpos SHALL ir en blanco.
 - Tabla de líneas con celdas bordeadas estilo hoja de cálculo: Cant / Descripción / Precio / IVA % / Total. El Total por línea SHALL incluir el IVA (base × (1 + IVA%)); las líneas exentas SHALL mostrar su importe sin IVA. La descripción SHALL mostrarse siempre en un único estilo, aunque ocupe varias líneas.
 - Resumen de totales alineado a la derecha y compacto, sin filas de totales globales repetidas («Base total»/«IVA total» SHALL NOT aparecer): por cada tipo de IVA una fila `Base` (importes antes del descuento global) seguida de su fila `IVA n%` con la cuota calculada sobre la base ya descontada; si el descuento global es mayor que cero, una única fila `Descuento n%` con el importe restando y en rojo suave; después la fila TOTAL destacada con fondo del color de acento, separada de las filas anteriores por un espacio visible. Las cifras mostradas SHALL cuadrar: Base − Descuento + IVA = TOTAL.
 - Observaciones en caja clara con esquinas redondeadas; pie legal configurable dentro de un recuadro con borde de color, repetido en todas las páginas; `Página X de Y` en cada página reflejando el número real de páginas, con el dígito total dibujado sin solapar la palabra «de». El cierre del documento SHALL mantenerse compacto (totales estrechos y tablas capaces de repartir sus filas entre páginas) para evitar una página que contenga únicamente el bloque de totales cuando el contenido cabe repartiéndose.
@@ -345,24 +345,29 @@ El resto se mantiene como estaba: descripciones largas ajustadas automáticament
 - **AND** el número completo (Serie/Nº) y la fecha son legibles en su posición
 
 #### Scenario: Tarjeta Facturar a con campos etiquetados
-- **WHEN** el usuario exporta una factura cuyo cliente tiene nombre, NIF, dirección, código postal, localidad y email
-- **THEN** la tarjeta «Facturar a» muestra cada dato precedido de su etiqueta: Nombre, NIF, Dirección, Población y Email
-- **AND** Población incluye el código postal junto a la localidad
+- **WHEN** el usuario exporta una factura cuyo cliente tiene nombre, NIF, dirección, código postal, localidad, provincia y email
+- **THEN** la tarjeta «Facturar a» muestra cada dato precedido de su etiqueta: Nombre, NIF, Dirección, Código postal, Población, Provincia y Email
+- **AND** el código postal aparece como fila propia, separada de Población
 
 #### Scenario: Campos vacíos sin fila
 - **WHEN** el cliente carece de alguno de esos campos
 - **THEN** la fila correspondiente no aparece en la tarjeta
 
 #### Scenario: Tarjeta Facturar a bicolor y tarjeta Datos de pago clara
-- **WHEN** el usuario exporta cualquier factura
+- **WHEN** el usuario exporta una factura con datos de pago rellenados
 - **THEN** la cabecera de «Facturar a» lleva fondo del color de acento con texto blanco
 - **AND** la cabecera de «Datos de pago» va en blanco con borde fino inferior y texto marrón oscuro
+
+#### Scenario: Datos de pago vacíos ocultan la tarjeta
+- **WHEN** el usuario exporta una factura sin forma de pago, sin vencimiento y sin realizada por
+- **THEN** la tarjeta «Datos de pago» no aparece en el PDF
+- **AND** «Facturar A» conserva su anchura con el espacio restante en blanco
 
 #### Scenario: Tarjetas bicolor con email y datos de pago opcionales
 
 - **WHEN** el usuario exporta una factura cuyo cliente tiene email y con forma de pago, vencimiento y realizada por rellenados
 - **THEN** la tarjeta «Facturar a» muestra el email del cliente y la tarjeta «Datos de pago» muestra los tres valores
-- **AND** si el cliente no tiene email o los datos de pago están vacíos, esas filas no aparecen en el PDF
+- **AND** si el cliente no tiene email esa fila no aparece en el PDF
 
 #### Scenario: Total por línea con IVA incluido
 
