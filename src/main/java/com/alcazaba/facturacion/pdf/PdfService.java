@@ -139,13 +139,19 @@ public class PdfService {
     // ------------------------------------------------------------------
 
     private PdfPTable tarjetas(FacturaService.VersionCompleta vc, Colores c) {
+        List<String[]> pagoFilas = filasDatosPago(vc);
         PdfPTable exterior = new PdfPTable(new float[]{49f, 2f, 49f});
         exterior.setWidthPercentage(100);
         exterior.addCell(celdaTarjeta(tarjetaCliente(vc, c), c));
         PdfPCell hueco = new PdfPCell(new Phrase(" "));
         hueco.setBorder(Rectangle.NO_BORDER);
-        exterior.addCell(hueco);
-        exterior.addCell(celdaTarjeta(tarjetaPago(vc, c), c));
+        if (pagoFilas.isEmpty()) {
+            hueco.setColspan(2);
+            exterior.addCell(hueco);
+        } else {
+            exterior.addCell(hueco);
+            exterior.addCell(celdaTarjeta(tarjetaPago(pagoFilas, c), c));
+        }
         return exterior;
     }
 
@@ -179,15 +185,14 @@ public class PdfService {
         if (!nz(v.getCliDireccion()).isBlank()) {
             filas.add(new String[]{"Dirección", v.getCliDireccion()});
         }
-        String poblacion = joinNoVacio(" ", nz(v.getCliCp()), nz(v.getCliLocalidad()));
-        String provincia = nz(v.getCliProvincia());
-        if (!poblacion.isBlank() && !provincia.isBlank()) {
-            poblacion = poblacion + " (" + provincia + ")";
-        } else if (poblacion.isBlank()) {
-            poblacion = provincia;
+        if (!nz(v.getCliCp()).isBlank()) {
+            filas.add(new String[]{"Código postal", v.getCliCp()});
         }
-        if (!poblacion.isBlank()) {
-            filas.add(new String[]{"Población", poblacion});
+        if (!nz(v.getCliLocalidad()).isBlank()) {
+            filas.add(new String[]{"Población", v.getCliLocalidad()});
+        }
+        if (!nz(v.getCliProvincia()).isBlank()) {
+            filas.add(new String[]{"Provincia", v.getCliProvincia()});
         }
         if (!nz(v.getCliEmail()).isBlank()) {
             filas.add(new String[]{"Email", v.getCliEmail()});
@@ -199,7 +204,7 @@ public class PdfService {
             return t;
         }
 
-        PdfPTable filasTabla = new PdfPTable(new float[]{30f, 70f});
+        PdfPTable filasTabla = new PdfPTable(new float[]{32f, 68f});
         filasTabla.setWidthPercentage(100);
         for (String[] fila : filas) {
             PdfPCell etiqueta = new PdfPCell(new Phrase(fila[0], fuente(false, 8.5f, GRIS_CLARO)));
@@ -219,16 +224,7 @@ public class PdfService {
         return t;
     }
 
-    private PdfPTable tarjetaPago(FacturaService.VersionCompleta vc, Colores c) {
-        PdfPTable t = new PdfPTable(1);
-        t.setWidthPercentage(100);
-        t.addCell(cabeceraTarjeta("DATOS DE PAGO", c, true));
-        PdfPCell cuerpo = new PdfPCell();
-        cuerpo.setBackgroundColor(BLANCO);
-        cuerpo.setBorder(Rectangle.NO_BORDER);
-        cuerpo.setPadding(8);
-        cuerpo.setPaddingTop(6);
-
+    private List<String[]> filasDatosPago(FacturaService.VersionCompleta vc) {
         FacturaVersion v = vc.version();
         List<String[]> filas = new ArrayList<>();
         if (!nz(v.getFormaPago()).isBlank()) {
@@ -240,12 +236,18 @@ public class PdfService {
         if (!nz(v.getRealizadaPor()).isBlank()) {
             filas.add(new String[]{"Realizada por", v.getRealizadaPor()});
         }
+        return filas;
+    }
 
-        if (filas.isEmpty()) {
-            cuerpo.setPhrase(new Phrase("—", fuente(false, 9.5f, GRIS_CLARO)));
-            t.addCell(cuerpo);
-            return t;
-        }
+    private PdfPTable tarjetaPago(List<String[]> filas, Colores c) {
+        PdfPTable t = new PdfPTable(1);
+        t.setWidthPercentage(100);
+        t.addCell(cabeceraTarjeta("DATOS DE PAGO", c, true));
+        PdfPCell cuerpo = new PdfPCell();
+        cuerpo.setBackgroundColor(BLANCO);
+        cuerpo.setBorder(Rectangle.NO_BORDER);
+        cuerpo.setPadding(8);
+        cuerpo.setPaddingTop(6);
 
         PdfPTable filasTabla = new PdfPTable(new float[]{34f, 66f});
         filasTabla.setWidthPercentage(100);
