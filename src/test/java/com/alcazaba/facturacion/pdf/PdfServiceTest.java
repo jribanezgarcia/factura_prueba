@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -117,6 +118,51 @@ class PdfServiceTest {
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
             assertTrue(texto.contains("ANULADA"));
+        }
+    }
+
+    @Test
+    void totalesConDescuentoSeMuestranRestandoYCuadran() throws Exception {
+        FacturaVersion v = versionMuestra();
+        v.setDescuentoPorcentaje(10);
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), v, List.of(lineaArmario()), null);
+
+        Path destino = tempDir.resolve("descuento.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("Base"));
+            assertTrue(texto.contains("IVA 21%"));
+            assertTrue(texto.contains("Descuento 10%"));
+            assertTrue(texto.contains("-312,81"));
+            assertTrue(texto.contains("3.406,50"));
+            assertFalse(texto.contains("Base total"));
+            assertFalse(texto.contains("IVA total"));
+        }
+    }
+
+    @Test
+    void paginacionReflejaPaginasReales() throws Exception {
+        List<LineaFactura> lineas = new ArrayList<>();
+        for (int i = 0; i < 60; i++) {
+            LineaFactura l = lineaArmario();
+            l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA OCUPAR VARIAS PAGINAS");
+            lineas.add(l);
+        }
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(), lineas, null);
+
+        Path destino = tempDir.resolve("larga.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, null);
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            int paginas = reader.getNumberOfPages();
+            assertTrue(paginas >= 2);
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("Página 1 de "));
+            assertTrue(texto.contains("Página " + paginas + " de "));
         }
     }
 

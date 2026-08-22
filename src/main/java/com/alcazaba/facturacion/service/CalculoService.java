@@ -19,6 +19,8 @@ import java.util.Map;
  * - descuento global: se reduce cada base de IVA en el mismo porcentaje y se
  *   ajustan centimos en la mayor base para que la suma cuadre con el total
  *   base descontado.
+ * - el resumen expone ademas la base bruta (antes del descuento) y el
+ *   importe descontado para poder pintar el cuadre en el PDF.
  */
 public final class CalculoService {
 
@@ -97,6 +99,8 @@ public final class CalculoService {
         ResumenFactura resumen = new ResumenFactura();
         resumen.setDescuentoPorcentaje(descuento);
         resumen.setBaseTotal(baseTotalDescontada);
+        resumen.setBaseBruta(round2(baseTotalSinDescuento));
+        resumen.setImporteDescuento(round2(baseTotalSinDescuento.subtract(baseTotalDescontada)));
 
         List<ResumenFactura.IvaGrupo> grupos = new ArrayList<>();
         List<BigDecimal> basesDescontadas = new ArrayList<>();
@@ -111,6 +115,7 @@ public final class CalculoService {
             g.setPorcentaje(clave.porcentaje);
             g.setMotivoExencion(clave.motivo);
             g.setBase(baseDescontada);
+            g.setBaseBruta(round2(e.getValue()));
             grupos.add(g);
         }
 

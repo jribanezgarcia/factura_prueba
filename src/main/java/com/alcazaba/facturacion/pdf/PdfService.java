@@ -55,6 +55,7 @@ public class PdfService {
     private static final Color BLANCO = Color.WHITE;
     private static final Color NEGRO = Color.BLACK;
     private static final Color ROJO_ANULADA = new Color(0xB0, 0x00, 0x20);
+    private static final Color ROJO_DESCUENTO = new Color(0x8A, 0x2B, 0x2B);
     private static final float MARGEN_LATERAL = 40f;
 
     public void exportar(FacturaService.VersionCompleta vc, Empresa empresa, Path ruta) throws Exception {
@@ -77,13 +78,13 @@ public class PdfService {
             doc.open();
 
             doc.add(tarjetas(vc, colores));
-            espacio(doc);
+            espacio(doc, 8f);
             doc.add(tablaLineas(vc, colores));
-            espacio(doc);
+            espacio(doc, 4f);
             doc.add(bloqueTotales(resumen, vc.version().getDescuentoPorcentaje(), colores));
             String obs = vc.version().getObservaciones();
             if (obs != null && !obs.isBlank()) {
-                espacio(doc);
+                espacio(doc, 6f);
                 doc.add(cajaObservaciones(obs, colores));
             }
         }
@@ -157,7 +158,7 @@ public class PdfService {
     private PdfPTable tarjetaPago(FacturaService.VersionCompleta vc, Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
-        t.addCell(cabeceraTarjeta("DATOS DE PAGO", c));
+        t.addCell(cabeceraTarjetaClara("DATOS DE PAGO", c));
         PdfPCell cuerpo = new PdfPCell();
         cuerpo.setBackgroundColor(BLANCO);
         cuerpo.setBorder(Rectangle.NO_BORDER);
@@ -203,6 +204,21 @@ public class PdfService {
         PdfPCell celula = new PdfPCell(new Phrase(titulo, fuente(true, 8.5f, BLANCO)));
         celula.setBackgroundColor(c.base);
         celula.setBorder(Rectangle.NO_BORDER);
+        celula.setPadding(5);
+        celula.setPaddingLeft(8);
+        return celula;
+    }
+
+    /**
+     * Cabecera sin fondo para la tarjeta de datos de pago: blanca con un
+     * borde fino inferior del color de acento y texto marron oscuro.
+     */
+    private PdfPCell cabeceraTarjetaClara(String titulo, Colores c) {
+        PdfPCell celula = new PdfPCell(new Phrase(titulo, fuente(true, 8.5f, c.oscuro)));
+        celula.setBackgroundColor(BLANCO);
+        celula.setBorder(Rectangle.BOTTOM);
+        celula.setBorderColor(c.bordeTabla);
+        celula.setBorderWidth(0.7f);
         celula.setPadding(5);
         celula.setPaddingLeft(8);
         return celula;
@@ -273,55 +289,75 @@ public class PdfService {
 
     private PdfPTable bloqueTotales(ResumenFactura r, int descuento, Colores c) {
         PdfPTable t = new PdfPTable(new float[]{3.1f, 1.7f});
-        t.setWidthPercentage(46);
+        t.setWidthPercentage(44);
         t.setHorizontalAlignment(Element.ALIGN_RIGHT);
         t.setSpacingBefore(2);
 
+        boolean conDescuento = r.getImporteDescuento() != null
+                && r.getImporteDescuento().compareTo(BigDecimal.ZERO) > 0;
+        boolean unSoloGrupo = r.getGrupos().size() == 1;
+
         for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
-            String nombreBase = g.isExento()
-                    ? "Base exenta" + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
-                            ? " (" + g.getMotivoExencion() + ")"
-                            : "")
-                    : "Base " + g.getPorcentaje() + "%";
-            t.addCell(filaResumen(nombreBase, Formatos.moneda(g.getBase())));
-            t.addCell(filaResumen(g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
-                    Formatos.moneda(g.getCuota())));
+            BigDecimal importeBase = conDescuento ? g.getBaseBruta() : g.getBase();
+            filaResumen(t, nombreBaseGrupo(g, unSoloGrupo), Formatos.moneda(importeBase));
+            filaResumen(t, g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
+                    Formatos.moneda(g.getCuota()));
         }
-        if (descuento > 0) {
-            PdfPCell desc = new PdfPCell(new Phrase("Descuento aplicado: " + descuento + "%",
-                    fuente(false, 9f, GRIS)));
-            desc.setColspan(2);
-            desc.setBorder(Rectangle.NO_BORDER);
-            desc.setPadding(1);
-            desc.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            t.addCell(desc);
+        if (conDescuento) {
+            filaDescuento(t, "Descuento " + descuento + "%",
+                    "-" + Formatos.moneda(r.getImporteDescuento()));
         }
-        t.addCell(filaResumen("Base total", Formatos.moneda(r.getBaseTotal())));
-        t.addCell(filaResumen("IVA total", Formatos.moneda(r.getIvaTotal())));
 
         PdfPCell etiquetaTotal = new PdfPCell(new Phrase("TOTAL", fuente(true, 12, BLANCO)));
         etiquetaTotal.setBackgroundColor(c.base);
         etiquetaTotal.setBorderColor(c.oscuro);
-        etiquetaTotal.setPadding(6);
+        etiquetaTotal.setPadding(5);
         PdfPCell importeTotal = new PdfPCell(new Phrase(Formatos.moneda(r.getTotal()), fuente(true, 12, BLANCO)));
         importeTotal.setBackgroundColor(c.base);
         importeTotal.setBorderColor(c.oscuro);
         importeTotal.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        importeTotal.setPadding(6);
+        importeTotal.setPadding(5);
         t.addCell(etiquetaTotal);
         t.addCell(importeTotal);
         return t;
     }
 
-    private PdfPCell filaResumen(String etiqueta, String valor) {
-        PdfPCell celula = new PdfPCell(new Phrase(etiqueta, fuente(false, 9f, GRIS)));
+    /**
+     * Etiqueta de la fila de base: sin tipo cuando solo hay un grupo y con el
+     * porcentaje cuando hay varios; las exentas llevan su motivo.
+     */
+    private String nombreBaseGrupo(ResumenFactura.IvaGrupo g, boolean unSoloGrupo) {
+        if (g.isExento()) {
+            return "Base exenta" + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
+                    ? " (" + g.getMotivoExencion() + ")"
+                    : "");
+        }
+        return unSoloGrupo ? "Base" : "Base " + g.getPorcentaje() + "%";
+    }
+
+    private void filaDescuento(PdfPTable t, String etiqueta, String valor) {
+        Font fuenteRoja = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9f, ROJO_DESCUENTO);
+        PdfPCell celula = new PdfPCell(new Phrase(etiqueta, fuenteRoja));
         celula.setBorder(Rectangle.NO_BORDER);
         celula.setPadding(1.5f);
-        PdfPCell valorCelula = new PdfPCell(new Phrase(valor, fuente(false, 9f, TINTA)));
+        t.addCell(celula);
+        PdfPCell valorCelula = new PdfPCell(new Phrase(valor, fuenteRoja));
         valorCelula.setHorizontalAlignment(Element.ALIGN_RIGHT);
         valorCelula.setBorder(Rectangle.NO_BORDER);
         valorCelula.setPadding(1.5f);
-        return valorCelula;
+        t.addCell(valorCelula);
+    }
+
+    private void filaResumen(PdfPTable t, String etiqueta, String valor) {
+        PdfPCell celula = new PdfPCell(new Phrase(etiqueta, fuente(false, 9f, GRIS)));
+        celula.setBorder(Rectangle.NO_BORDER);
+        celula.setPadding(1.2f);
+        t.addCell(celula);
+        PdfPCell valorCelula = new PdfPCell(new Phrase(valor, fuente(false, 9f, TINTA)));
+        valorCelula.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        valorCelula.setBorder(Rectangle.NO_BORDER);
+        valorCelula.setPadding(1.2f);
+        t.addCell(valorCelula);
     }
 
     private PdfPTable cajaObservaciones(String observaciones, Colores c) {
@@ -467,8 +503,8 @@ public class PdfService {
         }
     }
 
-    private void espacio(Document doc) throws Exception {
-        doc.add(new Paragraph(new Phrase(" ", fuente(false, 9f, TINTA))));
+    private void espacio(Document doc, float alto) throws Exception {
+        doc.add(new Paragraph(new Phrase(" ", fuente(false, alto, TINTA))));
     }
 
     private String joinNoVacio(String sep, String... partes) {

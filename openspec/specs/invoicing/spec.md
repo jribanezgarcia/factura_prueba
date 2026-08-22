@@ -2,7 +2,9 @@
 
 ## Purpose
 Sistema de facturación de escritorio para Windows, local y de un único usuario, que permite crear, editar, versionar, buscar y exportar a PDF facturas y rectificativas, sustituyendo el proceso manual en hoja de cálculo.
+
 ## Requirements
+
 ### Requirement: Clientes
 
 La aplicación SHALL permitir gestionar una ficha de clientes con nombre/razón social, NIF, dirección, código postal, localidad y provincia. El NIF será opcional; cuando se informe, la aplicación SHALL validar DNI, NIE y NIF/CIF español antes de permitir guardar. Un cliente sin facturas asociadas SHALL poder eliminarse físicamente. Un cliente con facturas asociadas SHALL NOT poder eliminarse físicamente y SHALL poder marcarse como inactivo. Un cliente inactivo SHALL NOT aparecer normalmente al crear nuevas facturas, SHALL seguir apareciendo en el histórico y sus facturas SHALL seguir siendo consultables.
@@ -209,7 +211,7 @@ La aplicación SHALL permitir crear facturas rectificativas usando la serie inde
 
 ### Requirement: Histórico
 
-La aplicación SHALL tener un histórico de facturas que muestre cada versión como una fila independiente. El histórico SHALL permitir buscar por serie, cliente/razón social, NIF, fecha desde/hasta, importe desde/hasta y estado, combinando los filtros entre sí. La búsqueda SHALL ejecutarse mediante un botón "Buscar", no en tiempo real. Los resultados SHALL ordenarse por número de factura. Las columnas SHALL ser: fecha, número, versión, cliente, NIF, base, IVA, total y estado. Al seleccionar una fila SHALL poder abrirse esa factura/versión.
+La aplicación SHALL tener un histórico de facturas que muestre cada versión como una fila independiente. El histórico SHALL permitir buscar por serie, cliente/razón social, NIF, fecha desde/hasta, importe desde/hasta y estado, combinando los filtros entre sí. La búsqueda SHALL ejecutarse mediante un botón "Buscar", no en tiempo real. Los resultados SHALL ordenarse por número de factura. Las columnas SHALL ser: fecha, número, versión, cliente, NIF, base, IVA, total y estado. Al seleccionar una fila SHALL poder abrirse esa factura/versión. La tabla SHALL permitir seleccionar varias filas a la vez. El histórico SHALL ofrecer exportar directamente a PDF las filas seleccionadas sin necesidad de abrir la factura: con una selección se generará un único PDF preguntando dónde guardarlo; con varias selecciones se elegirá una carpeta de destino y se generarán todos los PDF en esa carpeta con sus nombres propuestos, informando al finalizar del resultado de cada generación.
 
 #### Scenario: Búsqueda combinando filtros
 - **WHEN** el usuario establece una serie, un cliente y un rango de fechas y pulsa Buscar
@@ -222,6 +224,22 @@ La aplicación SHALL tener un histórico de facturas que muestre cada versión c
 #### Scenario: Apertura desde el histórico
 - **WHEN** el usuario selecciona una fila del histórico
 - **THEN** se abre la factura en la versión correspondiente
+
+#### Scenario: Selección múltiple en la tabla
+
+- **WHEN** el usuario mantiene Ctrl o Shift mientras hace clic sobre filas del histórico
+- **THEN** quedan seleccionadas simultáneamente todas las filas marcadas
+
+#### Scenario: Exportar una versión seleccionada
+
+- **WHEN** el usuario selecciona una única fila del histórico y pulsa Exportar PDF
+- **THEN** la aplicación propone guardar un PDF con el nombre propuesto para esa factura y lo genera sin abrir el editor
+
+#### Scenario: Exportar varias versiones en lote
+
+- **WHEN** el usuario selecciona varias filas del histórico y pulsa Exportar PDF
+- **THEN** la aplicación pide una carpeta de destino una sola vez y genera en ella un PDF por cada fila seleccionada con su nombre propuesto
+- **AND** al terminar informa cuántos PDF se generaron correctamente y cuáles fallaron
 
 ### Requirement: Menú y navegación
 
@@ -293,10 +311,10 @@ La aplicación SHALL tener una pantalla de Configuración que permita configurar
 La aplicación SHALL exportar facturas a PDF en A4 vertical con el diseño aprobado inspirado en el documento Excel de la empresa:
 
 - Cabecera en todas las páginas: logo al doble del tamaño configurado (modo logo) o datos de empresa (modo texto), con el NIF de la empresa destacado en línea propia; a la derecha la palabra FACTURA, el número completo (Serie/Nº) y la fecha.
-- Dos tarjetas bicolor bajo la cabecera: «FACTURAR A» con nombre, NIF, dirección, población y email del cliente (esta última fila solo si existe email); «DATOS DE PAGO» con forma de pago, vencimiento y realizada por (solo las filas rellenas). La cabecera de cada tarjeta SHALL ir con fondo del color de acento y texto blanco, y el cuerpo SHALL ir en blanco.
+- Dos tarjetas bajo la cabecera: «FACTURAR A» con nombre, NIF, dirección, población y email del cliente (esta última fila solo si existe email); «DATOS DE PAGO» con forma de pago, vencimiento y realizada por (solo las filas rellenas). La cabecera de «FACTURAR A» SHALL ir con fondo del color de acento y texto blanco; la cabecera de «DATOS DE PAGO» SHALL ir en blanco con un borde fino inferior del color de acento y texto marrón oscuro derivado del acento. Ambos cuerpos SHALL ir en blanco.
 - Tabla de líneas con celdas bordeadas estilo hoja de cálculo: Cant / Descripción / Precio / IVA % / Total. El Total por línea SHALL incluir el IVA (base × (1 + IVA%)); las líneas exentas SHALL mostrar su importe sin IVA. La descripción SHALL mostrarse siempre en un único estilo, aunque ocupe varias líneas.
-- Resumen de totales alineado a la derecha con desglose por tipo de IVA (base y cuota), descuento global si es mayor que cero y fila TOTAL destacada con fondo del color de acento.
-- Observaciones en caja clara; pie legal configurable dentro de un recuadro con borde de color, repetido en todas las páginas; `Página X de Y` en cada página.
+- Resumen de totales alineado a la derecha y compacto, sin filas de totales globales repetidas («Base total»/«IVA total» SHALL NOT aparecer): por cada tipo de IVA una fila `Base` (importes antes del descuento global) seguida de su fila `IVA n%` con la cuota calculada sobre la base ya descontada; si el descuento global es mayor que cero, una única fila `Descuento n%` con el importe restando y en rojo suave; después la fila TOTAL destacada con fondo del color de acento. Las cifras mostradas SHALL cuadrar: Base − Descuento + IVA = TOTAL.
+- Observaciones en caja clara; pie legal configurable dentro de un recuadro con borde de color, repetido en todas las páginas; `Página X de Y` en cada página reflejando el número real de páginas. El cierre del documento SHALL mantenerse compacto (totales estrechos y tablas capaces de repartir sus filas entre páginas) para evitar una página que contenga únicamente el bloque de totales cuando el contenido cabe repartiéndose.
 
 El resto se mantiene como estaba: descripciones largas ajustadas automáticamente, importes formato español (`1.250,50 €`), fechas formato español (`11/08/2026`), marca `ANULADA` destacada en facturas anuladas, correspondencia exacta con la versión exportada, uso de la configuración actual de empresa/logo/cabecera/pie legal, documentos independientes, estructura `Facturas/AAAA/SERIE/` y nombre `CODIGO-CORRELATIVO-MES.pdf` sin indicar versión. El color de acento SHALL tomarse de la preferencia `color_pdf`, con valor por defecto arena Alcazaba (`#B08D57`) si no está configurada.
 
@@ -316,17 +334,40 @@ El resto se mantiene como estaba: descripciones largas ajustadas automáticament
 - **WHEN** el usuario exporta la factura C-59/8
 - **THEN** se genera el archivo `Facturas/2026/C/C-59-8.pdf`
 
-#### Scenario: Tarjetas bicolor con email y datos de pago opcionales
+#### Scenario: Tarjeta Facturar a bicolor y tarjeta Datos de pago clara
+- **WHEN** el usuario exporta cualquier factura
+- **THEN** la cabecera de «Facturar a» lleva fondo del color de acento con texto blanco
+- **AND** la cabecera de «Datos de pago» va en blanco con borde fino inferior y texto marrón oscuro
 
+#### Scenario: Tarjetas bicolor con email y datos de pago opcionales
 - **WHEN** el usuario exporta una factura cuyo cliente tiene email y con forma de pago, vencimiento y realizada por rellenados
 - **THEN** la tarjeta «Facturar a» muestra el email del cliente y la tarjeta «Datos de pago» muestra los tres valores
 - **AND** si el cliente no tiene email o los datos de pago están vacíos, esas filas no aparecen en el PDF
 
 #### Scenario: Total por línea con IVA incluido
-
 - **WHEN** el PDF contiene una línea con base 100,00 € e IVA 21 %
 - **THEN** la columna Total de esa línea muestra 121,00 €
 - **AND** las líneas exentas muestran su importe sin IVA añadido
+
+#### Scenario: Totales sin filas duplicadas
+- **WHEN** el usuario exporta una factura sin descuento con base 100,00 € al 21 %
+- **THEN** el resumen muestra exactamente `Base 100,00 €`, `IVA 21 % 21,00 €` y `TOTAL 121,00 €`
+- **AND** no aparecen las filas `Base total` ni `IVA total`
+
+#### Scenario: Totales con descuento cuadrando
+- **WHEN** el usuario exporta una factura con descuento global del 10 % sobre base 1.000,00 € al 21 %
+- **THEN** el resumen muestra `Base 1.000,00 €`, `IVA 21 % 189,00 €` (cuota sobre la base descontada), `Descuento 10 % −100,00 €` restando y `TOTAL 1.089,00 €`
+- **AND** se cumple Base − Descuento + IVA = TOTAL
+
+#### Scenario: Varios tipos de IVA con un solo descuento
+- **WHEN** el usuario exporta una factura con líneas al 21 % y al 10 % y descuento global mayor que cero
+- **THEN** el resumen muestra cada par Base/IVA por separado y una única fila `Descuento n%`
+- **AND** no aparecen filas de totales globales repetidas
+
+#### Scenario: Los totales no quedan solos en una página
+- **WHEN** el usuario exporta una factura larga cuyo bloque de totales cabe en el espacio restante de la última página una vez compactado
+- **THEN** no se genera una página adicional que contenga únicamente los totales
+- **AND** si el bloque realmente no cabe, pasa íntegro a la página siguiente y `Página X de Y` la cuenta como página real
 
 ### Requirement: Persistencia local
 
@@ -375,4 +416,3 @@ El menú principal SHALL mostrar el nombre, el NIF y el logo de la empresa confi
 #### Scenario: Mostrar logo en el editor
 - **WHEN** el usuario abre una factura con un logo configurado
 - **THEN** el logo de la empresa aparece en la cabecera del editor
-

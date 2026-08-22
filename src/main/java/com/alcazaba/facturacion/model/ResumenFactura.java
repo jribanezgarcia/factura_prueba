@@ -12,6 +12,8 @@ public class ResumenFactura {
 
     private final List<IvaGrupo> grupos = new ArrayList<>();
     private BigDecimal baseTotal = BigDecimal.ZERO;
+    private BigDecimal baseBruta = BigDecimal.ZERO;
+    private BigDecimal importeDescuento = BigDecimal.ZERO;
     private BigDecimal ivaTotal = BigDecimal.ZERO;
     private BigDecimal total = BigDecimal.ZERO;
     private int descuentoPorcentaje;
@@ -21,6 +23,7 @@ public class ResumenFactura {
         private Integer porcentaje;
         private String motivoExencion;
         private BigDecimal base = BigDecimal.ZERO;
+        private BigDecimal baseBruta = BigDecimal.ZERO;
         private BigDecimal cuota = BigDecimal.ZERO;
 
         public String getNombre() {
@@ -55,6 +58,17 @@ public class ResumenFactura {
             this.base = base;
         }
 
+        /**
+         * Base del grupo antes de aplicar el descuento global.
+         */
+        public BigDecimal getBaseBruta() {
+            return baseBruta;
+        }
+
+        public void setBaseBruta(BigDecimal baseBruta) {
+            this.baseBruta = baseBruta;
+        }
+
         public BigDecimal getCuota() {
             return cuota;
         }
@@ -78,6 +92,28 @@ public class ResumenFactura {
 
     public void setBaseTotal(BigDecimal baseTotal) {
         this.baseTotal = baseTotal;
+    }
+
+    /**
+     * Suma de las bases antes de aplicar el descuento global.
+     */
+    public BigDecimal getBaseBruta() {
+        return baseBruta;
+    }
+
+    public void setBaseBruta(BigDecimal baseBruta) {
+        this.baseBruta = baseBruta;
+    }
+
+    /**
+     * Importe descontado: baseBruta - baseTotal (cero sin descuento).
+     */
+    public BigDecimal getImporteDescuento() {
+        return importeDescuento;
+    }
+
+    public void setImporteDescuento(BigDecimal importeDescuento) {
+        this.importeDescuento = importeDescuento;
     }
 
     public BigDecimal getIvaTotal() {
