@@ -23,6 +23,7 @@ import com.lowagie.text.pdf.ColumnText;
 import com.lowagie.text.pdf.PdfContentByte;
 import com.lowagie.text.pdf.PdfGState;
 import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPCellEvent;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfTemplate;
@@ -49,14 +50,57 @@ public class PdfService {
     public static final String PREF_COLOR = "color_pdf";
     public static final String COLOR_DEFECTO = "#B08D57";
 
-    private static final Color TINTA = new Color(0x33, 0x33, 0x33);
-    private static final Color GRIS = new Color(0x60, 0x5A, 0x50);
-    private static final Color GRIS_CLARO = new Color(0xB9, 0xB1, 0xA4);
+    private static final Color TINTA = new Color(0x3A, 0x33, 0x2B);
+    private static final Color GRIS = new Color(0x5F, 0x55, 0x48);
+    private static final Color GRIS_CLARO = new Color(0xA2, 0x93, 0x7F);
     private static final Color BLANCO = Color.WHITE;
     private static final Color NEGRO = Color.BLACK;
     private static final Color ROJO_ANULADA = new Color(0xB0, 0x00, 0x20);
     private static final Color ROJO_DESCUENTO = new Color(0x8A, 0x2B, 0x2B);
+    private static final Color VALOR_SUAVE = new Color(0xC4, 0xBA, 0xAC);
     private static final float MARGEN_LATERAL = 40f;
+
+    /**
+     * Reserva a la derecha para el bloque FACTURA/Serie-Nº/fecha en cabecera.
+     */
+    private static final float RESERVA_FACTURA = 170f;
+    private static final float RADIO_TARJETA = 7f;
+    private static final float RADIO_CAJA = 6f;
+    private static final float RADIO_CHIP = 2f;
+
+    static final BaseFont CALIBRI = cargarFuenteSistema("calibri.ttf");
+    static final BaseFont CALIBRI_NEGrita = cargarFuenteSistema("calibrib.ttf");
+    static final BaseFont CALIBRI_CURSIVA = cargarFuenteSistema("calibrii.ttf");
+    static final BaseFont CALIBRI_NEGrita_CURSIVA = cargarFuenteSistema("calibriz.ttf");
+
+    private static BaseFont cargarFuenteSistema(String archivo) {
+        try {
+            String windir = System.getenv("WINDIR");
+            Path ruta = Path.of(windir == null || windir.isBlank() ? "C:\\Windows" : windir,
+                    "Fonts", archivo);
+            return BaseFont.createFont(ruta.toString(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static BaseFont baseRegular() {
+        return CALIBRI != null ? CALIBRI : FontFactory.getFont(FontFactory.HELVETICA).getBaseFont();
+    }
+
+    private static BaseFont baseNegrita() {
+        if (CALIBRI != null) {
+            return CALIBRI_NEGrita != null ? CALIBRI_NEGrita : CALIBRI;
+        }
+        return FontFactory.getFont(FontFactory.HELVETICA_BOLD).getBaseFont();
+    }
+
+    private static BaseFont baseCursiva() {
+        if (CALIBRI != null) {
+            return CALIBRI_CURSIVA != null ? CALIBRI_CURSIVA : CALIBRI;
+        }
+        return FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE).getBaseFont();
+    }
 
     public void exportar(FacturaService.VersionCompleta vc, Empresa empresa, Path ruta) throws Exception {
         exportar(vc, empresa, ruta, null);
@@ -107,16 +151,17 @@ public class PdfService {
 
     private PdfPCell celdaTarjeta(PdfPTable interior, Colores c) {
         PdfPCell celula = new PdfPCell(interior);
-        celula.setBorder(Rectangle.BOX);
-        celula.setBorderColor(c.bordeTabla);
+        celula.setBorder(Rectangle.NO_BORDER);
+        celula.setBackgroundColor(BLANCO);
         celula.setPadding(0);
+        celula.setCellEvent(new ContornoRedondeado(RADIO_TARJETA, c.bordeTabla));
         return celula;
     }
 
     private PdfPTable tarjetaCliente(FacturaService.VersionCompleta vc, Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
-        t.addCell(cabeceraTarjeta("FACTURAR A", c));
+        t.addCell(cabeceraTarjeta("FACTURAR A", c, false));
         PdfPCell cuerpo = new PdfPCell();
         cuerpo.setBackgroundColor(BLANCO);
         cuerpo.setBorder(Rectangle.NO_BORDER);
@@ -152,13 +197,13 @@ public class PdfService {
     }
 
     private Phrase lineaDato(boolean primera, String texto) {
-        return new Phrase((primera ? "" : "\n") + texto, fuente(false, 9.5f, GRIS));
+        return new Phrase((primera ? "" : "\n") + texto, fuente(false, 9.5f, TINTA));
     }
 
     private PdfPTable tarjetaPago(FacturaService.VersionCompleta vc, Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
-        t.addCell(cabeceraTarjetaClara("DATOS DE PAGO", c));
+        t.addCell(cabeceraTarjeta("DATOS DE PAGO", c, true));
         PdfPCell cuerpo = new PdfPCell();
         cuerpo.setBackgroundColor(BLANCO);
         cuerpo.setBorder(Rectangle.NO_BORDER);
@@ -190,7 +235,7 @@ public class PdfService {
             etiqueta.setBorder(Rectangle.NO_BORDER);
             etiqueta.setPadding(1.5f);
             filasTabla.addCell(etiqueta);
-            PdfPCell valor = new PdfPCell(new Phrase(fila[1], fuente(false, 9.5f, TINTA)));
+            PdfPCell valor = new PdfPCell(new Phrase(fila[1], fuente(false, 9.5f, VALOR_SUAVE)));
             valor.setBorder(Rectangle.NO_BORDER);
             valor.setPadding(1.5f);
             filasTabla.addCell(valor);
@@ -200,28 +245,88 @@ public class PdfService {
         return t;
     }
 
-    private PdfPCell cabeceraTarjeta(String titulo, Colores c) {
-        PdfPCell celula = new PdfPCell(new Phrase(titulo, fuente(true, 8.5f, BLANCO)));
-        celula.setBackgroundColor(c.base);
+    /**
+     * Cabecera de tarjeta pintada por evento: fondo con las esquinas superiores
+     * redondeadas y titulo dibujado encima. La variante clara va en blanco con
+     * borde fino inferior y texto marron oscuro.
+     */
+    private PdfPCell cabeceraTarjeta(String titulo, Colores c, boolean clara) {
+        PdfPCell celula = new PdfPCell(new Phrase(" ", fuente(false, 1f, BLANCO)));
         celula.setBorder(Rectangle.NO_BORDER);
-        celula.setPadding(5);
+        celula.setMinimumHeight(17f);
         celula.setPaddingLeft(8);
+        celula.setPaddingTop(5);
+        celula.setCellEvent(new RotuloTarjeta(titulo, c, clara));
         return celula;
     }
 
+    private final class RotuloTarjeta implements PdfPCellEvent {
+
+        private final String titulo;
+        private final Colores c;
+        private final boolean clara;
+
+        RotuloTarjeta(String titulo, Colores c, boolean clara) {
+            this.titulo = titulo;
+            this.c = c;
+            this.clara = clara;
+        }
+
+        @Override
+        public void cellLayout(PdfPCell celula, Rectangle rect, PdfContentByte[] canvases) {
+            PdfContentByte cb = canvases[PdfPTable.TEXTCANVAS];
+            float x = rect.getLeft();
+            float y = rect.getBottom();
+            float w = rect.getWidth();
+            float h = rect.getHeight();
+            cb.saveState();
+            cb.setColorFill(clara ? BLANCO : c.base);
+            cb.roundRectangle(x - 0.4f, y, w + 0.8f, h, RADIO_TARJETA);
+            cb.fill();
+            cb.rectangle(x - 0.4f, y - 0.4f, w + 0.8f, RADIO_TARJETA + 0.4f);
+            cb.fill();
+            if (clara) {
+                cb.setColorStroke(c.bordeTabla);
+                cb.setLineWidth(0.7f);
+                cb.moveTo(x, y);
+                cb.lineTo(x + w, y);
+                cb.stroke();
+            }
+            cb.restoreState();
+
+            BaseFont bf = baseNegrita();
+            cb.beginText();
+            cb.setFontAndSize(bf, 8.5f);
+            cb.setColorFill(clara ? c.oscuro : BLANCO);
+            cb.showTextAligned(Element.ALIGN_LEFT, titulo, x + 8, y + (h - 8.5f) / 2 - 1f, 0);
+            cb.endText();
+        }
+    }
+
     /**
-     * Cabecera sin fondo para la tarjeta de datos de pago: blanca con un
-     * borde fino inferior del color de acento y texto marron oscuro.
+     * Traza un contorno con esquinas redondeadas sobre la celda ya renderizada.
      */
-    private PdfPCell cabeceraTarjetaClara(String titulo, Colores c) {
-        PdfPCell celula = new PdfPCell(new Phrase(titulo, fuente(true, 8.5f, c.oscuro)));
-        celula.setBackgroundColor(BLANCO);
-        celula.setBorder(Rectangle.BOTTOM);
-        celula.setBorderColor(c.bordeTabla);
-        celula.setBorderWidth(0.7f);
-        celula.setPadding(5);
-        celula.setPaddingLeft(8);
-        return celula;
+    private static final class ContornoRedondeado implements PdfPCellEvent {
+
+        private final float radio;
+        private final Color borde;
+
+        ContornoRedondeado(float radio, Color borde) {
+            this.radio = radio;
+            this.borde = borde;
+        }
+
+        @Override
+        public void cellLayout(PdfPCell celula, Rectangle rect, PdfContentByte[] canvases) {
+            PdfContentByte cb = canvases[PdfPTable.TEXTCANVAS];
+            cb.saveState();
+            cb.setColorStroke(borde);
+            cb.setLineWidth(0.9f);
+            cb.roundRectangle(rect.getLeft() - 0.4f, rect.getBottom() - 0.4f,
+                    rect.getWidth() + 0.8f, rect.getHeight() + 0.8f, radio);
+            cb.stroke();
+            cb.restoreState();
+        }
     }
 
     // ------------------------------------------------------------------
@@ -308,6 +413,15 @@ public class PdfService {
                     "-" + Formatos.moneda(r.getImporteDescuento()));
         }
 
+        PdfPCell hueco = new PdfPCell(new Phrase(" "));
+        hueco.setBorder(Rectangle.NO_BORDER);
+        hueco.setFixedHeight(6f);
+        t.addCell(hueco);
+        PdfPCell hueco2 = new PdfPCell(new Phrase(" "));
+        hueco2.setBorder(Rectangle.NO_BORDER);
+        hueco2.setFixedHeight(6f);
+        t.addCell(hueco2);
+
         PdfPCell etiquetaTotal = new PdfPCell(new Phrase("TOTAL", fuente(true, 12, BLANCO)));
         etiquetaTotal.setBackgroundColor(c.base);
         etiquetaTotal.setBorderColor(c.oscuro);
@@ -336,7 +450,7 @@ public class PdfService {
     }
 
     private void filaDescuento(PdfPTable t, String etiqueta, String valor) {
-        Font fuenteRoja = FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE, 9f, ROJO_DESCUENTO);
+        Font fuenteRoja = new Font(baseCursiva(), 9f, Font.NORMAL, ROJO_DESCUENTO);
         PdfPCell celula = new PdfPCell(new Phrase(etiqueta, fuenteRoja));
         celula.setBorder(Rectangle.NO_BORDER);
         celula.setPadding(1.5f);
@@ -365,8 +479,9 @@ public class PdfService {
         t.setWidthPercentage(100);
         PdfPCell celula = new PdfPCell();
         celula.setBackgroundColor(c.clarisimo);
-        celula.setBorderColor(c.bordeTabla);
+        celula.setBorder(Rectangle.NO_BORDER);
         celula.setPadding(8);
+        celula.setCellEvent(new ContornoRedondeado(RADIO_CAJA, c.bordeTabla));
         Paragraph p = new Paragraph("Observaciones", fuente(true, 8.5f, c.oscuro));
         p.add(new Phrase("\n" + observaciones, fuente(false, 9f, TINTA)));
         celula.setPhrase(p);
@@ -392,7 +507,7 @@ public class PdfService {
         }
         superior = Math.max(superior, 108f);
 
-        BaseFont bfPie = FontFactory.getFont(FontFactory.HELVETICA, 7.5f).getBaseFont();
+        BaseFont bfPie = baseRegular();
         float anchoUtil = PageSize.A4.getWidth() - 2 * MARGEN_LATERAL - 16f;
         List<String> lineasPie = partir(empresa != null ? nz(empresa.getPieLegal()) : "", bfPie, 7.5f, anchoUtil);
         float inferior = Math.max(112f, 30f + lineasPie.size() * 9f + 12f + 16f);
@@ -484,8 +599,7 @@ public class PdfService {
     }
 
     private Font fuente(boolean negrita, float tamano, Color color) {
-        return FontFactory.getFont(negrita ? FontFactory.HELVETICA_BOLD : FontFactory.HELVETICA,
-                tamano, color);
+        return new Font(negrita ? baseNegrita() : baseRegular(), tamano, Font.NORMAL, color);
     }
 
     private Color colorDe(String hex) {
@@ -574,6 +688,7 @@ public class PdfService {
         private final FacturaVersion version;
         private final Colores c;
         private PdfTemplate totalPaginas;
+        private int paginasReales;
 
         CabeceraPie(Empresa empresa, Image logo, boolean anulada, boolean rectificativa,
                     FacturaVersion version, Colores colores) {
@@ -588,10 +703,12 @@ public class PdfService {
         @Override
         public void onOpenDocument(PdfWriter writer, Document document) {
             totalPaginas = writer.getDirectContent().createTemplate(28, 12);
+            paginasReales = 0;
         }
 
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
+            paginasReales++;
             PdfContentByte cb = writer.getDirectContent();
             Rectangle pagina = document.getPageSize();
             float izquierda = document.leftMargin();
@@ -604,9 +721,11 @@ public class PdfService {
                 dibujarLogo(cb, izquierda, bordeSuperiorContenido);
                 float xInfo = izquierda + offsetLogoX(empresa)
                         + Math.min(anchoLogoEfectivo(empresa), 330f) + 14f;
-                dibujarDatosEmpresa(cb, xInfo, pagina.getHeight() - 34, 13f);
+                dibujarDatosEmpresa(cb, xInfo, pagina.getHeight() - 34, 13f,
+                        Math.max(derecha - RESERVA_FACTURA - xInfo, 80f));
             } else {
-                dibujarCabeceraTexto(cb, izquierda, pagina.getHeight());
+                dibujarDatosEmpresa(cb, izquierda, pagina.getHeight() - 34, 15f,
+                        Math.max(derecha - RESERVA_FACTURA - izquierda, 80f));
             }
             dibujarSeparador(cb, izquierda, derecha, bordeSuperiorContenido);
             dibujarPieLegal(writer, cb, izquierda, derecha, bordeInferiorContenido);
@@ -628,24 +747,26 @@ public class PdfService {
             }
         }
 
-        private void dibujarCabeceraTexto(PdfContentByte cb, float izquierda, float altoPagina) {
-            dibujarDatosEmpresa(cb, izquierda, altoPagina - 34, 15f);
-        }
-
-        private void dibujarDatosEmpresa(PdfContentByte cb, float x, float yInicial, float tamNombre) {
+        private void dibujarDatosEmpresa(PdfContentByte cb, float x, float yInicial, float tamNombre,
+                                         float anchoDisponible) {
             float y = yInicial;
+            String nombre = nz(empresa.getNombre());
+            BaseFont bfNombre = baseNegrita();
+            float tamano = ajustarTamano(nombre, bfNombre, tamNombre, anchoDisponible);
             cb.beginText();
-            cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA_BOLD, tamNombre).getBaseFont(), tamNombre);
-            cb.setColorFill(TINTA);
-            cb.showTextAligned(Element.ALIGN_LEFT, nz(empresa.getNombre()), x, y, 0);
+            cb.setFontAndSize(bfNombre, tamano);
+            cb.setColorFill(c.oscuro);
+            cb.showTextAligned(Element.ALIGN_LEFT, nombre, x, y, 0);
             cb.endText();
             y -= tamNombre + 1;
             for (LineaCabecera linea : lineasEmpresa(empresa)) {
                 if (linea.chipNif) {
-                    dibujarChipNif(cb, x, y);
+                    dibujarChipNif(cb, x, y, anchoDisponible);
                 } else {
+                    BaseFont bf = baseRegular();
+                    float t = ajustarTamano(linea.texto, bf, 9f, anchoDisponible);
                     cb.beginText();
-                    cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA, 9).getBaseFont(), 9);
+                    cb.setFontAndSize(bf, t);
                     cb.setColorFill(GRIS);
                     cb.showTextAligned(Element.ALIGN_LEFT, linea.texto, x, y, 0);
                     cb.endText();
@@ -654,48 +775,61 @@ public class PdfService {
             }
         }
 
-        private void dibujarChipNif(PdfContentByte cb, float x, float yBase) {
+        /**
+         * Reduce el tamaño de la fuente por pasos hasta que el texto cabe en el
+         * ancho disponible (minimo 9pt para seguir siendo legible).
+         */
+        private float ajustarTamano(String texto, BaseFont bf, float tamanoInicial, float anchoMaximo) {
+            float t = tamanoInicial;
+            while (t > 9f && bf.getWidthPoint(texto, t) > anchoMaximo) {
+                t -= 0.5f;
+            }
+            return Math.max(t, 9f);
+        }
+
+        private void dibujarChipNif(PdfContentByte cb, float x, float yBase, float anchoDisponible) {
             String texto = "NIF: " + nz(empresa.getNif());
-            BaseFont bf = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 9).getBaseFont();
-            float ancho = bf.getWidthPoint(texto, 9);
+            BaseFont bf = baseNegrita();
+            float t = ajustarTamano(texto, bf, 9f, Math.max(anchoDisponible - 10f, 40f));
+            float ancho = bf.getWidthPoint(texto, t);
             cb.setColorFill(c.claro);
-            cb.rectangle(x - 4, yBase - 3.5f, ancho + 10, 12.5f);
+            cb.roundRectangle(x - 4, yBase - 3.5f, ancho + 10, 12.5f, RADIO_CHIP);
             cb.fill();
             cb.setColorStroke(c.bordeTabla);
             cb.setLineWidth(0.6f);
-            cb.rectangle(x - 4, yBase - 3.5f, ancho + 10, 12.5f);
+            cb.roundRectangle(x - 4, yBase - 3.5f, ancho + 10, 12.5f, RADIO_CHIP);
             cb.stroke();
             cb.beginText();
-            cb.setFontAndSize(bf, 9);
+            cb.setFontAndSize(bf, t);
             cb.setColorFill(c.oscuro);
             cb.showTextAligned(Element.ALIGN_LEFT, texto, x + 1, yBase, 0);
             cb.endText();
         }
 
         private void dibujarBloqueFactura(PdfContentByte cb, float derecha, float altoPagina) {
-            float y = altoPagina - 36;
+            float y = altoPagina - 38;
             String titulo = rectificativa ? "RECTIFICATIVA" : "FACTURA";
             cb.beginText();
-            cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA_BOLD, 15).getBaseFont(), 15);
+            cb.setFontAndSize(baseNegrita(), 18);
             cb.setColorFill(c.oscuro);
             cb.showTextAligned(Element.ALIGN_RIGHT, titulo, derecha, y, 0);
             cb.endText();
-            y -= 17;
+            y -= 20;
             cb.beginText();
-            cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10).getBaseFont(), 10);
+            cb.setFontAndSize(baseNegrita(), 10);
             cb.setColorFill(TINTA);
             cb.showTextAligned(Element.ALIGN_RIGHT, nz(version.getNumero()), derecha, y, 0);
             cb.endText();
-            y -= 13;
+            y -= 14;
             cb.beginText();
-            cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA, 9).getBaseFont(), 9);
+            cb.setFontAndSize(baseRegular(), 9);
             cb.setColorFill(GRIS);
             cb.showTextAligned(Element.ALIGN_RIGHT, Formatos.fecha(version.getFechaFactura()), derecha, y, 0);
             cb.endText();
             if (rectificativa) {
                 y -= 12;
                 cb.beginText();
-                cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA, 9).getBaseFont(), 9);
+                cb.setFontAndSize(baseRegular(), 9);
                 cb.setColorFill(GRIS);
                 cb.showTextAligned(Element.ALIGN_RIGHT, "Rectifica a: " + nz(version.getReferenciaRectifica()),
                         derecha, y, 0);
@@ -704,7 +838,7 @@ public class PdfService {
             if (anulada) {
                 y -= 15;
                 cb.beginText();
-                cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA_BOLD, 11).getBaseFont(), 11);
+                cb.setFontAndSize(baseNegrita(), 11);
                 cb.setColorFill(ROJO_ANULADA);
                 cb.showTextAligned(Element.ALIGN_RIGHT, "ANULADA", derecha, y, 0);
                 cb.endText();
@@ -722,37 +856,43 @@ public class PdfService {
         private void dibujarPieLegal(PdfWriter writer, PdfContentByte cb, float izquierda, float derecha,
                                      float bordeInferior) {
             String pie = empresa != null && empresa.getPieLegal() != null ? empresa.getPieLegal() : "";
-            BaseFont bf = FontFactory.getFont(FontFactory.HELVETICA, 7.5f).getBaseFont();
-            float anchoUtil = derecha - izquierda - 12f;
+            BaseFont bf = baseRegular();
+            float anchoUtil = derecha - izquierda - 16f;
             List<String> lineas = partir(pie, bf, 7.5f, anchoUtil);
 
             float cajaInferior = 30f;
             float alturaCaja = lineas.size() * 9f + 10f;
             cb.setColorFill(c.clarisimo);
-            cb.rectangle(izquierda - 4, cajaInferior, derecha - izquierda + 8, alturaCaja);
+            cb.roundRectangle(izquierda - 4, cajaInferior, derecha - izquierda + 8, alturaCaja, RADIO_CAJA);
             cb.fill();
             cb.setColorStroke(c.bordeTabla);
             cb.setLineWidth(0.7f);
-            cb.rectangle(izquierda - 4, cajaInferior, derecha - izquierda + 8, alturaCaja);
+            cb.roundRectangle(izquierda - 4, cajaInferior, derecha - izquierda + 8, alturaCaja, RADIO_CAJA);
             cb.stroke();
+            cb.setColorFill(c.base);
+            cb.roundRectangle(izquierda - 4, cajaInferior, 3f, alturaCaja, RADIO_CAJA);
+            cb.fill();
 
             float y = cajaInferior + alturaCaja - 7f;
             for (String linea : lineas) {
                 cb.beginText();
                 cb.setFontAndSize(bf, 7.5f);
                 cb.setColorFill(GRIS);
-                cb.showTextAligned(Element.ALIGN_LEFT, linea, izquierda + 2, y, 0);
+                cb.showTextAligned(Element.ALIGN_LEFT, linea, izquierda + 4, y, 0);
                 cb.endText();
                 y -= 9f;
             }
 
+            BaseFont bfPie = baseRegular();
+            float wHueco = bfPie.getWidthPoint("00", 8);
+            float xTotal = derecha - wHueco;
             cb.beginText();
-            cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA, 8).getBaseFont(), 8);
+            cb.setFontAndSize(bfPie, 8);
             cb.setColorFill(GRIS);
             cb.showTextAligned(Element.ALIGN_RIGHT, "Página " + writer.getPageNumber() + " de ",
-                    derecha, 18, 0);
-            cb.addTemplate(totalPaginas, derecha - bf.getWidthPoint("de " + writer.getPageNumber(), 8) - 2, 18);
+                    xTotal - 2, 18, 0);
             cb.endText();
+            cb.addTemplate(totalPaginas, xTotal, 18);
         }
 
         private void dibujarMarcaAnulada(PdfWriter writer, PdfContentByte cb, Rectangle pagina) {
@@ -773,8 +913,7 @@ public class PdfService {
         @Override
         public void onCloseDocument(PdfWriter writer, Document document) {
             ColumnText.showTextAligned(totalPaginas, Element.ALIGN_LEFT,
-                    new Phrase(String.valueOf(writer.getPageNumber()),
-                            FontFactory.getFont(FontFactory.HELVETICA, 8)), 0, 0, 0);
+                    new Phrase(String.valueOf(paginasReales), new Font(baseRegular(), 8)), 0, 0, 0);
         }
     }
 }

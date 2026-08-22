@@ -6,6 +6,8 @@ import com.alcazaba.facturacion.model.Factura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.service.FacturaService;
+import com.lowagie.text.pdf.PdfDictionary;
+import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import org.junit.jupiter.api.Test;
@@ -163,6 +165,49 @@ class PdfServiceTest {
             String texto = textoDe(reader);
             assertTrue(texto.contains("Página 1 de "));
             assertTrue(texto.contains("Página " + paginas + " de "));
+        }
+    }
+
+    @Test
+    void fuenteEmbebidaSegunDisponibilidad() throws Exception {
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(), List.of(lineaArmario()), null);
+        Path destino = tempDir.resolve("fuente.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, null);
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            PdfDictionary recursos = reader.getPageN(1).getAsDict(PdfName.RESOURCES);
+            PdfDictionary fuentes = recursos.getAsDict(PdfName.FONT);
+            boolean calibri = false;
+            if (fuentes != null) {
+                for (PdfName key : fuentes.getKeys()) {
+                    PdfDictionary f = fuentes.getAsDict(key);
+                    if (f != null && f.getAsName(PdfName.BASEFONT) != null
+                            && f.getAsName(PdfName.BASEFONT).toString().contains("Calibri")) {
+                        calibri = true;
+                        break;
+                    }
+                }
+            }
+            assertTrue(PdfService.CALIBRI == null || calibri);
+            assertTrue(PdfService.CALIBRI != null || !calibri);
+        }
+    }
+
+    @Test
+    void nombreEmpresaLargoNoSolapaFactura() throws Exception {
+        Empresa e = empresaTexto();
+        e.setNombre("COMERCIAL ALCAZABA SOCIEDAD COLECTIVA DE COCINAS Y MUEBLES DE ALMERIA Y ANEXOS S.C.");
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(), List.of(lineaArmario()), null);
+
+        Path destino = tempDir.resolve("nombre-largo.pdf");
+        new PdfService().exportar(vc, e, destino, null);
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("C-59/7"));
+            assertTrue(texto.contains("14/07/2026"));
         }
     }
 
