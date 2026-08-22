@@ -167,37 +167,56 @@ public class PdfService {
         cuerpo.setBorder(Rectangle.NO_BORDER);
         cuerpo.setPadding(8);
         cuerpo.setPaddingTop(6);
-        Paragraph p = new Paragraph();
-        p.add(new Chunk(nz(vc.version().getCliNombre()), fuente(true, 11, TINTA)));
-        p.add(new Phrase("\n"));
-        if (!nz(vc.version().getCliNif()).isBlank()) {
-            p.add(new Phrase("NIF: " + vc.version().getCliNif(), fuente(false, 9.5f, GRIS)));
-            p.add(new Phrase("\n"));
+
+        FacturaVersion v = vc.version();
+        List<String[]> filas = new ArrayList<>();
+        if (!nz(v.getCliNombre()).isBlank()) {
+            filas.add(new String[]{"Nombre", v.getCliNombre()});
         }
-        boolean primero = true;
-        if (!nz(vc.version().getCliDireccion()).isBlank()) {
-            p.add(lineaDato(primero, vc.version().getCliDireccion()));
-            primero = false;
+        if (!nz(v.getCliNif()).isBlank()) {
+            filas.add(new String[]{"NIF", v.getCliNif()});
         }
-        String poblacion = joinNoVacio(" ", vc.version().getCliCp(), vc.version().getCliLocalidad());
+        if (!nz(v.getCliDireccion()).isBlank()) {
+            filas.add(new String[]{"Dirección", v.getCliDireccion()});
+        }
+        String poblacion = joinNoVacio(" ", nz(v.getCliCp()), nz(v.getCliLocalidad()));
+        String provincia = nz(v.getCliProvincia());
+        if (!poblacion.isBlank() && !provincia.isBlank()) {
+            poblacion = poblacion + " (" + provincia + ")";
+        } else if (poblacion.isBlank()) {
+            poblacion = provincia;
+        }
         if (!poblacion.isBlank()) {
-            p.add(lineaDato(primero, poblacion));
-            primero = false;
+            filas.add(new String[]{"Población", poblacion});
         }
-        if (!nz(vc.version().getCliProvincia()).isBlank()) {
-            p.add(lineaDato(primero, vc.version().getCliProvincia()));
-            primero = false;
+        if (!nz(v.getCliEmail()).isBlank()) {
+            filas.add(new String[]{"Email", v.getCliEmail()});
         }
-        if (!nz(vc.version().getCliEmail()).isBlank()) {
-            p.add(new Phrase((primero ? "" : "\n") + vc.version().getCliEmail(), fuente(false, 9.5f, c.oscuro)));
+
+        if (filas.isEmpty()) {
+            cuerpo.setPhrase(new Phrase("—", fuente(false, 9.5f, GRIS_CLARO)));
+            t.addCell(cuerpo);
+            return t;
         }
-        cuerpo.setPhrase(p);
+
+        PdfPTable filasTabla = new PdfPTable(new float[]{30f, 70f});
+        filasTabla.setWidthPercentage(100);
+        for (String[] fila : filas) {
+            PdfPCell etiqueta = new PdfPCell(new Phrase(fila[0], fuente(false, 8.5f, GRIS_CLARO)));
+            etiqueta.setBorder(Rectangle.NO_BORDER);
+            etiqueta.setPadding(1.5f);
+            filasTabla.addCell(etiqueta);
+            Font fuenteValor = "Nombre".equals(fila[0])
+                    ? fuente(true, 10.5f, TINTA)
+                    : fuente(false, 9.5f, TINTA);
+            PdfPCell valor = new PdfPCell(new Phrase(fila[1], fuenteValor));
+            valor.setBorder(Rectangle.NO_BORDER);
+            valor.setPadding(1.5f);
+            filasTabla.addCell(valor);
+        }
+        cuerpo.addElement(filasTabla);
         t.addCell(cuerpo);
         return t;
-    }
-
-    private Phrase lineaDato(boolean primera, String texto) {
-        return new Phrase((primera ? "" : "\n") + texto, fuente(false, 9.5f, TINTA));
     }
 
     private PdfPTable tarjetaPago(FacturaService.VersionCompleta vc, Colores c) {
@@ -814,16 +833,20 @@ public class PdfService {
             cb.setColorFill(c.oscuro);
             cb.showTextAligned(Element.ALIGN_RIGHT, titulo, derecha, y, 0);
             cb.endText();
-            y -= 20;
+            y -= 22;
+            dibujarRotulo(cb, "SERIE / Nº", derecha, y);
+            y -= 9;
             cb.beginText();
             cb.setFontAndSize(baseNegrita(), 10);
             cb.setColorFill(TINTA);
             cb.showTextAligned(Element.ALIGN_RIGHT, nz(version.getNumero()), derecha, y, 0);
             cb.endText();
             y -= 14;
+            dibujarRotulo(cb, "FECHA", derecha, y);
+            y -= 9;
             cb.beginText();
-            cb.setFontAndSize(baseRegular(), 9);
-            cb.setColorFill(GRIS);
+            cb.setFontAndSize(baseNegrita(), 10);
+            cb.setColorFill(TINTA);
             cb.showTextAligned(Element.ALIGN_RIGHT, Formatos.fecha(version.getFechaFactura()), derecha, y, 0);
             cb.endText();
             if (rectificativa) {
@@ -843,6 +866,14 @@ public class PdfService {
                 cb.showTextAligned(Element.ALIGN_RIGHT, "ANULADA", derecha, y, 0);
                 cb.endText();
             }
+        }
+
+        private void dibujarRotulo(PdfContentByte cb, String texto, float derecha, float y) {
+            cb.beginText();
+            cb.setFontAndSize(baseNegrita(), 6.5f);
+            cb.setColorFill(GRIS_CLARO);
+            cb.showTextAligned(Element.ALIGN_RIGHT, texto, derecha, y, 0);
+            cb.endText();
         }
 
         private void dibujarSeparador(PdfContentByte cb, float izquierda, float derecha, float bordeSuperior) {
