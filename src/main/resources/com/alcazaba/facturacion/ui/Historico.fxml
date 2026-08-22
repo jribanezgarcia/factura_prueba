@@ -27,6 +27,7 @@
                     <Label text="Estado"/>
                     <ComboBox fx:id="comboEstado" prefWidth="120"/>
                     <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btnExportarPdf" onAction="#exportarPdf" styleClass="default-button" text="Exportar PDF"/>
                     <Button onAction="#buscar" styleClass="primary-button" text="Buscar"/>
                     <Button onAction="#volver" styleClass="default-button" text="Volver"/>
                 </HBox>

@@ -1057,8 +1057,7 @@ public class EditorController implements Vista {
             base = Database.dataDir().resolve(base);
         }
         Serie serie = servicios.series.getById(vc.factura().getSerieId());
-        String num = vc.version().getNumero().replace('/', '-');
-        String nombre = num + ".pdf";
+        String nombre = Formatos.nombreArchivoPdf(vc.version().getNumero());
         return base.resolve(String.valueOf(vc.version().getFechaFactura().getYear()))
                 .resolve(serie.getCodigo())
                 .resolve(nombre);

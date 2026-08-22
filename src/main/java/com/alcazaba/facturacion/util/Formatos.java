@@ -56,6 +56,14 @@ public final class Formatos {
         return texto == null || texto.isBlank() ? null : parseMoneda(texto);
     }
 
+    /** Nombre de archivo PDF para un numero de factura: la barra se sustituye por guion. */
+    public static String nombreArchivoPdf(String numeroFactura) {
+        if (numeroFactura == null || numeroFactura.isBlank()) {
+            return "factura.pdf";
+        }
+        return numeroFactura.trim().replace('/', '-') + ".pdf";
+    }
+
     /**
      * Parseo de importes tecleados en celdas de linea: admite coma o punto como
      * separador decimal y devuelve null si no es numerico.

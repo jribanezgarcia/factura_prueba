@@ -64,6 +64,35 @@ class CalculoServiceTest {
     }
 
     @Test
+    void sinDescuentoBrutaIgualDescontada() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "100.00", 21, "IVA 21%")), 0);
+        assertEquals(new BigDecimal("100.00"), r.getBaseBruta());
+        assertEquals(r.getBaseBruta(), r.getBaseTotal());
+        assertEquals(0, r.getImporteDescuento().compareTo(BigDecimal.ZERO));
+    }
+
+    @Test
+    void descuentoDiezPorCientoSobreMilCuadra() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "1000.00", 21, "IVA 21%")), 10);
+        assertEquals(new BigDecimal("1000.00"), r.getBaseBruta());
+        assertEquals(new BigDecimal("900.00"), r.getBaseTotal());
+        assertEquals(new BigDecimal("189.00"), r.getIvaTotal());
+        assertEquals(new BigDecimal("100.00"), r.getImporteDescuento());
+        assertEquals(new BigDecimal("1089.00"), r.getTotal());
+    }
+
+    @Test
+    void descuentoConVariosTiposExponeBrutaYDescuento() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "100.00", 21, "IVA 21%"), linea(1, "50.00", 10, "IVA 10%")), 10);
+        assertEquals(new BigDecimal("150.00"), r.getBaseBruta());
+        assertEquals(new BigDecimal("135.00"), r.getBaseTotal());
+        assertEquals(new BigDecimal("15.00"), r.getImporteDescuento());
+    }
+
+    @Test
     void entradaConIvaCalculaBaseHaciaAtras() {
         CalculoService.ResultadoConIva r = CalculoService.calcularDesdeTotalConIva(new BigDecimal("121.00"), 21);
         assertEquals(new BigDecimal("100.00"), r.base());
