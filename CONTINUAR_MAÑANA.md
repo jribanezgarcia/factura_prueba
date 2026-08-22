@@ -44,6 +44,7 @@ Cambios OpenSpec archivados (ademas de los anteriores):
 - `openspec/changes/archive/2026-08-22-exportar-pdf-desde-historico` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-22-fix-pdf-totales-tarjeta-pago` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-22-pdf-fidelidad-prototipo` (archivado el 22/08/2026)
+- `openspec/changes/archive/2026-08-22-pdf-etiquetas-factura-cliente` (archivado el 22/08/2026)
 
 No hay ningun cambio OpenSpec activo ahora mismo.
 
@@ -85,13 +86,20 @@ El usuario comparo un PDF real con `prototipos/pdf-fix-v2.html` y reporto solape
 - **Verificacion**: bucle visual automatizado (generar muestra -> rasterizar con Windows.Data.Pdf -> comparar con el prototipo), incluido caso de nombre larguisimo sin solape. Suite completa 46/46 en verde.
 - Commit `c2fcd70` "Fidelidad del PDF al prototipo: ..." (8 archivos).
 
+### 5. Etiquetas del bloque FACTURA y campos de «Facturar a» (change `pdf-etiquetas-factura-cliente`, cerrado)
+
+- Bloque FACTURA: rótulos pequeños marrones (`SERIE / Nº`, `FECHA`, 6.5pt negrita) encima del número y la fecha; ambos valores ahora en negrita 10pt tinta.
+- Tarjeta «Facturar a»: pares etiqueta→valor (Nombre en negrita 10.5 / NIF / Dirección / Población / Email) con etiquetas 8.5pt `GRIS_CLARO`; Población = CP + localidad (+ provincia entre paréntesis si existe); filas vacías omitidas. Misma estructura interna que «Datos de pago».
+- Suite 46/46 en verde; bucle visual verificado con rasterización.
+- Commit `5d995f3` "Etiquetas Serie/Nº y Fecha ... archivado en OpenSpec" (8 archivos).
+
 ## Proximos pasos
 
 - Sin cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
 
 ## Git
 
-- Rama `main`, ultimo commit `c2fcd70`; va 9 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
+- Rama `main`, ultimo commit `5d995f3`; va 10 commits por delante de `origin/main` SIN push (el usuario no lo ha pedido).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
