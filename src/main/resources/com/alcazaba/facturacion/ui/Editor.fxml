@@ -26,36 +26,44 @@
                 <Button onAction="#volver" styleClass="action-button" text="Volver"/>
             </ToolBar>
             <GridPane hgap="8" vgap="6" styleClass="grid-cabecera">
+                <columnConstraints>
+                    <ColumnConstraints/>
+                    <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
+                    <ColumnConstraints/>
+                    <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
+                    <ColumnConstraints/>
+                    <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
+                </columnConstraints>
                 <Label text="Serie"/>
-                <ComboBox fx:id="comboSerie" prefWidth="120" GridPane.columnIndex="1"/>
+                <ComboBox fx:id="comboSerie" prefWidth="120" maxWidth="Infinity" GridPane.columnIndex="1"/>
                 <Label text="Fecha" GridPane.columnIndex="2"/>
-                <DatePicker fx:id="fecha" prefWidth="140" GridPane.columnIndex="3"/>
+                <DatePicker fx:id="fecha" prefWidth="140" maxWidth="Infinity" GridPane.columnIndex="3"/>
                 <Label text="Número" GridPane.columnIndex="4"/>
-                <TextField fx:id="txtNumero" prefWidth="140" GridPane.columnIndex="5"/>
+                <TextField fx:id="txtNumero" prefWidth="140" maxWidth="Infinity" GridPane.columnIndex="5"/>
                 <Label text="Cliente" GridPane.rowIndex="1"/>
-                <ComboBox fx:id="comboCliente" editable="true" prefWidth="420" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="1"/>
+                <ComboBox fx:id="comboCliente" editable="true" prefWidth="420" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="1"/>
                 <Label text="Nombre" GridPane.rowIndex="2"/>
-                <TextField fx:id="cliNombre" prefWidth="240" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                <TextField fx:id="cliNombre" prefWidth="240" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                 <Label text="NIF" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                <TextField fx:id="cliNif" prefWidth="160" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                <TextField fx:id="cliNif" prefWidth="160" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
                 <Label text="Email" GridPane.columnIndex="4" GridPane.rowIndex="2"/>
-                <TextField fx:id="cliEmail" prefWidth="170" GridPane.columnIndex="5" GridPane.rowIndex="2"/>
+                <TextField fx:id="cliEmail" prefWidth="170" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="2"/>
                 <Label text="Dirección" GridPane.rowIndex="3"/>
-                <TextField fx:id="cliDireccion" prefWidth="440" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="3"/>
+                <TextField fx:id="cliDireccion" prefWidth="440" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="3"/>
                 <Label text="CP" GridPane.rowIndex="4"/>
-                <TextField fx:id="cliCp" prefWidth="100" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                <TextField fx:id="cliCp" prefWidth="100" maxWidth="130" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
                 <Label text="Localidad" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                <TextField fx:id="cliLocalidad" prefWidth="160" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
+                <TextField fx:id="cliLocalidad" prefWidth="160" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
                 <Label text="Provincia" GridPane.columnIndex="4" GridPane.rowIndex="4"/>
-                <TextField fx:id="cliProvincia" prefWidth="150" GridPane.columnIndex="5" GridPane.rowIndex="4"/>
+                <TextField fx:id="cliProvincia" prefWidth="150" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="4"/>
                 <Label fx:id="lblReferencia" text="Referencia rectifica" GridPane.rowIndex="5"/>
-                <TextField fx:id="txtReferencia" prefWidth="300" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="5"/>
+                <TextField fx:id="txtReferencia" prefWidth="300" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="5"/>
                 <Label text="Forma de pago" GridPane.rowIndex="6"/>
-                <TextField fx:id="txtFormaPago" prefWidth="180" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+                <TextField fx:id="txtFormaPago" prefWidth="180" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
                 <Label text="Vencimiento" GridPane.columnIndex="2" GridPane.rowIndex="6"/>
-                <DatePicker fx:id="vencimiento" prefWidth="140" GridPane.columnIndex="3" GridPane.rowIndex="6"/>
+                <DatePicker fx:id="vencimiento" prefWidth="140" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="6"/>
                 <Label text="Realizada por" GridPane.columnIndex="4" GridPane.rowIndex="6"/>
-                <TextField fx:id="txtRealizadaPor" prefWidth="150" GridPane.columnIndex="5" GridPane.rowIndex="6"/>
+                <TextField fx:id="txtRealizadaPor" prefWidth="150" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="6"/>
             </GridPane>
         </VBox>
     </top>

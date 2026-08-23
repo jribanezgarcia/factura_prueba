@@ -9,24 +9,37 @@
         <VBox>
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
             <VBox spacing="8" styleClass="zona-contenido">
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Serie"/>
-                    <ComboBox fx:id="comboSerie" prefWidth="120"/>
-                    <Label text="Cliente/NIF"/>
-                    <TextField fx:id="txtCliente" prefWidth="200" promptText="Nombre o NIF"/>
-                    <Label text="Desde"/>
-                    <DatePicker fx:id="fechaDesde"/>
-                    <Label text="Hasta"/>
-                    <DatePicker fx:id="fechaHasta"/>
-                </HBox>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Label text="Importe desde"/>
-                    <TextField fx:id="txtImporteDesde" prefWidth="100"/>
-                    <Label text="Hasta"/>
-                    <TextField fx:id="txtImporteHasta" prefWidth="100"/>
-                    <Label text="Estado"/>
-                    <ComboBox fx:id="comboEstado" prefWidth="120"/>
-                    <Region HBox.hgrow="ALWAYS"/>
+                <FlowPane hgap="10" vgap="8">
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="Serie"/>
+                        <ComboBox fx:id="comboSerie" prefWidth="120"/>
+                    </HBox>
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="Cliente/NIF"/>
+                        <TextField fx:id="txtCliente" prefWidth="200" promptText="Nombre o NIF"/>
+                    </HBox>
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="Desde"/>
+                        <DatePicker fx:id="fechaDesde"/>
+                    </HBox>
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="Hasta"/>
+                        <DatePicker fx:id="fechaHasta"/>
+                    </HBox>
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="Importe desde"/>
+                        <TextField fx:id="txtImporteDesde" prefWidth="100"/>
+                    </HBox>
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="Hasta"/>
+                        <TextField fx:id="txtImporteHasta" prefWidth="100"/>
+                    </HBox>
+                    <HBox spacing="4" alignment="CENTER_LEFT">
+                        <Label text="Estado"/>
+                        <ComboBox fx:id="comboEstado" prefWidth="120"/>
+                    </HBox>
+                </FlowPane>
+                <HBox spacing="8" alignment="CENTER_RIGHT">
                     <Button fx:id="btnExportarPdf" onAction="#exportarPdf" styleClass="default-button" text="Exportar PDF"/>
                     <Button onAction="#buscar" styleClass="primary-button" text="Buscar"/>
                     <Button onAction="#volver" styleClass="default-button" text="Volver"/>

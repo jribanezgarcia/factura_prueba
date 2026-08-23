@@ -27,6 +27,8 @@ public class Main extends Application {
     private static final String PREV_Y = "ventana_y";
     private static final String PREV_W = "ventana_w";
     private static final String PREV_H = "ventana_h";
+    private static final double ANCHO_INICIAL = 800;
+    private static final double ALTO_INICIAL = 600;
 
     private FileChannel lockChannel;
     private FileLock lock;
@@ -71,7 +73,7 @@ public class Main extends Application {
         nav.setOnVistaCambio(v -> this.actual = v);
 
         stage.setTitle("Facturación");
-        stage.setMinWidth(900);
+        stage.setMinWidth(800);
         stage.setMinHeight(600);
         aplicarPreferenciasVentana(stage);
         stage.setOnCloseRequest(e -> {
@@ -129,6 +131,10 @@ public class Main extends Application {
             if (w != null && h != null) {
                 stage.setWidth(w);
                 stage.setHeight(h);
+            } else {
+                stage.setWidth(ANCHO_INICIAL);
+                stage.setHeight(ALTO_INICIAL);
+                stage.centerOnScreen();
             }
             if (x != null && y != null) {
                 stage.setX(x);
