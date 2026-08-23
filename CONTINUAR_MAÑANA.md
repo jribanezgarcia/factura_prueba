@@ -1,6 +1,6 @@
 # Continuacion del proyecto de facturacion
 
-Estado actualizado: 22/08/2026 (tarde)
+Estado actualizado: 23/08/2026
 
 Este documento sirve como traspaso para continuar con cualquier IA. El proyecto se esta construyendo con OpenCode/OpenSpec. Antes de tocar codigo, leer:
 
@@ -47,6 +47,7 @@ Cambios OpenSpec archivados (ademas de los anteriores):
 - `openspec/changes/archive/2026-08-22-pdf-etiquetas-factura-cliente` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-22-pdf-cp-datos-pago-opcional` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-22-guardar-version-nueva-edicion` (archivado el 22/08/2026)
+- `openspec/changes/archive/2026-08-23-ventana-800-responsive` (archivado el 23/08/2026)
 
 No hay ningun cambio OpenSpec activo ahora mismo.
 
@@ -114,14 +115,31 @@ El usuario comparo un PDF real con `prototipos/pdf-fix-v2.html` y reporto solape
 - Test servicio `guardarComoNuevaVersionConservaLaAnterior`: v2 con cambios, v1 intacta (total/observaciones/lineas), ambas listadas. Suite **49/49**.
 - Commit `78624d3`.
 
+## Sesion del 23/08/2026 (cerrada y commiteada)
+
+### Verificacion pendiente del 22/08
+
+El usuario confirmo que el dialogo «Sobrescribir version actual / Guardar como nueva version / Cancelar» funciona correctamente y que v1 y v2 aparecen como filas independientes en el Historico.
+
+### Change `ventana-800-responsive` (archivado)
+
+Motivacion: el arranque no tenia tamano propio (heredaba el prefWidth del FXML de cada pantalla), el minimo era 900x600 y varias filas se cortaban por debajo de ~1000px. Decisiones del usuario: primer arranque 800x600 redimensionable, SIN pantalla completa, responsive para que nada se corte.
+
+- `Main.java`: minimo 800x600; sin preferencias `ventana_w/h` guardadas abre a 800x600 con `centerOnScreen()`; restaurar ultima sesion intacto (constantes `ANCHO_INICIAL`/`ALTO_INICIAL`).
+- `Historico.fxml`: filtros en un FlowPane (cada grupo etiqueta+campo en un HBox propio para no separarse al envolver); Exportar PDF/Buscar/Volver en fila HBox propia abajo-derecha.
+- `Configuracion.fxml`: altas rapidas de IVA y Series en FlowPane con los botones agrupados en un HBox final.
+- `Editor.fxml`: cabecera GridPane con `columnConstraints` (hgrow=ALWAYS + fillWidth en columnas de valor 1/3/5); campos con `maxWidth="Infinity"` (CP acotado a 130).
+- `UiSmokeTest`: tras cargar cada vista fuerza `applyCss() + resize(800,600) + layout()` para ejercitar el layout al minimo. Suite 49/49 en verde.
+- Spec principal: requisito nuevo «Ventana» con 6 escenarios.
+- Commit `5a4adea`.
+
 ## Proximos pasos
 
-- Verificacion manual pendiente del usuario: editar una factura emitida -> Guardar -> comprobar el dialogo «Sobrescribir version actual / Guardar como nueva version»; si elige nueva version, ver en Historico v1 y v2 como filas independientes y exportar ambas.
-- Sin mas cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
+- Sin cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
 
 ## Git
 
-- Rama `main`, ultimo commit `bb93397`; **SINCRONIZADA** con `origin/main` (push realizado el 22/08/2026 a peticion del usuario).
+- Rama `main`, ultimo commit `5a4adea`; **SINCRONIZADA** con `origin/main` (push realizado el 23/08/2026 a peticion del usuario).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
@@ -129,7 +147,8 @@ El usuario comparo un PDF real con `prototipos/pdf-fix-v2.html` y reporto solape
 - Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 49 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
-- FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`.
+- FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
+- El smoke test de UI no muestra ventanas: para ejercitar layout real usa `root.applyCss(); root.resize(800,600); root.layout();`.
 - Cierre programatico de ventana: `nav.stage().fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))`.
 - Constructor de `EstadoService` (7 parametros): `(FacturaRepository, SerieRepository, VersionRepository, LineaRepository, VersionadoService, NumeroService, FacturaService)`.
 - En los PDF el `.xlsx` original es referencia de formato: la columna TOTAL lleva IVA incluido (base × 1,21).
