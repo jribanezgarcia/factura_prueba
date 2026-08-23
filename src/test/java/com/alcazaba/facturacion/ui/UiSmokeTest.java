@@ -10,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
+import javafx.scene.Parent;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -103,6 +104,7 @@ class UiSmokeTest {
             try {
                 Vista v = nav.mostrar("/com/alcazaba/facturacion/ui/" + fxml);
                 assertNotNull(v, "El controller de " + fxml + " no se creo");
+                maquetarAlMinimo(nav.stage().getScene().getRoot());
             } catch (Throwable t) {
                 error.set(t);
             } finally {
@@ -110,6 +112,12 @@ class UiSmokeTest {
             }
         });
         await(latch, error, fxml);
+    }
+
+    private void maquetarAlMinimo(Parent raiz) {
+        raiz.applyCss();
+        raiz.resize(800, 600);
+        raiz.layout();
     }
 
     private void await(CountDownLatch latch, AtomicReference<Throwable> error, String fxml) {

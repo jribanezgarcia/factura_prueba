@@ -456,3 +456,31 @@ El menú principal SHALL mostrar el nombre, el NIF y el logo de la empresa confi
 #### Scenario: Mostrar logo en el editor
 - **WHEN** el usuario abre una factura con un logo configurado
 - **THEN** el logo de la empresa aparece en la cabecera del editor
+
+### Requirement: Ventana
+
+La aplicación SHALL abrir su ventana con las siguientes medidas: en la primera ejecución (sin preferencias de ventana guardadas) SHALL medir 800x600 y SHALL quedar centrada en la pantalla principal; en ejecuciones posteriores SHALL restaurar el tamaño y la posición guardados de la última sesión. El tamaño mínimo de ventana SHALL ser 800x600 y el usuario SHALL poder redimensionar hasta ese mínimo. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y las filas de alta rápida de IVA y Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible.
+
+#### Scenario: Primera ejecución abre a 800x600 centrada
+- **WHEN** el usuario inicia la aplicación sin preferencias de ventana guardadas
+- **THEN** la ventana mide 800x600 y aparece centrada en la pantalla principal
+
+#### Scenario: Siguientes ejecuciones restauran la última sesión
+- **WHEN** el usuario cierra la aplicación tras moverla o redimensionarla y vuelve a abrirla
+- **THEN** la ventana recupera el tamaño y la posición de la sesión anterior
+
+#### Scenario: Mínimo de redimensionado
+- **WHEN** el usuario arrastra el borde de la ventana para hacerla más pequeña
+- **THEN** la ventana no puede bajar de 800x600
+
+#### Scenario: Filtros del Histórico con ventana mínima
+- **WHEN** la ventana está al mínimo 800x600 y se abre el Histórico
+- **THEN** todos los filtros siguen visibles reorganizados en varias líneas y los botones Exportar PDF, Buscar y Volver permanecen accesibles
+
+#### Scenario: Altas rápidas de IVA y Series con ventana mínima
+- **WHEN** la ventana está al mínimo 800x600 y se abren las pestañas IVA o Series de Configuración
+- **THEN** los campos de alta se reorganizan sin cortarse y los botones Nuevo, Guardar e Inactivar/Activar (o Nuevo y Guardar en Series) permanecen visibles y agrupados
+
+#### Scenario: Cabecera del Editor con ventana mínima
+- **WHEN** la ventana está al mínimo 800x600 y se abre una factura
+- **THEN** los campos de la cabecera se reparten el ancho disponible sin salirse de la ventana
