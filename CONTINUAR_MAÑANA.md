@@ -197,12 +197,7 @@ Al cambiar de empresa, **toda la capa de repositorios y servicios se re-instanci
 
 ## Git
 
-- Rama `main`, ultimo commit `5a4adea`; **SINCRONIZADA** con `origin/main` (push realizado el 23/08/2026 a peticion del usuario).
-- Arbol limpio: nada pendiente de commitear.
-
-## Git
-
-- Rama `main`, ultimo commit `5a4adea`; **SINCRONIZADA** con `origin/main` (push realizado el 23/08/2026 a peticion del usuario).
+- Rama `main`, ultimo commit `0beed22`; **SINCRONIZADA** con `origin/main` (push realizado el 24/08/2026).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
