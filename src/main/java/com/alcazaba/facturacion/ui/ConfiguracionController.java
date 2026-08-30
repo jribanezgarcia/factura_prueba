@@ -135,6 +135,10 @@ public class ConfiguracionController implements Vista {
     private CheckBox chkSerieReutilizar;
     @FXML
     private TextField txtSerieSiguiente;
+    @FXML
+    private ComboBox<Serie.SufijoFecha> comboSerieFormato;
+    @FXML
+    private Label lblSerieEjemplo;
 
     @Override
     public void setServicios(Servicios s) {
@@ -425,6 +429,21 @@ public class ConfiguracionController implements Vista {
         colSerieRectifica.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isEsRectificativa() ? "Sí" : "No"));
         colSerieSiguiente.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(String.valueOf(c.getValue().getSiguienteCorrelativo())));
         colSerieReutilizar.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isReutilizarAnulados() ? "Sí" : "No"));
+        comboSerieFormato.getItems().setAll(Serie.SufijoFecha.values());
+        comboSerieFormato.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Serie.SufijoFecha f) {
+                if (f == null) return "";
+                return switch (f) {
+                    case MES -> "Código-Número/Mes (ej: C-56/7)";
+                    case ANIO -> "Número-Año (ej: 56-2026)";
+                    case NINGUNO -> "Solo número (ej: 56)";
+                };
+            }
+            @Override
+            public Serie.SufijoFecha fromString(String s) { return null; }
+        });
+        comboSerieFormato.valueProperty().addListener((o, a, b) -> actualizarEjemploFormato());
         tablaSeries.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> seleccionarSerie(b));
         refrescarSeries();
     }
@@ -448,6 +467,27 @@ public class ConfiguracionController implements Vista {
         chkSerieRectifica.setSelected(s.isEsRectificativa());
         chkSerieReutilizar.setSelected(s.isReutilizarAnulados());
         txtSerieSiguiente.setText(String.valueOf(s.getSiguienteCorrelativo()));
+        comboSerieFormato.setValue(s.getSufijoFecha() != null ? s.getSufijoFecha() : Serie.SufijoFecha.MES);
+        actualizarEjemploFormato();
+    }
+
+    private void actualizarEjemploFormato() {
+        Serie s = serieSeleccionada != null ? serieSeleccionada : new Serie();
+        String codigo = trim(txtSerieCodigo).toUpperCase();
+        if (codigo.isBlank()) codigo = "";
+        Serie.SufijoFecha formato = comboSerieFormato.getValue() != null ? comboSerieFormato.getValue() : Serie.SufijoFecha.MES;
+        String ejemplo;
+        if (s.isEsRectificativa()) {
+            ejemplo = (codigo.isBlank() ? "" : codigo + "-") + "1";
+        } else {
+            String prefijo = codigo.isBlank() ? "" : codigo + "-";
+            ejemplo = switch (formato) {
+                case MES -> prefijo + "56/7";
+                case ANIO -> prefijo + "56-2026";
+                case NINGUNO -> prefijo + "56";
+            };
+        }
+        lblSerieEjemplo.setText("Ejemplo: " + ejemplo);
     }
 
     @FXML
@@ -458,6 +498,8 @@ public class ConfiguracionController implements Vista {
         chkSerieRectifica.setSelected(false);
         chkSerieReutilizar.setSelected(false);
         txtSerieSiguiente.setText("1");
+        comboSerieFormato.setValue(Serie.SufijoFecha.MES);
+        actualizarEjemploFormato();
         txtSerieCodigo.requestFocus();
     }
 
@@ -492,6 +534,7 @@ public class ConfiguracionController implements Vista {
             s.setEsRectificativa(chkSerieRectifica.isSelected());
             s.setReutilizarAnulados(chkSerieReutilizar.isSelected());
             s.setSiguienteCorrelativo(siguiente);
+            s.setSufijoFecha(comboSerieFormato.getValue() != null ? comboSerieFormato.getValue() : Serie.SufijoFecha.MES);
             if (s.getId() == null) {
                 s.setId(servicios.series.insertar(s));
             } else {

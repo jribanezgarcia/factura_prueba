@@ -1,0 +1,1 @@
+ALTER TABLE serie ADD COLUMN sufijo_fecha TEXT NOT NULL DEFAULT 'MES';

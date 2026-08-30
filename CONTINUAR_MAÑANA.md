@@ -1,6 +1,8 @@
 # Continuacion del proyecto de facturacion
 
-Estado actualizado: 23/08/2026
+Estado actualizado: 24/08/2026
+
+NOTA: hasta aqui se ha hecho la app con modelos gratuitos de OPENCODE.
 
 Este documento sirve como traspaso para continuar con cualquier IA. El proyecto se esta construyendo con OpenCode/OpenSpec. Antes de tocar codigo, leer:
 
@@ -48,6 +50,7 @@ Cambios OpenSpec archivados (ademas de los anteriores):
 - `openspec/changes/archive/2026-08-22-pdf-cp-datos-pago-opcional` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-22-guardar-version-nueva-edicion` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-23-ventana-800-responsive` (archivado el 23/08/2026)
+- `openspec/changes/archive/2026-08-24-formato-numeracion-series` (archivado el 24/08/2026)
 
 No hay ningun cambio OpenSpec activo ahora mismo.
 
@@ -133,9 +136,69 @@ Motivacion: el arranque no tenia tamano propio (heredaba el prefWidth del FXML d
 - Spec principal: requisito nuevo «Ventana» con 6 escenarios.
 - Commit `5a4adea`.
 
+## Sesion del 24/08/2026 (cerrada y commiteada)
+
+### Change `formato-numeracion-series` (archivado)
+
+- Nueva columna `sufijo_fecha` en tabla `serie` (migracion `003_formato_numeracion_series.sql`), registrada en `Migrations.java`.
+- `Serie.java`: enum `SufijoFecha` (MES, ANIO, NINGUNO) + campo con getter/setter.
+- `SerieRepository`: leer/escribir el nuevo campo.
+- `NumeroService`: `formarNumero()` y `parseCorrelativo()` con switch por formato y soporte de codigo vacio.
+- Configuracion: ComboBox de formato con ejemplo vivo (`comboSerieFormato` + `lblSerieEjemplo`) en la pestana Series.
+- Tests: 10 nuevos en `NumeroServiceTest`. Suite 59/59 en verde.
+- Spec principal: requisito «Numeracion por series» actualizado con los nuevos formatos y escenarios.
+
 ## Proximos pasos
 
 - Sin cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
+
+## Funcionalidad pendiente: Multi-empresa (varias BD)
+
+**Objetivo**: Permitir llevar la contabilidad de varias empresas (p.ej. "Comercial Alcazaba" y "Asesoría María Luisa Ibáñez") cada una con su propia base de datos SQLite independiente.
+
+**Arquitectura elegida**: Una BD por empresa (archivo `facturas.db` en carpeta propia bajo `%APPDATA%/Facturacion/<slug>/`). Aislamiento total: configuración, series, clientes, facturas, IVA... todo por empresa.
+
+### Cambios por archivo
+
+| Archivo | Cambios |
+|---------|---------|
+| `Database.java` | Eliminar `dataDir` estático único. Añadir `setCurrentEmpresa(String slug)` que cambia a `%APPDATA%/Facturacion/<slug>/`. `getEmpresasDisponibles()` lista carpetas con `facturas.db`. `resetConnection()` cierra conexión antes de cambiar. |
+| `EmpresaSelector.java` (nuevo) | Servicio: `listarEmpresas()`, `crearEmpresa(nombre, slug)`, `cambiarEmpresa(slug)` (cambia BD + migra + guarda preferencia), `getUltimaEmpresa()`. |
+| `Main.java` | Al arrancar: lee `ultima_empresa` de config global; si existe y BD existe → `setCurrentEmpresa`; si no → **diálogo selector** antes de cargar UI. Tras selección → `Migrations.migrate()` → menú principal. |
+| `ConfigRepository.java` | Preferencia global `ultima_empresa` en archivo `%APPDATA%/Facturacion/empresas.properties` (fuera de BD de empresa). Formato: `ultima_empresa=slug`, `slug.nombre=Nombre visible`. |
+| `Servicios.java` | `recargarParaEmpresa(String slug)`: `Database.setCurrentEmpresa(slug)`, `Migrations.migrate()`, re-instanciar **todos** los repositorios y servicios que dependen de ellos. |
+| `ConfiguracionController.java` | Nueva pestaña/sectión "Empresas": tabla (nombre, slug, última apertura), botones "Nueva empresa", "Cambiar a esta", "Eliminar" (solo si no es actual). "Nueva empresa" → pide nombre → genera slug → crea carpeta → migra → guarda como última. |
+| `BarraNavegacion.java` | Item "Cambiar empresa..." que abre selector (diálogo o pantalla config). |
+| `Migrations.java` | Sin cambios (ya usa `PRAGMA user_version` por BD). Al crear empresa nueva, `migrate()` crea tablas desde 001_init. |
+| `BackupService.java` | Sin cambios (usa `Database.dbPath()` que ya apunta a la BD actual). |
+
+### Orden de implementación recomendado
+
+1. `Database.java` - conexión dinámica + `getEmpresasDisponibles()`
+2. `ConfigRepository` - preferencia global `ultima_empresa` en properties
+3. `EmpresaSelector` - nueva clase servicio
+4. `Main.java` - selector al arranque
+5. `Servicios.java` - `recargarParaEmpresa()` re-instancia todo
+6. `ConfiguracionController` - pestaña "Empresas"
+7. `BarraNavegacion` - acceso rápido
+8. Tests - verificar aislamiento entre empresas
+
+### Nota importante
+
+Al cambiar de empresa, **toda la capa de repositorios y servicios se re-instancia** (`Servicios.recargarParaEmpresa()`). Los controladores ya implementan `alIniciar()` que recarga datos, así que basta con `nav.mostrar("/MenuPrincipal.fxml")` tras el cambio.
+
+### Pendiente de decidir (para `/opsx-propose`)
+
+- ¿Selector al arrancar **diálogo modal** o **pantalla completa**?
+- ¿Migración de datos existentes? (La BD actual en `%APPDATA%/Facturacion/facturas.db` → mover a `%APPDATA%/Facturacion/comercial_alcazaba/facturas.db`)
+- ¿Compartir algo global? (Temas UI, preferencias de ventana, atajos)
+
+---
+
+## Git
+
+- Rama `main`, ultimo commit `5a4adea`; **SINCRONIZADA** con `origin/main` (push realizado el 23/08/2026 a peticion del usuario).
+- Arbol limpio: nada pendiente de commitear.
 
 ## Git
 

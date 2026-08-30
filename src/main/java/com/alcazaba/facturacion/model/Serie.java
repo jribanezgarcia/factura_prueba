@@ -2,12 +2,19 @@ package com.alcazaba.facturacion.model;
 
 public class Serie {
 
+    public enum SufijoFecha {
+        MES,
+        ANIO,
+        NINGUNO
+    }
+
     private Long id;
     private String codigo;
     private String descripcion;
     private boolean esRectificativa;
     private int siguienteCorrelativo;
     private boolean reutilizarAnulados;
+    private SufijoFecha sufijoFecha = SufijoFecha.MES;
 
     public Long getId() {
         return id;
@@ -55,6 +62,14 @@ public class Serie {
 
     public void setReutilizarAnulados(boolean reutilizarAnulados) {
         this.reutilizarAnulados = reutilizarAnulados;
+    }
+
+    public SufijoFecha getSufijoFecha() {
+        return sufijoFecha;
+    }
+
+    public void setSufijoFecha(SufijoFecha sufijoFecha) {
+        this.sufijoFecha = sufijoFecha;
     }
 
     @Override
