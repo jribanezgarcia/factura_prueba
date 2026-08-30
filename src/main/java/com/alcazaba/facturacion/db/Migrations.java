@@ -17,7 +17,8 @@ public final class Migrations {
 
     private static final List<String> SCRIPTS = List.of(
             "db/migrations/001_init.sql",
-            "db/migrations/002_datos_factura_pdf.sql"
+            "db/migrations/002_datos_factura_pdf.sql",
+            "db/migrations/003_formato_numeracion_series.sql"
     );
 
     private Migrations() {

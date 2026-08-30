@@ -131,6 +131,11 @@
                             <Label text="Siguiente número"/>
                             <TextField fx:id="txtSerieSiguiente" prefWidth="80"/>
                         </HBox>
+                        <HBox spacing="4" alignment="CENTER_LEFT">
+                            <Label text="Formato"/>
+                            <ComboBox fx:id="comboSerieFormato" prefWidth="200"/>
+                        </HBox>
+                        <Label fx:id="lblSerieEjemplo" styleClass="muted" text="Ejemplo: C-56/7"/>
                         <HBox spacing="8" alignment="CENTER_LEFT">
                             <Button onAction="#nuevoSerie" styleClass="default-button" text="Nuevo"/>
                             <Button onAction="#guardarSerie" styleClass="primary-button" text="Guardar"/>

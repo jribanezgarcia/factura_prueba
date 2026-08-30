@@ -44,14 +44,15 @@ public class SerieRepository {
     }
 
     public long insertar(Serie s) throws SQLException {
-        String sql = "INSERT INTO serie (codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados) "
-                + "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO serie (codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados, sufijo_fecha) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, s.getCodigo());
             ps.setString(2, s.getDescripcion());
             ps.setInt(3, s.isEsRectificativa() ? 1 : 0);
             ps.setInt(4, s.getSiguienteCorrelativo());
             ps.setInt(5, s.isReutilizarAnulados() ? 1 : 0);
+            ps.setString(6, s.getSufijoFecha() != null ? s.getSufijoFecha().name() : "MES");
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
@@ -62,14 +63,15 @@ public class SerieRepository {
 
     public void actualizar(Serie s) throws SQLException {
         String sql = "UPDATE serie SET codigo = ?, descripcion = ?, es_rectificativa = ?, siguiente_correlativo = ?, "
-                + "reutilizar_anulados = ? WHERE id = ?";
+                + "reutilizar_anulados = ?, sufijo_fecha = ? WHERE id = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, s.getCodigo());
             ps.setString(2, s.getDescripcion());
             ps.setInt(3, s.isEsRectificativa() ? 1 : 0);
             ps.setInt(4, s.getSiguienteCorrelativo());
             ps.setInt(5, s.isReutilizarAnulados() ? 1 : 0);
-            ps.setLong(6, s.getId());
+            ps.setString(6, s.getSufijoFecha() != null ? s.getSufijoFecha().name() : "MES");
+            ps.setLong(7, s.getId());
             ps.executeUpdate();
         }
     }
@@ -139,6 +141,10 @@ public class SerieRepository {
         s.setEsRectificativa(rs.getInt("es_rectificativa") == 1);
         s.setSiguienteCorrelativo(rs.getInt("siguiente_correlativo"));
         s.setReutilizarAnulados(rs.getInt("reutilizar_anulados") == 1);
+        String sufijo = rs.getString("sufijo_fecha");
+        if (sufijo != null && !sufijo.isBlank()) {
+            s.setSufijoFecha(Serie.SufijoFecha.valueOf(sufijo));
+        }
         return s;
     }
 }
