@@ -74,6 +74,8 @@
                 <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" styleClass="action-button" text="Eliminar línea (Supr)"/>
                 <CheckBox fx:id="chkTotalConIva" text="Total de línea con IVA incluido"/>
                 <Region HBox.hgrow="ALWAYS"/>
+                <Label text="Retención"/>
+                <ComboBox fx:id="comboRetencion" prefWidth="180"/>
                 <Label text="Descuento"/>
                 <TextField fx:id="txtDescuento" prefWidth="60" promptText="0"/>
                 <Label text="\%"/>
@@ -109,6 +111,11 @@
                         <Label text="IVA total"/>
                         <Region HBox.hgrow="ALWAYS"/>
                         <Label fx:id="lblIvaTotal" styleClass="valor"/>
+                    </HBox>
+                    <HBox styleClass="total-fila" alignment="CENTER_LEFT">
+                        <Label fx:id="lblRetencionNombre" text="Retención"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblRetencionImporte" styleClass="valor"/>
                     </HBox>
                     <HBox styleClass="total-grande" alignment="CENTER_LEFT">
                         <Label text="Total"/>

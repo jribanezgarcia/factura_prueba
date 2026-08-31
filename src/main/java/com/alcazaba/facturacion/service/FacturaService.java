@@ -8,6 +8,7 @@ import com.alcazaba.facturacion.model.Factura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.Serie;
+import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.ClienteRepository;
 import com.alcazaba.facturacion.repository.FacturaRepository;
 import com.alcazaba.facturacion.repository.LineaRepository;
@@ -72,6 +73,14 @@ public class FacturaService {
                              int descuento, String observaciones, String referencia,
                              Integer correlativoPedido, DatosPago datosPago)
             throws SQLException, ValidationException {
+        return crearFactura(serie, fecha, cliente, lineas, descuento, observaciones, referencia,
+                correlativoPedido, datosPago, null);
+    }
+
+    public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
+                             int descuento, String observaciones, String referencia,
+                             Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
+            throws SQLException, ValidationException {
         validar(lineas, descuento);
         if (correlativoPedido != null && correlativoPedido < 1) {
             throw new ValidationException("El correlativo debe ser al menos 1");
@@ -97,7 +106,7 @@ public class FacturaService {
 
             String numero = numeroService.formarNumero(serie, correlativo, fecha);
             versionadoService.crearVersion(facturaId, fecha, numero, EstadoFactura.EMITIDA,
-                    descuento, observaciones, referencia, cliente, lineas, datosPago);
+                    descuento, observaciones, referencia, cliente, lineas, datosPago, retencion);
 
             serieRepository.actualizarSiguiente(serie.getId(), Math.max(serie.getSiguienteCorrelativo(), correlativo + 1));
             int nuevoAnio = Math.max(serieRepository.getSiguiente(serie.getId(), fecha.getYear()), correlativo + 1);
@@ -132,6 +141,15 @@ public class FacturaService {
                                          String observaciones, String referencia, DatosPago datosPago,
                                          boolean comoNuevaVersion)
             throws SQLException, ValidationException {
+        return guardarEditada(facturaId, versionAbiertaId, fecha, cliente, lineas, descuento,
+                observaciones, referencia, datosPago, comoNuevaVersion, null);
+    }
+
+    public FacturaVersion guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
+                                         List<LineaFactura> lineas, int descuento,
+                                         String observaciones, String referencia, DatosPago datosPago,
+                                         boolean comoNuevaVersion, TipoRetencion retencion)
+            throws SQLException, ValidationException {
         validar(lineas, descuento);
 
         Database.beginTransaction();
@@ -161,10 +179,10 @@ public class FacturaService {
             if (!comoNuevaVersion && versionAbiertaId != null && ultima != null
                     && versionAbiertaId.longValue() == ultima.getId().longValue()) {
                 guardada = versionadoService.sobrescribirVersion(ultima.getId(), fecha, numero, EstadoFactura.EMITIDA,
-                        descuento, observaciones, referencia, cliente, lineas, datosPago);
+                        descuento, observaciones, referencia, cliente, lineas, datosPago, retencion);
             } else {
                 guardada = versionadoService.crearVersion(facturaId, fecha, numero, EstadoFactura.EMITIDA,
-                        descuento, observaciones, referencia, cliente, lineas, datosPago);
+                        descuento, observaciones, referencia, cliente, lineas, datosPago, retencion);
             }
             Database.commit();
             return guardada;

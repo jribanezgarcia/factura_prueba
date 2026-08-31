@@ -7,6 +7,7 @@ import com.alcazaba.facturacion.model.EstadoFactura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.Serie;
+import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.ClienteRepository;
 import com.alcazaba.facturacion.repository.FacturaRepository;
 import com.alcazaba.facturacion.repository.LineaRepository;
@@ -166,6 +167,24 @@ class FacturaServiceTest {
 
         Cliente guardado = facturaService.cliente(cli.getId());
         assertEquals("maria.martagon@correo.es", guardado.getEmail());
+    }
+
+    @Test
+    void crearFacturaConRetencionGuardaImporteYNombre() throws Exception {
+        Serie c = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 21);
+        TipoRetencion irpf = new TipoRetencion();
+        irpf.setNombre("IRPF 15%");
+        irpf.setPorcentaje(15);
+
+        long facturaId = facturaService.crearFactura(c, fecha, null, List.of(linea("1000.00")),
+                0, null, null, null, null, irpf);
+
+        FacturaVersion v = versionadoService.ultimaVersion(facturaId);
+        assertEquals(0, new BigDecimal("150.00").compareTo(v.getImporteRetencion()));
+        assertEquals("IRPF 15%", v.getTipoRetencionNombre());
+        assertEquals(15, v.getTipoRetencionPorcentaje());
+        assertEquals(0, new BigDecimal("1060.00").compareTo(v.getTotal()));
     }
 
     @Test

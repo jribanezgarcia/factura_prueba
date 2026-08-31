@@ -22,6 +22,7 @@ public class HistorialFila {
     private String nif;
     private BigDecimal base;
     private BigDecimal iva;
+    private BigDecimal retencion;
     private BigDecimal total;
 
     public Long getVersionId() {
@@ -126,6 +127,14 @@ public class HistorialFila {
 
     public void setIva(BigDecimal iva) {
         this.iva = iva;
+    }
+
+    public BigDecimal getRetencion() {
+        return retencion;
+    }
+
+    public void setRetencion(BigDecimal retencion) {
+        this.retencion = retencion;
     }
 
     public BigDecimal getTotal() {

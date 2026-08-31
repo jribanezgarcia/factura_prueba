@@ -24,7 +24,8 @@ public class HistorialRepository {
         StringBuilder sql = new StringBuilder("""
                 SELECT v.id AS version_id, v.factura_id, v.version_num, v.numero, v.fecha_factura,
                        v.fecha_guardado, v.estado, v.cli_nombre, v.cli_nif,
-                       v.base_total, v.iva_total, v.total, s.codigo AS serie_codigo, f.correlativo
+                       v.base_total, v.iva_total, v.importe_retencion, v.total,
+                       s.codigo AS serie_codigo, f.correlativo
                 FROM factura_version v
                 JOIN factura f ON f.id = v.factura_id
                 JOIN serie s ON s.id = f.serie_id
@@ -96,6 +97,8 @@ public class HistorialRepository {
         fila.setNif(rs.getString("cli_nif"));
         fila.setBase(new BigDecimal(rs.getString("base_total")));
         fila.setIva(new BigDecimal(rs.getString("iva_total")));
+        String importeRetencion = rs.getString("importe_retencion");
+        fila.setRetencion(importeRetencion != null ? new BigDecimal(importeRetencion) : null);
         fila.setTotal(new BigDecimal(rs.getString("total")));
         fila.setSerieCodigo(rs.getString("serie_codigo"));
         fila.setCorrelativo(rs.getInt("correlativo"));

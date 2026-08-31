@@ -10,6 +10,7 @@ import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.ResumenFactura;
 import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.model.TipoIva;
+import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.pdf.PdfService;
 import com.alcazaba.facturacion.service.CalculoService;
 import com.alcazaba.facturacion.service.FacturaService;
@@ -82,6 +83,8 @@ public class EditorController implements Vista {
 
     private final ObservableList<LineaFactura> lineas = FXCollections.observableArrayList();
     private final ObservableList<TipoIva> tiposIva = FXCollections.observableArrayList();
+    private final ObservableList<TipoRetencion> tiposRetencion = FXCollections.observableArrayList();
+    private TipoRetencion retencionActual;
 
     @FXML
     private Label lblTitulo;
@@ -91,6 +94,10 @@ public class EditorController implements Vista {
     private Label lblBaseTotal;
     @FXML
     private Label lblIvaTotal;
+    @FXML
+    private Label lblRetencionNombre;
+    @FXML
+    private Label lblRetencionImporte;
     @FXML
     private Label lblTotal;
     @FXML
@@ -131,6 +138,8 @@ public class EditorController implements Vista {
     private TextField txtRealizadaPor;
     @FXML
     private TextField txtDescuento;
+    @FXML
+    private ComboBox<TipoRetencion> comboRetencion;
     @FXML
     private TextArea txtObservaciones;
     @FXML
@@ -179,6 +188,7 @@ public class EditorController implements Vista {
             cargarSeries();
             cargarFechaInicial();
             cargarTiposIva();
+            cargarTiposRetencion();
             configurarBusquedaCliente();
             configurarDetalleCliente();
             configurarTabla();
@@ -253,6 +263,9 @@ public class EditorController implements Vista {
                 lineas.setAll(vc.lineas());
                 descuento = vc.version().getDescuentoPorcentaje();
                 txtDescuento.setText(String.valueOf(descuento));
+                asegurarRetencionEnLista(vc.version().getTipoRetencionId(),
+                        vc.version().getTipoRetencionNombre(), vc.version().getTipoRetencionPorcentaje());
+                seleccionarRetencionPorId(vc.version().getTipoRetencionId());
                 txtObservaciones.setText(nz(vc.version().getObservaciones()));
                 txtReferencia.setText(nz(vc.version().getReferenciaRectifica()));
                 txtFormaPago.setText(nz(vc.version().getFormaPago()));
@@ -346,6 +359,40 @@ public class EditorController implements Vista {
             tiposIva.setAll(servicios.ivas.listar(true));
         } catch (Exception e) {
             tiposIva.clear();
+        }
+    }
+
+    private void cargarTiposRetencion() {
+        try {
+            List<TipoRetencion> activas = servicios.retenciones.listar(true);
+            TipoRetencion sin = new TipoRetencion();
+            sin.setId(null);
+            sin.setNombre("Sin retención");
+            sin.setPorcentaje(0);
+            tiposRetencion.setAll(sin);
+            tiposRetencion.addAll(activas);
+            comboRetencion.setItems(tiposRetencion);
+            comboRetencion.setConverter(new StringConverter<>() {
+                @Override
+                public String toString(TipoRetencion t) {
+                    return t == null ? "" : t.toString();
+                }
+
+                @Override
+                public TipoRetencion fromString(String s) {
+                    return null;
+                }
+            });
+            comboRetencion.setValue(sin);
+        } catch (Exception e) {
+            tiposRetencion.clear();
+            TipoRetencion sin = new TipoRetencion();
+            sin.setId(null);
+            sin.setNombre("Sin retención");
+            sin.setPorcentaje(0);
+            tiposRetencion.add(sin);
+            comboRetencion.setItems(tiposRetencion);
+            comboRetencion.setValue(sin);
         }
     }
 
@@ -489,6 +536,14 @@ public class EditorController implements Vista {
                 return;
             }
             descuento = v;
+            actualizarResumen();
+            marcarModificado();
+        });
+        comboRetencion.valueProperty().addListener((o, a, b) -> {
+            if (cargando) {
+                return;
+            }
+            retencionActual = (b == null || b.getId() == null) ? null : b;
             actualizarResumen();
             marcarModificado();
         });
@@ -755,9 +810,21 @@ public class EditorController implements Vista {
     }
 
     private void actualizarResumen() {
-        ResumenFactura r = CalculoService.resumen(lineas, descuento);
+        ResumenFactura r = CalculoService.resumen(lineas, descuento, retencionActual);
         lblBaseTotal.setText(Formatos.moneda(r.getBaseTotal()));
         lblIvaTotal.setText(Formatos.moneda(r.getIvaTotal()));
+        boolean conRetencion = r.getImporteRetencion() != null && r.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0;
+        lblRetencionNombre.setVisible(conRetencion);
+        lblRetencionNombre.setManaged(conRetencion);
+        lblRetencionImporte.setVisible(conRetencion);
+        lblRetencionImporte.setManaged(conRetencion);
+        if (conRetencion) {
+            String nombre = r.getNombreRetencion() != null && !r.getNombreRetencion().isBlank()
+                    ? r.getNombreRetencion()
+                    : "Retención " + r.getPorcentajeRetencion() + "%";
+            lblRetencionNombre.setText(nombre);
+            lblRetencionImporte.setText("-" + Formatos.moneda(r.getImporteRetencion()));
+        }
         lblTotal.setText(Formatos.moneda(r.getTotal()));
     }
 
@@ -807,7 +874,7 @@ public class EditorController implements Vista {
                             + serie.getCodigo() + " (p. ej. " + serie.getCodigo() + "-1).");
                     return false;
                 }
-                long id = servicios.factura.crearFactura(serie, f, cli, lis, descuento, obs, ref, corr, dp);
+                long id = servicios.factura.crearFactura(serie, f, cli, lis, descuento, obs, ref, corr, dp, retencionActual);
                 guardarSeriePreferida(serie);
                 cargarFactura(id);
                 Dialogos.info("Guardar", "Factura guardada.");
@@ -818,7 +885,7 @@ public class EditorController implements Vista {
                 }
                 FacturaVersion v = servicios.factura.guardarEditada(facturaAbiertaId, versionAbiertaId,
                         f, cli, lis, descuento, obs, ref, dp,
-                        modo == Dialogos.ModoGuardarVersion.NUEVA_VERSION);
+                        modo == Dialogos.ModoGuardarVersion.NUEVA_VERSION, retencionActual);
                 txtNumero.setText(v.getNumero());
                 lblTitulo.setText("Factura " + v.getNumero() + " (v" + v.getVersionNum() + ")");
                 modificado = false;
@@ -901,6 +968,7 @@ public class EditorController implements Vista {
         vencimiento.setDisable(!e);
         txtRealizadaPor.setDisable(!e);
         txtDescuento.setDisable(!e);
+        comboRetencion.setDisable(!e);
         txtObservaciones.setDisable(!e);
         chkTotalConIva.setDisable(!e);
         tablaLineas.setEditable(e);
@@ -1074,6 +1142,36 @@ public class EditorController implements Vista {
     // ------------------------------------------------------------------
     // Utilidades
     // ------------------------------------------------------------------
+
+    private void asegurarRetencionEnLista(Long id, String nombre, Integer porcentaje) {
+        if (id == null) {
+            return;
+        }
+        for (TipoRetencion t : tiposRetencion) {
+            if (id.equals(t.getId())) {
+                return;
+            }
+        }
+        TipoRetencion snapshot = new TipoRetencion();
+        snapshot.setId(id);
+        snapshot.setNombre(nz(nombre));
+        snapshot.setPorcentaje(porcentaje != null ? porcentaje : 0);
+        snapshot.setActivo(false);
+        tiposRetencion.add(snapshot);
+    }
+
+    private void seleccionarRetencionPorId(Long id) {
+        for (TipoRetencion t : tiposRetencion) {
+            if (id == null ? t.getId() == null : id.equals(t.getId())) {
+                comboRetencion.setValue(t);
+                retencionActual = t.getId() == null ? null : t;
+                return;
+            }
+        }
+        TipoRetencion sin = tiposRetencion.isEmpty() ? null : tiposRetencion.get(0);
+        comboRetencion.setValue(sin);
+        retencionActual = null;
+    }
 
     private void cargarDatosCliente(Cliente c) {
         this.clienteActual = c;

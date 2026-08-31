@@ -5,6 +5,7 @@ import com.alcazaba.facturacion.model.EstadoFactura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.ResumenFactura;
+import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.service.CalculoService;
 import com.alcazaba.facturacion.service.FacturaService;
 import com.alcazaba.facturacion.util.Formatos;
@@ -111,7 +112,8 @@ public class PdfService {
         boolean anulada = vc.version().getEstado() == EstadoFactura.ANULADA;
         boolean rectificativa = vc.version().getReferenciaRectifica() != null
                 && !vc.version().getReferenciaRectifica().isBlank();
-        ResumenFactura resumen = CalculoService.resumen(vc.lineas(), vc.version().getDescuentoPorcentaje());
+        TipoRetencion retencion = retencionDeVersion(vc.version());
+        ResumenFactura resumen = CalculoService.resumen(vc.lineas(), vc.version().getDescuentoPorcentaje(), retencion);
 
         Image logo = cargarLogo(empresa);
         float[] margenes = margenes(empresa, logo, colores);
@@ -401,6 +403,17 @@ public class PdfService {
      * Total de la linea con el IVA incluido (base × (1 + IVA%)); las
      * exentas se muestran sin IVA.
      */
+    private TipoRetencion retencionDeVersion(FacturaVersion v) {
+        if (v.getTipoRetencionId() == null) {
+            return null;
+        }
+        TipoRetencion t = new TipoRetencion();
+        t.setId(v.getTipoRetencionId());
+        t.setNombre(nz(v.getTipoRetencionNombre()));
+        t.setPorcentaje(v.getTipoRetencionPorcentaje() != null ? v.getTipoRetencionPorcentaje() : 0);
+        return t;
+    }
+
     private BigDecimal totalConIva(LineaFactura l) {
         BigDecimal base = l.getTotalBase() == null ? BigDecimal.ZERO : l.getTotalBase();
         if (l.isExenta() || l.getIvaPorcentaje() == null || l.getIvaPorcentaje() == 0) {
@@ -432,6 +445,12 @@ public class PdfService {
         if (conDescuento) {
             filaDescuento(t, "Descuento " + descuento + "%",
                     "-" + Formatos.moneda(r.getImporteDescuento()));
+        }
+        if (r.getImporteRetencion() != null && r.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0) {
+            String etiqueta = r.getNombreRetencion() != null && !r.getNombreRetencion().isBlank()
+                    ? r.getNombreRetencion() + " " + r.getPorcentajeRetencion() + "%"
+                    : "Retención " + r.getPorcentajeRetencion() + "%";
+            filaDescuento(t, etiqueta, "-" + Formatos.moneda(r.getImporteRetencion()));
         }
 
         PdfPCell hueco = new PdfPCell(new Phrase(" "));

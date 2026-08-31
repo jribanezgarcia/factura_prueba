@@ -81,6 +81,8 @@ public class HistoricoController implements Vista {
     @FXML
     private TableColumn<HistorialFila, String> colIva;
     @FXML
+    private TableColumn<HistorialFila, String> colRetencion;
+    @FXML
     private TableColumn<HistorialFila, String> colTotal;
     @FXML
     private TableColumn<HistorialFila, String> colEstado;
@@ -118,6 +120,8 @@ public class HistoricoController implements Vista {
         colNif.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getNif()));
         colBase.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getBase())));
         colIva.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getIva())));
+        colRetencion.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(
+                c.getValue().getRetencion() != null ? Formatos.moneda(c.getValue().getRetencion()) : ""));
         colTotal.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getTotal())));
         colEstado.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(etiquetaEstado(c.getValue().getEstado())));
 

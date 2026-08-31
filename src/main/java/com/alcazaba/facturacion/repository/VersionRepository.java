@@ -26,8 +26,9 @@ public class VersionRepository {
                     estado, descuento_porcentaje, observaciones, referencia_rectifica,
                     cli_nombre, cli_nif, cli_direccion, cli_cp, cli_localidad, cli_provincia,
                     cli_email, forma_pago, vencimiento, realizada_por,
-                    base_total, iva_total, total)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    base_total, iva_total, total, tipo_retencion_id, tipo_retencion_nombre,
+                    tipo_retencion_porcentaje, importe_retencion)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, v.getFacturaId());
@@ -52,6 +53,14 @@ public class VersionRepository {
             ps.setString(20, v.getBaseTotal() == null ? "0.00" : v.getBaseTotal().toPlainString());
             ps.setString(21, v.getIvaTotal() == null ? "0.00" : v.getIvaTotal().toPlainString());
             ps.setString(22, v.getTotal() == null ? "0.00" : v.getTotal().toPlainString());
+            if (v.getTipoRetencionId() == null) {
+                ps.setNull(23, java.sql.Types.INTEGER);
+            } else {
+                ps.setLong(23, v.getTipoRetencionId());
+            }
+            ps.setString(24, nzTexto(v.getTipoRetencionNombre()));
+            ps.setObject(25, v.getTipoRetencionPorcentaje(), java.sql.Types.INTEGER);
+            ps.setString(26, v.getImporteRetencion() == null ? "0.00" : v.getImporteRetencion().toPlainString());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
@@ -77,7 +86,8 @@ public class VersionRepository {
                     descuento_porcentaje = ?, observaciones = ?, referencia_rectifica = ?,
                     cli_nombre = ?, cli_nif = ?, cli_direccion = ?, cli_cp = ?, cli_localidad = ?,
                     cli_provincia = ?, cli_email = ?, forma_pago = ?, vencimiento = ?, realizada_por = ?,
-                    base_total = ?, iva_total = ?, total = ?
+                    base_total = ?, iva_total = ?, total = ?, tipo_retencion_id = ?, tipo_retencion_nombre = ?,
+                    tipo_retencion_porcentaje = ?, importe_retencion = ?
                 WHERE id = ?
                 """;
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
@@ -101,7 +111,15 @@ public class VersionRepository {
             ps.setString(18, v.getBaseTotal() == null ? "0.00" : v.getBaseTotal().toPlainString());
             ps.setString(19, v.getIvaTotal() == null ? "0.00" : v.getIvaTotal().toPlainString());
             ps.setString(20, v.getTotal() == null ? "0.00" : v.getTotal().toPlainString());
-            ps.setLong(21, v.getId());
+            if (v.getTipoRetencionId() == null) {
+                ps.setNull(21, java.sql.Types.INTEGER);
+            } else {
+                ps.setLong(21, v.getTipoRetencionId());
+            }
+            ps.setString(22, nzTexto(v.getTipoRetencionNombre()));
+            ps.setObject(23, v.getTipoRetencionPorcentaje(), java.sql.Types.INTEGER);
+            ps.setString(24, v.getImporteRetencion() == null ? "0.00" : v.getImporteRetencion().toPlainString());
+            ps.setLong(25, v.getId());
             ps.executeUpdate();
         }
     }
@@ -165,6 +183,13 @@ public class VersionRepository {
         v.setBaseTotal(new BigDecimal(rs.getString("base_total")));
         v.setIvaTotal(new BigDecimal(rs.getString("iva_total")));
         v.setTotal(new BigDecimal(rs.getString("total")));
+        long trId = rs.getLong("tipo_retencion_id");
+        v.setTipoRetencionId(rs.wasNull() ? null : trId);
+        v.setTipoRetencionNombre(rs.getString("tipo_retencion_nombre"));
+        int trPct = rs.getInt("tipo_retencion_porcentaje");
+        v.setTipoRetencionPorcentaje(rs.wasNull() ? null : trPct);
+        String impRet = rs.getString("importe_retencion");
+        v.setImporteRetencion(impRet == null || impRet.isBlank() ? BigDecimal.ZERO : new BigDecimal(impRet));
         return v;
     }
 
