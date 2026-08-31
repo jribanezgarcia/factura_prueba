@@ -8,7 +8,7 @@
     <top>
         <VBox>
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="zona-contenido">
+            <VBox spacing="8" styleClass="card zona-contenido">
                 <FlowPane hgap="10" vgap="8">
                     <HBox spacing="4" alignment="CENTER_LEFT">
                         <Label text="Serie"/>
@@ -51,7 +51,7 @@
         </VBox>
     </top>
     <center>
-        <TableView fx:id="tabla">
+        <TableView fx:id="tabla" styleClass="card">
             <columns>
                 <TableColumn fx:id="colFecha" prefWidth="90" text="Fecha"/>
                 <TableColumn fx:id="colNumero" prefWidth="110" text="Número"/>

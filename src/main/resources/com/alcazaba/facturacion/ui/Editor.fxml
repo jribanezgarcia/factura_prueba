@@ -9,6 +9,7 @@
     <top>
         <VBox>
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+            <VBox spacing="8" styleClass="card">
             <HBox styleClass="cabecera-linea">
                 <ImageView fx:id="logo" preserveRatio="true"/>
                 <Label fx:id="lblTitulo" styleClass="titulo" text="Nueva factura"/>
@@ -65,6 +66,7 @@
                 <Label text="Realizada por" GridPane.columnIndex="4" GridPane.rowIndex="6"/>
                 <TextField fx:id="txtRealizadaPor" prefWidth="150" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="6"/>
             </GridPane>
+            </VBox>
         </VBox>
     </top>
     <center>
@@ -80,7 +82,7 @@
                 <TextField fx:id="txtDescuento" prefWidth="60" promptText="0"/>
                 <Label text="\%"/>
             </HBox>
-            <TableView fx:id="tablaLineas" editable="true" styleClass="tabla-productos">
+            <TableView fx:id="tablaLineas" editable="true" styleClass="tabla-productos" minHeight="220">
                 <columns>
                     <TableColumn fx:id="colCantidad" prefWidth="70" text="Cant."/>
                     <TableColumn fx:id="colDescripcion" prefWidth="360" text="Descripción"/>
@@ -97,11 +99,11 @@
     <bottom>
         <VBox spacing="6" styleClass="zona-contenido">
             <HBox spacing="16" alignment="TOP_LEFT">
-                <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="card">
                     <Label text="Observaciones"/>
                     <TextArea fx:id="txtObservaciones" prefRowCount="4" wrapText="true"/>
                 </VBox>
-                <VBox styleClass="totales" minWidth="260.0" maxWidth="300.0">
+                <VBox styleClass="card totales" minWidth="260.0" maxWidth="300.0">
                     <HBox styleClass="total-fila" alignment="CENTER_LEFT">
                         <Label text="Base imponible"/>
                         <Region HBox.hgrow="ALWAYS"/>

@@ -2,22 +2,63 @@
     -fx-font-family: 'Segoe UI', sans-serif;
 }
 
+/* Utilidades de layout */
 .zona-contenido {
-    -fx-padding: 12;
+    -fx-padding: 12px;
 }
 
-.cabecera-linea {
-    -fx-spacing: 12;
+.card {
+    -fx-background-color: -fx-base;
+    -fx-background-radius: 14px;
+    -fx-border-radius: 14px;
+    -fx-border-color: derive(-fx-base, -10%);
+    -fx-border-width: 1px;
+    -fx-padding: 18px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 12, 0, 0, 3);
+}
+
+.surface {
+    -fx-background-color: -fx-control-inner-background;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: derive(-fx-control-inner-background, -10%);
+    -fx-border-width: 1px;
+    -fx-padding: 12px;
+}
+
+.section-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-opacity: 0.75;
+    -fx-padding: 0 0 8px 0;
+}
+
+.form-label {
+    -fx-font-size: 12px;
+    -fx-opacity: 0.75;
+}
+
+.toolbar {
+    -fx-spacing: 8px;
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 8 12 4 12;
+    -fx-padding: 0 0 12px 0;
+}
+
+/* Cabecera */
+.cabecera-linea {
+    -fx-spacing: 12px;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 8px 18px 4px 18px;
 }
 
 .grid-cabecera {
-    -fx-padding: 4 12 8 12;
+    -fx-padding: 4px 18px 8px 18px;
+    -fx-hgap: 12px;
+    -fx-vgap: 6px;
 }
 
 .titulo {
-    -fx-font-size: 18px;
+    -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
 
@@ -26,14 +67,15 @@
 }
 
 .chip-anulada {
-    -fx-font-size: 16px;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
 
+/* Navegación */
 .nav-bar {
     -fx-alignment: CENTER;
-    -fx-spacing: 34;
-    -fx-padding: 10 0 12 0;
+    -fx-spacing: 34px;
+    -fx-padding: 10px 0 12px 0;
 }
 
 .nav-button {
@@ -41,8 +83,17 @@
     -fx-background-insets: 0;
     -fx-border-width: 0 0 3 0;
     -fx-border-color: transparent;
-    -fx-padding: 4 8;
+    -fx-padding: 4px 8px;
     -fx-cursor: hand;
+    -fx-background-radius: 6px;
+}
+
+.nav-button:hover {
+    -fx-background-color: rgba(128,128,128,0.10);
+}
+
+.nav-button.activo {
+    -fx-border-color: transparent transparent -fx-accent transparent;
 }
 
 .nav-button .nav-icon {
@@ -50,27 +101,31 @@
     -fx-scale-y: 1.25;
 }
 
+/* Barra de acciones del editor */
 .action-bar {
     -fx-background-color: transparent;
-    -fx-background-radius: 4;
+    -fx-background-radius: 10px;
     -fx-border-width: 1;
-    -fx-border-radius: 4;
-    -fx-padding: 8;
+    -fx-border-radius: 10px;
+    -fx-padding: 12px;
+    -fx-spacing: 8px;
 }
 
+/* Botones base */
 .primary-button, .default-button, .danger-button,
 .action-button, .action-danger-button {
-    -fx-background-radius: 3;
-    -fx-border-radius: 3;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
     -fx-border-width: 1;
-    -fx-padding: 8 13;
+    -fx-padding: 8px 14px;
     -fx-font-size: 13px;
     -fx-cursor: hand;
 }
 
+/* Tablas */
 .table-view {
-    -fx-background-radius: 4;
-    -fx-border-radius: 4;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
     -fx-border-width: 1;
     -fx-table-cell-border-color: transparent;
 }
@@ -89,14 +144,15 @@
     -fx-cell-size: 34px;
 }
 
+/* Totales */
 .totales {
-    -fx-background-radius: 4;
-    -fx-border-radius: 4;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
     -fx-border-width: 1;
 }
 
 .total-fila {
-    -fx-padding: 10 14;
+    -fx-padding: 10px 14px;
 }
 
 .total-fila .valor {
@@ -104,12 +160,13 @@
 }
 
 .total-grande {
-    -fx-padding: 12 14;
+    -fx-padding: 12px 14px;
 }
 
+/* Menú principal */
 .menu-logo-box {
-    -fx-background-radius: 4;
-    -fx-border-radius: 4;
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
     -fx-border-width: 1;
 }
 
@@ -118,16 +175,21 @@
     -fx-font-weight: bold;
 }
 
+.empresa-info {
+    -fx-font-size: 13px;
+}
+
 .menu-item {
-    -fx-background-radius: 6;
-    -fx-padding: 11 18;
+    -fx-background-radius: 8px;
+    -fx-padding: 12px 16px;
     -fx-cursor: hand;
     -fx-alignment: CENTER_LEFT;
+    -fx-spacing: 16px;
 }
 
 .menu-item .icono {
-    -fx-scale-x: 1.4;
-    -fx-scale-y: 1.4;
+    -fx-scale-x: 1.35;
+    -fx-scale-y: 1.35;
 }
 
 .menu-item .nombre {
@@ -137,4 +199,18 @@
 
 .menu-item .descripcion {
     -fx-font-size: 12px;
+}
+
+/* Campos de formulario */
+.text-field, .text-area, .combo-box, .date-picker, .color-picker {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+}
+
+/* Diálogos y tarjetas de confirmación */
+.dialog-card {
+    -fx-background-radius: 14px;
+    -fx-border-radius: 14px;
+    -fx-border-width: 1px;
+    -fx-padding: 18px;
 }

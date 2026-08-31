@@ -54,6 +54,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-30-multi-empresa-ejercicio-fiscal`
 - `openspec/changes/archive/2026-08-31-retencion-irpf`
 - `openspec/changes/archive/2026-08-31-facturacion-mensual-cliente`
+- `openspec/changes/archive/2026-08-31-redesign-ui-apple`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -88,6 +89,18 @@ Cambio OpenSpec activo: **ninguno**.
 - Tests nuevos/actualizados: `FacturacionMensualServiceTest`, `FacturaServiceTest`, `EstadoServiceTest`, `NumeroServiceTest`, `HistorialServiceTest`. Suite **101/101** en verde.
 - Commits `ebbc641` (implementacion) y `9156850` (sync de spec y archivo en OpenSpec), push realizado.
 
+### Change `redesign-ui-apple` (archivado)
+
+- Rediseño estructural de la interfaz inspirado en Ajustes de Apple: tarjetas de seccion, espaciado generoso, esquinas redondeadas y jerarquia tipografica.
+- Se mantienen los 7 temas de color existentes (`biblioteca8`, `omarchy`, `esmeralda`, `terracota`, `negro-dorado`, `sakura`, `neon`); el nuevo diseño se adapta a cada paleta.
+- Refactor de `base.css` con clases utilitarias `.card`, `.surface`, `.section-title`, `.form-label`, `.toolbar`, `.dialog-card` y estados de hover/focus.
+- Ajustes en FXML de `MenuPrincipal`, `Editor`, `Historico`, `Configuracion`, `Clientes`, `GenerarFacturasMensuales`, `Versiones`, `Backup` y `Arranque` para usar las nuevas tarjetas.
+- Microinteracciones CSS en botones, campos y navegacion; transiciones JavaFX de escala suave en botones primarios e items del menu (`Microinteracciones`).
+- `Navegador` aplica las microinteracciones tras cargar cada vista.
+- Se añade `minHeight` a la tabla de lineas del editor para garantizar que los tests de edicion siguen funcionando con el nuevo layout.
+- Suite **101/101** en verde.
+- Change archivado como `2026-08-31-redesign-ui-apple`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -97,8 +110,8 @@ Cambio OpenSpec activo: **ninguno**.
 
 ## Git
 
-- Rama `main`, ultimo commit `9156850`; **SINCRONIZADA** con `origin/main` (push realizado el 31/08/2026).
-- Arbol limpio: nada pendiente de commitear.
+- Rama `main`, ultimo commit pendiente de cierre del change `redesign-ui-apple`; **SINCRONIZADA** con `origin/main` tras el push.
+- Arbol limpio tras el commit de cierre.
 
 ## Notas tecnicas que evitan perder tiempo
 

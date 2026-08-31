@@ -8,7 +8,7 @@
     <top>
         <VBox>
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="zona-contenido">
+            <VBox spacing="8" styleClass="card zona-contenido">
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <TextField fx:id="txtBusqueda" prefWidth="280" promptText="Buscar por nombre o NIF..."/>
                     <Label fx:id="lblConteo" text=""/>
@@ -22,7 +22,7 @@
         </VBox>
     </top>
     <center>
-        <TableView fx:id="tabla">
+        <TableView fx:id="tabla" styleClass="card">
             <columns>
                 <TableColumn fx:id="colNombre" prefWidth="300" text="Nombre"/>
                 <TableColumn fx:id="colNif" prefWidth="130" text="NIF"/>
