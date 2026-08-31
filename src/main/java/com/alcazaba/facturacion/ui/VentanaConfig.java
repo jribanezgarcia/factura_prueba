@@ -11,7 +11,7 @@ import java.util.Optional;
 public enum VentanaConfig {
 
     ARRANQUE("/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, 760, 520, false),
-    MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 760, 520, 760, 520, true),
+    MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 760, 600, 760, 600, true),
     EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 1000, 760, 1000, 760, true),
     CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 1000, 620, 1000, 620, true),
     HISTORICO("/com/alcazaba/facturacion/ui/Historico.fxml", 1000, 600, 1000, 600, true),

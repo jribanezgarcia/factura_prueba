@@ -57,6 +57,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-31-redesign-ui-apple`
 - `openspec/changes/archive/2026-08-31-fix-ui-spacing`
 - `openspec/changes/archive/2026-08-31-window-sizing`
+- `openspec/changes/archive/2026-08-31-fix-menu-min-height`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -126,6 +127,16 @@ Cambio OpenSpec activo: **ninguno**.
 - Nuevo test `EditorTamanoMinimoTest` que verifica que el Editor cabe completo en su tamaño minimo.
 - Suite **102/102** en verde.
 - Change archivado como `2026-08-31-window-sizing`.
+
+### Change `fix-menu-min-height` (archivado)
+
+- Correccion del tamaño minimo del Menu principal, que aparecia cortado tras los nuevos márgenes.
+- Medida real del layout con test diagnostico: el contenido necesita al menos 589 px de alto.
+- Se establece el tamaño predefinido/minimo del Menu principal en **760×600**.
+- Se actualiza `VentanaConfig.MENU` y `MenuPrincipal.fxml`.
+- Se actualiza la especificacion del sistema de tamaños de ventana.
+- Suite **102/102** en verde.
+- Change archivado como `2026-08-31-fix-menu-min-height`.
 
 ## Proximos pasos
 
