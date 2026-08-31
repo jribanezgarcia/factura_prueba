@@ -56,6 +56,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-31-facturacion-mensual-cliente`
 - `openspec/changes/archive/2026-08-31-redesign-ui-apple`
 - `openspec/changes/archive/2026-08-31-fix-ui-spacing`
+- `openspec/changes/archive/2026-08-31-window-sizing`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -104,13 +105,27 @@ Cambio OpenSpec activo: **ninguno**.
 
 ### Change `fix-ui-spacing` (archivado)
 
-- Correccion de espaciado en las pantallas rediseñadas: contenido demasiado pegado al borde de la ventana y a la barra de navegacion.
+- Correccion de espaciado en las pantallas redisenadas: contenido demasiado pegado al borde de la ventana y a la barra de navegacion.
 - Se añade padding de ventana de 16px a los `BorderPane` raiz de `Historico`, `Configuracion`, `Clientes`, `Versiones`, `Backup`, `Editor`, `MenuPrincipal` y `Arranque`.
 - Se añade separacion de 12px entre la barra de navegacion y la primera tarjeta de contenido en `Historico`, `Clientes`, `Editor`, `Versiones` y `Backup`.
 - Se amplian los paddings de `.card` (20px) y `.zona-contenido` (16px) y se aumenta el margen inferior de `.nav-bar` en `base.css`.
 - Se añaden escenarios de margen y separacion respecto al menu en la especificacion del sistema de diseño visual.
 - Suite **101/101** en verde.
 - Change archivado como `2026-08-31-fix-ui-spacing`.
+
+### Change `window-sizing` (archivado)
+
+- Configuracion de tamaño por vista para evitar que las pantallas se reduzcan mas de lo que su contenido permite.
+- Nueva clase `VentanaConfig` con ancho, alto, minimo, maximo y redimensionabilidad por FXML.
+- `Navegador` aplica la configuracion de la vista al `Stage` cada vez que cambia de pantalla, redimensionando y centrando la ventana.
+- `Arranque` es fijo y no redimensionable (760×520).
+- Editor: minimo 1000×760 para que se vean todos los controles.
+- Resto de pantallas: `MenuPrincipal` 760×520, `Configuracion` 1000×620, `Historico` 1000×600, `Clientes` 1000×600, `Versiones` 900×500, `Backup` 720×450.
+- Diálogo `Generar facturas mensuales`: minimo 920×680.
+- Se mantiene el guardado de posicion y tamaño al cerrar; el tamaño se restaura pero las vistas lo sobreescriben al navegar.
+- Nuevo test `EditorTamanoMinimoTest` que verifica que el Editor cabe completo en su tamaño minimo.
+- Suite **102/102** en verde.
+- Change archivado como `2026-08-31-window-sizing`.
 
 ## Proximos pasos
 

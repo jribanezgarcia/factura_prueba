@@ -42,6 +42,7 @@ public class Navegador {
             Scene scene = new Scene(root);
             ThemeManager.aplicar(scene, servicios);
             stage.setScene(scene);
+            VentanaConfig.para(fxml).ifPresent(cfg -> cfg.aplicar(stage));
             T vista = loader.getController();
             if (vista != null) {
                 vista.setServicios(servicios);
