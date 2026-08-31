@@ -144,6 +144,7 @@ Cambio OpenSpec activo: **ninguno**.
 - Menu principal ajustado a **800×600** con margen inferior de 20 px y tarjetas alineadas arriba.
 - Editor de facturas configurado para abrirse **maximizado** por defecto, aprovechando todo el alto de pantalla; la tabla de lineas ya permite scroll vertical.
 - `VentanaConfig` añade soporte para flag `maximizado` y aplica `stage.setMaximized(...)` al cargar cada vista.
+- Fix posterior: se reordena `VentanaConfig.aplicar` para llamar a `setMaximized` despues de fijar tamaño y centrar, garantizando que el Editor realmente se maximice.
 - Test `EditorTamanoMinimoTest` actualizado para desmaximizar el Editor antes de validar su tamaño minimo.
 - Se actualiza la especificacion del sistema de tamaños de ventana.
 - Suite **102/102** en verde.
@@ -158,7 +159,7 @@ Cambio OpenSpec activo: **ninguno**.
 
 ## Git
 
-- Rama `main`, ultimo commit `c7ff38a`; **SINCRONIZADA** con `origin/main` (push realizado el 31/08/2026).
+- Rama `main`, ultimo commit `c6d98de`; **SINCRONIZADA** con `origin/main` (push realizado el 31/08/2026).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
