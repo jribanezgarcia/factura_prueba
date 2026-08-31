@@ -20,7 +20,7 @@
 
 ## 5. Cierre OpenSpec
 
-- [ ] 5.1 Sincronizar la spec delta con `openspec/specs/invoicing/spec.md`.
-- [ ] 5.2 Archivar el change `fix-ui-spacing`.
-- [ ] 5.3 Actualizar `CONTINUAR_MAÑANA.md`.
-- [ ] 5.4 Hacer commit y push.
+- [x] 5.1 Sincronizar la spec delta con `openspec/specs/invoicing/spec.md`.
+- [x] 5.2 Archivar el change `fix-ui-spacing`.
+- [x] 5.3 Actualizar `CONTINUAR_MAÑANA.md`.
+- [x] 5.4 Hacer commit y push.
