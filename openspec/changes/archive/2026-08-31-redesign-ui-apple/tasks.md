@@ -36,6 +36,6 @@
 ## 6. Cierre OpenSpec
 
 - [x] 6.1 Sincronizar la spec delta con `openspec/specs/invoicing/spec.md`.
-- [ ] 6.2 Archivar el change `redesign-ui-apple`.
-- [ ] 6.3 Actualizar `CONTINUAR_MAÑANA.md` con el cierre del change.
-- [ ] 6.4 Hacer commit y push de los cambios.
+- [x] 6.2 Archivar el change `redesign-ui-apple`.
+- [x] 6.3 Actualizar `CONTINUAR_MAÑANA.md` con el cierre del change.
+- [x] 6.4 Hacer commit y push de los cambios.
