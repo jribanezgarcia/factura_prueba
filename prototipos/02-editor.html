@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor de factura · Facturación</title>
+  <style>
+    :root {
+      --bg: #E8EAED;
+      --surface: #FFFFFF;
+      --surface-secondary: #F2F4F6;
+      --text: #1F2937;
+      --text-secondary: #6B7280;
+      --accent: #296796;
+      --accent-hover: #1A55A8;
+      --accent-text: #FCF9F9;
+      --danger: #C0392B;
+      --border: #D8DBDF;
+      --shadow: 0 4px 16px rgba(31,41,55,0.10);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: var(--font);
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; padding: 22px;
+    }
+    .window { max-width: 1080px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .nav {
+      display: flex; justify-content: center; gap: 32px;
+      padding: 10px 0; font-size: 13px; color: var(--text-secondary);
+    }
+    .nav span { cursor: pointer; }
+    .nav span.active { color: var(--accent); font-weight: 600; }
+    .card {
+      background: var(--surface); border-radius: var(--radius);
+      box-shadow: var(--shadow); border: 1px solid var(--border);
+      padding: 18px;
+    }
+    .section-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.4px; color: var(--text-secondary); margin: 0 0 12px;
+    }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; }
+    button {
+      font-family: inherit; font-size: 13px; border-radius: var(--radius-sm);
+      padding: 8px 14px; border: 1px solid var(--border); cursor: pointer;
+      background: var(--surface-secondary); color: var(--text);
+      transition: background 120ms ease, transform 80ms ease;
+    }
+    button:hover { filter: brightness(0.97); }
+    button:active { transform: scale(0.98); }
+    .primary { background: var(--accent); color: var(--accent-text); border-color: transparent; }
+    .primary:hover { background: var(--accent-hover); }
+    .danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+    .header-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+    .header-row h1 { font-size: 20px; margin: 0; }
+    .chip {
+      background: var(--surface-secondary); color: var(--text-secondary);
+      padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700;
+    }
+    .form-grid {
+      display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px;
+    }
+    .form-grid .wide { grid-column: span 3; }
+    .form-grid .full { grid-column: span 5; }
+    label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 4px; }
+    input, select {
+      width: 100%; padding: 8px 10px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface-secondary);
+      color: var(--text); font-size: 13px; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(41,103,150,0.15); }
+    .client-cards {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;
+    }
+    .client-card {
+      background: var(--surface-secondary); border-radius: var(--radius-sm);
+      border: 1px solid var(--border); overflow: hidden;
+    }
+    .client-card .head {
+      background: var(--accent); color: var(--accent-text);
+      padding: 10px 14px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .client-card.alt .head { background: var(--surface); color: var(--text); border-bottom: 1px solid var(--border); }
+    .client-card .body { padding: 12px 14px; font-size: 13px; line-height: 1.6; }
+    .client-card .body .row { display: flex; justify-content: space-between; }
+    .client-card .body .label { color: var(--text-secondary); }
+    .client-card .body .value { font-weight: 600; }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+      border-radius: var(--radius-sm); overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    th { background: var(--surface-secondary); text-align: left; padding: 10px 12px; font-weight: 700; color: var(--text-secondary); }
+    td { padding: 10px 12px; border-top: 1px solid var(--border); }
+    tr:hover td { background: rgba(41,103,150,0.05); }
+    .bottom { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+    textarea {
+      width: 100%; min-height: 90px; border-radius: var(--radius-sm);
+      border: 1px solid var(--border); background: var(--surface-secondary);
+      color: var(--text); padding: 10px; font-family: inherit; resize: vertical;
+    }
+    .totals .row { display: flex; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+    .totals .row:last-child { border-bottom: none; }
+    .totals .big { font-size: 17px; font-weight: 700; }
+    @media (max-width: 860px) {
+      .form-grid { grid-template-columns: repeat(2, 1fr); }
+      .form-grid .wide, .form-grid .full { grid-column: span 2; }
+      .client-cards { grid-template-columns: 1fr; }
+      .bottom { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="nav">
+      <span>Menú</span><span class="active">Factura</span><span>Histórico</span><span>Configuración</span>
+    </div>
+    <div class="card">
+      <div class="header-row">
+        <div style="width:44px;height:44px;border-radius:10px;background:var(--surface-secondary);display:flex;align-items:center;justify-content:center;color:var(--accent);">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h1>Nueva factura</h1>
+        <span class="chip">v1</span>
+      </div>
+      <div class="toolbar">
+        <button class="primary">Guardar</button>
+        <button>Exportar PDF</button>
+        <button>Versiones</button>
+        <button>Crear rectificativa</button>
+        <button class="danger">Anular</button>
+        <button>Restaurar</button>
+        <div style="flex:1"></div>
+        <button>Nueva factura</button>
+        <button>Volver</button>
+      </div>
+      <div class="form-grid">
+        <div><label>Serie</label><select><option>C - Cocinas</option></select></div>
+        <div><label>Fecha</label><input type="text" value="31/08/2026"></div>
+        <div class="wide"><label>Número</label><input type="text" value="C-58-8"></div>
+        <div class="full"><label>Cliente</label><select><option>Constructora del Sur SL · B-87654321</option></select></div>
+        <div><label>Nombre</label><input value="Constructora del Sur SL"></div>
+        <div><label>NIF</label><input value="B-87654321"></div>
+        <div class="wide"><label>Email</label><input value="facturacion@constructoradelsur.es"></div>
+        <div class="full"><label>Dirección</label><input value="Avda. de la Constitución, 45"></div>
+        <div><label>CP</label><input value="18008"></div>
+        <div><label>Localidad</label><input value="Granada"></div>
+        <div class="wide"><label>Provincia</label><input value="Granada"></div>
+      </div>
+      <div class="client-cards">
+        <div class="client-card">
+          <div class="head">Facturar a</div>
+          <div class="body">
+            <div class="row"><span class="label">Nombre</span><span class="value">Constructora del Sur SL</span></div>
+            <div class="row"><span class="label">NIF</span><span class="value">B-87654321</span></div>
+            <div class="row"><span class="label">Dirección</span><span class="value">Avda. de la Constitución, 45</span></div>
+            <div class="row"><span class="label">CP</span><span class="value">18008</span></div>
+            <div class="row"><span class="label">Población</span><span class="value">Granada</span></div>
+            <div class="row"><span class="label">Provincia</span><span class="value">Granada</span></div>
+          </div>
+        </div>
+        <div class="client-card alt">
+          <div class="head">Datos de pago</div>
+          <div class="body">
+            <div class="row"><span class="label">Forma de pago</span><span class="value">Transferencia</span></div>
+            <div class="row"><span class="label">Vencimiento</span><span class="value">15/09/2026</span></div>
+            <div class="row"><span class="label">Realizada por</span><span class="value">Juan Ribáñez</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Líneas de factura</div>
+      <div class="toolbar" style="margin-bottom:12px;">
+        <button class="primary">Añadir línea</button>
+        <button>Eliminar línea (Supr)</button>
+        <label style="display:flex;align-items:center;gap:6px;margin-left:auto;"><input type="checkbox" checked> Total de línea con IVA incluido</label>
+      </div>
+      <table>
+        <thead><tr><th>Cant.</th><th>Descripción</th><th>Precio</th><th>Total</th><th>IVA</th></tr></thead>
+        <tbody>
+          <tr><td>2</td><td>Montaje y ajuste de cocina completa</td><td>1.250,00 €</td><td>2.500,00 €</td><td>21%</td></tr>
+          <tr><td>1</td><td>Transporte y puesta en obra</td><td>180,00 €</td><td>180,00 €</td><td>21%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="bottom">
+      <div class="card">
+        <div class="section-title">Observaciones</div>
+        <textarea>Factura correspondiente a la reforma integral de cocina. Plazo de pago 30 días.</textarea>
+      </div>
+      <div class="card totals">
+        <div class="row"><span>Base imponible</span><span>2.297,52 €</span></div>
+        <div class="row"><span>IVA total</span><span>482,48 €</span></div>
+        <div class="row"><span>Retención</span><span>0,00 €</span></div>
+        <div class="row big"><span>Total</span><span>2.780,00 €</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

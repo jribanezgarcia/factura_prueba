@@ -8,7 +8,7 @@
     <center>
         <VBox alignment="CENTER" spacing="24" styleClass="zona-contenido" maxWidth="-Infinity">
             <Label styleClass="empresa-nombre" text="Facturación"/>
-            <VBox spacing="12" styleClass="tarjeta" maxWidth="440.0">
+            <VBox spacing="12" styleClass="card" maxWidth="440.0">
                 <Label text="Empresa"/>
                 <HBox spacing="8" maxWidth="Infinity">
                     <ComboBox fx:id="cmbEmpresa" promptText="Selecciona una empresa" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>

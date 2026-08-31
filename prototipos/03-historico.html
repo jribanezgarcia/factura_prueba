@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico · Facturación</title>
+  <style>
+    :root {
+      --bg: #E8EAED;
+      --surface: #FFFFFF;
+      --surface-secondary: #F2F4F6;
+      --text: #1F2937;
+      --text-secondary: #6B7280;
+      --accent: #296796;
+      --accent-hover: #1A55A8;
+      --accent-text: #FCF9F9;
+      --border: #D8DBDF;
+      --shadow: 0 4px 16px rgba(31,41,55,0.10);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; padding: 22px; }
+    .window { max-width: 1100px; margin: 0 auto; }
+    .nav { display: flex; justify-content: center; gap: 32px; padding: 10px 0; font-size: 13px; color: var(--text-secondary); }
+    .nav span { cursor: pointer; }
+    .nav span.active { color: var(--accent); font-weight: 600; }
+    .card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); padding: 18px; }
+    .section-title { font-size: 20px; font-weight: 700; margin: 0 0 14px; }
+    .filters { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; }
+    .field { display: flex; flex-direction: column; gap: 4px; min-width: 120px; flex: 1 1 150px; }
+    .field label { font-size: 12px; color: var(--text-secondary); }
+    input, select { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface-secondary); color: var(--text); font-size: 13px; outline: none; }
+    input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(41,103,150,0.15); }
+    .actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end; margin-bottom: 14px; }
+    button { font-family: inherit; font-size: 13px; border-radius: var(--radius-sm); padding: 8px 14px; border: 1px solid var(--border); cursor: pointer; background: var(--surface-secondary); color: var(--text); transition: background 120ms ease, transform 80ms ease; }
+    button:hover { filter: brightness(0.97); }
+    button:active { transform: scale(0.98); }
+    .primary { background: var(--accent); color: var(--accent-text); border-color: transparent; }
+    .primary:hover { background: var(--accent-hover); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border); }
+    th { background: var(--surface-secondary); text-align: left; padding: 10px 12px; font-weight: 700; color: var(--text-secondary); }
+    td { padding: 10px 12px; border-top: 1px solid var(--border); }
+    tr:hover td { background: rgba(41,103,150,0.06); }
+    .estado { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+    .estado.emitida { background: rgba(41,103,150,0.12); color: var(--accent); }
+    .estado.anulada { background: rgba(192,57,43,0.12); color: #C0392B; }
+  </style>
+</head>
+<body>
+  <div class="window">
+    <div class="nav"><span>Menú</span><span>Factura</span><span class="active">Histórico</span><span>Configuración</span></div>
+    <div class="card">
+      <div class="section-title">Histórico de facturas</div>
+      <div class="filters">
+        <div class="field"><label>Serie</label><select><option>Todas</option></select></div>
+        <div class="field"><label>Cliente/NIF</label><input placeholder="Nombre o NIF"></div>
+        <div class="field"><label>Desde</label><input value="01/01/2026"></div>
+        <div class="field"><label>Hasta</label><input value="31/12/2026"></div>
+        <div class="field"><label>Importe desde</label><input value="0,00"></div>
+        <div class="field"><label>Hasta</label><input value="100.000,00"></div>
+        <div class="field"><label>Estado</label><select><option>Todos</option></select></div>
+      </div>
+      <div class="actions">
+        <button>Generar mensual</button>
+        <button>Exportar PDF</button>
+        <button>Anular</button>
+        <button>Borrar</button>
+        <button class="primary">Buscar</button>
+        <button>Volver</button>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Fecha</th><th>Número</th><th>V.</th><th>Cliente</th><th>NIF</th><th>Base</th><th>IVA</th><th>Ret.</th><th>Total</th><th>Estado</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>31/08/2026</td><td>C-58-8</td><td>1</td><td>Constructora del Sur SL</td><td>B-87654321</td><td>2.297,52 €</td><td>482,48 €</td><td>0,00 €</td><td>2.780,00 €</td><td><span class="estado emitida">Emitida</span></td></tr>
+          <tr><td>25/08/2026</td><td>P-12-8</td><td>2</td><td>Muebles La Paz</td><td>A-12345678</td><td>990,00 €</td><td>207,90 €</td><td>0,00 €</td><td>1.197,90 €</td><td><span class="estado emitida">Emitida</span></td></tr>
+          <tr><td>14/07/2026</td><td>C-57-7</td><td>1</td><td>Reformas García</td><td>B-11111111</td><td>1.650,00 €</td><td>346,50 €</td><td>0,00 €</td><td>1.996,50 €</td><td><span class="estado anulada">Anulada</span></td></tr>
+          <tr><td>02/07/2026</td><td>R-1</td><td>1</td><td>Constructora del Sur SL</td><td>B-87654321</td><td>-500,00 €</td><td>-105,00 €</td><td>0,00 €</td><td>-605,00 €</td><td><span class="estado emitida">Emitida</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -17,15 +17,15 @@
     </top>
     <center>
         <StackPane styleClass="zona-contenido">
-            <HBox alignment="TOP_LEFT" spacing="52" maxWidth="-Infinity" maxHeight="-Infinity">
-            <VBox alignment="TOP_LEFT" spacing="12">
+            <HBox alignment="TOP_LEFT" spacing="24" maxWidth="-Infinity" maxHeight="-Infinity">
+            <VBox alignment="TOP_LEFT" spacing="12" styleClass="card">
                 <StackPane styleClass="menu-logo-box" prefWidth="260.0" prefHeight="120.0" minWidth="240.0" minHeight="110.0">
                     <ImageView fx:id="logo" preserveRatio="true"/>
                 </StackPane>
                 <Label fx:id="lblEmpresa" styleClass="empresa-nombre" text=""/>
                 <Label fx:id="lblEmpresaInfo" styleClass="empresa-info" text=""/>
             </VBox>
-            <VBox spacing="4" prefWidth="430.0" maxWidth="430.0">
+            <VBox spacing="4" prefWidth="430.0" maxWidth="430.0" styleClass="card">
                 <Button maxWidth="Infinity" onAction="#nuevaFactura" styleClass="menu-item">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">

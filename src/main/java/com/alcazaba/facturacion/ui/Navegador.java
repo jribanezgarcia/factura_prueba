@@ -51,6 +51,8 @@ public class Navegador {
                 }
                 vista.alIniciar();
             }
+            root.lookupAll(".primary-button, .menu-item").forEach(n ->
+                    Microinteracciones.escalaSuave((javafx.scene.Node) n));
             return vista;
         } catch (IOException e) {
             throw new RuntimeException("No se pudo cargar la vista " + fxml, e);

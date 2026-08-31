@@ -17,7 +17,7 @@
     <center>
         <TabPane tabClosingPolicy="UNAVAILABLE">
             <Tab text="Empresa">
-                <GridPane hgap="8" vgap="6" styleClass="zona-contenido">
+                <GridPane hgap="8" vgap="6" styleClass="card zona-contenido">
                     <Label text="Nombre / razón social"/>
                     <TextField fx:id="txtNombre" prefWidth="340" GridPane.columnIndex="1"/>
                     <Label text="NIF" GridPane.rowIndex="1"/>
@@ -41,7 +41,7 @@
                 </GridPane>
             </Tab>
             <Tab text="Cabecera">
-                <GridPane hgap="8" vgap="6" styleClass="zona-contenido">
+                <GridPane hgap="8" vgap="6" styleClass="card zona-contenido">
                     <Label text="Modo de cabecera"/>
                     <VBox spacing="4" GridPane.columnIndex="1" GridPane.columnSpan="3">
                         <RadioButton fx:id="rbTexto" toggleGroup="$grupoCabecera" text="Texto con datos de empresa"/>
@@ -61,13 +61,13 @@
                 </GridPane>
             </Tab>
             <Tab text="Pie">
-                <VBox spacing="8" styleClass="zona-contenido">
+                <VBox spacing="8" styleClass="card zona-contenido">
                     <Label text="Texto legal del pie (se repite en todas las páginas de los PDF)."/>
                     <TextArea fx:id="txtPieLegal" prefRowCount="8" wrapText="true"/>
                 </VBox>
             </Tab>
             <Tab text="IVA">
-                <VBox spacing="8" styleClass="zona-contenido">
+                <VBox spacing="8" styleClass="card zona-contenido">
                     <TableView fx:id="tablaIva" prefHeight="240">
                         <columns>
                             <TableColumn fx:id="colIvaNombre" prefWidth="180" text="Nombre"/>
@@ -103,7 +103,7 @@
                 </VBox>
             </Tab>
             <Tab text="Retenciones">
-                <VBox spacing="8" styleClass="zona-contenido">
+                <VBox spacing="8" styleClass="card zona-contenido">
                     <TableView fx:id="tablaRetenciones" prefHeight="240">
                         <columns>
                             <TableColumn fx:id="colRetencionNombre" prefWidth="280" text="Nombre"/>
@@ -134,7 +134,7 @@
                 </VBox>
             </Tab>
             <Tab text="Series">
-                <VBox spacing="8" styleClass="zona-contenido">
+                <VBox spacing="8" styleClass="card zona-contenido">
                     <TableView fx:id="tablaSeries" prefHeight="240">
                         <columns>
                             <TableColumn fx:id="colSerieCodigo" prefWidth="80" text="Código"/>
@@ -176,7 +176,7 @@
                 </VBox>
             </Tab>
             <Tab text="Empresas">
-                <VBox spacing="8" styleClass="zona-contenido">
+                <VBox spacing="8" styleClass="card zona-contenido">
                     <TableView fx:id="tablaEmpresas" prefHeight="260">
                         <columns>
                             <TableColumn fx:id="colEmpresaNombre" prefWidth="240" text="Nombre"/>
@@ -196,7 +196,7 @@
                 </VBox>
             </Tab>
             <Tab text="PDFs">
-                <GridPane hgap="8" vgap="6" styleClass="zona-contenido">
+                <GridPane hgap="8" vgap="6" styleClass="card zona-contenido">
                     <Label text="Carpeta automática de almacenamiento"/>
                     <TextField fx:id="txtCarpetaAuto" editable="false" prefWidth="420" GridPane.columnIndex="1"/>
                     <Button onAction="#seleccionarCarpetaAuto" styleClass="default-button" text="Elegir carpeta..." GridPane.columnIndex="2"/>
@@ -211,7 +211,7 @@
         </TabPane>
     </center>
     <bottom>
-        <HBox spacing="8" alignment="CENTER_RIGHT" styleClass="zona-contenido">
+        <HBox spacing="8" alignment="CENTER_RIGHT" styleClass="card zona-contenido">
             <Button onAction="#guardar" styleClass="primary-button" text="Guardar configuración"/>
             <Button onAction="#volver" styleClass="default-button" text="Volver"/>
         </HBox>
