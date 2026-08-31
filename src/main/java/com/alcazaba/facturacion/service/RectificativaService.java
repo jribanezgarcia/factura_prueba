@@ -5,7 +5,9 @@ import com.alcazaba.facturacion.model.Factura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.Serie;
+import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.SerieRepository;
+import com.alcazaba.facturacion.repository.TipoRetencionRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -22,10 +24,13 @@ public class RectificativaService {
 
     private final FacturaService facturaService;
     private final SerieRepository serieRepository;
+    private final TipoRetencionRepository tipoRetencionRepository;
 
-    public RectificativaService(FacturaService facturaService, SerieRepository serieRepository) {
+    public RectificativaService(FacturaService facturaService, SerieRepository serieRepository,
+                                TipoRetencionRepository tipoRetencionRepository) {
         this.facturaService = facturaService;
         this.serieRepository = serieRepository;
+        this.tipoRetencionRepository = tipoRetencionRepository;
     }
 
     /**
@@ -65,8 +70,31 @@ public class RectificativaService {
             }
         }
 
+        TipoRetencion retencion = retencionDeVersion(origen.version());
         return facturaService.crearFactura(serieR, fecha, clienteDeVersion(origen), lineas,
-                origen.version().getDescuentoPorcentaje(), origen.version().getObservaciones(), ref);
+                origen.version().getDescuentoPorcentaje(), origen.version().getObservaciones(), ref,
+                null, null, retencion);
+    }
+
+    private TipoRetencion retencionDeVersion(FacturaVersion v) throws SQLException {
+        Long trId = v.getTipoRetencionId();
+        if (trId == null) {
+            return null;
+        }
+        TipoRetencion t = tipoRetencionRepository.getById(trId);
+        if (t != null) {
+            return t;
+        }
+        TipoRetencion snapshot = new TipoRetencion();
+        snapshot.setId(trId);
+        snapshot.setNombre(nzTexto(v.getTipoRetencionNombre()));
+        snapshot.setPorcentaje(v.getTipoRetencionPorcentaje() != null ? v.getTipoRetencionPorcentaje() : 0);
+        snapshot.setActivo(false);
+        return snapshot;
+    }
+
+    private String nzTexto(String s) {
+        return s == null ? "" : s;
     }
 
     /**

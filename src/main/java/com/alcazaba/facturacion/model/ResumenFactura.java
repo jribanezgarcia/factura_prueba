@@ -15,8 +15,12 @@ public class ResumenFactura {
     private BigDecimal baseBruta = BigDecimal.ZERO;
     private BigDecimal importeDescuento = BigDecimal.ZERO;
     private BigDecimal ivaTotal = BigDecimal.ZERO;
+    private BigDecimal importeRetencion = BigDecimal.ZERO;
     private BigDecimal total = BigDecimal.ZERO;
     private int descuentoPorcentaje;
+    private Long tipoRetencionId;
+    private String nombreRetencion;
+    private Integer porcentajeRetencion;
 
     public static class IvaGrupo {
         private String nombre;
@@ -138,5 +142,37 @@ public class ResumenFactura {
 
     public void setDescuentoPorcentaje(int descuentoPorcentaje) {
         this.descuentoPorcentaje = descuentoPorcentaje;
+    }
+
+    public BigDecimal getImporteRetencion() {
+        return importeRetencion;
+    }
+
+    public void setImporteRetencion(BigDecimal importeRetencion) {
+        this.importeRetencion = importeRetencion;
+    }
+
+    public Long getTipoRetencionId() {
+        return tipoRetencionId;
+    }
+
+    public void setTipoRetencionId(Long tipoRetencionId) {
+        this.tipoRetencionId = tipoRetencionId;
+    }
+
+    public String getNombreRetencion() {
+        return nombreRetencion;
+    }
+
+    public void setNombreRetencion(String nombreRetencion) {
+        this.nombreRetencion = nombreRetencion;
+    }
+
+    public Integer getPorcentajeRetencion() {
+        return porcentajeRetencion;
+    }
+
+    public void setPorcentajeRetencion(Integer porcentajeRetencion) {
+        this.porcentajeRetencion = porcentajeRetencion;
     }
 }

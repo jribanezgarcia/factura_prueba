@@ -2,6 +2,7 @@ package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.ResumenFactura;
+import com.alcazaba.facturacion.model.TipoRetencion;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -126,5 +127,43 @@ class CalculoServiceTest {
         assertEquals(0, g.getCuota().compareTo(BigDecimal.ZERO));
         assertEquals("Art. 20.1", g.getMotivoExencion());
         assertEquals(new BigDecimal("100.00"), r.getTotal());
+    }
+
+    private TipoRetencion retencion(int pct) {
+        TipoRetencion t = new TipoRetencion();
+        t.setId(1L);
+        t.setNombre("IRPF " + pct + "%");
+        t.setPorcentaje(pct);
+        t.setActivo(true);
+        return t;
+    }
+
+    @Test
+    void retencionSobreBaseBrutaRestaDelTotal() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "1000.00", 21, "IVA 21%")), 0, retencion(15));
+        assertEquals(new BigDecimal("1000.00"), r.getBaseBruta());
+        assertEquals(new BigDecimal("210.00"), r.getIvaTotal());
+        assertEquals(new BigDecimal("150.00"), r.getImporteRetencion());
+        assertEquals(new BigDecimal("1060.00"), r.getTotal());
+    }
+
+    @Test
+    void retencionConDescuentoUsaBaseBruta() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "1000.00", 21, "IVA 21%")), 10, retencion(19));
+        assertEquals(new BigDecimal("1000.00"), r.getBaseBruta());
+        assertEquals(new BigDecimal("900.00"), r.getBaseTotal());
+        assertEquals(new BigDecimal("189.00"), r.getIvaTotal());
+        assertEquals(new BigDecimal("190.00"), r.getImporteRetencion());
+        assertEquals(new BigDecimal("899.00"), r.getTotal());
+    }
+
+    @Test
+    void sinRetencionMantieneComportamientoAnterior() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "1000.00", 21, "IVA 21%")), 0, null);
+        assertEquals(new BigDecimal("1210.00"), r.getTotal());
+        assertEquals(0, BigDecimal.ZERO.compareTo(r.getImporteRetencion()));
     }
 }

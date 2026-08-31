@@ -6,6 +6,7 @@ import com.alcazaba.facturacion.model.EstadoFactura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.ResumenFactura;
+import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.LineaRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
@@ -34,14 +35,22 @@ public class VersionadoService {
                                        int descuento, String observaciones, String referencia,
                                        Cliente cliente, List<LineaFactura> lineas) throws SQLException {
         return crearVersion(facturaId, fecha, numero, estado, descuento, observaciones, referencia,
-                cliente, lineas, null);
+                cliente, lineas, null, null);
     }
 
     public FacturaVersion crearVersion(long facturaId, LocalDate fecha, String numero, EstadoFactura estado,
                                        int descuento, String observaciones, String referencia,
                                        Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago) throws SQLException {
+        return crearVersion(facturaId, fecha, numero, estado, descuento, observaciones, referencia,
+                cliente, lineas, datosPago, null);
+    }
+
+    public FacturaVersion crearVersion(long facturaId, LocalDate fecha, String numero, EstadoFactura estado,
+                                       int descuento, String observaciones, String referencia,
+                                       Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago,
+                                       TipoRetencion retencion) throws SQLException {
         int versionNum = versionRepository.maxVersion(facturaId) + 1;
-        ResumenFactura resumen = CalculoService.resumen(lineas, descuento);
+        ResumenFactura resumen = CalculoService.resumen(lineas, descuento, retencion);
 
         FacturaVersion v = new FacturaVersion();
         v.setFacturaId(facturaId);
@@ -56,6 +65,10 @@ public class VersionadoService {
         aplicarSnapshot(v, cliente, datosPago);
         v.setBaseTotal(resumen.getBaseTotal());
         v.setIvaTotal(resumen.getIvaTotal());
+        v.setImporteRetencion(resumen.getImporteRetencion());
+        v.setTipoRetencionId(resumen.getTipoRetencionId());
+        v.setTipoRetencionNombre(resumen.getNombreRetencion());
+        v.setTipoRetencionPorcentaje(resumen.getPorcentajeRetencion());
         v.setTotal(resumen.getTotal());
 
         long id = versionRepository.insertarVersion(v);
@@ -81,11 +94,19 @@ public class VersionadoService {
     public FacturaVersion sobrescribirVersion(long versionId, LocalDate fecha, String numero, EstadoFactura estado,
                                               int descuento, String observaciones, String referencia,
                                               Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago) throws SQLException {
+        return sobrescribirVersion(versionId, fecha, numero, estado, descuento, observaciones, referencia,
+                cliente, lineas, datosPago, null);
+    }
+
+    public FacturaVersion sobrescribirVersion(long versionId, LocalDate fecha, String numero, EstadoFactura estado,
+                                              int descuento, String observaciones, String referencia,
+                                              Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago,
+                                              TipoRetencion retencion) throws SQLException {
         FacturaVersion v = versionRepository.getById(versionId);
         if (v == null) {
             throw new java.sql.SQLException("La version " + versionId + " no existe");
         }
-        ResumenFactura resumen = CalculoService.resumen(lineas, descuento);
+        ResumenFactura resumen = CalculoService.resumen(lineas, descuento, retencion);
 
         v.setNumero(numero);
         v.setFechaFactura(fecha);
@@ -97,6 +118,10 @@ public class VersionadoService {
         aplicarSnapshot(v, cliente, datosPago);
         v.setBaseTotal(resumen.getBaseTotal());
         v.setIvaTotal(resumen.getIvaTotal());
+        v.setImporteRetencion(resumen.getImporteRetencion());
+        v.setTipoRetencionId(resumen.getTipoRetencionId());
+        v.setTipoRetencionNombre(resumen.getNombreRetencion());
+        v.setTipoRetencionPorcentaje(resumen.getPorcentajeRetencion());
         v.setTotal(resumen.getTotal());
 
         versionRepository.actualizarVersion(v);

@@ -57,6 +57,7 @@
                 <TableColumn fx:id="colNif" prefWidth="120" text="NIF"/>
                 <TableColumn fx:id="colBase" prefWidth="100" text="Base"/>
                 <TableColumn fx:id="colIva" prefWidth="100" text="IVA"/>
+                <TableColumn fx:id="colRetencion" prefWidth="100" text="Retención"/>
                 <TableColumn fx:id="colTotal" prefWidth="110" text="Total"/>
                 <TableColumn fx:id="colEstado" prefWidth="90" text="Estado"/>
             </columns>

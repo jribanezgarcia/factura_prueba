@@ -29,6 +29,10 @@ public class FacturaVersion {
     private BigDecimal baseTotal = BigDecimal.ZERO;
     private BigDecimal ivaTotal = BigDecimal.ZERO;
     private BigDecimal total = BigDecimal.ZERO;
+    private Long tipoRetencionId;
+    private String tipoRetencionNombre;
+    private Integer tipoRetencionPorcentaje;
+    private BigDecimal importeRetencion = BigDecimal.ZERO;
 
     public Long getId() {
         return id;
@@ -212,5 +216,37 @@ public class FacturaVersion {
 
     public void setTotal(BigDecimal total) {
         this.total = total;
+    }
+
+    public Long getTipoRetencionId() {
+        return tipoRetencionId;
+    }
+
+    public void setTipoRetencionId(Long tipoRetencionId) {
+        this.tipoRetencionId = tipoRetencionId;
+    }
+
+    public String getTipoRetencionNombre() {
+        return tipoRetencionNombre;
+    }
+
+    public void setTipoRetencionNombre(String tipoRetencionNombre) {
+        this.tipoRetencionNombre = tipoRetencionNombre;
+    }
+
+    public Integer getTipoRetencionPorcentaje() {
+        return tipoRetencionPorcentaje;
+    }
+
+    public void setTipoRetencionPorcentaje(Integer tipoRetencionPorcentaje) {
+        this.tipoRetencionPorcentaje = tipoRetencionPorcentaje;
+    }
+
+    public BigDecimal getImporteRetencion() {
+        return importeRetencion;
+    }
+
+    public void setImporteRetencion(BigDecimal importeRetencion) {
+        this.importeRetencion = importeRetencion;
     }
 }

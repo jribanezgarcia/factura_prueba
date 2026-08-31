@@ -8,6 +8,7 @@ import com.alcazaba.facturacion.repository.HistorialRepository;
 import com.alcazaba.facturacion.repository.IvaRepository;
 import com.alcazaba.facturacion.repository.LineaRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
+import com.alcazaba.facturacion.repository.TipoRetencionRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
 import java.sql.SQLException;
@@ -21,6 +22,7 @@ public class Servicios {
     public final ClienteRepository clientes;
     public final SerieRepository series;
     public final IvaRepository ivas;
+    public final TipoRetencionRepository retenciones;
     public final FacturaRepository facturas;
     public final VersionRepository versiones;
     public final LineaRepository lineas;
@@ -40,6 +42,7 @@ public class Servicios {
         clientes = new ClienteRepository();
         series = new SerieRepository();
         ivas = new IvaRepository();
+        retenciones = new TipoRetencionRepository();
         facturas = new FacturaRepository();
         versiones = new VersionRepository();
         lineas = new LineaRepository();
@@ -50,7 +53,7 @@ public class Servicios {
         versionado = new VersionadoService(versiones, lineas);
         factura = new FacturaService(facturas, series, clientes, versiones, lineas, versionado, numeros);
         estado = new EstadoService(facturas, series, versiones, lineas, versionado, numeros, factura);
-        rectificativas = new RectificativaService(factura, series);
+        rectificativas = new RectificativaService(factura, series, retenciones);
         historialService = new HistorialService(historial);
         backup = new BackupService();
     }

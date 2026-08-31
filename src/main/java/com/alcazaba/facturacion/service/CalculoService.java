@@ -2,6 +2,7 @@ package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.ResumenFactura;
+import com.alcazaba.facturacion.model.TipoRetencion;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -79,6 +80,14 @@ public final class CalculoService {
      * y el desglose por tipo de IVA.
      */
     public static ResumenFactura resumen(List<LineaFactura> lineas, int descuento) {
+        return resumen(lineas, descuento, null);
+    }
+
+    /**
+     * Calcula el resumen completo de la factura con descuento global, desglose
+     * por tipo de IVA y retencion de IRPF aplicada sobre la base bruta.
+     */
+    public static ResumenFactura resumen(List<LineaFactura> lineas, int descuento, TipoRetencion retencion) {
         BigDecimal factor = CIEN.subtract(BigDecimal.valueOf(descuento)).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP);
 
         Map<ClaveIva, BigDecimal> bases = new LinkedHashMap<>();
@@ -135,8 +144,16 @@ public final class CalculoService {
         }
         ivaTotal = round2(ivaTotal);
 
+        BigDecimal importeRetencion = BigDecimal.ZERO;
+        if (retencion != null && retencion.getPorcentaje() != null) {
+            importeRetencion = round2(baseTotalSinDescuento.multiply(BigDecimal.valueOf(retencion.getPorcentaje())).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP));
+            resumen.setTipoRetencionId(retencion.getId());
+            resumen.setNombreRetencion(retencion.getNombre());
+            resumen.setPorcentajeRetencion(retencion.getPorcentaje());
+        }
+        resumen.setImporteRetencion(importeRetencion);
         resumen.setIvaTotal(ivaTotal);
-        resumen.setTotal(round2(baseTotalDescontada.add(ivaTotal)));
+        resumen.setTotal(round2(baseTotalDescontada.add(ivaTotal).subtract(importeRetencion)));
         resumen.getGrupos().addAll(grupos);
         return resumen;
     }

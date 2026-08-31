@@ -3,6 +3,7 @@ package com.alcazaba.facturacion.ui;
 import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.model.TipoIva;
+import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.pdf.PdfService;
 import com.alcazaba.facturacion.service.EmpresaManager;
 import com.alcazaba.facturacion.service.Servicios;
@@ -46,9 +47,11 @@ public class ConfiguracionController implements Vista {
     private Navegador nav;
     private Empresa empresa = new Empresa();
     private TipoIva ivaSeleccionado;
+    private TipoRetencion retencionSeleccionada;
     private Serie serieSeleccionada;
 
     private final ObservableList<TipoIva> ivas = FXCollections.observableArrayList();
+    private final ObservableList<TipoRetencion> retenciones = FXCollections.observableArrayList();
     private final ObservableList<Serie> series = FXCollections.observableArrayList();
     private final ObservableList<EmpresaManager.EmpresaInfo> empresas = FXCollections.observableArrayList();
 
@@ -119,6 +122,21 @@ public class ConfiguracionController implements Vista {
     private Label lblIvaAviso;
 
     @FXML
+    private TableView<TipoRetencion> tablaRetenciones;
+    @FXML
+    private TableColumn<TipoRetencion, String> colRetencionNombre;
+    @FXML
+    private TableColumn<TipoRetencion, String> colRetencionPorcentaje;
+    @FXML
+    private TableColumn<TipoRetencion, String> colRetencionActivo;
+    @FXML
+    private TextField txtRetencionNombre;
+    @FXML
+    private TextField txtRetencionPorcentaje;
+    @FXML
+    private Label lblRetencionAviso;
+
+    @FXML
     private TableView<Serie> tablaSeries;
     @FXML
     private TableColumn<Serie, String> colSerieCodigo;
@@ -175,6 +193,7 @@ public class ConfiguracionController implements Vista {
         }
         cargarEmpresa();
         cargarIvas();
+        cargarRetenciones();
         cargarSeries();
         cargarEmpresas();
         cargarPdfs();
@@ -431,6 +450,120 @@ public class ConfiguracionController implements Vista {
             refrescarIvas();
         } catch (Exception e) {
             Dialogos.error("IVA", "No se pudo " + accion + ": " + e.getMessage());
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Retenciones
+    // ------------------------------------------------------------------
+
+    private void cargarRetenciones() {
+        colRetencionNombre.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getNombre())));
+        colRetencionPorcentaje.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().label()));
+        colRetencionActivo.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isActivo() ? "Sí" : "No"));
+        tablaRetenciones.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> seleccionarRetencion(b));
+        refrescarRetenciones();
+    }
+
+    private void refrescarRetenciones() {
+        try {
+            retenciones.setAll(servicios.retenciones.listar(false));
+            tablaRetenciones.setItems(retenciones);
+        } catch (Exception e) {
+            Dialogos.error("Configuración", "No se pudieron cargar los tipos de retención: " + e.getMessage());
+        }
+    }
+
+    private void seleccionarRetencion(TipoRetencion t) {
+        retencionSeleccionada = t;
+        if (t == null) {
+            return;
+        }
+        txtRetencionNombre.setText(nz(t.getNombre()));
+        txtRetencionPorcentaje.setText(String.valueOf(t.getPorcentaje()));
+        boolean enUso = enUsoRetencion(t);
+        txtRetencionPorcentaje.setDisable(enUso);
+        lblRetencionAviso.setVisible(enUso);
+        lblRetencionAviso.setManaged(enUso);
+    }
+
+    private boolean enUsoRetencion(TipoRetencion t) {
+        try {
+            return t.getId() != null && servicios.retenciones.enUso(t.getId());
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @FXML
+    private void nuevoRetencion() {
+        retencionSeleccionada = null;
+        txtRetencionNombre.clear();
+        txtRetencionPorcentaje.clear();
+        txtRetencionPorcentaje.setDisable(false);
+        lblRetencionAviso.setVisible(false);
+        lblRetencionAviso.setManaged(false);
+        txtRetencionNombre.requestFocus();
+    }
+
+    @FXML
+    private void guardarRetencion() {
+        String nombre = trim(txtRetencionNombre);
+        if (nombre.isBlank()) {
+            Dialogos.error("Retención", "Indique el nombre del tipo de retención.");
+            return;
+        }
+        int porcentaje;
+        try {
+            porcentaje = Integer.parseInt(trim(txtRetencionPorcentaje));
+            if (porcentaje < 0 || porcentaje > 100) {
+                throw new NumberFormatException();
+            }
+        } catch (NumberFormatException e) {
+            Dialogos.error("Retención", "El porcentaje debe ser un entero entre 0 y 100.");
+            return;
+        }
+        if (retencionSeleccionada != null && enUsoRetencion(retencionSeleccionada)) {
+            int actual = retencionSeleccionada.getPorcentaje() != null ? retencionSeleccionada.getPorcentaje() : 0;
+            if (porcentaje != actual) {
+                Dialogos.error("Retención", "El porcentaje de un tipo ya usado en el histórico no se puede modificar.");
+                return;
+            }
+        }
+        try {
+            TipoRetencion t = retencionSeleccionada != null ? retencionSeleccionada : new TipoRetencion();
+            t.setNombre(nombre);
+            t.setPorcentaje(porcentaje);
+            if (t.getId() == null) {
+                t.setActivo(true);
+                t.setId(servicios.retenciones.insertar(t));
+            } else {
+                servicios.retenciones.actualizar(t);
+            }
+            refrescarRetenciones();
+            nuevoRetencion();
+        } catch (Exception e) {
+            Dialogos.error("Retención", "No se pudo guardar: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void inactivarRetencion() {
+        TipoRetencion t = tablaRetenciones.getSelectionModel().getSelectedItem();
+        if (t == null) {
+            Dialogos.error("Retención", "Seleccione un tipo de retención de la tabla.");
+            return;
+        }
+        String accion = t.isActivo() ? "inactivar" : "reactivar";
+        if (!Dialogos.confirmar("Retención", "¿" + (t.isActivo() ? "Inactivar" : "Reactivar")
+                + " el tipo \"" + nz(t.getNombre()) + "\"?")) {
+            return;
+        }
+        try {
+            servicios.retenciones.setActivo(t.getId(), !t.isActivo());
+            refrescarRetenciones();
+        } catch (Exception e) {
+            Dialogos.error("Retención", "No se pudo " + accion + ": " + e.getMessage());
         }
     }
 

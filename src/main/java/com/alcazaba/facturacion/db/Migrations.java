@@ -19,7 +19,9 @@ public final class Migrations {
             "db/migrations/001_init.sql",
             "db/migrations/002_datos_factura_pdf.sql",
             "db/migrations/003_formato_numeracion_series.sql",
-            "db/migrations/004_serie_siguiente.sql"
+            "db/migrations/004_serie_siguiente.sql",
+            "db/migrations/005_retencion_irpf.sql",
+            "db/migrations/006_retencion_irpf_snapshot.sql"
     );
 
     private Migrations() {
