@@ -2,11 +2,15 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
 <BorderPane prefHeight="600.0" prefWidth="1000.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.ClientesController">
+    <padding>
+        <Insets top="12" right="16" bottom="12" left="16"/>
+    </padding>
     <top>
-        <VBox>
+        <VBox spacing="12">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
             <VBox spacing="8" styleClass="card zona-contenido">
                 <HBox spacing="8" alignment="CENTER_LEFT">

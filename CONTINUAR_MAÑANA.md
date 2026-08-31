@@ -55,6 +55,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-31-retencion-irpf`
 - `openspec/changes/archive/2026-08-31-facturacion-mensual-cliente`
 - `openspec/changes/archive/2026-08-31-redesign-ui-apple`
+- `openspec/changes/archive/2026-08-31-fix-ui-spacing`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -100,6 +101,16 @@ Cambio OpenSpec activo: **ninguno**.
 - Se añade `minHeight` a la tabla de lineas del editor para garantizar que los tests de edicion siguen funcionando con el nuevo layout.
 - Suite **101/101** en verde.
 - Change archivado como `2026-08-31-redesign-ui-apple`.
+
+### Change `fix-ui-spacing` (archivado)
+
+- Correccion de espaciado en las pantallas rediseñadas: contenido demasiado pegado al borde de la ventana y a la barra de navegacion.
+- Se añade padding de ventana de 16px a los `BorderPane` raiz de `Historico`, `Configuracion`, `Clientes`, `Versiones`, `Backup`, `Editor`, `MenuPrincipal` y `Arranque`.
+- Se añade separacion de 12px entre la barra de navegacion y la primera tarjeta de contenido en `Historico`, `Clientes`, `Editor`, `Versiones` y `Backup`.
+- Se amplian los paddings de `.card` (20px) y `.zona-contenido` (16px) y se aumenta el margen inferior de `.nav-bar` en `base.css`.
+- Se añaden escenarios de margen y separacion respecto al menu en la especificacion del sistema de diseño visual.
+- Suite **101/101** en verde.
+- Change archivado como `2026-08-31-fix-ui-spacing`.
 
 ## Proximos pasos
 
