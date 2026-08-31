@@ -110,8 +110,8 @@ Cambio OpenSpec activo: **ninguno**.
 
 ## Git
 
-- Rama `main`, ultimo commit pendiente de cierre del change `redesign-ui-apple`; **SINCRONIZADA** con `origin/main` tras el push.
-- Arbol limpio tras el commit de cierre.
+- Rama `main`, ultimo commit `6a5ec59`; **SINCRONIZADA** con `origin/main` (push realizado el 31/08/2026).
+- Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
 
