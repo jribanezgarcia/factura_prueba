@@ -5,6 +5,7 @@ import com.alcazaba.facturacion.model.EstadoFactura;
 import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.repository.FacturaRepository;
+import com.alcazaba.facturacion.repository.NumeroDisponibleRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -18,6 +19,7 @@ import java.nio.file.Path;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -31,6 +33,7 @@ class NumeroServiceTest {
     private SerieRepository serieRepository;
     private FacturaRepository facturaRepository;
     private VersionRepository versionRepository;
+    private NumeroDisponibleRepository numeroDisponibleRepository;
     private NumeroService numeroService;
 
     @BeforeEach
@@ -41,7 +44,8 @@ class NumeroServiceTest {
         serieRepository = new SerieRepository();
         facturaRepository = new FacturaRepository();
         versionRepository = new VersionRepository();
-        numeroService = new NumeroService(serieRepository);
+        numeroDisponibleRepository = new NumeroDisponibleRepository();
+        numeroService = new NumeroService(serieRepository, numeroDisponibleRepository);
     }
 
     @AfterEach
@@ -206,5 +210,17 @@ class NumeroServiceTest {
         Serie c = serie("K", false, 10, true);
         facturaConEstado(c.getId(), 5, EstadoFactura.ANULADA);
         assertEquals(1, numeroService.siguienteCorrelativo(c, LocalDate.of(2025, 3, 1)));
+    }
+
+    @Test
+    void huecosDisponiblesExcluyeOcupadosPorActivas() throws SQLException {
+        Serie c = serie("L", false, 10, false);
+        numeroDisponibleRepository.insertar(c.getId(), 2026, 3);
+        numeroDisponibleRepository.insertar(c.getId(), 2026, 5);
+        facturaConEstado(c.getId(), 5, EstadoFactura.EMITIDA);
+
+        List<Integer> huecos = numeroService.huecosDisponibles(c, LocalDate.of(2026, 3, 1));
+
+        assertEquals(List.of(3), huecos);
     }
 }

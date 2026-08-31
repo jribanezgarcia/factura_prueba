@@ -40,7 +40,10 @@
                     </HBox>
                 </FlowPane>
                 <HBox spacing="8" alignment="CENTER_RIGHT">
+                    <Button onAction="#generarMensual" styleClass="default-button" text="Generar mensual"/>
                     <Button fx:id="btnExportarPdf" onAction="#exportarPdf" styleClass="default-button" text="Exportar PDF"/>
+                    <Button fx:id="btnAnular" onAction="#anularSeleccionadas" styleClass="default-button" text="Anular"/>
+                    <Button fx:id="btnBorrar" onAction="#borrarSeleccionadas" styleClass="default-button" text="Borrar"/>
                     <Button onAction="#buscar" styleClass="primary-button" text="Buscar"/>
                     <Button onAction="#volver" styleClass="default-button" text="Volver"/>
                 </HBox>

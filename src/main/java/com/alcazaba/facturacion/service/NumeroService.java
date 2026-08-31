@@ -1,10 +1,13 @@
 package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.model.Serie;
+import com.alcazaba.facturacion.repository.NumeroDisponibleRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -18,9 +21,11 @@ import java.util.Set;
 public class NumeroService {
 
     private final SerieRepository serieRepository;
+    private final NumeroDisponibleRepository numeroDisponibleRepository;
 
-    public NumeroService(SerieRepository serieRepository) {
+    public NumeroService(SerieRepository serieRepository, NumeroDisponibleRepository numeroDisponibleRepository) {
         this.serieRepository = serieRepository;
+        this.numeroDisponibleRepository = numeroDisponibleRepository;
     }
 
     public String formarNumero(Serie serie, int correlativo, LocalDate fecha) {
@@ -73,6 +78,50 @@ public class NumeroService {
             siguiente = Math.max(siguiente, ocupado + 1);
         }
         return siguiente;
+    }
+
+    /**
+     * Correlativos liberados por borrado de facturas para la serie y anio
+     * indicados, excluyendo los que esten ocupados por facturas activas.
+     */
+    public List<Integer> huecosDisponibles(Serie serie, LocalDate fecha) throws SQLException {
+        int anio = fecha != null ? fecha.getYear() : LocalDate.now().getYear();
+        Set<Integer> activos = serieRepository.correlativosActivos(serie.getId(), anio);
+        List<Integer> todos = numeroDisponibleRepository.listar(serie.getId(), anio);
+        List<Integer> disponibles = new ArrayList<>();
+        for (int c : todos) {
+            if (c >= 1 && !activos.contains(c)) {
+                disponibles.add(c);
+            }
+        }
+        return disponibles;
+    }
+
+    /**
+     * Propone una lista ordenada de {@code cantidad} correlativos libres para
+     * la serie y el año. Si {@code usarHuecos} es true, se rellenan primero
+     * los huecos registrados en numero_disponible y luego se continua con los
+     * siguientes números que no esten ocupados por facturas activas.
+     */
+    public List<Integer> proponerNumeros(Serie serie, int anio, int cantidad, boolean usarHuecos)
+            throws SQLException {
+        if (cantidad <= 0) {
+            return List.of();
+        }
+        Set<Integer> ocupados = serieRepository.correlativosActivos(serie.getId(), anio);
+        java.util.SortedSet<Integer> disponibles = new java.util.TreeSet<>();
+        if (usarHuecos) {
+            disponibles.addAll(huecosDisponibles(serie, LocalDate.of(anio, 1, 1)));
+        }
+        int siguiente = serieRepository.getSiguiente(serie.getId(), anio);
+        int c = siguiente;
+        while (disponibles.size() < cantidad) {
+            if (!ocupados.contains(c)) {
+                disponibles.add(c);
+            }
+            c++;
+        }
+        return new ArrayList<>(disponibles).subList(0, cantidad);
     }
 
     public boolean correlativoOcupadoPorActiva(Serie serie, int correlativo) throws SQLException {

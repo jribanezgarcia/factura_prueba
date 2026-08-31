@@ -64,6 +64,32 @@ public class FacturaRepository {
         }
     }
 
+    public boolean clienteTieneFacturaEnMes(long clienteId, int anio, int mes) throws SQLException {
+        String sql = """
+                SELECT 1 FROM factura f
+                JOIN factura_version v ON v.factura_id = f.id
+                WHERE f.cliente_id = ?
+                  AND CAST(strftime('%Y', v.fecha_factura) AS INTEGER) = ?
+                  AND CAST(strftime('%m', v.fecha_factura) AS INTEGER) = ?
+                LIMIT 1
+                """;
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            ps.setLong(1, clienteId);
+            ps.setInt(2, anio);
+            ps.setInt(3, mes);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    public void eliminar(long facturaId) throws SQLException {
+        try (PreparedStatement ps = Database.getConnection().prepareStatement("DELETE FROM factura WHERE id = ?")) {
+            ps.setLong(1, facturaId);
+            ps.executeUpdate();
+        }
+    }
+
     private Factura map(ResultSet rs) throws SQLException {
         Factura f = new Factura();
         f.setId(rs.getLong("id"));

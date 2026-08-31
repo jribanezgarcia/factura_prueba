@@ -102,6 +102,30 @@ class UiSmokeTest {
         cargar("Arranque.fxml");
     }
 
+    @Test
+    void cargarGenerarFacturasMensuales() {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        Platform.runLater(() -> {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                        getClass().getResource("/com/alcazaba/facturacion/ui/GenerarFacturasMensuales.fxml"));
+                Parent root = loader.load();
+                GenerarFacturasMensualesController c = loader.getController();
+                assertNotNull(c, "El controller de GenerarFacturasMensuales.fxml no se creo");
+                c.setServicios(servicios);
+                c.setStage(new Stage());
+                c.alIniciar();
+                maquetarAlMinimo(root);
+            } catch (Throwable t) {
+                error.set(t);
+            } finally {
+                latch.countDown();
+            }
+        });
+        await(latch, error, "GenerarFacturasMensuales.fxml");
+    }
+
     private void cargar(String fxml) {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Throwable> error = new AtomicReference<>();

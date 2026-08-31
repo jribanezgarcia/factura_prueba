@@ -157,6 +157,33 @@ public class VersionRepository {
         }
     }
 
+    public void eliminarPorFactura(long facturaId) throws SQLException {
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(
+                "DELETE FROM factura_version WHERE factura_id = ?")) {
+            ps.setLong(1, facturaId);
+            ps.executeUpdate();
+        }
+    }
+
+    public List<FacturaVersion> getVersionesPorCliente(long clienteId) throws SQLException {
+        String sql = """
+                SELECT v.* FROM factura_version v
+                JOIN factura f ON f.id = v.factura_id
+                WHERE f.cliente_id = ?
+                ORDER BY v.fecha_factura, v.version_num
+                """;
+        List<FacturaVersion> lista = new ArrayList<>();
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
+            ps.setLong(1, clienteId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(map(rs));
+                }
+            }
+        }
+        return lista;
+    }
+
     private FacturaVersion map(ResultSet rs) throws SQLException {
         FacturaVersion v = new FacturaVersion();
         v.setId(rs.getLong("id"));

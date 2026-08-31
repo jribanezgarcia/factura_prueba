@@ -12,6 +12,7 @@ import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.ClienteRepository;
 import com.alcazaba.facturacion.repository.FacturaRepository;
 import com.alcazaba.facturacion.repository.LineaRepository;
+import com.alcazaba.facturacion.repository.NumeroDisponibleRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
@@ -33,11 +34,12 @@ public class FacturaService {
     private final LineaRepository lineaRepository;
     private final VersionadoService versionadoService;
     private final NumeroService numeroService;
+    private final NumeroDisponibleRepository numeroDisponibleRepository;
 
     public FacturaService(FacturaRepository facturaRepository, SerieRepository serieRepository,
                           ClienteRepository clienteRepository, VersionRepository versionRepository,
                           LineaRepository lineaRepository, VersionadoService versionadoService,
-                          NumeroService numeroService) {
+                          NumeroService numeroService, NumeroDisponibleRepository numeroDisponibleRepository) {
         this.facturaRepository = facturaRepository;
         this.serieRepository = serieRepository;
         this.clienteRepository = clienteRepository;
@@ -45,6 +47,7 @@ public class FacturaService {
         this.lineaRepository = lineaRepository;
         this.versionadoService = versionadoService;
         this.numeroService = numeroService;
+        this.numeroDisponibleRepository = numeroDisponibleRepository;
     }
 
     /**
@@ -81,36 +84,10 @@ public class FacturaService {
                              int descuento, String observaciones, String referencia,
                              Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
             throws SQLException, ValidationException {
-        validar(lineas, descuento);
-        if (correlativoPedido != null && correlativoPedido < 1) {
-            throw new ValidationException("El correlativo debe ser al menos 1");
-        }
-
         Database.beginTransaction();
         try {
-            int correlativo = correlativoPedido != null
-                    ? correlativoPedido
-                    : numeroService.siguienteCorrelativo(serie, fecha);
-            if (numeroService.correlativoOcupadoPorActiva(serie, correlativo, fecha)) {
-                throw new ValidationException(
-                        "El correlativo " + correlativo + " ya esta ocupado por una factura activa de la serie " + serie.getCodigo());
-            }
-
-            if (cliente != null && cliente.getId() == null && !isVacio(cliente)) {
-                long clienteId = clienteRepository.insertar(cliente);
-                cliente.setId(clienteId);
-            }
-
-            long facturaId = facturaRepository.insertar(serie.getId(), correlativo,
-                    cliente == null ? null : cliente.getId());
-
-            String numero = numeroService.formarNumero(serie, correlativo, fecha);
-            versionadoService.crearVersion(facturaId, fecha, numero, EstadoFactura.EMITIDA,
-                    descuento, observaciones, referencia, cliente, lineas, datosPago, retencion);
-
-            serieRepository.actualizarSiguiente(serie.getId(), Math.max(serie.getSiguienteCorrelativo(), correlativo + 1));
-            int nuevoAnio = Math.max(serieRepository.getSiguiente(serie.getId(), fecha.getYear()), correlativo + 1);
-            serieRepository.actualizarSiguiente(serie.getId(), fecha.getYear(), nuevoAnio);
+            long facturaId = crearFacturaSinTransaccion(serie, fecha, cliente, lineas, descuento,
+                    observaciones, referencia, correlativoPedido, datosPago, retencion);
             Database.commit();
             return facturaId;
         } catch (SQLException | ValidationException | RuntimeException e) {
@@ -119,6 +96,47 @@ public class FacturaService {
         } finally {
             Database.endTransaction();
         }
+    }
+
+    /**
+     * Crea una factura nueva sin gestionar la transaccion. El llamador debe
+     * envolver la llamada en begin/commit/rollback cuando genere varias
+     * facturas de una sola vez.
+     */
+    long crearFacturaSinTransaccion(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
+                                    int descuento, String observaciones, String referencia,
+                                    Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
+            throws SQLException, ValidationException {
+        validar(lineas, descuento);
+        if (correlativoPedido != null && correlativoPedido < 1) {
+            throw new ValidationException("El correlativo debe ser al menos 1");
+        }
+
+        int correlativo = correlativoPedido != null
+                ? correlativoPedido
+                : numeroService.siguienteCorrelativo(serie, fecha);
+        if (numeroService.correlativoOcupadoPorActiva(serie, correlativo, fecha)) {
+            throw new ValidationException(
+                    "El correlativo " + correlativo + " ya esta ocupado por una factura activa de la serie " + serie.getCodigo());
+        }
+        numeroDisponibleRepository.eliminar(serie.getId(), fecha.getYear(), correlativo);
+
+        if (cliente != null && cliente.getId() == null && !isVacio(cliente)) {
+            long clienteId = clienteRepository.insertar(cliente);
+            cliente.setId(clienteId);
+        }
+
+        long facturaId = facturaRepository.insertar(serie.getId(), correlativo,
+                cliente == null ? null : cliente.getId());
+
+        String numero = numeroService.formarNumero(serie, correlativo, fecha);
+        versionadoService.crearVersion(facturaId, fecha, numero, EstadoFactura.EMITIDA,
+                descuento, observaciones, referencia, cliente, lineas, datosPago, retencion);
+
+        serieRepository.actualizarSiguiente(serie.getId(), Math.max(serie.getSiguienteCorrelativo(), correlativo + 1));
+        int nuevoAnio = Math.max(serieRepository.getSiguiente(serie.getId(), fecha.getYear()), correlativo + 1);
+        serieRepository.actualizarSiguiente(serie.getId(), fecha.getYear(), nuevoAnio);
+        return facturaId;
     }
 
     public FacturaVersion guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
@@ -206,6 +224,47 @@ public class FacturaService {
 
     public Factura factura(long facturaId) throws SQLException {
         return facturaRepository.getById(facturaId);
+    }
+
+    public ResumenBorrado resumenBorrado(long facturaId) throws SQLException {
+        int versiones = 0;
+        int lineas = 0;
+        for (FacturaVersion v : versionRepository.getVersiones(facturaId)) {
+            versiones++;
+            lineas += lineaRepository.getLineas(v.getId()).size();
+        }
+        return new ResumenBorrado(versiones, lineas);
+    }
+
+    public void borrarFactura(long facturaId) throws SQLException, ValidationException {
+        Factura f = facturaRepository.getById(facturaId);
+        if (f == null) {
+            throw new ValidationException("La factura no existe");
+        }
+        Serie serie = serieRepository.getById(f.getSerieId());
+        FacturaVersion ultima = versionRepository.ultimaVersion(facturaId);
+        int anio = ultima != null && ultima.getFechaFactura() != null
+                ? ultima.getFechaFactura().getYear()
+                : LocalDate.now().getYear();
+
+        Database.beginTransaction();
+        try {
+            for (FacturaVersion v : versionRepository.getVersiones(facturaId)) {
+                lineaRepository.eliminarPorVersion(v.getId());
+            }
+            versionRepository.eliminarPorFactura(facturaId);
+            facturaRepository.eliminar(facturaId);
+            numeroDisponibleRepository.insertar(serie.getId(), anio, f.getCorrelativo());
+            Database.commit();
+        } catch (SQLException | RuntimeException e) {
+            Database.rollback();
+            throw e;
+        } finally {
+            Database.endTransaction();
+        }
+    }
+
+    public record ResumenBorrado(int versiones, int lineas) {
     }
 
     public Cliente cliente(long clienteId) throws SQLException {

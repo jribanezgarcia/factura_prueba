@@ -28,10 +28,14 @@ import com.lowagie.text.pdf.PdfPCellEvent;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfTemplate;
+import com.lowagie.text.pdf.PdfCopy;
+import com.lowagie.text.pdf.PdfReader;
 import com.lowagie.text.pdf.PdfWriter;
 
 import java.awt.Color;
+import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -69,6 +73,76 @@ public class PdfService {
     private static final float RADIO_CAJA = 6f;
     private static final float RADIO_CHIP = 2f;
 
+    public void exportar(FacturaService.VersionCompleta vc, Empresa empresa, Path ruta) throws Exception {
+        exportar(vc, empresa, ruta, null);
+    }
+
+    public void exportar(FacturaService.VersionCompleta vc, Empresa empresa, Path ruta, String colorHex) throws Exception {
+        try (FileOutputStream fos = new FileOutputStream(ruta.toFile())) {
+            exportar(vc, empresa, fos, colorHex);
+        }
+    }
+
+    public void exportarAgrupado(List<FacturaService.VersionCompleta> versiones, Empresa empresa, Path ruta) throws Exception {
+        exportarAgrupado(versiones, empresa, ruta, null);
+    }
+
+    public void exportarAgrupado(List<FacturaService.VersionCompleta> versiones, Empresa empresa, Path ruta, String colorHex) throws Exception {
+        List<byte[]> pdfs = new ArrayList<>();
+        for (FacturaService.VersionCompleta vc : versiones) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            exportar(vc, empresa, baos, colorHex);
+            pdfs.add(baos.toByteArray());
+        }
+        concatenar(pdfs, ruta);
+    }
+
+    private void exportar(FacturaService.VersionCompleta vc, Empresa empresa, OutputStream out, String colorHex) throws Exception {
+        Colores colores = new Colores(colorDe(colorHex));
+        boolean anulada = vc.version().getEstado() == EstadoFactura.ANULADA;
+        boolean rectificativa = vc.version().getReferenciaRectifica() != null
+                && !vc.version().getReferenciaRectifica().isBlank();
+        TipoRetencion retencion = retencionDeVersion(vc.version());
+        ResumenFactura resumen = CalculoService.resumen(vc.lineas(), vc.version().getDescuentoPorcentaje(), retencion);
+
+        Image logo = cargarLogo(empresa);
+        float[] margenes = margenes(empresa, logo, colores);
+
+        try (Document doc = new Document(PageSize.A4, MARGEN_LATERAL, MARGEN_LATERAL, margenes[0], margenes[1])) {
+            PdfWriter writer = PdfWriter.getInstance(doc, out);
+            writer.setPageEvent(new CabeceraPie(empresa, logo, anulada, rectificativa, vc.version(), colores));
+            doc.open();
+
+            doc.add(tarjetas(vc, colores));
+            espacio(doc, 8f);
+            doc.add(tablaLineas(vc, colores));
+            espacio(doc, 4f);
+            doc.add(bloqueTotales(resumen, vc.version().getDescuentoPorcentaje(), colores));
+            String obs = vc.version().getObservaciones();
+            if (obs != null && !obs.isBlank()) {
+                espacio(doc, 6f);
+                doc.add(cajaObservaciones(obs, colores));
+            }
+        }
+    }
+
+    private void concatenar(List<byte[]> pdfs, Path ruta) throws Exception {
+        Document document = new Document();
+        try (FileOutputStream fos = new FileOutputStream(ruta.toFile())) {
+            PdfCopy copy = new PdfCopy(document, fos);
+            document.open();
+            for (byte[] pdf : pdfs) {
+                PdfReader reader = new PdfReader(pdf);
+                for (int i = 1; i <= reader.getNumberOfPages(); i++) {
+                    copy.addPage(copy.getImportedPage(reader, i));
+                }
+                reader.close();
+            }
+        } finally {
+            document.close();
+        }
+    }
+
     static final BaseFont CALIBRI = cargarFuenteSistema("calibri.ttf");
     static final BaseFont CALIBRI_NEGrita = cargarFuenteSistema("calibrib.ttf");
     static final BaseFont CALIBRI_CURSIVA = cargarFuenteSistema("calibrii.ttf");
@@ -103,38 +177,6 @@ public class PdfService {
         return FontFactory.getFont(FontFactory.HELVETICA_OBLIQUE).getBaseFont();
     }
 
-    public void exportar(FacturaService.VersionCompleta vc, Empresa empresa, Path ruta) throws Exception {
-        exportar(vc, empresa, ruta, null);
-    }
-
-    public void exportar(FacturaService.VersionCompleta vc, Empresa empresa, Path ruta, String colorHex) throws Exception {
-        Colores colores = new Colores(colorDe(colorHex));
-        boolean anulada = vc.version().getEstado() == EstadoFactura.ANULADA;
-        boolean rectificativa = vc.version().getReferenciaRectifica() != null
-                && !vc.version().getReferenciaRectifica().isBlank();
-        TipoRetencion retencion = retencionDeVersion(vc.version());
-        ResumenFactura resumen = CalculoService.resumen(vc.lineas(), vc.version().getDescuentoPorcentaje(), retencion);
-
-        Image logo = cargarLogo(empresa);
-        float[] margenes = margenes(empresa, logo, colores);
-
-        try (Document doc = new Document(PageSize.A4, MARGEN_LATERAL, MARGEN_LATERAL, margenes[0], margenes[1])) {
-            PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(ruta.toFile()));
-            writer.setPageEvent(new CabeceraPie(empresa, logo, anulada, rectificativa, vc.version(), colores));
-            doc.open();
-
-            doc.add(tarjetas(vc, colores));
-            espacio(doc, 8f);
-            doc.add(tablaLineas(vc, colores));
-            espacio(doc, 4f);
-            doc.add(bloqueTotales(resumen, vc.version().getDescuentoPorcentaje(), colores));
-            String obs = vc.version().getObservaciones();
-            if (obs != null && !obs.isBlank()) {
-                espacio(doc, 6f);
-                doc.add(cajaObservaciones(obs, colores));
-            }
-        }
-    }
 
     // ------------------------------------------------------------------
     // Tarjetas bicolor

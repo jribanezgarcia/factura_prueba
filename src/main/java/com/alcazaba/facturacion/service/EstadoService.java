@@ -14,6 +14,7 @@ import com.alcazaba.facturacion.repository.SerieRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,6 +47,31 @@ public class EstadoService {
 
     public void anular(long facturaId) throws SQLException, ValidationException {
         cambiarEstado(facturaId, null, EstadoFactura.ANULADA);
+    }
+
+    public AnulacionResultado anularFacturas(List<Long> facturaIds) {
+        int anuladas = 0;
+        int yaAnuladas = 0;
+        int fallos = 0;
+        List<String> errores = new ArrayList<>();
+        for (Long facturaId : facturaIds) {
+            if (facturaId == null) {
+                continue;
+            }
+            try {
+                EstadoFactura actual = facturaService.estadoActual(facturaId);
+                if (actual == EstadoFactura.ANULADA) {
+                    yaAnuladas++;
+                    continue;
+                }
+                anular(facturaId);
+                anuladas++;
+            } catch (Exception e) {
+                fallos++;
+                errores.add("Factura " + facturaId + ": " + e.getMessage());
+            }
+        }
+        return new AnulacionResultado(anuladas, yaAnuladas, fallos, errores);
     }
 
     public void restaurar(long facturaId) throws SQLException, ValidationException {
@@ -123,5 +149,35 @@ public class EstadoService {
         c.setProvincia(base.getCliProvincia());
         c.setEmail(base.getCliEmail());
         return c;
+    }
+
+    public static class AnulacionResultado {
+        private final int anuladas;
+        private final int yaAnuladas;
+        private final int fallos;
+        private final List<String> errores;
+
+        public AnulacionResultado(int anuladas, int yaAnuladas, int fallos, List<String> errores) {
+            this.anuladas = anuladas;
+            this.yaAnuladas = yaAnuladas;
+            this.fallos = fallos;
+            this.errores = errores;
+        }
+
+        public int getAnuladas() {
+            return anuladas;
+        }
+
+        public int getYaAnuladas() {
+            return yaAnuladas;
+        }
+
+        public int getFallos() {
+            return fallos;
+        }
+
+        public List<String> getErrores() {
+            return errores;
+        }
     }
 }

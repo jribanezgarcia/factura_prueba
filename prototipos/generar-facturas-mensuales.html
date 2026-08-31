@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Generar facturas mensuales</title>
+<style>
+  :root {
+    --bg: #C7C8CA;
+    --surface: #FFFFFF;
+    --text: #1F2937;
+    --muted: #6B7280;
+    --accent: #296796;
+    --accent-strong: #1A55A8;
+    --border: #D1D5DB;
+    --radius: 8px;
+    --shadow: 0 2px 6px rgba(0,0,0,0.12);
+  }
+  body { font-family: "Segoe UI", sans-serif; background: var(--bg); display: flex; justify-content: center; padding: 40px; color: var(--text); }
+  .dialog { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); width: 880px; padding: 24px; }
+  h2 { margin: 0 0 20px 0; font-size: 20px; color: var(--accent-strong); }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .field { display: flex; flex-direction: column; }
+  .field label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .field input, .field select { padding: 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; }
+  .row { display: flex; gap: 12px; align-items: flex-end; }
+  .lines { margin-bottom: 16px; }
+  .lines h3 { font-size: 14px; margin: 0 0 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { border: 1px solid var(--border); padding: 8px; text-align: left; }
+  th { background: #F3F4F6; }
+  .actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+  button { padding: 10px 18px; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; }
+  .primary { background: var(--accent); color: #fff; }
+  .secondary { background: #fff; color: var(--text); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="dialog">
+  <h2>Generar facturas mensuales</h2>
+  <div class="grid">
+    <div class="field">
+      <label>Cliente</label>
+      <select><option>Paco Martínez López</option></select>
+    </div>
+    <div class="field">
+      <label>Serie de numeración</label>
+      <select><option>F - Formato MES</option></select>
+    </div>
+    <div class="field">
+      <label>Año</label>
+      <input type="number" value="2026">
+    </div>
+    <div class="row">
+      <div class="field">
+        <label>Mes inicio</label>
+        <select><option>enero</option><option selected>febrero</option></select>
+      </div>
+      <div class="field">
+        <label>Mes fin</label>
+        <select><option>diciembre</option></select>
+      </div>
+    </div>
+    <div class="field">
+      <label>Día del mes</label>
+      <div class="row">
+        <input type="number" value="15" style="width:80px">
+        <label><input type="radio" name="dia" checked> Día fijo</label>
+        <label><input type="radio" name="dia"> Primer día</label>
+        <label><input type="radio" name="dia"> Último día</label>
+      </div>
+    </div>
+    <div class="field">
+      <label>Tipo de IVA</label>
+      <select><option>21 %</option></select>
+    </div>
+    <div class="field">
+      <label>Retención IRPF</label>
+      <select><option>15 % IRPF</option><option>-- Sin retención --</option></select>
+    </div>
+  </div>
+
+  <div class="lines">
+    <h3>Líneas de cada factura</h3>
+    <table>
+      <thead>
+        <tr><th>Cant.</th><th>Descripción</th><th>Precio</th><th>Añadir mes</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="number" value="1" style="width:50px"></td>
+          <td><input type="text" value="contabilidad y laboral" style="width:100%"></td>
+          <td><input type="number" value="60.00" style="width:80px"></td>
+          <td><input type="checkbox" checked></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="actions">
+    <button class="secondary">Cancelar</button>
+    <button class="primary">Generar 11 facturas</button>
+  </div>
+</div>
+</body>
+</html>

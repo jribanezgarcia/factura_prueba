@@ -27,6 +27,7 @@ import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -53,6 +54,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Editor de factura completo (6.2-6.6, 7.x, 8.1): cabecera con serie, fecha,
@@ -868,6 +870,10 @@ public class EditorController implements Vista {
                     Dialogos.error("Guardar", "Seleccione la serie.");
                     return false;
                 }
+                Integer hueco = pedirHueco(serie, f);
+                if (hueco != null) {
+                    txtNumero.setText(servicios.numeros.formarNumero(serie, hueco, f));
+                }
                 Integer corr = servicios.numeros.parseCorrelativo(serie, txtNumero.getText());
                 if (corr == null) {
                     Dialogos.error("Guardar", "El número no se ajusta al formato de la serie "
@@ -1200,6 +1206,34 @@ public class EditorController implements Vista {
                 txtNumero.setText("");
             }
         }
+    }
+
+    private Integer pedirHueco(Serie serie, LocalDate fecha) {
+        try {
+            List<Integer> huecos = servicios.numeros.huecosDisponibles(serie, fecha);
+            if (huecos.isEmpty()) {
+                return null;
+            }
+            int siguiente = servicios.numeros.siguienteCorrelativo(serie, fecha);
+            List<Integer> menores = huecos.stream().filter(h -> h < siguiente).toList();
+            if (menores.isEmpty()) {
+                return null;
+            }
+            int hueco = menores.get(0);
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(
+                    "Usar hueco " + hueco,
+                    "Usar hueco " + hueco,
+                    "Continuar con " + siguiente);
+            dialog.setTitle("Número de factura");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Hay un hueco disponible en la numeración:");
+            Optional<String> resultado = dialog.showAndWait();
+            if (resultado.isPresent() && resultado.get().startsWith("Usar hueco")) {
+                return hueco;
+            }
+        } catch (Exception ignored) {
+        }
+        return null;
     }
 
     private void guardarSeriePreferida(Serie s) {
