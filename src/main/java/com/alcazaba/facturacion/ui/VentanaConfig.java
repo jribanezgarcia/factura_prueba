@@ -81,9 +81,9 @@ public enum VentanaConfig {
         stage.setMinHeight(minAlto);
         stage.setMaxWidth(maxAncho);
         stage.setMaxHeight(maxAlto);
-        stage.setMaximized(maximizado);
         stage.setWidth(ancho);
         stage.setHeight(alto);
         stage.centerOnScreen();
+        stage.setMaximized(maximizado);
     }
 }
