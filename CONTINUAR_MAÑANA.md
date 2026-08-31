@@ -53,6 +53,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-24-formato-numeracion-series`
 - `openspec/changes/archive/2026-08-30-multi-empresa-ejercicio-fiscal`
 - `openspec/changes/archive/2026-08-31-retencion-irpf`
+- `openspec/changes/archive/2026-08-31-facturacion-mensual-cliente`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -72,6 +73,21 @@ Cambio OpenSpec activo: **ninguno**.
 - Tests nuevos: `TipoRetencionRepositoryTest`, retencion en `CalculoServiceTest`, retencion en `FacturaServiceTest`. Suite **86/86** en verde.
 - Commits `428958c` (implementacion) y `9d77eb5` (sync de spec y archivo en OpenSpec), push realizado.
 
+### Change `facturacion-mensual-cliente` (archivado)
+
+- Dialogo de facturacion mensual accesible desde el menu principal y desde el historico.
+- Generacion de facturas mensuales para un unico cliente con seleccion de año, rango de meses, serie de numeracion y dia del mes (fijo, primer dia o ultimo dia).
+- Lineas de concepto configurables con opcion de añadir el nombre del mes a la descripcion.
+- Seleccion de tipo de IVA y tipo de retencion IRPF aplicados a todas las facturas generadas.
+- Deteccion de facturas ya existentes para el mismo cliente, año y mes, con confirmacion antes de generar duplicados.
+- Acciones de **Anular** y **Borrar** en el historico, con menu contextual y resumen de resultados.
+- Borrado fisico de facturas que registra el numero como disponible en la tabla `numero_disponible` para reutilizacion posterior.
+- Exportacion multiple a PDF desde el historico: un PDF por factura o un unico PDF agrupado.
+- Migracion `007_numeros_disponibles.sql` y repositorio `NumeroDisponibleRepository`.
+- Servicios nuevos/modificados: `FacturacionMensualService`, `NumeroService.proponerNumeros(...)`, `FacturaService.borrarFactura(...)`, `EstadoService.anularFacturas(...)`.
+- Tests nuevos/actualizados: `FacturacionMensualServiceTest`, `FacturaServiceTest`, `EstadoServiceTest`, `NumeroServiceTest`, `HistorialServiceTest`. Suite **101/101** en verde.
+- Commits `ebbc641` (implementacion) y `9156850` (sync de spec y archivo en OpenSpec), push realizado.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -81,12 +97,12 @@ Cambio OpenSpec activo: **ninguno**.
 
 ## Git
 
-- Rama `main`, ultimo commit `9d77eb5`; **SINCRONIZADA** con `origin/main` (push realizado el 31/08/2026).
+- Rama `main`, ultimo commit `9156850`; **SINCRONIZADA** con `origin/main` (push realizado el 31/08/2026).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 86 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 101 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
