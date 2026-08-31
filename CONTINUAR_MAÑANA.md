@@ -53,7 +53,7 @@ Cambios OpenSpec archivados (ademas de los anteriores):
 - `openspec/changes/archive/2026-08-24-formato-numeracion-series` (archivado el 24/08/2026)
 - `openspec/changes/archive/2026-08-30-multi-empresa-ejercicio-fiscal` (archivado el 30/08/2026)
 
-No hay ningun cambio OpenSpec activo ahora mismo.
+Cambio OpenSpec activo: `retencion-irpf` (planificación completa, pendiente de `/opsx-apply`).
 
 ## Sesion del 22/08/2026 (lo hecho hoy, todo cerrado y commiteado)
 
@@ -149,9 +149,34 @@ Motivacion: el arranque no tenia tamano propio (heredaba el prefWidth del FXML d
 - Tests: 10 nuevos en `NumeroServiceTest`. Suite 59/59 en verde.
 - Spec principal: requisito «Numeracion por series» actualizado con los nuevos formatos y escenarios.
 
+## Sesion del 30/08/2026 (cerrada y commiteada)
+
+### Change `multi-empresa-ejercicio-fiscal` (archivado)
+
+- Multi-empresa: una BD SQLite por empresa bajo `%APPDATA%\Facturacion\<slug>\`, migración de instalación vieja a `comercial_alcazaba`, lock global de instancia única.
+- Preferencias globales en `preferencias.properties` (`ultima_empresa`, ventana, tema); `ThemeManager` y `Main.java` adaptados.
+- `Sesion` con `empresaSlug` y `fechaTrabajo`; fecha de trabajo fijada en pantalla de arranque con año de ejercicio fiscal (actual auto / otro manual y restringido).
+- Correlativo por año con tabla `serie_siguiente` y migración `004_serie_siguiente.sql`.
+- Pantalla de arranque `Arranque.fxml` + `ArranqueController` con selector de empresa, año de ejercicio, fecha de trabajo y botón «Nueva...» para crear empresa.
+- `EmpresaManager` y pestaña «Empresas» en Configuración para crear, cambiar y eliminar empresas.
+- Refinamiento del submenú Series: sin series por defecto, permite código vacío (una sola serie sin código a la vez) y borrado de series sin facturas.
+- Tests: 77/77 en verde; verificación manual confirmada por el usuario.
+- Commit `141f1a7` "Multi-empresa, ejercicio fiscal y refinamiento del submenú Series, archivado en OpenSpec" (36 archivos), push realizado.
+
+### Change `retencion-irpf` (propuesto, pendiente de aplicar)
+
+Decisions cerradas para la próxima sesión:
+
+- Serie R para rectificativas: **Opción A** (sin cambios; el usuario crea la serie R manualmente si la necesita).
+- Tipos de retención: lista configurable global por empresa, seleccionable **por factura**.
+- Cálculo: sobre **base bruta**, con fórmula `Total = Base − Descuento + IVA − Retención`.
+- Aplicación: editor de factura, histórico (columna), PDF (fila de totales) y rectificativas (heredan retención, editable).
+
+Artículos creados en `openspec/changes/retencion-irpf/`: `proposal.md`, `specs/invoicing/spec.md`, `design.md`, `tasks.md`. Validación de OpenSpec: ✓.
+
 ## Proximos pasos
 
-- Sin cola pendiente: la siguiente tarea la decide el usuario (se anuncia al inicio de la sesion y entra por `/opsx-propose`).
+- Aplicar el change `retencion-irpf` con `/opsx-apply` cuando el usuario lo indique.
 
 ## Funcionalidad pendiente: Multi-empresa (varias BD)
 
@@ -198,12 +223,12 @@ Al cambiar de empresa, **toda la capa de repositorios y servicios se re-instanci
 
 ## Git
 
-- Rama `main`, ultimo commit `0beed22`; **SINCRONIZADA** con `origin/main` (push realizado el 24/08/2026).
+- Rama `main`, ultimo commit `141f1a7`; **SINCRONIZADA** con `origin/main` (push realizado el 30/08/2026).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 49 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 77 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
