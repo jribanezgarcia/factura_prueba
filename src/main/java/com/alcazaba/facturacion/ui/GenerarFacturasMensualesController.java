@@ -118,6 +118,8 @@ public class GenerarFacturasMensualesController {
             Scene scene = new Scene(root);
             ThemeManager.aplicar(scene, nav.servicios());
             dialog.setScene(scene);
+            VentanaConfig.para("/com/alcazaba/facturacion/ui/GenerarFacturasMensuales.fxml")
+                    .ifPresent(cfg -> cfg.aplicar(dialog));
             c.setStage(dialog);
             c.alIniciar();
             dialog.showAndWait();
