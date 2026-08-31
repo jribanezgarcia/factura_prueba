@@ -58,6 +58,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-31-fix-ui-spacing`
 - `openspec/changes/archive/2026-08-31-window-sizing`
 - `openspec/changes/archive/2026-08-31-fix-menu-min-height`
+- `openspec/changes/archive/2026-08-31-adjust-menu-editor-sizing`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -137,6 +138,16 @@ Cambio OpenSpec activo: **ninguno**.
 - Se actualiza la especificacion del sistema de tamaños de ventana.
 - Suite **102/102** en verde.
 - Change archivado como `2026-08-31-fix-menu-min-height`.
+
+### Change `adjust-menu-editor-sizing` (archivado)
+
+- Menu principal ajustado a **800×600** con margen inferior de 20 px y tarjetas alineadas arriba.
+- Editor de facturas configurado para abrirse **maximizado** por defecto, aprovechando todo el alto de pantalla; la tabla de lineas ya permite scroll vertical.
+- `VentanaConfig` añade soporte para flag `maximizado` y aplica `stage.setMaximized(...)` al cargar cada vista.
+- Test `EditorTamanoMinimoTest` actualizado para desmaximizar el Editor antes de validar su tamaño minimo.
+- Se actualiza la especificacion del sistema de tamaños de ventana.
+- Suite **102/102** en verde.
+- Change archivado como `2026-08-31-adjust-menu-editor-sizing`.
 
 ## Proximos pasos
 
