@@ -7,6 +7,7 @@ import com.alcazaba.facturacion.repository.FacturaRepository;
 import com.alcazaba.facturacion.repository.HistorialRepository;
 import com.alcazaba.facturacion.repository.IvaRepository;
 import com.alcazaba.facturacion.repository.LineaRepository;
+import com.alcazaba.facturacion.repository.NumeroDisponibleRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 import com.alcazaba.facturacion.repository.TipoRetencionRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
@@ -28,12 +29,14 @@ public class Servicios {
     public final LineaRepository lineas;
     public final ConfigRepository config;
     public final HistorialRepository historial;
+    public final NumeroDisponibleRepository numerosDisponibles;
 
     public final NumeroService numeros;
     public final VersionadoService versionado;
     public final FacturaService factura;
     public final EstadoService estado;
     public final RectificativaService rectificativas;
+    public final FacturacionMensualService facturacionMensual;
     public final HistorialService historialService;
     public final BackupService backup;
 
@@ -48,12 +51,14 @@ public class Servicios {
         lineas = new LineaRepository();
         config = new ConfigRepository();
         historial = new HistorialRepository();
+        numerosDisponibles = new NumeroDisponibleRepository();
 
-        numeros = new NumeroService(series);
+        numeros = new NumeroService(series, numerosDisponibles);
         versionado = new VersionadoService(versiones, lineas);
-        factura = new FacturaService(facturas, series, clientes, versiones, lineas, versionado, numeros);
+        factura = new FacturaService(facturas, series, clientes, versiones, lineas, versionado, numeros, numerosDisponibles);
         estado = new EstadoService(facturas, series, versiones, lineas, versionado, numeros, factura);
         rectificativas = new RectificativaService(factura, series, retenciones);
+        facturacionMensual = new FacturacionMensualService(factura, facturas, numeros);
         historialService = new HistorialService(historial);
         backup = new BackupService();
     }

@@ -1,13 +1,12 @@
 package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.db.Database;
-import com.alcazaba.facturacion.model.FiltrosHistorial;
-import com.alcazaba.facturacion.model.HistorialFila;
+import com.alcazaba.facturacion.model.EstadoFactura;
+import com.alcazaba.facturacion.model.FacturaVersion;
 import com.alcazaba.facturacion.model.LineaFactura;
 import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.repository.ClienteRepository;
 import com.alcazaba.facturacion.repository.FacturaRepository;
-import com.alcazaba.facturacion.repository.HistorialRepository;
 import com.alcazaba.facturacion.repository.LineaRepository;
 import com.alcazaba.facturacion.repository.NumeroDisponibleRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
@@ -19,37 +18,40 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class HistorialServiceTest {
+class EstadoServiceTest {
 
     @TempDir
     Path tempDir;
 
     private SerieRepository serieRepository;
+    private VersionRepository versionRepository;
+    private LineaRepository lineaRepository;
     private FacturaService facturaService;
-    private HistorialService historialService;
+    private EstadoService estadoService;
 
     @BeforeEach
     void setUp() throws Exception {
         Database.setDataDir(tempDir);
         Database.resetConnection();
         Database.getConnection();
-
         serieRepository = new SerieRepository();
         FacturaRepository facturaRepository = new FacturaRepository();
         ClienteRepository clienteRepository = new ClienteRepository();
-        VersionRepository versionRepository = new VersionRepository();
-        LineaRepository lineaRepository = new LineaRepository();
+        versionRepository = new VersionRepository();
+        lineaRepository = new LineaRepository();
         NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
         NumeroService numeroService = new NumeroService(serieRepository, numeroDisponibleRepository);
         VersionadoService versionadoService = new VersionadoService(versionRepository, lineaRepository);
         facturaService = new FacturaService(facturaRepository, serieRepository, clienteRepository,
                 versionRepository, lineaRepository, versionadoService, numeroService, numeroDisponibleRepository);
-        historialService = new HistorialService(new HistorialRepository());
+        estadoService = new EstadoService(facturaRepository, serieRepository, versionRepository,
+                lineaRepository, versionadoService, numeroService, facturaService);
     }
 
     @AfterEach
@@ -57,22 +59,7 @@ class HistorialServiceTest {
         Database.resetConnection();
     }
 
-    @Test
-    void buscaOrdenadoPorNumeroDeFactura() throws Exception {
-        Serie c = serieC();
-        facturaService.crearFactura(c, LocalDate.of(2026, 9, 1), null,
-                List.of(linea("200.00")), 0, null, null, 2);
-        facturaService.crearFactura(c, LocalDate.of(2026, 10, 1), null,
-                List.of(linea("100.00")), 0, null, null, 1);
-
-        List<HistorialFila> filas = historialService.buscar(new FiltrosHistorial());
-
-        assertEquals(2, filas.size());
-        assertEquals("C-1/10", filas.get(0).getNumero());
-        assertEquals("C-2/9", filas.get(1).getNumero());
-    }
-
-    private Serie serieC() throws Exception {
+    private Serie serieC() throws SQLException {
         Serie s = new Serie();
         s.setCodigo("C");
         s.setDescripcion("Cocinas");
@@ -94,5 +81,21 @@ class HistorialServiceTest {
         l.setIvaPorcentaje(21);
         l.setIvaImporte(CalculoService.ivaDeBase(l.getTotalBase(), 21));
         return l;
+    }
+
+    @Test
+    void anularFacturasAnulaSoloLasEmitidas() throws Exception {
+        Serie c = serieC();
+        long f1 = facturaService.crearFactura(c, LocalDate.of(2026, 1, 15), null, List.of(linea("100.00")), 0, null, null);
+        long f2 = facturaService.crearFactura(c, LocalDate.of(2026, 2, 15), null, List.of(linea("100.00")), 0, null, null);
+        estadoService.anular(f2);
+
+        EstadoService.AnulacionResultado r = estadoService.anularFacturas(List.of(f1, f2));
+
+        assertEquals(1, r.getAnuladas());
+        assertEquals(1, r.getYaAnuladas());
+        assertEquals(0, r.getFallos());
+        FacturaVersion v1 = versionRepository.ultimaVersion(f1);
+        assertEquals(EstadoFactura.ANULADA, v1.getEstado());
     }
 }

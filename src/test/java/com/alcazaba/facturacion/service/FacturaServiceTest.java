@@ -11,6 +11,7 @@ import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.ClienteRepository;
 import com.alcazaba.facturacion.repository.FacturaRepository;
 import com.alcazaba.facturacion.repository.LineaRepository;
+import com.alcazaba.facturacion.repository.NumeroDisponibleRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -25,6 +26,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FacturaServiceTest {
 
@@ -46,10 +49,11 @@ class FacturaServiceTest {
         ClienteRepository clienteRepository = new ClienteRepository();
         VersionRepository versionRepository = new VersionRepository();
         lineaRepository = new LineaRepository();
-        NumeroService numeroService = new NumeroService(serieRepository);
+        NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
+        NumeroService numeroService = new NumeroService(serieRepository, numeroDisponibleRepository);
         versionadoService = new VersionadoService(versionRepository, lineaRepository);
         facturaService = new FacturaService(facturaRepository, serieRepository, clienteRepository,
-                versionRepository, lineaRepository, versionadoService, numeroService);
+                versionRepository, lineaRepository, versionadoService, numeroService, numeroDisponibleRepository);
     }
 
     @AfterEach
@@ -198,9 +202,10 @@ class FacturaServiceTest {
 
         long facturaId = facturaService.crearFactura(c, fecha, cli, List.of(linea("100.00")),
                 0, null, null, null, dp);
+        NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
         EstadoService estadoService = new EstadoService(new FacturaRepository(), serieRepository,
                 new VersionRepository(), lineaRepository, versionadoService,
-                new NumeroService(serieRepository), facturaService);
+                new NumeroService(serieRepository, numeroDisponibleRepository), facturaService);
         estadoService.anular(facturaId);
 
         FacturaVersion v = versionadoService.ultimaVersion(facturaId);
@@ -208,5 +213,24 @@ class FacturaServiceTest {
         assertEquals("Efectivo", v.getFormaPago());
         assertEquals("AURORA", v.getRealizadaPor());
         assertEquals("cliente@prueba.es", v.getCliEmail());
+    }
+
+    @Test
+    void borrarFacturaEliminaRegistrosYLiberaNumero() throws Exception {
+        Serie c = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 21);
+        long facturaId = facturaService.crearFactura(c, fecha, null, List.of(linea("100.00")),
+                0, null, null);
+        int correlativo = facturaService.factura(facturaId).getCorrelativo();
+
+        FacturaService.ResumenBorrado r = facturaService.resumenBorrado(facturaId);
+        assertEquals(1, r.versiones());
+        assertEquals(1, r.lineas());
+
+        facturaService.borrarFactura(facturaId);
+
+        assertNull(facturaService.factura(facturaId));
+        NumeroService ns = new NumeroService(serieRepository, new NumeroDisponibleRepository());
+        assertTrue(ns.huecosDisponibles(c, fecha).contains(correlativo));
     }
 }

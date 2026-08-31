@@ -108,6 +108,12 @@ public class MenuController implements Vista {
     }
 
     @FXML
+    private void generarMensual() {
+        GenerarFacturasMensualesController.abrir(nav);
+        quitarFocoInicial();
+    }
+
+    @FXML
     private void historico() {
         nav.mostrar("/com/alcazaba/facturacion/ui/Historico.fxml");
     }

@@ -14,6 +14,7 @@ import javafx.collections.FXCollections;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.SelectionMode;
@@ -21,6 +22,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
@@ -32,7 +35,10 @@ import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /**
  * Historico: filtros combinables (serie, cliente/NIF, fechas, importes y
@@ -48,6 +54,10 @@ public class HistoricoController implements Vista {
 
     @FXML
     private Button btnExportarPdf;
+    @FXML
+    private Button btnAnular;
+    @FXML
+    private Button btnBorrar;
     @FXML
     private ComboBox<String> comboSerie;
     @FXML
@@ -137,6 +147,16 @@ public class HistoricoController implements Vista {
             return fila;
         });
 
+        ContextMenu menu = new ContextMenu();
+        MenuItem itemExportar = new MenuItem("Exportar a PDF");
+        itemExportar.setOnAction(e -> exportarPdf());
+        MenuItem itemAnular = new MenuItem("Anular facturas seleccionadas");
+        itemAnular.setOnAction(e -> anularSeleccionadas());
+        MenuItem itemBorrar = new MenuItem("Borrar facturas seleccionadas");
+        itemBorrar.setOnAction(e -> borrarSeleccionadas());
+        menu.getItems().addAll(itemExportar, itemAnular, itemBorrar);
+        tabla.setContextMenu(menu);
+
         nav.stage().getScene().getAccelerators().put(
                 new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), this::buscar);
     }
@@ -169,6 +189,93 @@ public class HistoricoController implements Vista {
     }
 
     @FXML
+    private void generarMensual() {
+        GenerarFacturasMensualesController.abrir(nav);
+    }
+
+    @FXML
+    private void anularSeleccionadas() {
+        List<HistorialFila> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
+        if (seleccion.isEmpty()) {
+            Dialogos.info("Borrar/Anular", "Selecciona al menos una factura del histórico.");
+            return;
+        }
+        Set<Long> facturaIds = new LinkedHashSet<>();
+        for (HistorialFila fila : seleccion) {
+            facturaIds.add(fila.getFacturaId());
+        }
+        if (!Dialogos.confirmar("Borrar/Anular",
+                "Se anularán " + facturaIds.size() + " factura(s).\n"
+                        + "Las ya anuladas no se modificarán.\n\n¿Continuar?")) {
+            return;
+        }
+        try {
+            var resultado = servicios.estado.anularFacturas(new ArrayList<>(facturaIds));
+            StringBuilder msg = new StringBuilder();
+            msg.append("Anuladas: ").append(resultado.getAnuladas()).append("\n");
+            msg.append("Ya anuladas: ").append(resultado.getYaAnuladas());
+            if (resultado.getFallos() > 0) {
+                msg.append("\n\nFallos:\n").append(String.join("\n", resultado.getErrores()));
+            }
+            Dialogos.info("Borrar/Anular", msg.toString());
+            buscar();
+        } catch (Exception e) {
+            Dialogos.error("Borrar/Anular", "Error al anular: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void borrarSeleccionadas() {
+        List<HistorialFila> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
+        if (seleccion.isEmpty()) {
+            Dialogos.info("Borrar", "Selecciona al menos una factura del histórico.");
+            return;
+        }
+        Set<Long> facturaIds = new LinkedHashSet<>();
+        for (HistorialFila fila : seleccion) {
+            facturaIds.add(fila.getFacturaId());
+        }
+        int totalVersiones = 0;
+        int totalLineas = 0;
+        try {
+            for (long id : facturaIds) {
+                FacturaService.ResumenBorrado r = servicios.factura.resumenBorrado(id);
+                totalVersiones += r.versiones();
+                totalLineas += r.lineas();
+            }
+        } catch (Exception e) {
+            Dialogos.error("Borrar", "Error al calcular el resumen: " + e.getMessage());
+            return;
+        }
+        if (!Dialogos.confirmar("Borrar",
+                "Se van a borrar físicamente " + facturaIds.size() + " factura(s).\n"
+                        + "Se eliminarán " + totalVersiones + " versión(es) y " + totalLineas + " línea(s).\n\n"
+                        + "¿Continuar?")) {
+            return;
+        }
+        int borradas = 0;
+        int fallos = 0;
+        List<String> errores = new ArrayList<>();
+        for (long id : facturaIds) {
+            try {
+                servicios.factura.borrarFactura(id);
+                borradas++;
+            } catch (Exception e) {
+                fallos++;
+                errores.add("Factura " + id + ": " + e.getMessage());
+            }
+        }
+        StringBuilder msg = new StringBuilder();
+        msg.append("Borradas: ").append(borradas).append("\n");
+        msg.append("Fallos: ").append(fallos);
+        if (!errores.isEmpty()) {
+            msg.append("\n\nErrores:\n").append(String.join("\n", errores));
+        }
+        Dialogos.info("Borrar", msg.toString());
+        buscar();
+    }
+
+    @FXML
     private void exportarPdf() {
         List<HistorialFila> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
         if (seleccion.isEmpty()) {
@@ -179,7 +286,7 @@ public class HistoricoController implements Vista {
             if (seleccion.size() == 1) {
                 exportarUna(seleccion.get(0));
             } else {
-                exportarVarias(seleccion);
+                preguntarYExportarVarias(seleccion);
             }
         } catch (Exception e) {
             Dialogos.error("Exportar PDF", "Error: " + e.getMessage());
@@ -204,6 +311,23 @@ public class HistoricoController implements Vista {
             return;
         }
         generarPdfs(List.of(vc), List.of(f.toPath()), f.toPath().getParent());
+    }
+
+    private void preguntarYExportarVarias(List<HistorialFila> filas) throws Exception {
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("Un PDF por factura",
+                "Un PDF por factura", "Un único PDF agrupado");
+        dialog.setTitle("Exportar PDF");
+        dialog.setHeaderText(null);
+        dialog.setContentText("¿Cómo quieres exportar las " + filas.size() + " facturas seleccionadas?");
+        Optional<String> resultado = dialog.showAndWait();
+        if (resultado.isEmpty()) {
+            return;
+        }
+        if ("Un PDF por factura".equals(resultado.get())) {
+            exportarVarias(filas);
+        } else {
+            exportarAgrupado(filas);
+        }
     }
 
     private void exportarVarias(List<HistorialFila> filas) throws Exception {
@@ -231,6 +355,52 @@ public class HistoricoController implements Vista {
             return;
         }
         generarPdfs(versiones, rutas, destino.toPath());
+    }
+
+    private void exportarAgrupado(List<HistorialFila> filas) throws Exception {
+        FileChooser chooser = new FileChooser();
+        chooser.setTitle("Guardar PDF agrupado");
+        File carpeta = carpetaExportacion();
+        if (carpeta != null) {
+            chooser.setInitialDirectory(carpeta);
+        }
+        chooser.setInitialFileName("facturas.pdf");
+        File destino = chooser.showSaveDialog(nav.stage());
+        if (destino == null) {
+            return;
+        }
+        List<FacturaService.VersionCompleta> versiones = new ArrayList<>();
+        for (HistorialFila fila : filas) {
+            FacturaService.VersionCompleta vc = servicios.factura.abrirVersion(fila.getVersionId());
+            if (vc != null) {
+                versiones.add(vc);
+            }
+        }
+        if (versiones.isEmpty()) {
+            Dialogos.error("Exportar PDF", "No se pudo cargar ninguna de las versiones seleccionadas.");
+            return;
+        }
+        btnExportarPdf.setDisable(true);
+        Empresa empresa = servicios.config.getEmpresa();
+        String color = colorPdfPreferido();
+        Task<Void> tarea = new Task<>() {
+            @Override
+            protected Void call() throws Exception {
+                new PdfService().exportarAgrupado(versiones, empresa, destino.toPath(), color);
+                return null;
+            }
+        };
+        tarea.setOnSucceeded(e -> {
+            btnExportarPdf.setDisable(false);
+            recordarCarpeta(destino.toPath().getParent());
+            Dialogos.info("Exportar PDF", "PDF agrupado generado:\n" + destino.toPath());
+        });
+        tarea.setOnFailed(e -> {
+            btnExportarPdf.setDisable(false);
+            Dialogos.error("Exportar PDF", "No se pudo generar el PDF: "
+                    + (tarea.getException() == null ? "error desconocido" : tarea.getException().getMessage()));
+        });
+        new Thread(tarea).start();
     }
 
     private void generarPdfs(List<FacturaService.VersionCompleta> versiones, List<Path> rutas, Path carpetaRecordar) {
