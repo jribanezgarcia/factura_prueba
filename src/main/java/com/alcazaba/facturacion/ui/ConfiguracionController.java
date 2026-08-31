@@ -4,7 +4,9 @@ import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.model.TipoIva;
 import com.alcazaba.facturacion.pdf.PdfService;
+import com.alcazaba.facturacion.service.EmpresaManager;
 import com.alcazaba.facturacion.service.Servicios;
+import com.alcazaba.facturacion.service.Sesion;
 import com.alcazaba.facturacion.util.Formatos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -20,12 +22,14 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
 import java.io.File;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -46,6 +50,7 @@ public class ConfiguracionController implements Vista {
 
     private final ObservableList<TipoIva> ivas = FXCollections.observableArrayList();
     private final ObservableList<Serie> series = FXCollections.observableArrayList();
+    private final ObservableList<EmpresaManager.EmpresaInfo> empresas = FXCollections.observableArrayList();
 
     @FXML
     private ToggleGroup grupoCabecera;
@@ -140,6 +145,15 @@ public class ConfiguracionController implements Vista {
     @FXML
     private Label lblSerieEjemplo;
 
+    @FXML
+    private TableView<EmpresaManager.EmpresaInfo> tablaEmpresas;
+    @FXML
+    private TableColumn<EmpresaManager.EmpresaInfo, String> colEmpresaNombre;
+    @FXML
+    private TableColumn<EmpresaManager.EmpresaInfo, String> colEmpresaSlug;
+    @FXML
+    private Label lblEmpresasAviso;
+
     @Override
     public void setServicios(Servicios s) {
         this.servicios = s;
@@ -162,6 +176,7 @@ public class ConfiguracionController implements Vista {
         cargarEmpresa();
         cargarIvas();
         cargarSeries();
+        cargarEmpresas();
         cargarPdfs();
     }
 
@@ -427,6 +442,7 @@ public class ConfiguracionController implements Vista {
         colSerieCodigo.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getCodigo())));
         colSerieDescripcion.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getDescripcion())));
         colSerieRectifica.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isEsRectificativa() ? "Sí" : "No"));
+        colSerieSiguiente.setText("Siguiente (" + anioTrabajo() + ")");
         colSerieSiguiente.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(String.valueOf(c.getValue().getSiguienteCorrelativo())));
         colSerieReutilizar.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isReutilizarAnulados() ? "Sí" : "No"));
         comboSerieFormato.getItems().setAll(Serie.SufijoFecha.values());
@@ -450,11 +466,21 @@ public class ConfiguracionController implements Vista {
 
     private void refrescarSeries() {
         try {
-            series.setAll(servicios.series.listar());
+            List<Serie> lista = servicios.series.listar();
+            int anio = anioTrabajo();
+            for (Serie s : lista) {
+                s.setSiguienteCorrelativo(servicios.series.getSiguiente(s.getId(), anio));
+            }
+            series.setAll(lista);
             tablaSeries.setItems(series);
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudieron cargar las series: " + e.getMessage());
         }
+    }
+
+    private int anioTrabajo() {
+        LocalDate f = Sesion.fechaTrabajo();
+        return f != null ? f.getYear() : LocalDate.now().getYear();
     }
 
     private void seleccionarSerie(Serie s) {
@@ -506,10 +532,6 @@ public class ConfiguracionController implements Vista {
     @FXML
     private void guardarSerie() {
         String codigo = trim(txtSerieCodigo);
-        if (codigo.isBlank()) {
-            Dialogos.error("Series", "Indique el código de la serie.");
-            return;
-        }
         int siguiente;
         try {
             siguiente = Integer.parseInt(trim(txtSerieSiguiente));
@@ -521,15 +543,25 @@ public class ConfiguracionController implements Vista {
             return;
         }
         try {
-            for (Serie s : series) {
-                if (s.getCodigo().equalsIgnoreCase(codigo)
-                        && (serieSeleccionada == null || !serieSeleccionada.getId().equals(s.getId()))) {
-                    Dialogos.error("Series", "Ya existe una serie con el código \"" + codigo + "\".");
+            if (codigo.isBlank()) {
+                boolean otraSinCodigo = series.stream().anyMatch(x ->
+                        (x.getCodigo() == null || x.getCodigo().isBlank())
+                                && (serieSeleccionada == null || !serieSeleccionada.getId().equals(x.getId())));
+                if (otraSinCodigo) {
+                    Dialogos.error("Series", "Solo puede haber una serie sin código. Ponle un código o una descripción para distinguirla.");
                     return;
+                }
+            } else {
+                for (Serie s : series) {
+                    if (s.getCodigo() != null && s.getCodigo().equalsIgnoreCase(codigo)
+                            && (serieSeleccionada == null || !serieSeleccionada.getId().equals(s.getId()))) {
+                        Dialogos.error("Series", "Ya existe una serie con el código \"" + codigo + "\".");
+                        return;
+                    }
                 }
             }
             Serie s = serieSeleccionada != null ? serieSeleccionada : new Serie();
-            s.setCodigo(codigo.toUpperCase());
+            s.setCodigo(codigo.isBlank() ? "" : codigo.toUpperCase());
             s.setDescripcion(trim(txtSerieDescripcion));
             s.setEsRectificativa(chkSerieRectifica.isSelected());
             s.setReutilizarAnulados(chkSerieReutilizar.isSelected());
@@ -540,10 +572,127 @@ public class ConfiguracionController implements Vista {
             } else {
                 servicios.series.actualizar(s);
             }
+            int nuevoAnio = Math.max(servicios.series.getSiguiente(s.getId(), anioTrabajo()), siguiente);
+            servicios.series.actualizarSiguiente(s.getId(), anioTrabajo(), nuevoAnio);
             refrescarSeries();
             nuevoSerie();
         } catch (Exception e) {
             Dialogos.error("Series", "No se pudo guardar: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void eliminarSerie() {
+        Serie s = tablaSeries.getSelectionModel().getSelectedItem();
+        if (s == null) {
+            Dialogos.error("Series", "Seleccione una serie de la tabla.");
+            return;
+        }
+        try {
+            if (servicios.facturas.serieTieneFacturas(s.getId())) {
+                Dialogos.error("Series", "La serie \"" + codigoOBlanco(s)
+                        + "\" no puede borrarse: tiene facturas (activas o históricas). El histórico no se elimina.");
+                return;
+            }
+        } catch (Exception e) {
+            Dialogos.error("Series", "No se pudo comprobar la serie: " + e.getMessage());
+            return;
+        }
+        String etiqueta = (s.getCodigo() == null || s.getCodigo().isBlank())
+                ? (s.getDescripcion() == null || s.getDescripcion().isBlank() ? "esta serie" : s.getDescripcion())
+                : s.getCodigo();
+        if (!Dialogos.confirmar("Borrar serie", "¿Seguro que deseas borrar la serie \"" + etiqueta + "\"?")) {
+            return;
+        }
+        try {
+            servicios.series.eliminar(s.getId());
+            refrescarSeries();
+        } catch (Exception e) {
+            Dialogos.error("Series", "No se pudo borrar la serie: " + e.getMessage());
+        }
+    }
+
+    private String codigoOBlanco(Serie s) {
+        String c = s.getCodigo();
+        return (c == null || c.isBlank()) ? "(sin código)" : c;
+    }
+
+    // ------------------------------------------------------------------
+    // Empresas
+    // ------------------------------------------------------------------
+
+    private void cargarEmpresas() {
+        colEmpresaNombre.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().nombre())));
+        colEmpresaSlug.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().slug())));
+        refrescarEmpresas();
+    }
+
+    private void refrescarEmpresas() {
+        try {
+            empresas.setAll(EmpresaManager.listarEmpresas());
+            tablaEmpresas.setItems(empresas);
+        } catch (Exception e) {
+            Dialogos.error("Configuración", "No se pudieron cargar las empresas: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void nuevaEmpresa() {
+        TextInputDialog dialogo = new TextInputDialog();
+        dialogo.setTitle("Nueva empresa");
+        dialogo.setHeaderText("Crea una nueva empresa");
+        dialogo.setContentText("Nombre de la empresa:");
+        String nombre = dialogo.showAndWait().orElse(null);
+        if (nombre == null || nombre.isBlank()) {
+            return;
+        }
+        try {
+            EmpresaManager.EmpresaInfo nueva = EmpresaManager.crearEmpresa(nombre);
+            Dialogos.info("Nueva empresa",
+                    "Empresa \"" + nueva.nombre() + "\" creada (carpeta: " + nueva.slug() + ").");
+            refrescarEmpresas();
+        } catch (Exception e) {
+            Dialogos.error("Nueva empresa", "No se pudo crear la empresa: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void cambiarEmpresa() {
+        EmpresaManager.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
+        if (elegida == null) {
+            Dialogos.error("Empresas", "Seleccione una empresa de la tabla.");
+            return;
+        }
+        try {
+            EmpresaManager.conectar(elegida.slug(), Sesion.fechaTrabajo());
+            Dialogos.info("Empresas", "Cambiando a \"" + elegida.nombre() + "\"...");
+            nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+        } catch (Exception e) {
+            Dialogos.error("Empresas", "No se pudo cambiar de empresa: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void eliminarEmpresa() {
+        EmpresaManager.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
+        if (elegida == null) {
+            Dialogos.error("Empresas", "Seleccione una empresa de la tabla.");
+            return;
+        }
+        if (elegida.slug().equals(Sesion.empresaSlug())) {
+            Dialogos.error("Empresas", "La empresa activa no se puede eliminar.");
+            return;
+        }
+        if (!Dialogos.confirmar("Eliminar empresa",
+                "¿Seguro que deseas eliminar \"" + elegida.nombre() + "\"?\n"
+                        + "Se borrará físicamente su carpeta de datos. Esta acción no se puede deshacer.")) {
+            return;
+        }
+        try {
+            EmpresaManager.eliminarEmpresa(elegida.slug());
+            refrescarEmpresas();
+        } catch (Exception e) {
+            Dialogos.error("Empresas", "No se pudo eliminar la empresa: " + e.getMessage());
         }
     }
 

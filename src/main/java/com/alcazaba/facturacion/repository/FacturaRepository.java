@@ -49,6 +49,21 @@ public class FacturaRepository {
         }
     }
 
+    /**
+     * Indica si la serie tiene alguna factura (activa o historica). Si la tiene,
+     * la serie no puede borrarse: la clave foranea lo impide y, ademas, no debe
+     * destruirse el historico.
+     */
+    public boolean serieTieneFacturas(long serieId) throws SQLException {
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(
+                "SELECT 1 FROM factura WHERE serie_id = ? LIMIT 1")) {
+            ps.setLong(1, serieId);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
     private Factura map(ResultSet rs) throws SQLException {
         Factura f = new Factura();
         f.setId(rs.getLong("id"));

@@ -14,6 +14,7 @@ import com.alcazaba.facturacion.pdf.PdfService;
 import com.alcazaba.facturacion.service.CalculoService;
 import com.alcazaba.facturacion.service.FacturaService;
 import com.alcazaba.facturacion.service.Servicios;
+import com.alcazaba.facturacion.service.Sesion;
 import com.alcazaba.facturacion.service.ValidationException;
 import com.alcazaba.facturacion.util.DocumentoFiscalValidator;
 import com.alcazaba.facturacion.util.Formatos;
@@ -64,7 +65,6 @@ public class EditorController implements Vista {
     /** Trazas temporales para diagnosticar el flujo de foco al editar líneas. */
     private static final boolean DIAGNOSTICO_FOCO = false;
     private static final String PREV_SERIE = "ultima_serie";
-    private static final String PREV_FECHA = "fecha_trabajo";
     private static final String PREV_CARPETA = "carpeta_facturas";
     private static final String PREV_EXPORT = "ultima_carpeta_export";
 
@@ -337,14 +337,7 @@ public class EditorController implements Vista {
     }
 
     private void cargarFechaInicial() {
-        LocalDate fechaInicial = LocalDate.now();
-        try {
-            String guardada = servicios.config.getPreferencia(PREV_FECHA);
-            if (guardada != null && !guardada.isBlank()) {
-                fechaInicial = LocalDate.parse(guardada);
-            }
-        } catch (Exception ignored) {
-        }
+        LocalDate fechaInicial = Sesion.fechaTrabajo() != null ? Sesion.fechaTrabajo() : LocalDate.now();
         fecha.setValue(fechaInicial);
     }
 
@@ -972,7 +965,8 @@ public class EditorController implements Vista {
             return;
         }
         try {
-            long nueva = servicios.rectificativas.crearRectificativa(versionAbiertaId, fechaTrabajoPreferida(), null);
+            long nueva = servicios.rectificativas.crearRectificativa(versionAbiertaId,
+                    Sesion.fechaTrabajo() != null ? Sesion.fechaTrabajo() : LocalDate.now(), null);
             cargarFactura(nueva);
             Dialogos.info("Rectificativa", "Rectificativa creada. Puede editar la referencia antes de guardar.");
         } catch (ValidationException e) {
@@ -1102,7 +1096,7 @@ public class EditorController implements Vista {
             txtNumero.setText(servicios.numeros.formarNumero(s, correlativoFijo, f));
         } else if (f != null) {
             try {
-                int correlativo = servicios.numeros.siguienteCorrelativo(s);
+                int correlativo = servicios.numeros.siguienteCorrelativo(s, f);
                 txtNumero.setText(servicios.numeros.formarNumero(s, correlativo, f));
             } catch (Exception e) {
                 txtNumero.setText("");
@@ -1125,17 +1119,6 @@ public class EditorController implements Vista {
         lblReferencia.setManaged(r);
         txtReferencia.setVisible(r);
         txtReferencia.setManaged(r);
-    }
-
-    private LocalDate fechaTrabajoPreferida() {
-        try {
-            String guardada = servicios.config.getPreferencia(PREV_FECHA);
-            if (guardada != null && !guardada.isBlank()) {
-                return LocalDate.parse(guardada);
-            }
-        } catch (Exception ignored) {
-        }
-        return LocalDate.now();
     }
 
     private void marcarModificado() {

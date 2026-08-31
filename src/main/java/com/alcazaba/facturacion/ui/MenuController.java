@@ -2,8 +2,10 @@ package com.alcazaba.facturacion.ui;
 
 import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.service.Servicios;
+import com.alcazaba.facturacion.service.Sesion;
+import com.alcazaba.facturacion.util.Formatos;
 import javafx.fxml.FXML;
-import javafx.scene.control.DatePicker;
+import javafx.application.Platform;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -16,19 +18,16 @@ import java.time.LocalDate;
 
 /**
  * Menu principal: Nueva factura, Historico, Clientes, Configuracion, Copia de
- * seguridad y Salir. Muestra la fecha de trabajo, que se usa al crear facturas
- * y se recuerda entre sesiones. El logo y los datos de empresa salen de la
- * configuracion.
+ * seguridad y Salir. Muestra la fecha de trabajo de la sesion (solo lectura).
+ * El logo y los datos de empresa salen de la configuracion.
  */
 public class MenuController implements Vista {
-
-    private static final String PREV_FECHA = "fecha_trabajo";
 
     private Servicios servicios;
     private Navegador nav;
 
     @FXML
-    private DatePicker fechaTrabajo;
+    private Label fechaTrabajo;
     @FXML
     private ImageView logo;
     @FXML
@@ -48,29 +47,20 @@ public class MenuController implements Vista {
 
     @Override
     public void alIniciar() {
-        cargarFechaTrabajo();
+        LocalDate f = Sesion.fechaTrabajo() != null ? Sesion.fechaTrabajo() : LocalDate.now();
+        fechaTrabajo.setText(Formatos.fecha(f));
         cargarEmpresa();
         atajos();
+        quitarFocoInicial();
     }
 
-    private void cargarFechaTrabajo() {
-        try {
-            String guardada = servicios.config.getPreferencia(PREV_FECHA);
-            fechaTrabajo.setValue(guardada != null && !guardada.isBlank()
-                    ? LocalDate.parse(guardada)
-                    : LocalDate.now());
-        } catch (Exception e) {
-            fechaTrabajo.setValue(LocalDate.now());
-        }
-        fechaTrabajo.valueProperty().addListener((o, a, b) -> guardarFechaTrabajo());
-    }
-
-    private void guardarFechaTrabajo() {
-        try {
-            if (fechaTrabajo.getValue() != null) {
-                servicios.config.setPreferencia(PREV_FECHA, fechaTrabajo.getValue().toString());
-            }
-        } catch (Exception ignored) {
+    /**
+     * Evita que el primer boton del menu quede resaltado al abrir la vista:
+     * el foco inicial se deja en el fondo de la escena y no en los botones.
+     */
+    private void quitarFocoInicial() {
+        if (nav.stage().getScene() != null) {
+            Platform.runLater(() -> nav.stage().getScene().getRoot().requestFocus());
         }
     }
 
@@ -103,10 +93,6 @@ public class MenuController implements Vista {
         logo.setImage(img);
         logo.setFitWidth(260);
         logo.setPreserveRatio(true);
-    }
-
-    public LocalDate fechaTrabajo() {
-        return fechaTrabajo.getValue();
     }
 
     private void atajos() {

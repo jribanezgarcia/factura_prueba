@@ -1,5 +1,6 @@
 package com.alcazaba.facturacion.ui;
 
+import com.alcazaba.facturacion.service.PreferenciasGlobales;
 import com.alcazaba.facturacion.service.Servicios;
 import javafx.scene.Scene;
 
@@ -48,12 +49,9 @@ public final class ThemeManager {
 
     public static void aplicar(Scene scene, Servicios servicios) {
         String tema = DEFAULT;
-        try {
-            String guardado = servicios.config.getPreferencia(PREV_TEMA);
-            if (guardado != null && TEMAS.containsKey(guardado)) {
-                tema = guardado;
-            }
-        } catch (Exception ignored) {
+        String guardado = PreferenciasGlobales.get(PREV_TEMA);
+        if (guardado != null && TEMAS.containsKey(guardado)) {
+            tema = guardado;
         }
         seleccionar(scene, tema);
     }
@@ -68,8 +66,8 @@ public final class ThemeManager {
         scene.getStylesheets().setAll(hojas);
     }
 
-    public static void guardar(Servicios servicios) throws java.sql.SQLException {
-        servicios.config.setPreferencia(PREV_TEMA, activo);
+    public static void guardar(Servicios servicios) {
+        PreferenciasGlobales.set(PREV_TEMA, activo);
     }
 
     private static String css(String nombre) {

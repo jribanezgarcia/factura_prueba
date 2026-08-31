@@ -97,6 +97,11 @@ class UiSmokeTest {
         cargar("Versiones.fxml");
     }
 
+    @Test
+    void cargarArranque() {
+        cargar("Arranque.fxml");
+    }
+
     private void cargar(String fxml) {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Throwable> error = new AtomicReference<>();

@@ -40,14 +40,24 @@ public class NumeroService {
     }
 
     /**
-     * Propone el siguiente correlativo libre de la serie: si reutiliza anulados,
-     * el menor correlativo de facturas anuladas que no este ocupado por una activa;
-     * en caso contrario, el siguiente_correlativo configurado.
+     * Propone el siguiente correlativo libre de la serie para el anio en curso.
      */
     public int siguienteCorrelativo(Serie serie) throws SQLException {
+        return siguienteCorrelativo(serie, LocalDate.now());
+    }
+
+    /**
+     * Propone el siguiente correlativo libre de la serie para el anio de la
+     * fecha indicada: si reutiliza anulados, el menor correlativo de facturas
+     * anuladas de ese anio que no este ocupado por una activa del mismo anio;
+     * en caso contrario, el siguiente guardado para ese anio. Nunca propone un
+     * correlativo ocupado por una factura activa del anio.
+     */
+    public int siguienteCorrelativo(Serie serie, LocalDate fecha) throws SQLException {
+        int anio = fecha != null ? fecha.getYear() : LocalDate.now().getYear();
         if (serie.isReutilizarAnulados()) {
-            Set<Integer> anuladas = serieRepository.correlativosAnuladas(serie.getId());
-            Set<Integer> activos = serieRepository.correlativosActivos(serie.getId());
+            Set<Integer> anuladas = serieRepository.correlativosAnuladas(serie.getId(), anio);
+            Set<Integer> activos = serieRepository.correlativosActivos(serie.getId(), anio);
             int min = Integer.MAX_VALUE;
             for (int c : anuladas) {
                 if (c >= 1 && !activos.contains(c) && c < min) {
@@ -58,11 +68,20 @@ public class NumeroService {
                 return min;
             }
         }
-        return serie.getSiguienteCorrelativo();
+        int siguiente = serieRepository.getSiguiente(serie.getId(), anio);
+        for (int ocupado : serieRepository.correlativosActivos(serie.getId(), anio)) {
+            siguiente = Math.max(siguiente, ocupado + 1);
+        }
+        return siguiente;
     }
 
     public boolean correlativoOcupadoPorActiva(Serie serie, int correlativo) throws SQLException {
-        return serieRepository.correlativosActivos(serie.getId()).contains(correlativo);
+        return correlativoOcupadoPorActiva(serie, correlativo, LocalDate.now());
+    }
+
+    public boolean correlativoOcupadoPorActiva(Serie serie, int correlativo, LocalDate fecha) throws SQLException {
+        int anio = fecha != null ? fecha.getYear() : LocalDate.now().getYear();
+        return serieRepository.correlativosActivos(serie.getId(), anio).contains(correlativo);
     }
 
     /**

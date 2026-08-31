@@ -99,13 +99,6 @@ CREATE TABLE IF NOT EXISTS preferencias (
   valor TEXT
 );
 
-INSERT OR IGNORE INTO serie (codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados)
-VALUES ('C', 'Cocinas', 0, 1, 0);
-INSERT OR IGNORE INTO serie (codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados)
-VALUES ('P', 'Puertas', 0, 1, 0);
-INSERT OR IGNORE INTO serie (codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados)
-VALUES ('R', 'Rectificativas', 1, 1, 0);
-
 INSERT OR IGNORE INTO tipo_iva (id, nombre, porcentaje, motivo_exencion, activo) VALUES (1, 'IVA 21%', 21, NULL, 1);
 INSERT OR IGNORE INTO tipo_iva (id, nombre, porcentaje, motivo_exencion, activo) VALUES (2, 'IVA 10%', 10, NULL, 1);
 INSERT OR IGNORE INTO tipo_iva (id, nombre, porcentaje, motivo_exencion, activo) VALUES (3, 'Exento', NULL, NULL, 1);

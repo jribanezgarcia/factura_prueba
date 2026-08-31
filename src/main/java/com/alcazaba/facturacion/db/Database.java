@@ -7,16 +7,22 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Gestiona la conexion SQLite compartida y la carpeta de datos de la aplicacion
- * (%APPDATA%/Facturacion), separada de la instalacion.
+ * (%APPDATA%/Facturacion), separada de la instalacion. Cada empresa tiene su
+ * propia base de datos en una subcarpeta de BASE_DATA_DIR.
  */
 public final class Database {
 
+    public static final String SLUG_EMPRESA_INICIAL = "comercial_alcazaba";
     private static final String DB_FILE = "facturas.db";
     private static Connection connection;
-    private static Path dataDir = defaultDataDir();
+    private static Path baseDataDir = defaultDataDir();
+    private static Path dataDir = baseDataDir;
 
     private Database() {
     }
@@ -29,16 +35,75 @@ public final class Database {
         return base.resolve("Facturacion");
     }
 
+    /** Raiz fija de datos: %APPDATA%/Facturacion (o la carpeta de pruebas). */
+    public static Path baseDataDir() {
+        return baseDataDir;
+    }
+
     public static Path dataDir() {
         return dataDir;
     }
 
     /**
-     * Redirige la carpeta de datos (uso en pruebas). Debe llamarse antes de la
-     * primera conexion.
+     * Redirige la carpeta de datos (uso en pruebas): fija la raiz y la carpeta
+     * activa sin empresa. Debe llamarse antes de la primera conexion.
      */
     public static void setDataDir(Path dir) {
+        baseDataDir = dir;
         dataDir = dir;
+    }
+
+    /**
+     * Activa la empresa cuyo slug da nombre a la subcarpeta de datos. La
+     * conexion anterior, si existe, queda cerrada.
+     */
+    public static void setEmpresaActiva(String slug) {
+        dataDir = baseDataDir.resolve(slug);
+        resetConnection();
+    }
+
+    /**
+     * Subcarpetas de la raiz de datos que contienen una base de empresas.
+     */
+    public static List<String> getEmpresasDisponibles() {
+        List<String> lista = new ArrayList<>();
+        if (!Files.isDirectory(baseDataDir)) {
+            return lista;
+        }
+        try (Stream<Path> carpetas = Files.list(baseDataDir)) {
+            carpetas.filter(Files::isDirectory)
+                    .filter(d -> Files.exists(d.resolve(DB_FILE)))
+                    .sorted()
+                    .forEach(d -> lista.add(d.getFileName().toString()));
+        } catch (IOException ignored) {
+        }
+        return lista;
+    }
+
+    /**
+     * Migracion de instalacion de un solo archivo a carpetas por empresa: si
+     * existe BASE_DATA_DIR/facturas.db y todavia no hay ninguna empresa, mueve
+     * la base (y su lock) a la carpeta de la empresa inicial. Devuelve el slug
+     * creado o null si no ha lugar.
+     */
+    public static String migrarInstalacionUnArchivo() throws IOException {
+        Path legacy = baseDataDir.resolve(DB_FILE);
+        if (!Files.exists(legacy) || !getEmpresasDisponibles().isEmpty()) {
+            return null;
+        }
+        Path destino = baseDataDir.resolve(SLUG_EMPRESA_INICIAL);
+        Files.createDirectories(destino);
+        Files.move(legacy, destino.resolve(DB_FILE));
+        Path lock = baseDataDir.resolve("facturas.lock");
+        if (Files.exists(lock)) {
+            Files.move(lock, destino.resolve("facturas.lock"));
+        }
+        return SLUG_EMPRESA_INICIAL;
+    }
+
+    /** Lock de instancia unica global, independiente de la empresa activa. */
+    public static Path lockPathGlobal() {
+        return baseDataDir.resolve("facturas.lock");
     }
 
     public static void resetConnection() {

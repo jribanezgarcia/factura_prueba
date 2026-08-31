@@ -139,7 +139,28 @@
                         <HBox spacing="8" alignment="CENTER_LEFT">
                             <Button onAction="#nuevoSerie" styleClass="default-button" text="Nuevo"/>
                             <Button onAction="#guardarSerie" styleClass="primary-button" text="Guardar"/>
+                            <Button onAction="#eliminarSerie" styleClass="default-button" text="Eliminar"/>
                         </HBox>
+                    </FlowPane>
+                </VBox>
+            </Tab>
+            <Tab text="Empresas">
+                <VBox spacing="8" styleClass="zona-contenido">
+                    <TableView fx:id="tablaEmpresas" prefHeight="260">
+                        <columns>
+                            <TableColumn fx:id="colEmpresaNombre" prefWidth="240" text="Nombre"/>
+                            <TableColumn fx:id="colEmpresaSlug" prefWidth="200" text="Carpeta de datos"/>
+                        </columns>
+                        <columnResizePolicy>
+                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                        </columnResizePolicy>
+                    </TableView>
+                    <Label fx:id="lblEmpresasAviso" styleClass="muted"
+                           text="Al eliminar una empresa se borra físicamente su carpeta de datos. Realiza antes una copia de seguridad."/>
+                    <FlowPane hgap="8" vgap="8">
+                        <Button onAction="#nuevaEmpresa" styleClass="default-button" text="Nueva empresa"/>
+                        <Button onAction="#cambiarEmpresa" styleClass="primary-button" text="Cambiar a esta"/>
+                        <Button onAction="#eliminarEmpresa" styleClass="default-button" text="Eliminar"/>
                     </FlowPane>
                 </VBox>
             </Tab>

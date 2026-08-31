@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<BorderPane prefHeight="520.0" prefWidth="760.0"
+            xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.alcazaba.facturacion.ui.ArranqueController">
+    <center>
+        <VBox alignment="CENTER" spacing="24" styleClass="zona-contenido" maxWidth="-Infinity">
+            <Label styleClass="empresa-nombre" text="Facturación"/>
+            <VBox spacing="12" styleClass="tarjeta" maxWidth="440.0">
+                <Label text="Empresa"/>
+                <HBox spacing="8" maxWidth="Infinity">
+                    <ComboBox fx:id="cmbEmpresa" promptText="Selecciona una empresa" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btnNuevaEmpresa" onAction="#nuevaEmpresa" text="Nueva..."/>
+                </HBox>
+                <Label text="Año del ejercicio fiscal"/>
+                <ComboBox fx:id="cmbEjercicio" maxWidth="Infinity"/>
+                <Label text="Fecha de trabajo"/>
+                <DatePicker fx:id="fechaTrabajo" maxWidth="Infinity"/>
+                <Label fx:id="lblFechaAuto" styleClass="muted" wrapText="true" maxWidth="400.0"/>
+                <Button fx:id="btnEntrar" onAction="#entrar" text="Entrar" maxWidth="Infinity" defaultButton="true"/>
+            </VBox>
+            <Label fx:id="lblError" styleClass="muted" wrapText="true" maxWidth="400.0"/>
+        </VBox>
+    </center>
+</BorderPane>
