@@ -156,10 +156,12 @@ Cambio OpenSpec activo: **ninguno**.
 - Opciones conocidas pendientes en el spec principal:
   - Flujo de **clientes inactivos** (clientes con facturas no se borran, se marcan inactivos y no se ofrecen al crear facturas nuevas).
   - **Copia de seguridad** manual (V1: solo copia del SQLite).
+- Bug detectado a revisar:
+  - Revisar **numeración de facturas**: cuando se generan y borran muchas facturas, el Editor propone un número nuevo en lugar de reutilizar los huecos libres registrados en `numero_disponible`.
 
 ## Git
 
-- Rama `main`, ultimo commit `c6d98de`; **SINCRONIZADA** con `origin/main` (push realizado el 31/08/2026).
+- Rama `main`, ultimo commit `0ac55c1`; **SINCRONIZADA** con `origin/main` (push realizado el 31/08/2026).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
