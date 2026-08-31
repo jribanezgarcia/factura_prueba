@@ -1,6 +1,6 @@
 # Continuacion del proyecto de facturacion
 
-Estado actualizado: 24/08/2026
+Estado actualizado: 30/08/2026
 
 NOTA: hasta aqui se ha hecho la app con modelos gratuitos de OPENCODE.
 
@@ -51,6 +51,7 @@ Cambios OpenSpec archivados (ademas de los anteriores):
 - `openspec/changes/archive/2026-08-22-guardar-version-nueva-edicion` (archivado el 22/08/2026)
 - `openspec/changes/archive/2026-08-23-ventana-800-responsive` (archivado el 23/08/2026)
 - `openspec/changes/archive/2026-08-24-formato-numeracion-series` (archivado el 24/08/2026)
+- `openspec/changes/archive/2026-08-30-multi-empresa-ejercicio-fiscal` (archivado el 30/08/2026)
 
 No hay ningun cambio OpenSpec activo ahora mismo.
 

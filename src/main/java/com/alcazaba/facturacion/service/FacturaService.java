@@ -81,8 +81,8 @@ public class FacturaService {
         try {
             int correlativo = correlativoPedido != null
                     ? correlativoPedido
-                    : numeroService.siguienteCorrelativo(serie);
-            if (numeroService.correlativoOcupadoPorActiva(serie, correlativo)) {
+                    : numeroService.siguienteCorrelativo(serie, fecha);
+            if (numeroService.correlativoOcupadoPorActiva(serie, correlativo, fecha)) {
                 throw new ValidationException(
                         "El correlativo " + correlativo + " ya esta ocupado por una factura activa de la serie " + serie.getCodigo());
             }
@@ -100,6 +100,8 @@ public class FacturaService {
                     descuento, observaciones, referencia, cliente, lineas, datosPago);
 
             serieRepository.actualizarSiguiente(serie.getId(), Math.max(serie.getSiguienteCorrelativo(), correlativo + 1));
+            int nuevoAnio = Math.max(serieRepository.getSiguiente(serie.getId(), fecha.getYear()), correlativo + 1);
+            serieRepository.actualizarSiguiente(serie.getId(), fecha.getYear(), nuevoAnio);
             Database.commit();
             return facturaId;
         } catch (SQLException | ValidationException | RuntimeException e) {

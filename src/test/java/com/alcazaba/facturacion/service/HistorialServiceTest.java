@@ -71,9 +71,15 @@ class HistorialServiceTest {
     }
 
     private Serie serieC() throws Exception {
-        return serieRepository.listar().stream()
-                .filter(s -> "C".equals(s.getCodigo()))
-                .findFirst().orElseThrow();
+        Serie s = new Serie();
+        s.setCodigo("C");
+        s.setDescripcion("Cocinas");
+        s.setEsRectificativa(false);
+        s.setSiguienteCorrelativo(1);
+        s.setReutilizarAnulados(false);
+        s.setSufijoFecha(Serie.SufijoFecha.MES);
+        s.setId(serieRepository.insertar(s));
+        return s;
     }
 
     private LineaFactura linea(String precio) {

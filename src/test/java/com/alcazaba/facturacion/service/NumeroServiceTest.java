@@ -186,4 +186,25 @@ class NumeroServiceTest {
         Serie c = serie("", false, 56, false, Serie.SufijoFecha.NINGUNO);
         assertEquals(56, numeroService.parseCorrelativo(c, "56"));
     }
+
+    @Test
+    void correlativoPorAnioEsIndependiente() throws SQLException {
+        Serie c = serie("K", false, 5, false);
+        assertEquals(5, numeroService.siguienteCorrelativo(c, LocalDate.of(2026, 3, 1)));
+        assertEquals(1, numeroService.siguienteCorrelativo(c, LocalDate.of(2025, 3, 1)));
+    }
+
+    @Test
+    void reutilizaAnuladaDelMismoAnio() throws SQLException {
+        Serie c = serie("K", false, 10, true);
+        facturaConEstado(c.getId(), 5, EstadoFactura.ANULADA);
+        assertEquals(5, numeroService.siguienteCorrelativo(c, LocalDate.of(2026, 3, 1)));
+    }
+
+    @Test
+    void noReutilizaAnuladaDeOtroAnio() throws SQLException {
+        Serie c = serie("K", false, 10, true);
+        facturaConEstado(c.getId(), 5, EstadoFactura.ANULADA);
+        assertEquals(1, numeroService.siguienteCorrelativo(c, LocalDate.of(2025, 3, 1)));
+    }
 }

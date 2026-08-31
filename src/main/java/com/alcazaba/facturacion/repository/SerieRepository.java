@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -56,8 +57,24 @@ public class SerieRepository {
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
-                return rs.getLong(1);
+                long id = rs.getLong(1);
+                inicializarSiguiente(id, s.getSiguienteCorrelativo());
+                return id;
             }
+        }
+    }
+
+    /**
+     * Siembra el contador del anio en curso con el valor configurado de la
+     * serie. El resto de anios arrancan en 1.
+     */
+    private void inicializarSiguiente(long serieId, int siguiente) throws SQLException {
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(
+                "INSERT OR IGNORE INTO serie_siguiente (serie_id, anio, siguiente) VALUES (?, ?, ?)")) {
+            ps.setLong(1, serieId);
+            ps.setInt(2, LocalDate.now().getYear());
+            ps.setInt(3, siguiente);
+            ps.executeUpdate();
         }
     }
 
@@ -86,9 +103,39 @@ public class SerieRepository {
     }
 
     /**
-     * Correlativos de facturas cuya ultima version es ANULADA en esta serie.
+     * Siguiente correlativo configurado para la serie en un anio concreto.
+     * Si el anio no tiene contador propio, se parte de 1.
      */
-    public Set<Integer> correlativosAnuladas(long serieId) throws SQLException {
+    public int getSiguiente(long serieId, int anio) throws SQLException {
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(
+                "SELECT siguiente FROM serie_siguiente WHERE serie_id = ? AND anio = ?")) {
+            ps.setLong(1, serieId);
+            ps.setInt(2, anio);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 1;
+            }
+        }
+    }
+
+    /**
+     * Guarda el siguiente correlativo de la serie para un anio concreto.
+     */
+    public void actualizarSiguiente(long serieId, int anio, int siguiente) throws SQLException {
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(
+                "INSERT INTO serie_siguiente (serie_id, anio, siguiente) VALUES (?, ?, ?) "
+                        + "ON CONFLICT(serie_id, anio) DO UPDATE SET siguiente = excluded.siguiente")) {
+            ps.setLong(1, serieId);
+            ps.setInt(2, anio);
+            ps.setInt(3, siguiente);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Correlativos de facturas cuya ultima version es ANULADA en esta serie y
+     * cuyo ultimo guardado cae en el anio indicado.
+     */
+    public Set<Integer> correlativosAnuladas(long serieId, int anio) throws SQLException {
         String sql = """
                 SELECT f.correlativo FROM factura f
                 JOIN factura_version v ON v.id = (
@@ -96,10 +143,12 @@ public class SerieRepository {
                     ORDER BY v2.version_num DESC LIMIT 1
                 )
                 WHERE f.serie_id = ? AND v.estado = 'ANULADA'
+                    AND CAST(strftime('%Y', v.fecha_factura) AS INTEGER) = ?
                 """;
         Set<Integer> set = new HashSet<>();
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setLong(1, serieId);
+            ps.setInt(2, anio);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     set.add(rs.getInt(1));
@@ -110,9 +159,10 @@ public class SerieRepository {
     }
 
     /**
-     * Correlativos de facturas cuya ultima version es EMITIDA en esta serie.
+     * Correlativos de facturas cuya ultima version es EMITIDA en esta serie y
+     * cuyo ultimo guardado cae en el anio indicado.
      */
-    public Set<Integer> correlativosActivos(long serieId) throws SQLException {
+    public Set<Integer> correlativosActivos(long serieId, int anio) throws SQLException {
         String sql = """
                 SELECT f.correlativo FROM factura f
                 JOIN factura_version v ON v.id = (
@@ -120,10 +170,12 @@ public class SerieRepository {
                     ORDER BY v2.version_num DESC LIMIT 1
                 )
                 WHERE f.serie_id = ? AND v.estado = 'EMITIDA'
+                    AND CAST(strftime('%Y', v.fecha_factura) AS INTEGER) = ?
                 """;
         Set<Integer> set = new HashSet<>();
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setLong(1, serieId);
+            ps.setInt(2, anio);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     set.add(rs.getInt(1));
@@ -131,6 +183,22 @@ public class SerieRepository {
             }
         }
         return set;
+    }
+
+    /**
+     * Borra la serie y su contador de anios. Solo debe llamarse si la serie no
+     * tiene facturas, o el borrado fallara por la clave foranea.
+     */
+    public void eliminar(long serieId) throws SQLException {
+        try (PreparedStatement ps = Database.getConnection().prepareStatement(
+                "DELETE FROM serie_siguiente WHERE serie_id = ?")) {
+            ps.setLong(1, serieId);
+            ps.executeUpdate();
+        }
+        try (PreparedStatement ps = Database.getConnection().prepareStatement("DELETE FROM serie WHERE id = ?")) {
+            ps.setLong(1, serieId);
+            ps.executeUpdate();
+        }
     }
 
     private Serie map(ResultSet rs) throws SQLException {

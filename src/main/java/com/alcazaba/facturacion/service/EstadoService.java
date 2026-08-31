@@ -83,7 +83,7 @@ public class EstadoService {
             if (nuevo == EstadoFactura.EMITIDA && actual != EstadoFactura.ANULADA) {
                 throw new ValidationException("Solo se pueden restaurar facturas en estado Anulada");
             }
-            if (nuevo == EstadoFactura.EMITIDA && numeroOcupado(fId)) {
+            if (nuevo == EstadoFactura.EMITIDA && numeroOcupado(fId, base)) {
                 throw new ValidationException(
                         "No se puede restaurar: el numero " + base.getNumero()
                                 + " esta ocupado por otra factura activa");
@@ -105,10 +105,10 @@ public class EstadoService {
         }
     }
 
-    private boolean numeroOcupado(long facturaId) throws SQLException {
+    private boolean numeroOcupado(long facturaId, FacturaVersion base) throws SQLException {
         Factura f = facturaRepository.getById(facturaId);
         Serie serie = serieRepository.getById(f.getSerieId());
-        return numeroService.correlativoOcupadoPorActiva(serie, f.getCorrelativo());
+        return numeroService.correlativoOcupadoPorActiva(serie, f.getCorrelativo(), base.getFechaFactura());
     }
 
     private Cliente snapshotCliente(long facturaId, FacturaVersion base) throws SQLException {
