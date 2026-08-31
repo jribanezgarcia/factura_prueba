@@ -724,7 +724,7 @@ La aplicación SHALL permitir exportar a PDF varias facturas seleccionadas en el
 
 ### Requirement: Sistema de diseño visual Apple
 
-La aplicación SHALL aplicar un sistema de diseño visual inspirado en Ajustes de Apple: jerarquía clara, espaciado generoso, agrupación de controles en secciones con fondo de tarjeta, esquinas redondeadas, tipografía con pesos diferenciados y una paleta de acentos coherente. Todos los controles interactivos (botones, campos, tablas, listas) SHALL mostrar un estado visual de `:hover` y `:focused` inmediato y sutil. Los formularios SHALL alinear etiquetas y campos con una cuadrícula coherente. Las tablas y listas SHALL usar filas de altura uniforme, separación clara y estado seleccionado visible pero no agresivo.
+La aplicación SHALL aplicar un sistema de diseño visual inspirado en Ajustes de Apple: jerarquía clara, espaciado generoso, agrupación de controles en secciones con fondo de tarjeta, esquinas redondeadas, tipografía con pesos diferenciados y una paleta de acentos coherente. Todos los controles interactivos (botones, campos, tablas, listas) SHALL mostrar un estado visual de `:hover` y `:focused` inmediato y sutil. Los formularios SHALL alinear etiquetas y campos con una cuadrícula coherente. Las tablas y listas SHALL usar filas de altura uniforme, separación clara y estado seleccionado visible pero no agresivo. Además, los paneles de contenido SHALL mantener un margen claro respecto al borde de la ventana y respecto a la barra de menú superior, de modo que los campos y tarjetas no queden pegados al borde ni se perciban solapados con la navegación.
 
 #### Scenario: Pantallas con tarjetas de sección
 - **WHEN** el usuario abre Configuración, el Editor o el Histórico
@@ -741,6 +741,18 @@ La aplicación SHALL aplicar un sistema de diseño visual inspirado en Ajustes d
 #### Scenario: Tablas limpias
 - **WHEN** el usuario abre el Histórico
 - **THEN** la tabla tiene cabecera clara, filas de altura uniforme, separadores suaves y la fila seleccionada se destaca con el color de acento muy suave
+
+#### Scenario: Margen respecto al borde de la ventana
+- **WHEN** el usuario abre cualquier pantalla principal
+- **THEN** los paneles de contenido mantienen un margen visible respecto al borde izquierdo, derecho, superior e inferior de la ventana
+
+#### Scenario: Separación respecto a la barra de menú
+- **WHEN** el usuario abre el Histórico o la Configuración
+- **THEN** existe una separación clara entre la barra de menú superior y la primera fila de controles o pestañas
+
+#### Scenario: Filtros sin tocar el borde izquierdo
+- **WHEN** el usuario abre el Histórico
+- **THEN** el campo "Serie" y los demás filtros no están pegados al borde izquierdo de su tarjeta
 
 ### Requirement: Microinteracciones visuales
 

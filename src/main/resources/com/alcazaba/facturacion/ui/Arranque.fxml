@@ -2,9 +2,13 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
 <BorderPane prefHeight="520.0" prefWidth="760.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.ArranqueController">
+    <padding>
+        <Insets top="12" right="16" bottom="12" left="16"/>
+    </padding>
     <center>
         <VBox alignment="CENTER" spacing="24" styleClass="zona-contenido" maxWidth="-Infinity">
             <Label styleClass="empresa-nombre" text="Facturación"/>
