@@ -796,7 +796,7 @@ La aplicación SHALL garantizar que cada pantalla principal tenga un tamaño mí
 
 #### Scenario: Menú principal con tamaño mínimo
 - **WHEN** el usuario abre el Menú principal
-- **THEN** la ventana no puede ser menor de 760×520
+- **THEN** la ventana no puede ser menor de 760×600
 
 #### Scenario: Versiones con tamaño mínimo
 - **WHEN** el usuario abre Versiones
