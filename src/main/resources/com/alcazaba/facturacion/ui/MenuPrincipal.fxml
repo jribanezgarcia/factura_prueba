@@ -5,11 +5,11 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.shape.*?>
 <?import javafx.geometry.*?>
-<BorderPane prefHeight="600.0" prefWidth="760.0"
+<BorderPane prefHeight="600.0" prefWidth="800.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.MenuController">
     <padding>
-        <Insets top="12" right="16" bottom="12" left="16"/>
+        <Insets top="12" right="16" bottom="20" left="16"/>
     </padding>
     <top>
         <VBox alignment="CENTER" spacing="8" styleClass="zona-contenido">
@@ -20,7 +20,7 @@
         </VBox>
     </top>
     <center>
-        <StackPane styleClass="zona-contenido">
+        <StackPane alignment="TOP_CENTER" styleClass="zona-contenido">
             <HBox alignment="TOP_LEFT" spacing="24" maxWidth="-Infinity" maxHeight="-Infinity">
             <VBox alignment="TOP_LEFT" spacing="12" styleClass="card">
                 <StackPane styleClass="menu-logo-box" prefWidth="260.0" prefHeight="120.0" minWidth="240.0" minHeight="110.0">

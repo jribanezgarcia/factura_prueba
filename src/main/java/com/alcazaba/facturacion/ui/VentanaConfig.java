@@ -11,8 +11,8 @@ import java.util.Optional;
 public enum VentanaConfig {
 
     ARRANQUE("/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, 760, 520, false),
-    MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 760, 600, 760, 600, true),
-    EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 1000, 760, 1000, 760, true),
+    MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 800, 600, 800, 600, true),
+    EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 1000, 760, 1000, 760, true, true),
     CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 1000, 620, 1000, 620, true),
     HISTORICO("/com/alcazaba/facturacion/ui/Historico.fxml", 1000, 600, 1000, 600, true),
     CLIENTES("/com/alcazaba/facturacion/ui/Clientes.fxml", 1000, 600, 1000, 600, true),
@@ -28,13 +28,24 @@ public enum VentanaConfig {
     private final double maxAncho;
     private final double maxAlto;
     private final boolean redimensionable;
+    private final boolean maximizado;
 
     VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto, boolean redimensionable) {
-        this(fxml, ancho, alto, minAncho, minAlto, Double.MAX_VALUE, Double.MAX_VALUE, redimensionable);
+        this(fxml, ancho, alto, minAncho, minAlto, Double.MAX_VALUE, Double.MAX_VALUE, redimensionable, false);
     }
 
     VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto,
                   double maxAncho, double maxAlto, boolean redimensionable) {
+        this(fxml, ancho, alto, minAncho, minAlto, maxAncho, maxAlto, redimensionable, false);
+    }
+
+    VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto,
+                  boolean redimensionable, boolean maximizado) {
+        this(fxml, ancho, alto, minAncho, minAlto, Double.MAX_VALUE, Double.MAX_VALUE, redimensionable, maximizado);
+    }
+
+    VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto,
+                  double maxAncho, double maxAlto, boolean redimensionable, boolean maximizado) {
         this.fxml = fxml;
         this.ancho = ancho;
         this.alto = alto;
@@ -43,6 +54,7 @@ public enum VentanaConfig {
         this.maxAncho = maxAncho;
         this.maxAlto = maxAlto;
         this.redimensionable = redimensionable;
+        this.maximizado = maximizado;
     }
 
     public String fxml() {
@@ -51,6 +63,10 @@ public enum VentanaConfig {
 
     public boolean redimensionable() {
         return redimensionable;
+    }
+
+    public boolean maximizado() {
+        return maximizado;
     }
 
     public static Optional<VentanaConfig> para(String fxml) {
@@ -65,6 +81,7 @@ public enum VentanaConfig {
         stage.setMinHeight(minAlto);
         stage.setMaxWidth(maxAncho);
         stage.setMaxHeight(maxAlto);
+        stage.setMaximized(maximizado);
         stage.setWidth(ancho);
         stage.setHeight(alto);
         stage.centerOnScreen();
