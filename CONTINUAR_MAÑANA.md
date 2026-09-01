@@ -67,7 +67,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-fix-ventana-1024-transicion-arranque-menu`
 - `openspec/changes/archive/2026-09-01-fix-ventana-1024-tras-pulse`
 
-Cambio OpenSpec activo: `fix-ventana-max-heredado-arranque` (implementado y verificado, pendiente de `/opsx-sync-specs` y `/opsx-archive-change`). `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada), `fix-ventana-1024-transicion-arranque-menu` archivado el 01/09/2026 (clamp de subida en `aplicarSinRedimensionar`) y `fix-ventana-1024-tras-pulse` archivado el 01/09/2026 (clamp diferido al layout, que es el que realmente resuelve la transición Arranque→menú).
+Cambio OpenSpec activo: `editor-sin-scroll-factura-corta`, implementado y verificado, pendiente de archivar desde opencode. SI lleva delta de specs, asi que necesita `/opsx-sync-specs` antes de `/opsx-archive`. `fix-ventana-max-heredado-arranque` y `reforzar-test-ventana` archivados el 01/09/2026. `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada), `fix-ventana-1024-transicion-arranque-menu` archivado el 01/09/2026 (clamp de subida en `aplicarSinRedimensionar`) y `fix-ventana-1024-tras-pulse` archivado el 01/09/2026 (clamp diferido al layout, que es el que realmente resuelve la transición Arranque→menú).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -224,6 +224,35 @@ Cambio OpenSpec activo: `fix-ventana-max-heredado-arranque` (implementado y veri
 - `VentanaTransicionTest` reescrito (transicion Arranque -> Menu, maximos liberados, redimensionabilidad) mas un caso nuevo de conservacion del tamano del usuario al navegar entre vistas del mismo tamano. Suite **107/107** en verde.
 - IMPORTANTE: el test NO reproduce el bug (comprobado revirtiendo el codigo: el test pasaba igual). En un Stage creado en un test la ventana nativa si crece; el fallo solo se daba en el primary stage de la aplicacion real. La verificacion valida fue visual, con la app en marcha.
 
+### Change `reforzar-test-ventana` (archivado)
+
+- `VentanaTransicionTest` pasaba igual con el codigo anterior al fix de ventana, asi que no protegia contra una regresion. Comprobado revirtiendo `VentanaConfig` a `9ddd14f`.
+- El sintoma en pantalla solo se daba en el primary stage de la aplicacion y no es reproducible con un Stage creado en un test, pero las dos causas de codigo si son observables como propiedades del Stage: que `ARRANQUE` no imponga maximos y que navegar no desmaximice.
+- Con el codigo antiguo las dos aserciones nuevas fallan; con el actual pasan.
+- Commit `78385cb`.
+
+### Change `editor-sin-scroll-factura-corta` (implementado, pendiente de sync y archivo)
+
+- El Editor no cabia a 1024x768: la ventana deja ~713 px utiles y el contenido pedia ~880, asi que el bloque de totales quedaba cortado y habia que scrollear desde el primer momento aunque la factura tuviera dos lineas.
+- Se elimina el `ScrollPane` general: la raiz vuelve a ser el `BorderPane` y la tabla de lineas es lo unico que crece, con su scroll interno.
+- Cabecera reorganizada en dos bloques contiguos, FACTURA y CLIENTE, en lugar de una rejilla de seis filas a todo el ancho: baja de ~340 px a ~250 aprovechando el ancho que se desperdiciaba. La referencia de rectificativa se queda en fila propia para que siga colapsando al ocultarse.
+- Dentro del bloque de cliente las columnas son desiguales: cliente y direccion ocupan el ancho completo del bloque; nombre y email, la columna ancha.
+- Titulo y distintivo de anulada integrados en la barra de acciones, que antes ocupaba fila propia.
+- Totales en columna compacta de 300 px anclada al pie, fuera del scroll, con Observaciones al lado ocupando el mismo alto. La franja inferior mide lo mismo que antes y el desglose queda agrupado.
+- Clases nuevas en `base.css` acotadas al Editor; no se tocan `.card` ni `.zona-contenido`, que son globales. Los totales reutilizan `.totales`, `.total-fila` y `.total-grande` para no tener que tocar los siete temas.
+- `EditorTamanoMinimoTest` comprueba ahora, sobre el layout real, que `#lblTotal` y `#txtObservaciones` terminan dentro del alto de la escena y que la tabla conserva al menos 200 px. Con el FXML anterior falla: el total termina en 737 y el alto util es 729.
+- Suite **108/108** en verde y comprobacion visual con la app hecha.
+
+### BUG PENDIENTE: styleClass con espacios en 5 FXML
+
+Descubierto el 01/09/2026 mientras se rehacia el Editor, **sin arreglar todavia**.
+
+FXMLLoader parte los atributos de lista por comas, asi que `styleClass="card zona-contenido"` produce UNA sola clase llamada literalmente `card zona-contenido`, que no casa con ningun selector. Verificado con un diagnostico temporal sobre `Historico.fxml`: el nodo imprime `n=1 elementos=<card zona-contenido>` y `lookup(".zona-contenido")` devuelve null.
+
+Consecuencia: esos nodos no tienen fondo de tarjeta, ni borde, ni esquinas redondeadas, ni padding. Es muy probablemente la causa de fondo de las quejas de "contenido pegado al borde" que se parchearon en `2026-08-31-fix-ui-spacing`.
+
+Son 15 ocurrencias, todas `styleClass="card zona-contenido"`: `Backup.fxml` (15, 26, 32), `Clientes.fxml` (15), `Configuracion.fxml` (24, 48, 68, 74, 110, 141, 183, 203, 218), `Historico.fxml` (15) y `Versiones.fxml` (15). El arreglo es cambiar el espacio por coma, pero OJO: al aplicarse por fin los dos paddings de 16 px, esas pantallas ganaran 32 px que hoy no tienen y hay que revisarlas a 1024x768. `Editor.fxml` ya esta corregido.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -237,6 +266,7 @@ Cambio OpenSpec activo: `fix-ventana-max-heredado-arranque` (implementado y veri
 - **Corregido el bug de 1024×768 en transición (01/09/2026)**: al pasar de Arranque (760×520) al menú, la ventana se quedaba en 760×520 hasta redimensionar o maximizar. Causa raíz: `VentanaConfig.aplicar` enviaba los Stages ya visibles a `aplicarSinRedimensionar`, que solo aplicaba min/max sin fijar el tamaño tras `setScene`. Fix: ahora `aplicarSinRedimensionar` eleva width/height hasta el mínimo de la vista (`VentanaTransicionTest` lo verifica, suite **106/106**).
 - Commit y push de: fix `VentanaConfig` + `VentanaTransicionTest` + spec y archive OpenSpec.
 - Despues, fix definitivo con clamp diferido al pulse (`fix-ventana-1024-tras-pulse`) commiteado y pusheado.
+- **Editor sin scroll (01/09/2026)**: rediseno del Editor para que una factura corta quepa entera a 1024x768 con los totales siempre visibles. Maquetado previo revisado con el usuario antes de tocar codigo.
 - **Fix real del tamano de ventana (01/09/2026)**: los dos fixes anteriores no bastaban. La causa era el `maxWidth`/`maxHeight` de Arranque heredado por el Stage. Corregido en `VentanaConfig` (sin maximos en Arranque, `aplicar` determinista) y `Main` (transicion con la ventana oculta). Verificado a la vista con la app en marcha; suite **107/107**.
 
 ## Notas tecnicas que evitan perder tiempo

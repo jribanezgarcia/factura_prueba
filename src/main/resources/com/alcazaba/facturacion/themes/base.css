@@ -163,6 +163,48 @@
     -fx-padding: 12px 14px;
 }
 
+/* Editor: cabecera en dos bloques y totales en columna al pie */
+.card-editor {
+    -fx-padding: 12px;
+}
+
+.titulo-compacto {
+    -fx-font-size: 17px;
+}
+
+.bloque-titulo {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-opacity: 0.65;
+}
+
+.grid-editor {
+    -fx-hgap: 8px;
+    -fx-vgap: 4px;
+    -fx-padding: 0;
+}
+
+.zona-editor {
+    -fx-padding: 8px 0 0 0;
+}
+
+.zona-editor-pie {
+    -fx-padding: 8px 0 0 0;
+}
+
+.totales-compacta .total-fila {
+    -fx-padding: 4px 12px;
+}
+
+.totales-compacta .total-fila-primera {
+    -fx-background-radius: 9px 9px 0 0;
+}
+
+.totales-compacta .total-grande {
+    -fx-padding: 7px 12px;
+    -fx-background-radius: 0 0 9px 9px;
+}
+
 /* Menú principal */
 .menu-logo-box {
     -fx-background-radius: 10px;
