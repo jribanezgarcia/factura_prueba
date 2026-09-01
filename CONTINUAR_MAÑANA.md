@@ -61,6 +61,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-31-adjust-menu-editor-sizing`
 - `openspec/changes/archive/2026-09-01-fix-reutilizar-numeros-borrados`
 - `openspec/changes/archive/2026-09-01-mejorar-menu-principal`
+- `openspec/changes/archive/2026-09-01-editor-800x600-scroll`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -170,6 +171,17 @@ Cambio OpenSpec activo: **ninguno**.
 - Se añade requisito visual del Menú principal a la especificación.
 - Suite **105/105** en verde.
 - Change archivado como `2026-09-01-mejorar-menu-principal`.
+
+### Change `editor-800x600-scroll` (archivado)
+
+- Editor de facturas adaptado a **800×600** y ya no se abre maximizado.
+- Tabla de líneas con `minHeight` reducido a 120 px y `VBox.vgrow="ALWAYS"` para que crezca al maximizar y tenga scroll interno en 800×600.
+- Ajustes compactos en `base.css`: padding de `.card` a 16 px, `.action-bar` a 8 px, `.cabecera-linea` y `.grid-cabecera` más ajustados.
+- Reducción de paddings y espaciados en `Editor.fxml` para que la cabecera, la tabla y los totales encajen en 600 px de alto.
+- Test `EditorTamanoMinimoTest` actualizado a 800×600 y verifica que la tabla y los totales son visibles.
+- Se actualiza la especificación de tamaños de ventana.
+- Suite **105/105** en verde.
+- Change archivado como `2026-09-01-editor-800x600-scroll`.
 
 ## Proximos pasos
 

@@ -776,7 +776,7 @@ La interfaz SHALL incluir microinteracciones suaves que refuercen la sensación 
 
 ### Requirement: Tamaños de ventana por vista
 
-La aplicación SHALL garantizar que cada pantalla principal tenga un tamaño mínimo suficiente para que todo su contenido sea legible y usable. El tamaño mínimo y el tamaño predefinido de cada vista pueden ser iguales o diferentes, pero en ningún caso el usuario podrá reducir la ventana por debajo del mínimo definido para la vista activa. La pantalla de selección de empresa (`Arranque`) SHALL ser de tamaño fijo y no redimensionable. Al cambiar entre vistas, la ventana principal SHALL ajustarse automáticamente al tamaño predefinido de la nueva vista y SHALL centrarse en la pantalla. Los diálogos modales SHALL respetar su propia configuración de tamaño mínimo y predefinido. Algunas vistas (como el Editor) pueden abrirse maximizadas por defecto para aprovechar todo el espacio de pantalla.
+La aplicación SHALL garantizar que cada pantalla principal tenga un tamaño mínimo suficiente para que todo su contenido sea legible y usable. El tamaño mínimo y el tamaño predefinido de cada vista pueden ser iguales o diferentes, pero en ningún caso el usuario podrá reducir la ventana por debajo del mínimo definido para la vista activa. La pantalla de selección de empresa (`Arranque`) SHALL ser de tamaño fijo y no redimensionable. Al cambiar entre vistas, la ventana principal SHALL ajustarse automáticamente al tamaño predefinido de la nueva vista y SHALL centrarse en la pantalla. Los diálogos modales SHALL respetar su propia configuración de tamaño mínimo y predefinido.
 
 #### Scenario: Arranque fijo
 - **WHEN** la aplicación muestra la pantalla de selección de empresa
@@ -784,7 +784,9 @@ La aplicación SHALL garantizar que cada pantalla principal tenga un tamaño mí
 
 #### Scenario: Editor con tamaño mínimo legible
 - **WHEN** el usuario abre el Editor de facturas
-- **THEN** la ventana se abre maximizada; al restaurarla, no puede ser menor de 1000×760 y todos los controles principales (barra de navegación, cabecera, tabla de líneas, botones de acción y resumen de totales) son visibles sin cortarse
+- **THEN** la ventana tiene un tamaño predefinido de 800×600, no se abre maximizada y todos los controles principales (barra de navegación, cabecera, tabla de líneas, botones de acción y resumen de totales) son visibles sin cortarse
+- **AND** la tabla de líneas reduce su altura en 800×600 y muestra scroll vertical cuando hay muchas líneas
+- **AND** al maximizar la ventana la tabla de líneas crece para aprovechar el espacio disponible
 
 #### Scenario: Configuración con tamaño mínimo
 - **WHEN** el usuario abre Configuración

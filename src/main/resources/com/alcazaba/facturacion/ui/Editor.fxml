@@ -4,14 +4,14 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
-<BorderPane prefHeight="760.0" prefWidth="1000.0"
+<BorderPane prefHeight="600.0" prefWidth="800.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.EditorController">
     <padding>
-        <Insets top="12" right="16" bottom="12" left="16"/>
+        <Insets top="6" right="10" bottom="6" left="10"/>
     </padding>
     <top>
-        <VBox spacing="12">
+        <VBox spacing="8">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
             <VBox spacing="8" styleClass="card">
             <HBox styleClass="cabecera-linea">
@@ -86,7 +86,7 @@
                 <TextField fx:id="txtDescuento" prefWidth="60" promptText="0"/>
                 <Label text="\%"/>
             </HBox>
-            <TableView fx:id="tablaLineas" editable="true" styleClass="tabla-productos" minHeight="220">
+            <TableView fx:id="tablaLineas" editable="true" styleClass="tabla-productos" minHeight="120" VBox.vgrow="ALWAYS">
                 <columns>
                     <TableColumn fx:id="colCantidad" prefWidth="70" text="Cant."/>
                     <TableColumn fx:id="colDescripcion" prefWidth="360" text="Descripción"/>
@@ -101,11 +101,11 @@
         </VBox>
     </center>
     <bottom>
-        <VBox spacing="6" styleClass="zona-contenido">
-            <HBox spacing="16" alignment="TOP_LEFT">
+        <VBox spacing="4" styleClass="zona-contenido">
+            <HBox spacing="12" alignment="TOP_LEFT">
                 <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="card">
                     <Label text="Observaciones"/>
-                    <TextArea fx:id="txtObservaciones" prefRowCount="4" wrapText="true"/>
+                    <TextArea fx:id="txtObservaciones" prefRowCount="2" wrapText="true"/>
                 </VBox>
                 <VBox styleClass="card totales" minWidth="260.0" maxWidth="300.0">
                     <HBox styleClass="total-fila" alignment="CENTER_LEFT">
