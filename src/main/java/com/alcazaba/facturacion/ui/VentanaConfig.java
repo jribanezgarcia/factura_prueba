@@ -90,6 +90,18 @@ public enum VentanaConfig {
         stage.setMaxWidth(maxAncho);
         stage.setMaxHeight(maxAlto);
         stage.setMaximized(maximizado);
+        if (stage.getWidth() < minAncho) {
+            stage.setWidth(minAncho);
+        }
+        if (stage.getHeight() < minAlto) {
+            stage.setHeight(minAlto);
+        }
+        if (stage.getWidth() > maxAncho) {
+            stage.setWidth(maxAncho);
+        }
+        if (stage.getHeight() > maxAlto) {
+            stage.setHeight(maxAlto);
+        }
     }
 
     private void aplicarCompleto(Stage stage) {
