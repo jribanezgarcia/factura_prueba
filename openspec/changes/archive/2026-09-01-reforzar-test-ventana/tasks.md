@@ -9,4 +9,4 @@
 
 ## 3. Cierre
 - [x] 3.1 Commit
-- [ ] 3.2 Push
+- [x] 3.2 Push (78385cb)
