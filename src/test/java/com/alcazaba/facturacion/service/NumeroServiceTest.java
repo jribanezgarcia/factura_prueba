@@ -223,4 +223,33 @@ class NumeroServiceTest {
 
         assertEquals(List.of(3), huecos);
     }
+
+    @Test
+    void reutilizaNumeroBorrado() throws SQLException {
+        Serie c = serie("M", false, 10, false);
+        facturaConEstado(c.getId(), 1, EstadoFactura.EMITIDA);
+        facturaConEstado(c.getId(), 3, EstadoFactura.EMITIDA);
+        numeroDisponibleRepository.insertar(c.getId(), 2026, 2);
+        numeroDisponibleRepository.insertar(c.getId(), 2026, 4);
+
+        assertEquals(2, numeroService.siguienteCorrelativo(c));
+    }
+
+    @Test
+    void noReutilizaHuecoOcupadoPorActiva() throws SQLException {
+        Serie c = serie("N", false, 10, false);
+        numeroDisponibleRepository.insertar(c.getId(), 2026, 2);
+        facturaConEstado(c.getId(), 2, EstadoFactura.EMITIDA);
+
+        assertEquals(10, numeroService.siguienteCorrelativo(c));
+    }
+
+    @Test
+    void priorizaHuecoBorradoSobreAnulado() throws SQLException {
+        Serie c = serie("O", false, 10, true);
+        facturaConEstado(c.getId(), 5, EstadoFactura.ANULADA);
+        numeroDisponibleRepository.insertar(c.getId(), 2026, 3);
+
+        assertEquals(3, numeroService.siguienteCorrelativo(c));
+    }
 }

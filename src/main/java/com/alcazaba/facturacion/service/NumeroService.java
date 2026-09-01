@@ -60,6 +60,10 @@ public class NumeroService {
      */
     public int siguienteCorrelativo(Serie serie, LocalDate fecha) throws SQLException {
         int anio = fecha != null ? fecha.getYear() : LocalDate.now().getYear();
+        List<Integer> huecos = huecosDisponibles(serie, fecha);
+        if (!huecos.isEmpty()) {
+            return huecos.get(0);
+        }
         if (serie.isReutilizarAnulados()) {
             Set<Integer> anuladas = serieRepository.correlativosAnuladas(serie.getId(), anio);
             Set<Integer> activos = serieRepository.correlativosActivos(serie.getId(), anio);
