@@ -37,6 +37,8 @@ public class Main extends Application {
     private Servicios servicios;
     private Navegador nav;
     private Stage stage;
+    private Double anchoGuardado;
+    private Double altoGuardado;
 
     public static void main(String[] args) {
         Locale.setDefault(new Locale("es", "ES"));
@@ -54,6 +56,7 @@ public class Main extends Application {
             Platform.exit();
             return;
         }
+        Platform.setImplicitExit(false);
         configurarVentana();
         mostrarArranque();
         stage.show();
@@ -105,14 +108,26 @@ public class Main extends Application {
             Dialogos.error("Facturación", "Error al inicializar la aplicación:\n" + e.getMessage());
             return;
         }
-        if (stage.isMaximized()) {
-            stage.setMaximized(false);
-        }
-        stage.setWidth(ANCHO_INICIAL);
-        stage.setHeight(ALTO_INICIAL);
+        stage.hide();
         nav = new Navegador(stage, servicios);
         nav.setOnVistaCambio(v -> this.actual = v);
         nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+        restaurarTamanoGuardado();
+        stage.show();
+    }
+
+    /**
+     * El tamano de la vista lo fija VentanaConfig al cargarla; si la sesion
+     * anterior dejo una ventana mas grande que el minimo, se recupera aqui.
+     * Se llama con la ventana oculta, antes de volver a mostrarla.
+     */
+    private void restaurarTamanoGuardado() {
+        if (anchoGuardado != null && anchoGuardado > stage.getMinWidth()) {
+            stage.setWidth(anchoGuardado);
+        }
+        if (altoGuardado != null && altoGuardado > stage.getMinHeight()) {
+            stage.setHeight(altoGuardado);
+        }
     }
 
     private void cerrarAplicacion() {
@@ -161,6 +176,8 @@ public class Main extends Application {
             Double y = PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_Y);
             Double w = PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_W);
             Double h = PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_H);
+            anchoGuardado = w;
+            altoGuardado = h;
             if (w != null && h != null) {
                 stage.setWidth(w);
                 stage.setHeight(h);
