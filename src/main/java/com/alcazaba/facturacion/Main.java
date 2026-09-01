@@ -88,8 +88,6 @@ public class Main extends Application {
 
     private void configurarVentana() {
         stage.setTitle("Facturación");
-        stage.setMinWidth(1024);
-        stage.setMinHeight(768);
         aplicarPreferenciasVentana(stage);
         stage.setOnCloseRequest(e -> cerrarAplicacion());
     }

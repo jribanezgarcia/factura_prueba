@@ -63,8 +63,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-mejorar-menu-principal`
 - `openspec/changes/archive/2026-09-01-editor-800x600-scroll`
 - `openspec/changes/archive/2026-09-01-uniformizar-ventanas-800x600`
+- `openspec/changes/archive/2026-09-01-uniformizar-1024-scroll-editor`
 
-Cambio OpenSpec activo: **uniformizar-1024-scroll-editor** (Fase 1 implementada, pendiente validación y Fase 2 spec).
+Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -204,16 +205,16 @@ Cambio OpenSpec activo: **uniformizar-1024-scroll-editor** (Fase 1 implementada,
 
 ## Git
 
-- Rama `main`, ultimo commit `3212144`; **SINCRONIZADA** con `origin/main` (push realizado el 01/09/2026).
-- Arbol limpio: nada pendiente de commitear.
+- El bug del 800×600 era un **build mezclado**: `Main.class` quedó compilado a 800×600 mientras `VentanaConfig.class` sí se actualizó. Se regeneró con `mvn clean test` (borrando `target\`), y se eliminó el minWidth/minHeight global de `Main.configurarVentana` (chocaba con Arranque 760×520).
+- Commit pendiente de subir: ventanas 1024×768 + scroll Editor + spec y archive OpenSpec.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 101 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas.
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 105 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
-- El smoke test de UI no muestra ventanas: para ejercitar layout real usa `root.applyCss(); root.resize(800,600); root.layout();`.
+- El smoke test de UI no muestra ventanas: para ejercitar layout real usa `root.applyCss(); root.resize(1024,768); root.layout();`.
 - Cierre programatico de ventana: `nav.stage().fireEvent(new WindowEvent(stage, WindowEvent.WINDOW_CLOSE_REQUEST))`.
 - Constructor de `EstadoService` (7 parametros): `(FacturaRepository, SerieRepository, VersionRepository, LineaRepository, VersionadoService, NumeroService, FacturaService)`.
 - En los PDF el `.xlsx` original es referencia de formato: la columna TOTAL lleva IVA incluido (base × 1,21).
