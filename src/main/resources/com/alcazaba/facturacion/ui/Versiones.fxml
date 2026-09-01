@@ -12,7 +12,7 @@
     <top>
         <VBox spacing="12">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="card zona-contenido">
+            <VBox spacing="8" styleClass="card, zona-contenido">
                 <Label fx:id="lblTitulo" styleClass="titulo" text="Versiones de la factura"/>
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Label text="Doble clic en una versión para abrirla." styleClass="muted"/>
