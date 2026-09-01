@@ -181,7 +181,7 @@
 
 .menu-item {
     -fx-background-radius: 8px;
-    -fx-padding: 12px 16px;
+    -fx-padding: 10px 16px;
     -fx-cursor: hand;
     -fx-alignment: CENTER_LEFT;
     -fx-spacing: 16px;
