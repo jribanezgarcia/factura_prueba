@@ -64,8 +64,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-editor-800x600-scroll`
 - `openspec/changes/archive/2026-09-01-uniformizar-ventanas-800x600`
 - `openspec/changes/archive/2026-09-01-uniformizar-1024-scroll-editor`
+- `openspec/changes/archive/2026-09-01-fix-ventana-1024-transicion-arranque-menu`
 
-Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada).
+Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada) y `fix-ventana-1024-transicion-arranque-menu` archivado el 01/09/2026 (corrige que la ventana no subia a 1024×768 al pasar de Arranque al menu).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -195,6 +196,15 @@ Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 0
 - Suite **105/105** en verde.
 - Change archivado como `2026-09-01-uniformizar-ventanas-800x600`.
 
+### Change `fix-ventana-1024-transicion-arranque-menu` (archivado)
+
+- Corregido que el menú y las vistas principales se quedaban a 760×520 (tamaño de Arranque) al navegar desde la pantalla de empresa hasta su carga en 1024×768 hasta manualmente redimensionar o maximizar.
+- Causa raíz: `VentanaConfig.aplicar` enrutaba los Stages ya visibles a `aplicarSinRedimensionar`, que solo aplicaba min/max/resizable/maximized y NO volvía a fijar el tamaño tras `stage.setScene(...)`, por lo que la ventana conservaba el tamaño previo de Arranque.
+- Fix: `aplicarSinRedimensionar` ahora eleva `width`/`height` hasta el mínimo de la vista si la ventana está por debajo (`if stage.getWidth()<minAncho → setWidth`, igual con alto). Se ejecuta después de `setScene`, así que cualquier vista con mayor mínimo crece al cargar (sin recentrar ni reducir).
+- Nuevo test `VentanaTransicionTest`: Stage 760×520 → `nav.mostrar(MenuPrincipal)` verifica que sube a 1024×768.
+- Suite **106/106** en verde.
+- Change archivado como `2026-09-01-fix-ventana-1024-transicion-arranque-menu`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -205,8 +215,8 @@ Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 0
 
 ## Git
 
-- El bug del 800×600 era un **build mezclado**: `Main.class` quedó compilado a 800×600 mientras `VentanaConfig.class` sí se actualizó. Se regeneró con `mvn clean test` (borrando `target\`), y se eliminó el minWidth/minHeight global de `Main.configurarVentana` (chocaba con Arranque 760×520).
-- Commit pendiente de subir: ventanas 1024×768 + scroll Editor + spec y archive OpenSpec.
+- **Corregido el bug de 1024×768 en transición (01/09/2026)**: al pasar de Arranque (760×520) al menú, la ventana se quedaba en 760×520 hasta redimensionar o maximizar. Causa raíz: `VentanaConfig.aplicar` enviaba los Stages ya visibles a `aplicarSinRedimensionar`, que solo aplicaba min/max sin fijar el tamaño tras `setScene`. Fix: ahora `aplicarSinRedimensionar` eleva width/height hasta el mínimo de la vista (`VentanaTransicionTest` lo verifica, suite **106/106**).
+- Commit y push de: fix `VentanaConfig` + `VentanaTransicionTest` + spec y archive OpenSpec.
 
 ## Notas tecnicas que evitan perder tiempo
 
