@@ -20,16 +20,18 @@
         </VBox>
     </top>
     <center>
-        <StackPane alignment="TOP_CENTER" styleClass="zona-contenido">
-            <HBox alignment="TOP_LEFT" spacing="20" maxWidth="-Infinity" maxHeight="-Infinity">
-            <VBox alignment="TOP_LEFT" spacing="8" styleClass="card" prefWidth="300.0" maxWidth="300.0">
-                <StackPane styleClass="menu-logo-box" prefWidth="280.0" prefHeight="100.0" minWidth="260.0" minHeight="90.0">
-                    <ImageView fx:id="logo" preserveRatio="true"/>
-                </StackPane>
-                <Label fx:id="lblEmpresa" styleClass="empresa-nombre" text="" wrapText="true"/>
-                <Label fx:id="lblEmpresaInfo" styleClass="empresa-info" text="" wrapText="true"/>
-            </VBox>
-            <VBox spacing="2" prefWidth="430.0" maxWidth="430.0" styleClass="card">
+        <ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED" styleClass="scroll-transparent">
+            <content>
+                <StackPane alignment="TOP_CENTER" styleClass="zona-contenido">
+                    <HBox alignment="TOP_LEFT" spacing="20" maxWidth="-Infinity" maxHeight="-Infinity">
+                    <VBox alignment="TOP_LEFT" spacing="8" styleClass="card" prefWidth="300.0" maxWidth="300.0">
+                        <StackPane styleClass="menu-logo-box" prefWidth="280.0" prefHeight="100.0" minWidth="260.0" minHeight="90.0">
+                            <ImageView fx:id="logo" preserveRatio="true"/>
+                        </StackPane>
+                        <Label fx:id="lblEmpresa" styleClass="empresa-nombre" text="" wrapText="true"/>
+                        <Label fx:id="lblEmpresaInfo" styleClass="empresa-info" text="" wrapText="true"/>
+                    </VBox>
+                    <VBox spacing="2" prefWidth="430.0" maxWidth="430.0" styleClass="card">
                 <Button maxWidth="Infinity" onAction="#nuevaFactura" styleClass="menu-item">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
@@ -109,6 +111,8 @@
                 </Button>
             </VBox>
             </HBox>
-        </StackPane>
+                </StackPane>
+            </content>
+        </ScrollPane>
     </center>
 </BorderPane>
