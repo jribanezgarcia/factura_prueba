@@ -1,6 +1,7 @@
 package com.alcazaba.facturacion.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -19,10 +20,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Reproduce la transicion Arranque -> Menu con la ventana ya visible: el Stage
- * lleva la configuracion de Arranque (760x520, no redimensionable) y al cargar
- * el Menu debe crecer a 1024x768 sin restricciones heredadas. Comprueba tambien
- * que al navegar entre vistas del mismo tamaño se respeta el tamaño del usuario.
+ * Cubre las dos causas del fallo de tamano de ventana: que Arranque no imponga
+ * maximos que hereden las vistas siguientes, y que navegar no desmaximice ni
+ * reduzca la ventana del usuario. El sintoma en pantalla (ventana clavada a
+ * 760x520) solo se daba en el primary stage de la aplicacion y no es
+ * reproducible con un Stage creado en un test.
  */
 class VentanaTransicionTest {
 
@@ -56,6 +58,11 @@ class VentanaTransicionTest {
         Stage stage = stageRef.get();
         assertEquals(760.0, stage.getWidth(), 0.01, "Arranque debe medir 760 de ancho");
         assertEquals(520.0, stage.getHeight(), 0.01, "Arranque debe medir 520 de alto");
+        assertEquals(Double.MAX_VALUE, stage.getMaxWidth(), 0.01,
+                "Arranque no debe imponer un maximo de ancho que herede la vista siguiente");
+        assertEquals(Double.MAX_VALUE, stage.getMaxHeight(), 0.01,
+                "Arranque no debe imponer un maximo de alto que herede la vista siguiente");
+        assertFalse(stage.isResizable(), "Arranque no debe ser redimensionable");
 
         enFx("JavaFX no cargo el Menu", () -> {
             Navegador nav = new Navegador(stage, servicios);
@@ -108,6 +115,33 @@ class VentanaTransicionTest {
 
         assertEquals(1300.0, stage.getWidth(), 0.01, "El Historico no debe reducir el ancho del usuario");
         assertEquals(900.0, stage.getHeight(), 0.01, "El Historico no debe reducir el alto del usuario");
+
+        enFx("No se pudo cerrar la ventana", stage::hide);
+    }
+
+    @Test
+    void navegarNoDesmaximizaLaVentana() throws Exception {
+        Servicios servicios = new Servicios();
+        AtomicReference<Stage> stageRef = new AtomicReference<>();
+
+        enFx("JavaFX no cargo el Menu", () -> {
+            Stage stage = new Stage();
+            Navegador nav = new Navegador(stage, servicios);
+            nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+            stage.show();
+            stage.setMaximized(true);
+            stageRef.set(stage);
+        });
+
+        Stage stage = stageRef.get();
+        assertTrue(stage.isMaximized(), "La ventana debe quedar maximizada antes de navegar");
+
+        enFx("JavaFX no cargo el Historico", () -> {
+            Navegador nav = new Navegador(stage, servicios);
+            nav.mostrar("/com/alcazaba/facturacion/ui/Historico.fxml");
+        });
+
+        assertTrue(stage.isMaximized(), "Navegar a otra vista no debe desmaximizar la ventana");
 
         enFx("No se pudo cerrar la ventana", stage::hide);
     }
