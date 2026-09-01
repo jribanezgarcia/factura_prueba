@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor · Diseño C (Conservador compactado)</title>
+<style>
+  :root {
+    --bg: #E8EAED; --surface: #FFFFFF; --surface-secondary: #F2F4F6;
+    --text: #1F2937; --muted: #6B7280;
+    --accent: #296796; --accent-hover: #1A55A8; --on-accent: #FCF9F9;
+    --danger: #C0392B;
+    --border: #D8DBDF;
+    --shadow: 0 2px 8px rgba(31,41,55,0.10);
+    --radius: 12px; --radius-sm: 8px;
+    --font: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body, html { height: 100%; overflow: hidden; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); font-size: 12.5px; }
+  .app { height: 100vh; padding: 10px 14px; display: flex; flex-direction: column; gap: 10px; }
+  .nav {
+    display: flex; justify-content: center; gap: 30px;
+    padding: 5px 0 9px 0; font-size: 13px; color: var(--muted); flex: none;
+  }
+  .nav span { cursor: pointer; padding: 2px 9px; border-radius: 6px; }
+  .nav span.active { color: var(--accent); font-weight: 600; border-bottom: 3px solid var(--accent); }
+  .card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); padding: 12px 14px; }
+  .header-line { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .header-line h1 { font-size: 18px; }
+  .actions { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .actions .spacer { flex: 1; }
+  button {
+    font-family: inherit; font-size: 12.5px; border-radius: var(--radius-sm);
+    padding: 6px 12px; border: 1px solid var(--border); cursor: pointer;
+    background: var(--surface-secondary); color: var(--text);
+  }
+  .primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+  .danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+  .field { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .field > label { color: var(--muted); font-size: 11.5px; white-space: nowrap; }
+  input, select {
+    height: 26px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+    background: var(--surface-secondary); color: var(--text); font-size: 12.5px;
+    padding: 0 8px; outline: none; min-width: 0;
+  }
+  input:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(41,103,150,0.15); }
+  .grow { flex: 1 1 auto; min-width: 0; }
+  .w-110 { width: 110px; } .w-120 { width: 120px; } .w-150 { width: 150px; } .w-180 { width: 180px; } .w-200 { width: 200px; }
+  .lines-card { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 150px; }
+  .lines-toolbar { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; flex: none; }
+  .table-wrap { flex: 1 1 auto; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th { position: sticky; top: 0; background: var(--surface-secondary); text-align: left; padding: 7px 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  td { padding: 7px 12px; border-top: 1px solid var(--border); white-space: nowrap; }
+  tr:hover td { background: rgba(41,103,150,0.05); }
+  .num { text-align: right; }
+  .bottom { display: flex; gap: 10px; flex: none; }
+  .obs { flex: 1 1 auto; }
+  .obs textarea {
+    width: 100%; height: 72px; resize: none; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); background: var(--surface-secondary); padding: 6px 10px;
+    font-family: inherit; font-size: 12.5px;
+  }
+  .totals-card { width: 300px; flex: none; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; }
+  .t-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 12px; font-size: 12.5px; }
+  .t-row + .t-row { border-top: 1px solid var(--border); }
+  .t-row .t-label { color: var(--muted); }
+  .t-row .t-value { font-weight: 700; }
+  .t-row.big { background: var(--accent); color: var(--on-accent); padding: 8px 12px; font-size: 14px; }
+  .t-row.big .t-label { color: rgba(252,249,249,0.8); }
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="nav">
+      <span>Menú</span><span class="active">Factura</span><span>Histórico</span><span>Configuración</span>
+    </div>
+
+    <div class="card">
+      <div class="header-line">
+        <div style="width:30px;height:30px;border-radius:8px;background:var(--surface-secondary);display:flex;align-items:center;justify-content:center;color:var(--accent);flex:none;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h1>Nueva factura</h1>
+      </div>
+      <div class="actions">
+        <button class="primary">Guardar</button>
+        <button>Exportar PDF</button>
+        <button>Versiones</button>
+        <button>Crear rectificativa</button>
+        <button class="danger">Anular</button>
+        <button>Restaurar</button>
+        <div class="spacer"></div>
+        <button>Nueva factura</button>
+        <button>Volver</button>
+      </div>
+      <div class="field">
+        <label>Serie</label><select class="w-110"><option>C - Cocinas</option></select>
+        <label>Fecha</label><input class="w-120" value="31/08/2026">
+        <label>Número</label><input class="w-120" value="C-58-8">
+        <div style="width:14px;"></div>
+        <label>Cliente</label>
+        <select class="grow"><option>Constructora del Sur SL · B-87654321</option></select>
+      </div>
+      <div class="field">
+        <label>Nombre</label><input class="grow" value="Constructora del Sur SL">
+        <label>NIF</label><input class="w-120" value="B-87654321">
+        <label>Email</label><input class="grow" value="facturacion@constructoradelsur.es">
+        <label>Dirección</label><input class="grow" value="Avda. de la Constitución, 45">
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label>CP</label><input class="w-120" value="18008">
+        <label>Localidad</label><input class="grow" value="Granada">
+        <label>Provincia</label><input class="grow" value="Granada">
+        <div style="width:14px;"></div>
+        <label>Ref. rectifica</label><input class="grow" placeholder="Vec C-57-8 (solo si procede)">
+      </div>
+    </div>
+
+    <div class="card lines-card">
+      <div class="lines-toolbar">
+        <button class="primary">Añadir línea</button>
+        <button>Eliminar línea (Supr)</button>
+        <div style="flex:1"></div>
+        <label style="color:var(--muted);font-size:11.5px;">Retención</label>
+        <select class="w-150"><option>Sin retención</option></select>
+        <label style="color:var(--muted);font-size:11.5px;">Descuento</label>
+        <input class="w-60" value="0" style="width:60px;text-align:right;">
+        <span style="color:var(--muted);">%</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Cant.</th><th>Descripción</th><th class="num">Precio</th><th class="num">Total</th><th>IVA</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td>Módulo bajo con puertas lacadas 60 cm</td><td class="num">312,50 €</td><td class="num">312,50 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Módulo bajo con cajones y puertas 80 cm</td><td class="num">415,80 €</td><td class="num">415,80 €</td><td>21%</td></tr>
+            <tr><td>2</td><td>Módulo alto con puertas 50 cm</td><td class="num">245,00 €</td><td class="num">490,00 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Encimera granito cristal 180 × 60 cm</td><td class="num">385,60 €</td><td class="num">385,60 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Fregadero acero inoxidable 1 seno</td><td class="num">128,40 €</td><td class="num">128,40 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Grifería monomando cromada</td><td class="num">96,10 €</td><td class="num">96,10 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Campana extractora integrada 60 cm</td><td class="num">219,90 €</td><td class="num">219,90 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Horno multifunción empotrado</td><td class="num">448,00 €</td><td class="num">448,00 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Placa de inducción 4 fuegos</td><td class="num">389,00 €</td><td class="num">389,00 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Montaje, instalación y puesta en marcha</td><td class="num">380,00 €</td><td class="num">380,00 €</td><td>21%</td></tr>
+            <tr><td>1</td><td>Transporte y embalaje</td><td class="num">95,00 €</td><td class="num">95,00 €</td><td>21%</td></tr>
+            <tr><td>2</td><td>Rodapié para muebles de cocina (ud.)</td><td class="num">1,50 €</td><td class="num">3,00 €</td><td>21%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div class="card obs">
+        <div style="font-weight:700;color:var(--muted);font-size:11.5px;margin-bottom:6px;">Observaciones</div>
+        <textarea>Factura correspondiente a la reforma integral de cocina. Plazo de pago 30 días.</textarea>
+      </div>
+      <div class="totals-card">
+        <div class="t-row"><span class="t-label">Base imponible</span><span class="t-value">2.297,52 €</span></div>
+        <div class="t-row"><span class="t-label">IVA total</span><span class="t-value">482,48 €</span></div>
+        <div class="t-row"><span class="t-label">Retención</span><span class="t-value">0,00 €</span></div>
+        <div class="t-row big"><span class="t-label">Total</span><span class="t-value">2.780,00 €</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+
+<!-- Tokens JavaFX (.root): igual que Diseño A.
+  Tarjeta de totales derecha: .totales ancho 300, .total-fila padding 5 12 (8px en CSS),
+  .total-grande padding 8 12; observaciones textarea prefRowCount 3; tabla prefHeight 180 + vgrow ALWAYS.
+-->
