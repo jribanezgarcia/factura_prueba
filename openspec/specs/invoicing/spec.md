@@ -610,7 +610,7 @@ El menú principal SHALL mostrar el nombre, el NIF y el logo de la empresa confi
 
 ### Requirement: Ventana
 
-La aplicación SHALL abrir su ventana con las siguientes medidas: en la primera ejecución (sin preferencias de ventana guardadas) SHALL medir 1024x768 y SHALL quedar centrada en la pantalla principal; en ejecuciones posteriores SHALL restaurar la posición y, como máximo, el tamaño guardados de la última sesión, sin bajar nunca de 1024x768 en las vistas principales. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo. Ningún tamaño de ventana guardado inferior a 1024x768 SHALL hacer que una vista principal se muestre recortada: la aplicación SHALL corregirlo al entrar en el menú. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y las filas de alta rápida de IVA y Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible.
+La aplicación SHALL abrir su ventana con las siguientes medidas: en la primera ejecución (sin preferencias de ventana guardadas) SHALL medir 1024x768 y SHALL quedar centrada en la pantalla principal; en ejecuciones posteriores SHALL restaurar la posición y, como máximo, el tamaño guardados de la última sesión, sin bajar nunca de 1024x768 en las vistas principales. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo. Ningún tamaño de ventana guardado inferior a 1024x768 SHALL hacer que una vista principal se muestre recortada: la aplicación SHALL corregirlo al entrar en el menú. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y las filas de alta rápida de IVA y Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) es una pantalla fija pequeña de 760x520; al pasar de ella a una vista principal con tamaño mínimo 1024x768 con la ventana ya visible, la aplicación SHALL hacer crecer la ventana hasta ese mínimo.
 
 #### Scenario: Primera ejecución abre a 1024x768 centrada
 - **WHEN** el usuario inicia la aplicación sin preferencias de ventana guardadas
@@ -639,6 +639,10 @@ La aplicación SHALL abrir su ventana con las siguientes medidas: en la primera 
 #### Scenario: Cabecera del Editor con ventana mínima
 - **WHEN** la ventana está al mínimo 1024x768 y se abre una factura
 - **THEN** los campos de la cabecera se reparten el ancho disponible sin salirse de la ventana
+
+#### Scenario: Corrección al navegar desde una vista pequeña
+- **WHEN** la aplicación pasa de la pantalla de arranque (760x520) al menú u otra vista principal con tamaño mínimo 1024x768 con la ventana ya visible
+- **THEN** la ventana crece a 1024x768 (o hasta el mínimo de la vista de destino) al cargar la vista, sin necesidad de redimensionar o maximizar manualmente
 
 ### Requirement: Facturación mensual por cliente
 
