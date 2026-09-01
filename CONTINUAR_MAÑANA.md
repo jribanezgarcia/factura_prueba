@@ -67,7 +67,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-fix-ventana-1024-transicion-arranque-menu`
 - `openspec/changes/archive/2026-09-01-fix-ventana-1024-tras-pulse`
 
-Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada), `fix-ventana-1024-transicion-arranque-menu` archivado el 01/09/2026 (clamp de subida en `aplicarSinRedimensionar`) y `fix-ventana-1024-tras-pulse` archivado el 01/09/2026 (clamp diferido al layout, que es el que realmente resuelve la transición Arranque→menú).
+Cambio OpenSpec activo: `fix-ventana-max-heredado-arranque` (implementado y verificado, pendiente de `/opsx-sync-specs` y `/opsx-archive-change`). `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada), `fix-ventana-1024-transicion-arranque-menu` archivado el 01/09/2026 (clamp de subida en `aplicarSinRedimensionar`) y `fix-ventana-1024-tras-pulse` archivado el 01/09/2026 (clamp diferido al layout, que es el que realmente resuelve la transición Arranque→menú).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -214,6 +214,16 @@ Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 0
 - Suite **106/106** en verde (`mvn clean test`).
 - Change archivado como `2026-09-01-fix-ventana-1024-tras-pulse` (skip_specs).
 
+### Change `fix-ventana-max-heredado-arranque` (implementado, pendiente de archivar)
+
+- Corregido definitivamente que el menu y las vistas principales se quedaran a 760x520 (tamano de Arranque) al pulsar Entrar.
+- Causa raiz real: `ARRANQUE` era la unica vista que fijaba maximos (`maxWidth=760`, `maxHeight=520`). Esos maximos quedaban puestos en el Stage y en la ventana nativa; `entrarEnMenu` pedia 1024x768 antes de que nadie los levantase y con `resizable=false` activo, asi que Windows recortaba la peticion. Los clamps de los dos intentos anteriores eran condicionales a `stage.getWidth()`, que devuelve la propiedad de JavaFX (ya 1024) y no el tamano real de la ventana, por lo que nunca llegaban a ejecutarse.
+- `VentanaConfig`: `ARRANQUE` deja de fijar maximos (su caracter fijo lo da `redimensionable=false`) y `aplicar` pasa a un unico camino determinista: libera los maximos de la vista anterior, fija `resizable` antes de tocar el tamano, aplica minimos y maximos, y decide si redimensionar comparando la configuracion previa (guardada por Stage en `getProperties()`) con la nueva, sin leer `getWidth()`. Solo maximiza cuando la vista lo pide, asi que navegar ya no desmaximiza la ventana.
+- `Main.entrarEnMenu` deja de dimensionar y hace la transicion con la ventana oculta (`hide()` -> cargar menu -> `show()`), de modo que la ventana nativa se recrea con las medidas de la vista destino. Requiere `Platform.setImplicitExit(false)`; el cierre real sigue siendo el `Platform.exit()` de `cerrarAplicacion`.
+- `Main` recupera ademas el tamano guardado de la sesion anterior cuando supera el minimo de la vista.
+- `VentanaTransicionTest` reescrito (transicion Arranque -> Menu, maximos liberados, redimensionabilidad) mas un caso nuevo de conservacion del tamano del usuario al navegar entre vistas del mismo tamano. Suite **107/107** en verde.
+- IMPORTANTE: el test NO reproduce el bug (comprobado revirtiendo el codigo: el test pasaba igual). En un Stage creado en un test la ventana nativa si crece; el fallo solo se daba en el primary stage de la aplicacion real. La verificacion valida fue visual, con la app en marcha.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -227,6 +237,7 @@ Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 0
 - **Corregido el bug de 1024×768 en transición (01/09/2026)**: al pasar de Arranque (760×520) al menú, la ventana se quedaba en 760×520 hasta redimensionar o maximizar. Causa raíz: `VentanaConfig.aplicar` enviaba los Stages ya visibles a `aplicarSinRedimensionar`, que solo aplicaba min/max sin fijar el tamaño tras `setScene`. Fix: ahora `aplicarSinRedimensionar` eleva width/height hasta el mínimo de la vista (`VentanaTransicionTest` lo verifica, suite **106/106**).
 - Commit y push de: fix `VentanaConfig` + `VentanaTransicionTest` + spec y archive OpenSpec.
 - Despues, fix definitivo con clamp diferido al pulse (`fix-ventana-1024-tras-pulse`) commiteado y pusheado.
+- **Fix real del tamano de ventana (01/09/2026)**: los dos fixes anteriores no bastaban. La causa era el `maxWidth`/`maxHeight` de Arranque heredado por el Stage. Corregido en `VentanaConfig` (sin maximos en Arranque, `aplicar` determinista) y `Main` (transicion con la ventana oculta). Verificado a la vista con la app en marcha; suite **107/107**.
 
 ## Notas tecnicas que evitan perder tiempo
 
