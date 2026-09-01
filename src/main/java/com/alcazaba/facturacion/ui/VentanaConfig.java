@@ -11,13 +11,13 @@ import java.util.Optional;
 public enum VentanaConfig {
 
     ARRANQUE("/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, 760, 520, false),
-    MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 800, 600, 800, 600, true),
-    EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 800, 600, 800, 600, true),
-    CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 800, 600, 800, 600, true),
-    HISTORICO("/com/alcazaba/facturacion/ui/Historico.fxml", 800, 600, 800, 600, true),
-    CLIENTES("/com/alcazaba/facturacion/ui/Clientes.fxml", 800, 600, 800, 600, true),
-    VERSIONES("/com/alcazaba/facturacion/ui/Versiones.fxml", 800, 600, 800, 600, true),
-    BACKUP("/com/alcazaba/facturacion/ui/Backup.fxml", 800, 600, 800, 600, true),
+    MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
+    EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 1024, 768, 1024, 768, true),
+    CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 1024, 768, 1024, 768, true),
+    HISTORICO("/com/alcazaba/facturacion/ui/Historico.fxml", 1024, 768, 1024, 768, true),
+    CLIENTES("/com/alcazaba/facturacion/ui/Clientes.fxml", 1024, 768, 1024, 768, true),
+    VERSIONES("/com/alcazaba/facturacion/ui/Versiones.fxml", 1024, 768, 1024, 768, true),
+    BACKUP("/com/alcazaba/facturacion/ui/Backup.fxml", 1024, 768, 1024, 768, true),
     GENERAR_MENSUAL("/com/alcazaba/facturacion/ui/GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
 
     private final String fxml;

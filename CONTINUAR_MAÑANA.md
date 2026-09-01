@@ -64,7 +64,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-editor-800x600-scroll`
 - `openspec/changes/archive/2026-09-01-uniformizar-ventanas-800x600`
 
-Cambio OpenSpec activo: **ninguno**.
+Cambio OpenSpec activo: **uniformizar-1024-scroll-editor** (Fase 1 implementada, pendiente validación y Fase 2 spec).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
