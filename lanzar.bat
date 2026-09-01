@@ -13,7 +13,7 @@ if not exist "%MAVEN%" (
     set "MAVEN=mvn"
 )
 
-call "%MAVEN%" -q javafx:run
+call "%MAVEN%" -q clean javafx:run
 if errorlevel 1 (
     echo.
     echo La aplicacion termino con errores.
