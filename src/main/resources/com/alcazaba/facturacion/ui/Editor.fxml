@@ -4,136 +4,143 @@
 <?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
-<ScrollPane prefHeight="768.0" prefWidth="1024.0" fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED"
+<BorderPane prefHeight="768.0" prefWidth="1024.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.EditorController">
-    <content>
-        <BorderPane prefHeight="768.0" prefWidth="1024.0">
-            <padding>
-                <Insets top="12" right="16" bottom="12" left="16"/>
-            </padding>
-            <top>
-                <VBox spacing="12">
-                    <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-                    <VBox spacing="8" styleClass="card">
-                    <HBox styleClass="cabecera-linea">
-                        <ImageView fx:id="logo" preserveRatio="true"/>
-                        <Label fx:id="lblTitulo" styleClass="titulo" text="Nueva factura"/>
-                        <Label fx:id="lblEstado" visible="false" managed="false" styleClass="chip-anulada" text="ANULADA"/>
-                    </HBox>
-                    <ToolBar styleClass="action-bar">
-                        <Button fx:id="btnGuardar" onAction="#guardar" styleClass="primary-button" text="Guardar"/>
-                        <Button fx:id="btnExportar" onAction="#exportarPdf" styleClass="action-button" text="Exportar PDF"/>
-                        <Button fx:id="btnVersiones" onAction="#verVersiones" styleClass="action-button" text="Versiones"/>
-                        <Button fx:id="btnRectificativa" onAction="#crearRectificativa" styleClass="action-button" text="Crear rectificativa"/>
-                        <Button fx:id="btnAnular" onAction="#anular" styleClass="action-danger-button" text="Anular"/>
-                        <Button fx:id="btnRestaurar" onAction="#restaurar" styleClass="action-button" text="Restaurar"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Button onAction="#nuevaFactura" styleClass="action-button" text="Nueva factura"/>
-                        <Button onAction="#volver" styleClass="action-button" text="Volver"/>
-                    </ToolBar>
-                    <GridPane hgap="8" vgap="6" styleClass="grid-cabecera">
-                        <columnConstraints>
-                            <ColumnConstraints/>
-                            <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
-                            <ColumnConstraints/>
-                            <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
-                            <ColumnConstraints/>
-                            <ColumnConstraints hgrow="ALWAYS" fillWidth="true"/>
-                        </columnConstraints>
-                        <Label text="Serie"/>
-                        <ComboBox fx:id="comboSerie" prefWidth="120" maxWidth="Infinity" GridPane.columnIndex="1"/>
-                        <Label text="Fecha" GridPane.columnIndex="2"/>
-                        <DatePicker fx:id="fecha" prefWidth="140" maxWidth="Infinity" GridPane.columnIndex="3"/>
-                        <Label text="Número" GridPane.columnIndex="4"/>
-                        <TextField fx:id="txtNumero" prefWidth="140" maxWidth="Infinity" GridPane.columnIndex="5"/>
-                        <Label text="Cliente" GridPane.rowIndex="1"/>
-                        <ComboBox fx:id="comboCliente" editable="true" prefWidth="420" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="1"/>
-                        <Label text="Nombre" GridPane.rowIndex="2"/>
-                        <TextField fx:id="cliNombre" prefWidth="240" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                        <Label text="NIF" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                        <TextField fx:id="cliNif" prefWidth="160" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                        <Label text="Email" GridPane.columnIndex="4" GridPane.rowIndex="2"/>
-                        <TextField fx:id="cliEmail" prefWidth="170" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="2"/>
-                        <Label text="Dirección" GridPane.rowIndex="3"/>
-                        <TextField fx:id="cliDireccion" prefWidth="440" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="3"/>
-                        <Label text="CP" GridPane.rowIndex="4"/>
-                        <TextField fx:id="cliCp" prefWidth="100" maxWidth="130" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                        <Label text="Localidad" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                        <TextField fx:id="cliLocalidad" prefWidth="160" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
-                        <Label text="Provincia" GridPane.columnIndex="4" GridPane.rowIndex="4"/>
-                        <TextField fx:id="cliProvincia" prefWidth="150" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="4"/>
-                        <Label fx:id="lblReferencia" text="Referencia rectifica" GridPane.rowIndex="5"/>
-                        <TextField fx:id="txtReferencia" prefWidth="300" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="5" GridPane.rowIndex="5"/>
-                        <Label text="Forma de pago" GridPane.rowIndex="6"/>
-                        <TextField fx:id="txtFormaPago" prefWidth="180" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-                        <Label text="Vencimiento" GridPane.columnIndex="2" GridPane.rowIndex="6"/>
-                        <DatePicker fx:id="vencimiento" prefWidth="140" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="6"/>
-                        <Label text="Realizada por" GridPane.columnIndex="4" GridPane.rowIndex="6"/>
-                        <TextField fx:id="txtRealizadaPor" prefWidth="150" maxWidth="Infinity" GridPane.columnIndex="5" GridPane.rowIndex="6"/>
-                    </GridPane>
+    <padding>
+        <Insets top="12" right="16" bottom="12" left="16"/>
+    </padding>
+    <top>
+        <VBox spacing="8">
+            <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+            <VBox spacing="8" styleClass="card, card-editor">
+                <ToolBar styleClass="action-bar">
+                    <ImageView fx:id="logo" preserveRatio="true"/>
+                    <Label fx:id="lblTitulo" styleClass="titulo, titulo-compacto" text="Nueva factura"/>
+                    <Label fx:id="lblEstado" visible="false" managed="false" styleClass="chip-anulada" text="ANULADA"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="btnGuardar" onAction="#guardar" styleClass="primary-button" text="Guardar"/>
+                    <Button fx:id="btnExportar" onAction="#exportarPdf" styleClass="action-button" text="Exportar PDF"/>
+                    <Button fx:id="btnVersiones" onAction="#verVersiones" styleClass="action-button" text="Versiones"/>
+                    <Button fx:id="btnRectificativa" onAction="#crearRectificativa" styleClass="action-button" text="Crear rectificativa"/>
+                    <Button fx:id="btnAnular" onAction="#anular" styleClass="action-danger-button" text="Anular"/>
+                    <Button fx:id="btnRestaurar" onAction="#restaurar" styleClass="action-button" text="Restaurar"/>
+                    <Button onAction="#nuevaFactura" styleClass="action-button" text="Nueva factura"/>
+                    <Button onAction="#volver" styleClass="action-button" text="Volver"/>
+                </ToolBar>
+                <HBox spacing="14" alignment="TOP_LEFT">
+                    <VBox spacing="5" prefWidth="380" HBox.hgrow="ALWAYS">
+                        <Label styleClass="bloque-titulo" text="FACTURA"/>
+                        <GridPane styleClass="grid-editor">
+                            <columnConstraints>
+                                <ColumnConstraints/>
+                                <ColumnConstraints hgrow="ALWAYS" fillWidth="true" prefWidth="120"/>
+                                <ColumnConstraints/>
+                                <ColumnConstraints hgrow="ALWAYS" fillWidth="true" prefWidth="120"/>
+                            </columnConstraints>
+                            <Label text="Serie"/>
+                            <ComboBox fx:id="comboSerie" maxWidth="Infinity" GridPane.columnIndex="1"/>
+                            <Label text="Fecha" GridPane.columnIndex="2"/>
+                            <DatePicker fx:id="fecha" maxWidth="Infinity" GridPane.columnIndex="3"/>
+                            <Label text="Número" GridPane.rowIndex="1"/>
+                            <TextField fx:id="txtNumero" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <Label text="Forma de pago" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                            <TextField fx:id="txtFormaPago" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                            <Label text="Vencimiento" GridPane.rowIndex="2"/>
+                            <DatePicker fx:id="vencimiento" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            <Label text="Realizada por" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                            <TextField fx:id="txtRealizadaPor" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                            <Label fx:id="lblReferencia" text="Referencia rectifica" GridPane.rowIndex="3"/>
+                            <TextField fx:id="txtReferencia" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="3"/>
+                        </GridPane>
                     </VBox>
-                </VBox>
-            </top>
-            <center>
-                <VBox spacing="8" styleClass="zona-contenido">
-                    <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" styleClass="action-button" text="Añadir línea"/>
-                        <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" styleClass="action-button" text="Eliminar línea (Supr)"/>
-                        <CheckBox fx:id="chkTotalConIva" text="Total de línea con IVA incluido"/>
-                        <Region HBox.hgrow="ALWAYS"/>
-                        <Label text="Retención"/>
-                        <ComboBox fx:id="comboRetencion" prefWidth="180"/>
-                        <Label text="Descuento"/>
-                        <TextField fx:id="txtDescuento" prefWidth="60" promptText="0"/>
-                        <Label text="\%"/>
-                    </HBox>
-                    <TableView fx:id="tablaLineas" editable="true" styleClass="tabla-productos" prefHeight="220.0" minHeight="120">
-                        <columns>
-                            <TableColumn fx:id="colCantidad" prefWidth="70" text="Cant."/>
-                            <TableColumn fx:id="colDescripcion" prefWidth="360" text="Descripción"/>
-                            <TableColumn fx:id="colPrecio" prefWidth="110" text="Precio"/>
-                            <TableColumn fx:id="colTotal" prefWidth="120" text="Total"/>
-                            <TableColumn fx:id="colIva" prefWidth="140" text="IVA"/>
-                        </columns>
-                        <columnResizePolicy>
-                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                        </columnResizePolicy>
-                    </TableView>
-                </VBox>
-            </center>
-            <bottom>
-                <VBox spacing="8" styleClass="zona-contenido">
-                    <HBox spacing="16" alignment="TOP_LEFT">
-                        <VBox spacing="4" HBox.hgrow="ALWAYS" styleClass="card">
-                            <Label text="Observaciones"/>
-                            <TextArea fx:id="txtObservaciones" prefRowCount="4" wrapText="true"/>
-                        </VBox>
-                        <VBox styleClass="card totales" minWidth="260.0" maxWidth="300.0">
-                            <HBox styleClass="total-fila" alignment="CENTER_LEFT">
-                                <Label text="Base imponible"/>
-                                <Region HBox.hgrow="ALWAYS"/>
-                                <Label fx:id="lblBaseTotal" styleClass="valor"/>
-                            </HBox>
-                            <HBox styleClass="total-fila" alignment="CENTER_LEFT">
-                                <Label text="IVA total"/>
-                                <Region HBox.hgrow="ALWAYS"/>
-                                <Label fx:id="lblIvaTotal" styleClass="valor"/>
-                            </HBox>
-                            <HBox styleClass="total-fila" alignment="CENTER_LEFT">
-                                <Label fx:id="lblRetencionNombre" text="Retención"/>
-                                <Region HBox.hgrow="ALWAYS"/>
-                                <Label fx:id="lblRetencionImporte" styleClass="valor"/>
-                            </HBox>
-                            <HBox styleClass="total-grande" alignment="CENTER_LEFT">
-                                <Label text="Total"/>
-                                <Region HBox.hgrow="ALWAYS"/>
-                                <Label fx:id="lblTotal" styleClass="valor"/>
-                            </HBox>
-                        </VBox>
-                    </HBox>
-                </VBox>
-            </bottom>
-        </BorderPane>
-    </content>
-</ScrollPane>
+                    <Separator orientation="VERTICAL"/>
+                    <VBox spacing="5" prefWidth="545" HBox.hgrow="ALWAYS">
+                        <Label styleClass="bloque-titulo" text="CLIENTE"/>
+                        <GridPane styleClass="grid-editor">
+                            <columnConstraints>
+                                <ColumnConstraints/>
+                                <ColumnConstraints hgrow="ALWAYS" fillWidth="true" prefWidth="260"/>
+                                <ColumnConstraints/>
+                                <ColumnConstraints hgrow="ALWAYS" fillWidth="true" prefWidth="150"/>
+                            </columnConstraints>
+                            <Label text="Cliente"/>
+                            <ComboBox fx:id="comboCliente" editable="true" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
+                            <Label text="Nombre" GridPane.rowIndex="1"/>
+                            <TextField fx:id="cliNombre" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <Label text="NIF" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                            <TextField fx:id="cliNif" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                            <Label text="Dirección" GridPane.rowIndex="2"/>
+                            <TextField fx:id="cliDireccion" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2"/>
+                            <Label text="Email" GridPane.rowIndex="3"/>
+                            <TextField fx:id="cliEmail" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            <Label text="CP" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                            <TextField fx:id="cliCp" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+                            <Label text="Localidad" GridPane.rowIndex="4"/>
+                            <TextField fx:id="cliLocalidad" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                            <Label text="Provincia" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+                            <TextField fx:id="cliProvincia" maxWidth="Infinity" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
+                        </GridPane>
+                    </VBox>
+                </HBox>
+            </VBox>
+        </VBox>
+    </top>
+    <center>
+        <VBox spacing="6" styleClass="zona-editor">
+            <HBox spacing="8" alignment="CENTER_LEFT">
+                <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" styleClass="action-button" text="Añadir línea"/>
+                <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" styleClass="action-button" text="Eliminar línea (Supr)"/>
+                <CheckBox fx:id="chkTotalConIva" text="Total de línea con IVA incluido"/>
+                <Region HBox.hgrow="ALWAYS"/>
+                <Label text="Retención"/>
+                <ComboBox fx:id="comboRetencion" prefWidth="180"/>
+                <Label text="Descuento"/>
+                <TextField fx:id="txtDescuento" prefWidth="60" promptText="0"/>
+                <Label text="\%"/>
+            </HBox>
+            <TableView fx:id="tablaLineas" editable="true" styleClass="tabla-productos" minHeight="120" VBox.vgrow="ALWAYS">
+                <columns>
+                    <TableColumn fx:id="colCantidad" prefWidth="70" text="Cant."/>
+                    <TableColumn fx:id="colDescripcion" prefWidth="360" text="Descripción"/>
+                    <TableColumn fx:id="colPrecio" prefWidth="110" text="Precio"/>
+                    <TableColumn fx:id="colTotal" prefWidth="120" text="Total"/>
+                    <TableColumn fx:id="colIva" prefWidth="140" text="IVA"/>
+                </columns>
+                <columnResizePolicy>
+                    <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                </columnResizePolicy>
+            </TableView>
+        </VBox>
+    </center>
+    <bottom>
+        <HBox spacing="12" alignment="TOP_LEFT" styleClass="zona-editor-pie">
+            <VBox spacing="3" HBox.hgrow="ALWAYS">
+                <Label text="Observaciones"/>
+                <TextArea fx:id="txtObservaciones" wrapText="true" prefRowCount="2" VBox.vgrow="ALWAYS"/>
+            </VBox>
+            <VBox styleClass="totales, totales-compacta" minWidth="300.0" maxWidth="300.0">
+                <HBox styleClass="total-fila, total-fila-primera" alignment="CENTER_LEFT">
+                    <Label text="Base imponible"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblBaseTotal" styleClass="valor"/>
+                </HBox>
+                <HBox styleClass="total-fila" alignment="CENTER_LEFT">
+                    <Label text="IVA total"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblIvaTotal" styleClass="valor"/>
+                </HBox>
+                <HBox styleClass="total-fila" alignment="CENTER_LEFT">
+                    <Label fx:id="lblRetencionNombre" text="Retención"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblRetencionImporte" styleClass="valor"/>
+                </HBox>
+                <HBox styleClass="total-grande" alignment="CENTER_LEFT">
+                    <Label text="TOTAL"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblTotal" styleClass="valor"/>
+                </HBox>
+            </VBox>
+        </HBox>
+    </bottom>
+</BorderPane>
