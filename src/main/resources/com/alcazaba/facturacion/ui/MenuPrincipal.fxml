@@ -9,10 +9,10 @@
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.MenuController">
     <padding>
-        <Insets top="12" right="16" bottom="20" left="16"/>
+        <Insets top="12" right="16" bottom="24" left="16"/>
     </padding>
     <top>
-        <VBox alignment="CENTER" spacing="8" styleClass="zona-contenido">
+        <VBox alignment="CENTER" spacing="4" styleClass="zona-contenido">
             <HBox alignment="CENTER" spacing="8">
                 <Label text="Fecha de trabajo:"/>
                 <Label fx:id="fechaTrabajo" styleClass="muted"/>
@@ -21,15 +21,15 @@
     </top>
     <center>
         <StackPane alignment="TOP_CENTER" styleClass="zona-contenido">
-            <HBox alignment="TOP_LEFT" spacing="24" maxWidth="-Infinity" maxHeight="-Infinity">
-            <VBox alignment="TOP_LEFT" spacing="12" styleClass="card">
-                <StackPane styleClass="menu-logo-box" prefWidth="260.0" prefHeight="120.0" minWidth="240.0" minHeight="110.0">
+            <HBox alignment="TOP_LEFT" spacing="20" maxWidth="-Infinity" maxHeight="-Infinity">
+            <VBox alignment="TOP_LEFT" spacing="8" styleClass="card" prefWidth="300.0" maxWidth="300.0">
+                <StackPane styleClass="menu-logo-box" prefWidth="280.0" prefHeight="100.0" minWidth="260.0" minHeight="90.0">
                     <ImageView fx:id="logo" preserveRatio="true"/>
                 </StackPane>
-                <Label fx:id="lblEmpresa" styleClass="empresa-nombre" text=""/>
-                <Label fx:id="lblEmpresaInfo" styleClass="empresa-info" text=""/>
+                <Label fx:id="lblEmpresa" styleClass="empresa-nombre" text="" wrapText="true"/>
+                <Label fx:id="lblEmpresaInfo" styleClass="empresa-info" text="" wrapText="true"/>
             </VBox>
-            <VBox spacing="4" prefWidth="430.0" maxWidth="430.0" styleClass="card">
+            <VBox spacing="2" prefWidth="430.0" maxWidth="430.0" styleClass="card">
                 <Button maxWidth="Infinity" onAction="#nuevaFactura" styleClass="menu-item">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">

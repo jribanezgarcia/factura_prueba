@@ -1,6 +1,6 @@
 # Continuacion del proyecto de facturacion
 
-Estado actualizado: 31/08/2026
+Estado actualizado: 01/09/2026
 
 NOTA: hasta aqui se ha hecho la app con modelos gratuitos de OPENCODE.
 
@@ -60,6 +60,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-31-fix-menu-min-height`
 - `openspec/changes/archive/2026-08-31-adjust-menu-editor-sizing`
 - `openspec/changes/archive/2026-09-01-fix-reutilizar-numeros-borrados`
+- `openspec/changes/archive/2026-09-01-mejorar-menu-principal`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -159,6 +160,16 @@ Cambio OpenSpec activo: **ninguno**.
 - Se actualiza la especificacion de numeración por series.
 - Suite **105/105** en verde.
 - Change archivado como `2026-09-01-fix-reutilizar-numeros-borrados`.
+
+### Change `mejorar-menu-principal` (archivado)
+
+- Ajustada la pantalla del Menú principal a 800×600 para que la información de la empresa no se corte y se vea margen inferior.
+- Tarjeta de empresa ampliada a 300 px de ancho; logo reducido a 100 px de alto; etiquetas de empresa con `wrapText`.
+- Espaciado interno de la lista de opciones reducido y padding vertical de `.menu-item` bajado a 10 px.
+- Padding inferior del `BorderPane` raíz aumentado a 24 px.
+- Se añade requisito visual del Menú principal a la especificación.
+- Suite **105/105** en verde.
+- Change archivado como `2026-09-01-mejorar-menu-principal`.
 
 ## Proximos pasos
 
