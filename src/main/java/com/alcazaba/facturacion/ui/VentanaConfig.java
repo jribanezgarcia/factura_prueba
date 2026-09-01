@@ -12,7 +12,7 @@ public enum VentanaConfig {
 
     ARRANQUE("/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, 760, 520, false),
     MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 800, 600, 800, 600, true),
-    EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 1000, 760, 1000, 760, true, true),
+    EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 800, 600, 800, 600, true),
     CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 1000, 620, 1000, 620, true),
     HISTORICO("/com/alcazaba/facturacion/ui/Historico.fxml", 1000, 600, 1000, 600, true),
     CLIENTES("/com/alcazaba/facturacion/ui/Clientes.fxml", 1000, 600, 1000, 600, true),

@@ -70,19 +70,10 @@ class EditorTamanoMinimoTest {
         }
 
         Stage stage = stageRef.get();
-        // El Editor se abre maximizado; se desmaximiza para verificar el tamaño minimo/restaurado.
-        if (stage.isMaximized()) {
-            CountDownLatch unmaxLatch = new CountDownLatch(1);
-            Platform.runLater(() -> {
-                stage.setMaximized(false);
-                unmaxLatch.countDown();
-            });
-            unmaxLatch.await(5, TimeUnit.SECONDS);
-        }
-        assertEquals(1000.0, stage.getMinWidth(), 0.01, "El ancho minimo del Editor debe ser 1000");
-        assertEquals(760.0, stage.getMinHeight(), 0.01, "El alto minimo del Editor debe ser 760");
-        assertEquals(1000.0, stage.getWidth(), 0.01, "El ancho restaurado del Editor debe ser 1000");
-        assertEquals(760.0, stage.getHeight(), 0.01, "El alto restaurado del Editor debe ser 760");
+        assertEquals(800.0, stage.getMinWidth(), 0.01, "El ancho minimo del Editor debe ser 800");
+        assertEquals(600.0, stage.getMinHeight(), 0.01, "El alto minimo del Editor debe ser 600");
+        assertEquals(800.0, stage.getWidth(), 0.01, "El ancho inicial del Editor debe ser 800");
+        assertEquals(600.0, stage.getHeight(), 0.01, "El alto inicial del Editor debe ser 600");
 
         CountDownLatch layoutLatch = new CountDownLatch(1);
         AtomicReference<Throwable> layoutError = new AtomicReference<>();
