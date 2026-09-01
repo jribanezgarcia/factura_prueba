@@ -65,8 +65,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-uniformizar-ventanas-800x600`
 - `openspec/changes/archive/2026-09-01-uniformizar-1024-scroll-editor`
 - `openspec/changes/archive/2026-09-01-fix-ventana-1024-transicion-arranque-menu`
+- `openspec/changes/archive/2026-09-01-fix-ventana-1024-tras-pulse`
 
-Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada) y `fix-ventana-1024-transicion-arranque-menu` archivado el 01/09/2026 (corrige que la ventana no subia a 1024×768 al pasar de Arranque al menu).
+Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada), `fix-ventana-1024-transicion-arranque-menu` archivado el 01/09/2026 (clamp de subida en `aplicarSinRedimensionar`) y `fix-ventana-1024-tras-pulse` archivado el 01/09/2026 (clamp diferido al layout, que es el que realmente resuelve la transición Arranque→menú).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -205,6 +206,14 @@ Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 0
 - Suite **106/106** en verde.
 - Change archivado como `2026-09-01-fix-ventana-1024-transicion-arranque-menu`.
 
+### Change `fix-ventana-1024-tras-pulse` (archivado)
+
+- El clamp del change anterior no bastaba: `entrarEnMenu` pide `setWidth(1024)` ANTES de `nav.mostrar`, y en el momento del clamp sincrono `stage.getWidth()` ya reporta 1024 aunque la ventana nativa siga en 760 (peticion asincrona de un Stage visible y no redimensionable). El layout de la escena nueva dejaba la ventana en 760×520.
+- Fix definitivo en `VentanaConfig.aplicar`: cuando el Stage ya esta visible y la vista es redimensionable, tras `aplicarSinRedimensionar` se programa un `Platform.runLater` que re-sube width/height al minimo de la vista; se ejecuta en el siguiente pulse, despues del layout de la escena nueva, cuando `getWidth()` ya refleja el tamaño real.
+- `VentanaTransicionTest` corregido para reproducir el timing real (Stage mostrado no redimensionable a 760×520 → `setWidth(1024)` → `nav.mostrar(Menu)` → layout → comprobacion tras dos pulses).
+- Suite **106/106** en verde (`mvn clean test`).
+- Change archivado como `2026-09-01-fix-ventana-1024-tras-pulse` (skip_specs).
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -217,6 +226,7 @@ Cambio OpenSpec activo: ninguno. `uniformizar-1024-scroll-editor` archivado el 0
 
 - **Corregido el bug de 1024×768 en transición (01/09/2026)**: al pasar de Arranque (760×520) al menú, la ventana se quedaba en 760×520 hasta redimensionar o maximizar. Causa raíz: `VentanaConfig.aplicar` enviaba los Stages ya visibles a `aplicarSinRedimensionar`, que solo aplicaba min/max sin fijar el tamaño tras `setScene`. Fix: ahora `aplicarSinRedimensionar` eleva width/height hasta el mínimo de la vista (`VentanaTransicionTest` lo verifica, suite **106/106**).
 - Commit y push de: fix `VentanaConfig` + `VentanaTransicionTest` + spec y archive OpenSpec.
+- Despues, fix definitivo con clamp diferido al pulse (`fix-ventana-1024-tras-pulse`) commiteado y pusheado.
 
 ## Notas tecnicas que evitan perder tiempo
 

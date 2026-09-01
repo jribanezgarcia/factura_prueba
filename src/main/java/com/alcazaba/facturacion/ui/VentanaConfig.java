@@ -1,5 +1,6 @@
 package com.alcazaba.facturacion.ui;
 
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
 import java.util.Arrays;
@@ -78,9 +79,26 @@ public enum VentanaConfig {
     public void aplicar(Stage stage) {
         if (stage.isShowing()) {
             aplicarSinRedimensionar(stage);
+            reaplicarMinimoTrasPulse(stage);
         } else {
             aplicarCompleto(stage);
         }
+    }
+
+    private void reaplicarMinimoTrasPulse(Stage stage) {
+        if (!redimensionable) {
+            return;
+        }
+        Platform.runLater(() -> {
+            if (stage.isShowing()) {
+                if (stage.getWidth() < minAncho) {
+                    stage.setWidth(minAncho);
+                }
+                if (stage.getHeight() < minAlto) {
+                    stage.setHeight(minAlto);
+                }
+            }
+        });
     }
 
     private void aplicarSinRedimensionar(Stage stage) {
