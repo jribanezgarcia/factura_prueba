@@ -12,7 +12,7 @@
     <top>
         <VBox spacing="12">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="card zona-contenido">
+            <VBox spacing="8" styleClass="card, zona-contenido">
                 <Label styleClass="titulo" text="Copia de seguridad"/>
                 <Label text="La copia guarda una fotografía completa de la base de datos (facturas_AAAAMMDD_HHMMSS.db)."/>
                 <HBox spacing="8" alignment="CENTER_LEFT">
@@ -23,13 +23,13 @@
         </VBox>
     </top>
     <center>
-        <VBox spacing="8" styleClass="card zona-contenido" alignment="TOP_CENTER">
+        <VBox spacing="8" styleClass="card, zona-contenido" alignment="TOP_CENTER">
             <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button" text="Crear copia de seguridad"/>
             <Label fx:id="lblResultado" wrapText="true"/>
         </VBox>
     </center>
     <bottom>
-        <HBox alignment="CENTER_RIGHT" styleClass="card zona-contenido">
+        <HBox alignment="CENTER_RIGHT" styleClass="card, zona-contenido">
             <Button onAction="#volver" styleClass="default-button" text="Volver"/>
         </HBox>
     </bottom>
