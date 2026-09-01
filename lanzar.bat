@@ -2,7 +2,8 @@
 setlocal
 cd /d "%~dp0"
 
-set "MAVEN=C:\Users\usuario\.m2\wrapper\dists\apache-maven-3.9.9-bin\33b4b2b4\apache-maven-3.9.9\bin\mvn.cmd"
+set "MAVEN=C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd"
+if not exist "%MAVEN%" set "MAVEN=C:\Users\usuario\.m2\wrapper\dists\apache-maven-3.9.9-bin\33b4b2b4\apache-maven-3.9.9\bin\mvn.cmd"
 if not exist "%MAVEN%" (
     where mvn >nul 2>nul
     if errorlevel 1 (
