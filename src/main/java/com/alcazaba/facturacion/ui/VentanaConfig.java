@@ -1,6 +1,5 @@
 package com.alcazaba.facturacion.ui;
 
-import javafx.application.Platform;
 import javafx.stage.Stage;
 
 import java.util.Arrays;
@@ -11,7 +10,7 @@ import java.util.Optional;
  */
 public enum VentanaConfig {
 
-    ARRANQUE("/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, 760, 520, false),
+    ARRANQUE("/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, false),
     MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
     EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 1024, 768, 1024, 768, true),
     CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 1024, 768, 1024, 768, true),
@@ -20,6 +19,8 @@ public enum VentanaConfig {
     VERSIONES("/com/alcazaba/facturacion/ui/Versiones.fxml", 1024, 768, 1024, 768, true),
     BACKUP("/com/alcazaba/facturacion/ui/Backup.fxml", 1024, 768, 1024, 768, true),
     GENERAR_MENSUAL("/com/alcazaba/facturacion/ui/GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
+
+    private static final String CLAVE_CONFIG = "com.alcazaba.facturacion.ventanaConfig";
 
     private final String fxml;
     private final double ancho;
@@ -33,16 +34,6 @@ public enum VentanaConfig {
 
     VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto, boolean redimensionable) {
         this(fxml, ancho, alto, minAncho, minAlto, Double.MAX_VALUE, Double.MAX_VALUE, redimensionable, false);
-    }
-
-    VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto,
-                  double maxAncho, double maxAlto, boolean redimensionable) {
-        this(fxml, ancho, alto, minAncho, minAlto, maxAncho, maxAlto, redimensionable, false);
-    }
-
-    VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto,
-                  boolean redimensionable, boolean maximizado) {
-        this(fxml, ancho, alto, minAncho, minAlto, Double.MAX_VALUE, Double.MAX_VALUE, redimensionable, maximizado);
     }
 
     VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto,
@@ -62,6 +53,22 @@ public enum VentanaConfig {
         return fxml;
     }
 
+    public double ancho() {
+        return ancho;
+    }
+
+    public double alto() {
+        return alto;
+    }
+
+    public double minAncho() {
+        return minAncho;
+    }
+
+    public double minAlto() {
+        return minAlto;
+    }
+
     public boolean redimensionable() {
         return redimensionable;
     }
@@ -77,54 +84,31 @@ public enum VentanaConfig {
     }
 
     public void aplicar(Stage stage) {
-        if (stage.isShowing()) {
-            aplicarSinRedimensionar(stage);
-            reaplicarMinimoTrasPulse(stage);
-        } else {
-            aplicarCompleto(stage);
-        }
-    }
+        VentanaConfig previa = (VentanaConfig) stage.getProperties().get(CLAVE_CONFIG);
+        stage.getProperties().put(CLAVE_CONFIG, this);
 
-    private void reaplicarMinimoTrasPulse(Stage stage) {
-        if (!redimensionable) {
-            return;
-        }
-        Platform.runLater(() -> {
-            if (stage.isShowing()) {
-                if (stage.getWidth() < minAncho) {
-                    stage.setWidth(minAncho);
-                }
-                if (stage.getHeight() < minAlto) {
-                    stage.setHeight(minAlto);
-                }
-            }
-        });
-    }
-
-    private void aplicarSinRedimensionar(Stage stage) {
+        stage.setMaxWidth(Double.MAX_VALUE);
+        stage.setMaxHeight(Double.MAX_VALUE);
         stage.setResizable(redimensionable);
         stage.setMinWidth(minAncho);
         stage.setMinHeight(minAlto);
         stage.setMaxWidth(maxAncho);
         stage.setMaxHeight(maxAlto);
-        stage.setMaximized(maximizado);
-        if (stage.getWidth() < minAncho) {
-            stage.setWidth(minAncho);
+
+        if (debeFijarTamano(stage, previa)) {
+            stage.setWidth(ancho);
+            stage.setHeight(alto);
+            stage.centerOnScreen();
         }
-        if (stage.getHeight() < minAlto) {
-            stage.setHeight(minAlto);
+        if (maximizado) {
+            stage.setMaximized(true);
         }
     }
 
-    private void aplicarCompleto(Stage stage) {
-        stage.setResizable(redimensionable);
-        stage.setMinWidth(minAncho);
-        stage.setMinHeight(minAlto);
-        stage.setMaxWidth(maxAncho);
-        stage.setMaxHeight(maxAlto);
-        stage.setWidth(ancho);
-        stage.setHeight(alto);
-        stage.centerOnScreen();
-        stage.setMaximized(maximizado);
+    private boolean debeFijarTamano(Stage stage, VentanaConfig previa) {
+        if (!stage.isShowing() || previa == null) {
+            return true;
+        }
+        return previa.ancho != ancho || previa.alto != alto;
     }
 }

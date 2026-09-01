@@ -1,13 +1,12 @@
 package com.alcazaba.facturacion.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.alcazaba.facturacion.db.Database;
 import com.alcazaba.facturacion.service.Servicios;
 import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,10 +19,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * Reproduce el timing real de la transicion Arranque -> Menu: el Stage ya esta
- * visible y no redimensionable (como en Arranque, 760x520), luego entrarEnMenu
- * pide 1024x768 antes de cargar la nueva escena. Verifica que, despues del
- * pulse posterior al layout, la ventana termina a 1024x768.
+ * Reproduce la transicion Arranque -> Menu con la ventana ya visible: el Stage
+ * lleva la configuracion de Arranque (760x520, no redimensionable) y al cargar
+ * el Menu debe crecer a 1024x768 sin restricciones heredadas. Comprueba tambien
+ * que al navegar entre vistas del mismo tamaño se respeta el tamaño del usuario.
  */
 class VentanaTransicionTest {
 
@@ -44,82 +43,92 @@ class VentanaTransicionTest {
     @Test
     void menuSubeHasta1024AlPasarDeArranque() throws Exception {
         Servicios servicios = new Servicios();
-        CountDownLatch latch = new CountDownLatch(1);
-        AtomicReference<Throwable> error = new AtomicReference<>();
         AtomicReference<Stage> stageRef = new AtomicReference<>();
 
+        enFx("JavaFX no cargo el Menu", () -> {
+            Stage stage = new Stage();
+            Navegador navArranque = new Navegador(stage, servicios);
+            navArranque.mostrar("/com/alcazaba/facturacion/ui/Arranque.fxml");
+            stage.show();
+            stageRef.set(stage);
+        });
+
+        Stage stage = stageRef.get();
+        assertEquals(760.0, stage.getWidth(), 0.01, "Arranque debe medir 760 de ancho");
+        assertEquals(520.0, stage.getHeight(), 0.01, "Arranque debe medir 520 de alto");
+
+        enFx("JavaFX no cargo el Menu", () -> {
+            Navegador nav = new Navegador(stage, servicios);
+            nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+        });
+
+        assertEquals(1024.0, stage.getMinWidth(), 0.01, "El ancho minimo del Menu debe ser 1024");
+        assertEquals(768.0, stage.getMinHeight(), 0.01, "El alto minimo del Menu debe ser 768");
+        assertEquals(1024.0, stage.getWidth(), 0.01, "El Menu debe crecer a 1024 de ancho");
+        assertEquals(768.0, stage.getHeight(), 0.01, "El Menu debe crecer a 768 de alto");
+        assertEquals(Double.MAX_VALUE, stage.getMaxWidth(), 0.01,
+                "El maximo de ancho de Arranque no debe sobrevivir al Menu");
+        assertEquals(Double.MAX_VALUE, stage.getMaxHeight(), 0.01,
+                "El maximo de alto de Arranque no debe sobrevivir al Menu");
+        assertTrue(stage.isResizable(), "El Menu debe ser redimensionable");
+
+        Thread.sleep(500);
+        AtomicReference<double[]> finalRef = new AtomicReference<>();
+        enFx("La ventana no se estabilizo", () ->
+                finalRef.set(new double[]{stage.getWidth(), stage.getHeight()}));
+        assertEquals(1024.0, finalRef.get()[0], 0.01,
+                "La ventana nativa debe quedarse en 1024 de ancho, no volver al tamaño de Arranque");
+        assertEquals(768.0, finalRef.get()[1], 0.01,
+                "La ventana nativa debe quedarse en 768 de alto, no volver al tamaño de Arranque");
+
+        enFx("No se pudo cerrar la ventana", stage::hide);
+    }
+
+    @Test
+    void navegarEntreVistasConservaElTamanoDelUsuario() throws Exception {
+        Servicios servicios = new Servicios();
+        AtomicReference<Stage> stageRef = new AtomicReference<>();
+
+        enFx("JavaFX no cargo el Menu", () -> {
+            Stage stage = new Stage();
+            Navegador nav = new Navegador(stage, servicios);
+            nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+            stage.show();
+            stage.setWidth(1300);
+            stage.setHeight(900);
+            stageRef.set(stage);
+        });
+
+        Stage stage = stageRef.get();
+
+        enFx("JavaFX no cargo el Historico", () -> {
+            Navegador nav = new Navegador(stage, servicios);
+            nav.mostrar("/com/alcazaba/facturacion/ui/Historico.fxml");
+        });
+
+        assertEquals(1300.0, stage.getWidth(), 0.01, "El Historico no debe reducir el ancho del usuario");
+        assertEquals(900.0, stage.getHeight(), 0.01, "El Historico no debe reducir el alto del usuario");
+
+        enFx("No se pudo cerrar la ventana", stage::hide);
+    }
+
+    private void enFx(String mensajeTimeout, Runnable accion) throws Exception {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
         Platform.runLater(() -> {
             try {
-                Stage stage = new Stage();
-                stage.setResizable(false);
-                stage.setWidth(760);
-                stage.setHeight(520);
-                stage.setScene(new Scene(new Pane()));
-                stage.show();
-
-                stage.setWidth(1024);
-                stage.setHeight(768);
-                Navegador nav = new Navegador(stage, servicios);
-                nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
-                stageRef.set(stage);
+                accion.run();
             } catch (Throwable t) {
                 error.set(t);
             } finally {
                 latch.countDown();
             }
         });
-
         if (!latch.await(30, TimeUnit.SECONDS)) {
-            fail("JavaFX no cargo el Menu en 30 s");
+            fail(mensajeTimeout + " en 30 s");
         }
         if (error.get() != null) {
-            throw new RuntimeException(error.get());
-        }
-
-        Stage stage = stageRef.get();
-        assertEquals(1024.0, stage.getMinWidth(), 0.01, "El ancho minimo del Menu debe ser 1024");
-        assertEquals(768.0, stage.getMinHeight(), 0.01, "El alto minimo del Menu debe ser 768");
-
-        CountDownLatch layoutLatch = new CountDownLatch(1);
-        AtomicReference<Throwable> layoutError = new AtomicReference<>();
-        Platform.runLater(() -> {
-            try {
-                stage.getScene().getRoot().applyCss();
-                stage.getScene().getRoot().layout();
-            } catch (Throwable t) {
-                layoutError.set(t);
-            } finally {
-                layoutLatch.countDown();
-            }
-        });
-
-        if (!layoutLatch.await(30, TimeUnit.SECONDS)) {
-            fail("El layout del Menu no termino en 30 s");
-        }
-        if (layoutError.get() != null) {
-            throw new AssertionError("Fallo el layout del Menu", layoutError.get());
-        }
-
-        CountDownLatch sizeLatch = new CountDownLatch(1);
-        AtomicReference<Throwable> sizeError = new AtomicReference<>();
-        Platform.runLater(() -> Platform.runLater(() -> {
-            try {
-                assertEquals(1024.0, stage.getWidth(), 0.01,
-                        "El ancho del Menu debe subir a 1024 tras el layout");
-                assertEquals(768.0, stage.getHeight(), 0.01,
-                        "El alto del Menu debe subir a 768 tras el layout");
-            } catch (Throwable t) {
-                sizeError.set(t);
-            } finally {
-                sizeLatch.countDown();
-            }
-        }));
-
-        if (!sizeLatch.await(30, TimeUnit.SECONDS)) {
-            fail("El tamano del Menu no se estabilizo en 30 s");
-        }
-        if (sizeError.get() != null) {
-            throw new AssertionError("El tamano final del Menu no es 1024x768", sizeError.get());
+            throw new AssertionError(mensajeTimeout, error.get());
         }
     }
 }
