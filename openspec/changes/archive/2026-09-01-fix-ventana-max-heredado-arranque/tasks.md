@@ -19,4 +19,4 @@
 
 ## 5. Cierre
 - [x] 5.1 Actualizar CONTINUAR_MAÑANA.md
-- [ ] 5.2 Commit y push
+- [x] 5.2 Commit y push (f850ba1, 3a83bd8)
