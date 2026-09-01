@@ -145,7 +145,7 @@ class UiSmokeTest {
 
     private void maquetarAlMinimo(Parent raiz) {
         raiz.applyCss();
-        raiz.resize(800, 600);
+        raiz.resize(1024, 768);
         raiz.layout();
     }
 

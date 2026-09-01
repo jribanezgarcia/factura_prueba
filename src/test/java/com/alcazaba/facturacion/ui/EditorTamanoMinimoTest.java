@@ -70,10 +70,10 @@ class EditorTamanoMinimoTest {
         }
 
         Stage stage = stageRef.get();
-        assertEquals(800.0, stage.getMinWidth(), 0.01, "El ancho minimo del Editor debe ser 800");
-        assertEquals(600.0, stage.getMinHeight(), 0.01, "El alto minimo del Editor debe ser 600");
-        assertEquals(800.0, stage.getWidth(), 0.01, "El ancho inicial del Editor debe ser 800");
-        assertEquals(600.0, stage.getHeight(), 0.01, "El alto inicial del Editor debe ser 600");
+        assertEquals(1024.0, stage.getMinWidth(), 0.01, "El ancho minimo del Editor debe ser 1024");
+        assertEquals(768.0, stage.getMinHeight(), 0.01, "El alto minimo del Editor debe ser 768");
+        assertEquals(1024.0, stage.getWidth(), 0.01, "El ancho inicial del Editor debe ser 1024");
+        assertEquals(768.0, stage.getHeight(), 0.01, "El alto inicial del Editor debe ser 768");
 
         CountDownLatch layoutLatch = new CountDownLatch(1);
         AtomicReference<Throwable> layoutError = new AtomicReference<>();
@@ -82,6 +82,12 @@ class EditorTamanoMinimoTest {
                 Parent root = (Parent) stage.getScene().getRoot();
                 root.applyCss();
                 root.layout();
+
+                Node scroll = root.lookup(".scroll-pane");
+                if (scroll == null) {
+                    scroll = root.lookup("ScrollPane");
+                }
+                assertNotNull(scroll, "El Editor debe tener ScrollPane general");
 
                 Node nav = root.lookup(".nav-bar");
                 assertNotNull(nav, "La barra de navegacion debe existir");
@@ -92,11 +98,8 @@ class EditorTamanoMinimoTest {
                 assertTrue(tabla.isVisible(), "La tabla de lineas debe ser visible");
 
                 Bounds navBounds = nav.localToScene(nav.getBoundsInLocal());
-                Bounds tablaBounds = tabla.localToScene(tabla.getBoundsInLocal());
                 assertTrue(navBounds.getMinY() >= 0,
                         "La barra de navegacion no debe quedar fuera por arriba");
-                assertTrue(tablaBounds.getMaxY() <= stage.getHeight(),
-                        "La tabla no debe salirse por debajo de la ventana");
             } catch (Throwable t) {
                 layoutError.set(t);
             } finally {

@@ -28,8 +28,8 @@ import java.util.Locale;
  */
 public class Main extends Application {
 
-    private static final double ANCHO_INICIAL = 800;
-    private static final double ALTO_INICIAL = 600;
+    private static final double ANCHO_INICIAL = 1024;
+    private static final double ALTO_INICIAL = 768;
 
     private FileChannel lockChannel;
     private FileLock lock;
@@ -88,8 +88,8 @@ public class Main extends Application {
 
     private void configurarVentana() {
         stage.setTitle("Facturación");
-        stage.setMinWidth(800);
-        stage.setMinHeight(600);
+        stage.setMinWidth(1024);
+        stage.setMinHeight(768);
         aplicarPreferenciasVentana(stage);
         stage.setOnCloseRequest(e -> cerrarAplicacion());
     }
