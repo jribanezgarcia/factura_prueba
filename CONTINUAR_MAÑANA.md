@@ -204,7 +204,7 @@ Cambio OpenSpec activo: **ninguno**.
 
 ## Git
 
-- Rama `main`, ultimo commit `13feb1d`; **SINCRONIZADA** con `origin/main` (push realizado el 01/09/2026).
+- Rama `main`, ultimo commit `778b97f`; **SINCRONIZADA** con `origin/main` (push realizado el 01/09/2026).
 - Arbol limpio: nada pendiente de commitear.
 
 ## Notas tecnicas que evitan perder tiempo
