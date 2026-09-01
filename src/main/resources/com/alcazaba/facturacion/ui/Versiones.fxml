@@ -3,14 +3,14 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
-<BorderPane prefHeight="500.0" prefWidth="900.0"
+<BorderPane prefHeight="600.0" prefWidth="800.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.VersionesController">
     <padding>
-        <Insets top="12" right="16" bottom="12" left="16"/>
+        <Insets top="8" right="12" bottom="8" left="12"/>
     </padding>
     <top>
-        <VBox spacing="12">
+        <VBox spacing="8">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
             <VBox spacing="8" styleClass="card zona-contenido">
                 <Label fx:id="lblTitulo" styleClass="titulo" text="Versiones de la factura"/>

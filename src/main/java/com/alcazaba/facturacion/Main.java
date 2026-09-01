@@ -107,6 +107,11 @@ public class Main extends Application {
             Dialogos.error("Facturación", "Error al inicializar la aplicación:\n" + e.getMessage());
             return;
         }
+        if (stage.isMaximized()) {
+            stage.setMaximized(false);
+        }
+        stage.setWidth(ANCHO_INICIAL);
+        stage.setHeight(ALTO_INICIAL);
         nav = new Navegador(stage, servicios);
         nav.setOnVistaCambio(v -> this.actual = v);
         nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
