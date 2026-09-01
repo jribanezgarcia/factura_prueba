@@ -59,6 +59,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-08-31-window-sizing`
 - `openspec/changes/archive/2026-08-31-fix-menu-min-height`
 - `openspec/changes/archive/2026-08-31-adjust-menu-editor-sizing`
+- `openspec/changes/archive/2026-09-01-fix-reutilizar-numeros-borrados`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -150,14 +151,22 @@ Cambio OpenSpec activo: **ninguno**.
 - Suite **102/102** en verde.
 - Change archivado como `2026-08-31-adjust-menu-editor-sizing`.
 
+### Change `fix-reutilizar-numeros-borrados` (archivado)
+
+- Corregida la numeración de facturas para reutilizar los huecos libres dejados por facturas borradas.
+- `NumeroService.siguienteCorrelativo(...)` consulta primero `numero_disponible` y propone el menor correlativo libre antes de continuar con el siguiente número.
+- Se añaden tests para reutilización de números borrados, exclusión de huecos ocupados por activas y prioridad de huecos borrados sobre anulados.
+- Se actualiza la especificacion de numeración por series.
+- Suite **105/105** en verde.
+- Change archivado como `2026-09-01-fix-reutilizar-numeros-borrados`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
 - Opciones conocidas pendientes en el spec principal:
   - Flujo de **clientes inactivos** (clientes con facturas no se borran, se marcan inactivos y no se ofrecen al crear facturas nuevas).
   - **Copia de seguridad** manual (V1: solo copia del SQLite).
-- Bug detectado a revisar:
-  - Revisar **numeración de facturas**: cuando se generan y borran muchas facturas, el Editor propone un número nuevo en lugar de reutilizar los huecos libres registrados en `numero_disponible`.
+
 
 ## Git
 
