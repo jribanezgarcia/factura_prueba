@@ -3,17 +3,17 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
-<BorderPane prefHeight="620.0" prefWidth="1000.0"
+<BorderPane prefHeight="600.0" prefWidth="800.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.alcazaba.facturacion.ui.ConfiguracionController">
     <padding>
-        <Insets top="12" right="16" bottom="12" left="16"/>
+        <Insets top="8" right="12" bottom="8" left="12"/>
     </padding>
     <fx:define>
         <ToggleGroup fx:id="grupoCabecera"/>
     </fx:define>
     <top>
-        <VBox>
+        <VBox spacing="4">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
             <Label styleClass="titulo" text="Configuración"/>
         </VBox>
@@ -67,12 +67,12 @@
             <Tab text="Pie">
                 <VBox spacing="8" styleClass="card zona-contenido">
                     <Label text="Texto legal del pie (se repite en todas las páginas de los PDF)."/>
-                    <TextArea fx:id="txtPieLegal" prefRowCount="8" wrapText="true"/>
+                    <TextArea fx:id="txtPieLegal" prefRowCount="4" wrapText="true" VBox.vgrow="ALWAYS"/>
                 </VBox>
             </Tab>
             <Tab text="IVA">
                 <VBox spacing="8" styleClass="card zona-contenido">
-                    <TableView fx:id="tablaIva" prefHeight="240">
+                    <TableView fx:id="tablaIva" prefHeight="120" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colIvaNombre" prefWidth="180" text="Nombre"/>
                             <TableColumn fx:id="colIvaPorcentaje" prefWidth="90" text="Tipo"/>
@@ -108,7 +108,7 @@
             </Tab>
             <Tab text="Retenciones">
                 <VBox spacing="8" styleClass="card zona-contenido">
-                    <TableView fx:id="tablaRetenciones" prefHeight="240">
+                    <TableView fx:id="tablaRetenciones" prefHeight="120" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colRetencionNombre" prefWidth="280" text="Nombre"/>
                             <TableColumn fx:id="colRetencionPorcentaje" prefWidth="110" text="Porcentaje"/>
@@ -139,7 +139,7 @@
             </Tab>
             <Tab text="Series">
                 <VBox spacing="8" styleClass="card zona-contenido">
-                    <TableView fx:id="tablaSeries" prefHeight="240">
+                    <TableView fx:id="tablaSeries" prefHeight="120" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colSerieCodigo" prefWidth="80" text="Código"/>
                             <TableColumn fx:id="colSerieDescripcion" prefWidth="200" text="Descripción"/>
@@ -181,7 +181,7 @@
             </Tab>
             <Tab text="Empresas">
                 <VBox spacing="8" styleClass="card zona-contenido">
-                    <TableView fx:id="tablaEmpresas" prefHeight="260">
+                    <TableView fx:id="tablaEmpresas" prefHeight="120" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colEmpresaNombre" prefWidth="240" text="Nombre"/>
                             <TableColumn fx:id="colEmpresaSlug" prefWidth="200" text="Carpeta de datos"/>

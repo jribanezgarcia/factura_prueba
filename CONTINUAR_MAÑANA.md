@@ -62,6 +62,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-fix-reutilizar-numeros-borrados`
 - `openspec/changes/archive/2026-09-01-mejorar-menu-principal`
 - `openspec/changes/archive/2026-09-01-editor-800x600-scroll`
+- `openspec/changes/archive/2026-09-01-uniformizar-ventanas-800x600`
 
 Cambio OpenSpec activo: **ninguno**.
 
@@ -182,6 +183,16 @@ Cambio OpenSpec activo: **ninguno**.
 - Se actualiza la especificación de tamaños de ventana.
 - Suite **105/105** en verde.
 - Change archivado como `2026-09-01-editor-800x600-scroll`.
+
+### Change `uniformizar-ventanas-800x600` (archivado)
+
+- Todas las pantallas principales y el diálogo de Generar facturas mensuales ajustados a **800×600**.
+- `VentanaConfig.aplicar` ahora no redimensiona la ventana principal cuando ya está visible; solo aplica mínimos, máximos y propiedades, evitando saltos entre vistas.
+- `Main.entrarEnMenu` fuerza el tamaño a 800×600 al salir de `Arranque` y desmaximiza si fuera necesario.
+- FXML ajustados: Configuración (tablas y formularios más compactos), Histórico y Clientes (tablas adaptadas a 800 de ancho), Versiones y Backup (paddings reducidos), Generar facturas mensuales (diálogo con `ScrollPane`).
+- Especificación actualizada: se elimina el redimensionado/recentrado automático y se definen los tamaños uniformes.
+- Suite **105/105** en verde.
+- Change archivado como `2026-09-01-uniformizar-ventanas-800x600`.
 
 ## Proximos pasos
 

@@ -13,12 +13,12 @@ public enum VentanaConfig {
     ARRANQUE("/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, 760, 520, false),
     MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 800, 600, 800, 600, true),
     EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 800, 600, 800, 600, true),
-    CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 1000, 620, 1000, 620, true),
-    HISTORICO("/com/alcazaba/facturacion/ui/Historico.fxml", 1000, 600, 1000, 600, true),
-    CLIENTES("/com/alcazaba/facturacion/ui/Clientes.fxml", 1000, 600, 1000, 600, true),
-    VERSIONES("/com/alcazaba/facturacion/ui/Versiones.fxml", 900, 500, 900, 500, true),
-    BACKUP("/com/alcazaba/facturacion/ui/Backup.fxml", 720, 450, 720, 450, true),
-    GENERAR_MENSUAL("/com/alcazaba/facturacion/ui/GenerarFacturasMensuales.fxml", 920, 680, 920, 680, true);
+    CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 800, 600, 800, 600, true),
+    HISTORICO("/com/alcazaba/facturacion/ui/Historico.fxml", 800, 600, 800, 600, true),
+    CLIENTES("/com/alcazaba/facturacion/ui/Clientes.fxml", 800, 600, 800, 600, true),
+    VERSIONES("/com/alcazaba/facturacion/ui/Versiones.fxml", 800, 600, 800, 600, true),
+    BACKUP("/com/alcazaba/facturacion/ui/Backup.fxml", 800, 600, 800, 600, true),
+    GENERAR_MENSUAL("/com/alcazaba/facturacion/ui/GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
 
     private final String fxml;
     private final double ancho;
@@ -76,6 +76,23 @@ public enum VentanaConfig {
     }
 
     public void aplicar(Stage stage) {
+        if (stage.isShowing()) {
+            aplicarSinRedimensionar(stage);
+        } else {
+            aplicarCompleto(stage);
+        }
+    }
+
+    private void aplicarSinRedimensionar(Stage stage) {
+        stage.setResizable(redimensionable);
+        stage.setMinWidth(minAncho);
+        stage.setMinHeight(minAlto);
+        stage.setMaxWidth(maxAncho);
+        stage.setMaxHeight(maxAlto);
+        stage.setMaximized(maximizado);
+    }
+
+    private void aplicarCompleto(Stage stage) {
         stage.setResizable(redimensionable);
         stage.setMinWidth(minAncho);
         stage.setMinHeight(minAlto);
