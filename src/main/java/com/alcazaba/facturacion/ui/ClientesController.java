@@ -2,7 +2,9 @@ package com.alcazaba.facturacion.ui;
 
 import com.alcazaba.facturacion.model.Cliente;
 import com.alcazaba.facturacion.service.Servicios;
+import com.alcazaba.facturacion.util.CodigoPostalValidator;
 import com.alcazaba.facturacion.util.DocumentoFiscalValidator;
+import com.alcazaba.facturacion.util.EmailValidator;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -22,8 +24,10 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
+import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.event.ActionEvent;
 
 import java.util.ArrayList;
@@ -188,6 +192,8 @@ public class ClientesController implements Vista {
         Dialog<Cliente> dialogo = new Dialog<>();
         dialogo.setTitle(original == null ? "Nuevo cliente" : "Editar cliente");
         dialogo.setHeaderText(original == null ? "Alta de cliente" : "Datos del cliente");
+        dialogo.initOwner(nav.stage());
+        dialogo.getDialogPane().setPrefWidth(375);
 
         ButtonType guardar = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
         dialogo.getDialogPane().getButtonTypes().addAll(guardar, ButtonType.CANCEL);
@@ -199,11 +205,17 @@ public class ClientesController implements Vista {
         txtNif.setId("txtNifFicha");
         TextField txtDireccion = new TextField();
         TextField txtCp = new TextField();
+        txtCp.setId("txtCpFicha");
         TextField txtLocalidad = new TextField();
         TextField txtProvincia = new TextField();
         TextField txtEmail = new TextField();
+        txtEmail.setId("txtEmailFicha");
         txtEmail.setPromptText("correo@ejemplo.es");
         CheckBox chkActivo = new CheckBox("Cliente activo");
+
+        for (TextField t : List.of(txtNombre, txtNif, txtDireccion, txtCp, txtLocalidad, txtProvincia, txtEmail)) {
+            t.setMaxWidth(Double.MAX_VALUE);
+        }
 
         if (original != null) {
             txtNombre.setText(original.getNombre());
@@ -218,9 +230,15 @@ public class ClientesController implements Vista {
             chkActivo.setSelected(true);
         }
 
+        ColumnConstraints etiqueta = new ColumnConstraints();
+        ColumnConstraints campo = new ColumnConstraints();
+        campo.setHgrow(Priority.ALWAYS);
+        campo.setFillWidth(true);
+
         GridPane grid = new GridPane();
         grid.setHgap(8);
         grid.setVgap(8);
+        grid.getColumnConstraints().addAll(etiqueta, campo);
         grid.addRow(0, new Label("Nombre*"), txtNombre);
         grid.addRow(1, new Label("NIF"), txtNif);
         grid.addRow(2, new Label("Dirección"), txtDireccion);
@@ -230,6 +248,7 @@ public class ClientesController implements Vista {
         grid.addRow(6, new Label("Email"), txtEmail);
         grid.add(chkActivo, 0, 7, 2, 1);
         dialogo.getDialogPane().setContent(grid);
+        Dialogos.aplicarTema(dialogo.getDialogPane());
 
         Node botonGuardar = dialogo.getDialogPane().lookupButton(guardar);
         botonGuardar.setId("btnGuardarFicha");
@@ -265,6 +284,61 @@ public class ClientesController implements Vista {
             if (!nifValido.getAsBoolean()) {
                 e.consume();
                 avisarNifInvalido.run();
+            }
+        });
+
+        BooleanSupplier cpValido = () -> CodigoPostalValidator.esValido(txtCp.getText());
+        boolean[] avisandoCp = {false};
+        Runnable avisarCpInvalido = () -> {
+            if (avisandoCp[0]) {
+                return;
+            }
+            avisandoCp[0] = true;
+            txtCp.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
+            Dialogos.error("Código postal no válido", "El código postal debe tener cinco dígitos y comenzar entre 01 y 52.");
+            avisandoCp[0] = false;
+            Platform.runLater(txtCp::requestFocus);
+        };
+        txtCp.focusedProperty().addListener((o, anterior, tieneFoco) -> {
+            if (tieneFoco || cpValido.getAsBoolean()) {
+                txtCp.setStyle("");
+            }
+        });
+        botonGuardar.addEventFilter(ActionEvent.ACTION, e -> {
+            if (!cpValido.getAsBoolean()) {
+                e.consume();
+                avisarCpInvalido.run();
+            }
+        });
+
+        BooleanSupplier emailValido = () -> EmailValidator.esValido(txtEmail.getText());
+        boolean[] avisandoEmail = {false};
+        Runnable avisarEmailInvalido = () -> {
+            if (avisandoEmail[0]) {
+                return;
+            }
+            avisandoEmail[0] = true;
+            txtEmail.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
+            Dialogos.error("Correo electrónico no válido", "Revise el formato del correo electrónico.");
+            avisandoEmail[0] = false;
+            Platform.runLater(txtEmail::requestFocus);
+        };
+        txtEmail.setOnAction(e -> {
+            if (!emailValido.getAsBoolean()) {
+                avisarEmailInvalido.run();
+            }
+        });
+        txtEmail.focusedProperty().addListener((o, anterior, tieneFoco) -> {
+            if (!tieneFoco && !avisandoEmail[0] && !emailValido.getAsBoolean()) {
+                avisarEmailInvalido.run();
+            } else if (tieneFoco || emailValido.getAsBoolean()) {
+                txtEmail.setStyle("");
+            }
+        });
+        botonGuardar.addEventFilter(ActionEvent.ACTION, e -> {
+            if (!emailValido.getAsBoolean()) {
+                e.consume();
+                avisarEmailInvalido.run();
             }
         });
 

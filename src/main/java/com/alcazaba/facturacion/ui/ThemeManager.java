@@ -60,10 +60,14 @@ public final class ThemeManager {
         if (TEMAS.containsKey(tema)) {
             activo = tema;
         }
+        scene.getStylesheets().setAll(hojas());
+    }
+
+    public static List<String> hojas() {
         List<String> hojas = new ArrayList<>();
         hojas.add(css("base"));
         hojas.add(css(activo));
-        scene.getStylesheets().setAll(hojas);
+        return hojas;
     }
 
     public static void guardar(Servicios servicios) {

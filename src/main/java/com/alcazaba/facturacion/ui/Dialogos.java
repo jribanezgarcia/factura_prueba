@@ -3,6 +3,7 @@ package com.alcazaba.facturacion.ui;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.DialogPane;
 
 /**
  * Dialogos comunes de la aplicacion.
@@ -48,6 +49,7 @@ public final class Dialogos {
             a.setTitle(titulo);
             a.setHeaderText(null);
             a.setContentText(mensaje);
+            aplicarTema(a.getDialogPane());
             a.showAndWait();
         }
 
@@ -57,6 +59,7 @@ public final class Dialogos {
             a.setTitle(titulo);
             a.setHeaderText(null);
             a.setContentText(mensaje);
+            aplicarTema(a.getDialogPane());
             a.showAndWait();
         }
 
@@ -65,6 +68,7 @@ public final class Dialogos {
             Alert a = new Alert(Alert.AlertType.CONFIRMATION, mensaje, ButtonType.YES, ButtonType.NO);
             a.setTitle(titulo);
             a.setHeaderText(null);
+            aplicarTema(a.getDialogPane());
             return a.showAndWait().map(b -> b == ButtonType.YES).orElse(false);
         }
 
@@ -78,6 +82,7 @@ public final class Dialogos {
             ButtonType descartar = new ButtonType("Descartar cambios", ButtonBar.ButtonData.NO);
             ButtonType cancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
             a.getButtonTypes().setAll(guardar, descartar, cancelar);
+            aplicarTema(a.getDialogPane());
             a.showAndWait();
             if (a.getResult() == guardar) {
                 return CambiosSinGuardar.GUARDAR;
@@ -98,6 +103,7 @@ public final class Dialogos {
             ButtonType nueva = new ButtonType("Guardar como nueva versión", ButtonBar.ButtonData.NO);
             ButtonType cancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
             a.getButtonTypes().setAll(sobrescribir, nueva, cancelar);
+            aplicarTema(a.getDialogPane());
             a.showAndWait();
             if (a.getResult() == sobrescribir) {
                 return ModoGuardarVersion.SOBRESCRIBIR;
@@ -146,5 +152,14 @@ public final class Dialogos {
 
     public static ModoGuardarVersion modoGuardarVersion() {
         return impl.modoGuardarVersion();
+    }
+
+    /**
+     * Viste un {@link DialogPane} con el tema activo y la clase de tarjeta,
+     * de modo que los dialogos no salgan con el gris por defecto de JavaFX.
+     */
+    public static void aplicarTema(DialogPane pane) {
+        pane.getStyleClass().add("dialog-card");
+        pane.getStylesheets().setAll(ThemeManager.hojas());
     }
 }

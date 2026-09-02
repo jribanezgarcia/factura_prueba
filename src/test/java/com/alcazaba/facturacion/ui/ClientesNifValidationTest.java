@@ -164,10 +164,13 @@ class ClientesNifValidationTest {
         enFx(err, () -> {
             TextField nombre = (TextField) dialogo.getDialogPane().lookup("#txtNombreFicha");
             TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
+            TextField cp = (TextField) dialogo.getDialogPane().lookup("#txtCpFicha");
             assertNotNull(nombre);
             assertNotNull(nif);
+            assertNotNull(cp);
             nombre.setText("Cliente valido");
             nif.setText("12345678Z"); // valido
+            cp.setText("28001"); // obligatorio y valido
         });
         enFx(err, () -> {
             Button guardar = (Button) dialogo.getDialogPane().lookup("#btnGuardarFicha");
