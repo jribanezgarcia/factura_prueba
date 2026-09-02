@@ -4,7 +4,6 @@ import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.model.TipoIva;
 import com.alcazaba.facturacion.model.TipoRetencion;
-import com.alcazaba.facturacion.pdf.CabeceraLayout;
 import com.alcazaba.facturacion.pdf.PdfService;
 import com.alcazaba.facturacion.service.EmpresaManager;
 import com.alcazaba.facturacion.service.Servicios;
@@ -85,8 +84,6 @@ public class ConfiguracionController implements Vista {
     @FXML
     private PreviaCabecera previaCabecera;
     @FXML
-    private Label lblTamanoEfectivo;
-    @FXML
     private ToggleGroup grupoCabecera;
     @FXML
     private TextField txtNombre;
@@ -112,14 +109,6 @@ public class ConfiguracionController implements Vista {
     private RadioButton rbLogo;
     @FXML
     private TextField txtLogoPath;
-    @FXML
-    private TextField txtLogoX;
-    @FXML
-    private TextField txtLogoY;
-    @FXML
-    private TextField txtLogoAncho;
-    @FXML
-    private TextField txtLogoAlto;
     @FXML
     private TextArea txtPieLegal;
     @FXML
@@ -268,10 +257,6 @@ public class ConfiguracionController implements Vista {
         txtEmail.setText(nz(empresa.getEmail()));
         txtTelefono.setText(nz(empresa.getTelefono()));
         txtLogoPath.setText(nz(empresa.getLogoPath()));
-        txtLogoX.setText(String.valueOf(empresa.getLogoX()));
-        txtLogoY.setText(String.valueOf(empresa.getLogoY()));
-        txtLogoAncho.setText(empresa.getLogoAncho() == null ? "" : String.valueOf(empresa.getLogoAncho()));
-        txtLogoAlto.setText(empresa.getLogoAlto() == null ? "" : String.valueOf(empresa.getLogoAlto()));
         txtPieLegal.setText(nz(empresa.getPieLegal()));
         if ("LOGO".equalsIgnoreCase(empresa.getCabeceraModo())) {
             rbLogo.setSelected(true);
@@ -292,12 +277,6 @@ public class ConfiguracionController implements Vista {
         empresa.setTelefono(trim(txtTelefono));
         empresa.setCabeceraModo(rbLogo.isSelected() ? "LOGO" : "TEXTO");
         empresa.setLogoPath(trim(txtLogoPath));
-        empresa.setLogoX(parseInt(txtLogoX, 0));
-        empresa.setLogoY(parseInt(txtLogoY, 0));
-        String ancho = trim(txtLogoAncho);
-        empresa.setLogoAncho(ancho.isBlank() ? null : parseInt(txtLogoAncho, 120));
-        String alto = trim(txtLogoAlto);
-        empresa.setLogoAlto(alto.isBlank() ? null : parseInt(txtLogoAlto, 60));
         empresa.setPieLegal(txtPieLegal.getText());
     }
 
@@ -441,14 +420,8 @@ public class ConfiguracionController implements Vista {
 
     private void cablearPrevia() {
         grupoCabecera.selectedToggleProperty().addListener((o, a, b) -> repintarPrevia());
-        for (TextField c : new TextField[]{txtLogoPath, txtLogoX, txtLogoY, txtLogoAncho, txtLogoAlto}) {
-            c.textProperty().addListener((o, a, b) -> repintarPrevia());
-        }
+        txtLogoPath.textProperty().addListener((o, a, b) -> repintarPrevia());
         colorPdf.valueProperty().addListener((o, a, b) -> repintarPrevia());
-        for (TextField c : new TextField[]{txtLogoAncho, txtLogoAlto}) {
-            c.textProperty().addListener((o, a, b) -> actualizarTamanoEfectivo());
-        }
-        actualizarTamanoEfectivo();
         repintarPrevia();
     }
 
@@ -465,23 +438,7 @@ public class ConfiguracionController implements Vista {
         e.setTelefono(trim(txtTelefono));
         e.setCabeceraModo(rbLogo.isSelected() ? "LOGO" : "TEXTO");
         e.setLogoPath(trim(txtLogoPath));
-        e.setLogoX(parseInt(txtLogoX, 0));
-        e.setLogoY(parseInt(txtLogoY, 0));
-        String ancho = trim(txtLogoAncho);
-        e.setLogoAncho(ancho.isBlank() ? null : parseInt(txtLogoAncho, 120));
-        String alto = trim(txtLogoAlto);
-        e.setLogoAlto(alto.isBlank() ? null : parseInt(txtLogoAlto, 60));
         previaCabecera.mostrar(e, colorPdf.getValue());
-    }
-
-    private void actualizarTamanoEfectivo() {
-        Empresa e = new Empresa();
-        String ancho = trim(txtLogoAncho);
-        e.setLogoAncho(ancho.isBlank() ? null : parseInt(txtLogoAncho, 120));
-        String alto = trim(txtLogoAlto);
-        e.setLogoAlto(alto.isBlank() ? null : parseInt(txtLogoAlto, 60));
-        lblTamanoEfectivo.setText(Math.round(CabeceraLayout.anchoLogoEfectivo(e)) + " × "
-                + Math.round(CabeceraLayout.altoLogoEfectivo(e)) + " pt en el PDF (el doble de lo configurado)");
     }
 
     // ------------------------------------------------------------------
@@ -991,14 +948,6 @@ public class ConfiguracionController implements Vista {
 
     private String trim(TextField f) {
         return f.getText() == null ? "" : f.getText().trim();
-    }
-
-    private int parseInt(TextField f, int def) {
-        try {
-            return Integer.parseInt(trim(f));
-        } catch (NumberFormatException e) {
-            return def;
-        }
     }
 
     private String nz(String s) {

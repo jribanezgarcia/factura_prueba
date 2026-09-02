@@ -67,8 +67,8 @@ public class PreviaCabecera extends Pane {
 
         double margenSuperior;
         if (logo != null) {
-            double anchoEfectivo = CabeceraLayout.anchoLogoEfectivo(empresa) * s;
-            double altoEfectivo = CabeceraLayout.altoLogoEfectivo(empresa) * s;
+            double anchoEfectivo = CabeceraLayout.ANCHO_LOGO_FIJO * s;
+            double altoEfectivo = CabeceraLayout.ALTO_LOGO_FIJO * s;
             int lineas = CabeceraLayout.lineasEmpresa(empresa).size();
             margenSuperior = CabeceraLayout.altoCabeceraLogo(empresa, lineas) * s;
 
@@ -78,14 +78,11 @@ public class PreviaCabecera extends Pane {
             double factor = Math.min(fx, fy);
             img.setFitWidth(logo.getWidth() * factor);
             img.setFitHeight(logo.getHeight() * factor);
-            double logoX = izquierda + CabeceraLayout.offsetLogoX(empresa) * s;
-            double logoY = margenSuperior - Math.max(CabeceraLayout.offsetLogoY(empresa), 0) * s - altoEfectivo;
-            img.setX(Math.max(logoX, 2));
-            img.setY(Math.max(logoY, 6));
+            img.setX(Math.max(izquierda, 2));
+            img.setY(Math.max(CabeceraLayout.HUECO_LOGO_SUPERIOR * s, 6));
             getChildren().add(img);
 
-            dibujarBloqueTexto(izquierda + CabeceraLayout.offsetLogoX(empresa) * s
-                    + Math.min(anchoEfectivo, 330 * s) + 14 * s, 13 * s, s);
+            dibujarBloqueTexto(izquierda + CabeceraLayout.ANCHO_LOGO_FIJO * s + 14 * s, 13 * s, s);
         } else {
             int lineas = CabeceraLayout.lineasEmpresa(empresa).size();
             margenSuperior = CabeceraLayout.altoCabeceraTexto(lineas) * s;

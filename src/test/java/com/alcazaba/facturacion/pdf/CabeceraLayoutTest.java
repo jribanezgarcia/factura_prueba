@@ -21,39 +21,32 @@ class CabeceraLayoutTest {
     }
 
     @Test
-    void elTamanoDelLogoSeDuplica() {
+    void elTamanoDelLogoEsFijo() {
         Empresa empresa = empresaBase();
         empresa.setLogoAncho(120);
         empresa.setLogoAlto(60);
-        assertEquals(240f, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01);
-        assertEquals(120f, CabeceraLayout.altoLogoEfectivo(empresa), 0.01);
+        assertEquals(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01);
+        assertEquals(CabeceraLayout.ALTO_LOGO_FIJO, CabeceraLayout.altoLogoEfectivo(empresa), 0.01);
     }
 
     @Test
-    void elTamanoDelLogoTieneTopes() {
+    void elTamanoDelLogoNoDependeDeLaEntrada() {
         Empresa empresa = empresaBase();
-        empresa.setLogoAncho(400);
-        empresa.setLogoAlto(200);
-        assertEquals(480f, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01,
-                "El doble del ancho no debe pasar de 480 pt");
-        assertEquals(170f, CabeceraLayout.altoLogoEfectivo(empresa), 0.01,
-                "El doble del alto no debe pasar de 170 pt");
+        empresa.setLogoAncho(4000);
+        empresa.setLogoAlto(250);
+        assertEquals(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01,
+                "Con valores absurdos el logo mantiene su caja fija");
+        assertEquals(CabeceraLayout.ALTO_LOGO_FIJO, CabeceraLayout.altoLogoEfectivo(empresa), 0.01,
+                "Con valores absurdos el logo mantiene su caja fija");
     }
 
     @Test
-    void sinCamposDeTamanoSuseDefectos() {
+    void elTamanoDelLogoConCamposNulosEsFijo() {
         Empresa empresa = empresaBase();
-        assertEquals(240f, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01,
-                "Sin ancho configurado se usa el defecto de 120 y se duplica");
-        assertEquals(120f, CabeceraLayout.altoLogoEfectivo(empresa), 0.01,
-                "Sin alto configurado se usa el defecto de 60 y se duplica");
-    }
-
-    @Test
-    void offsetsPorDefectoSonCero() {
-        Empresa empresa = empresaBase();
-        assertEquals(0, CabeceraLayout.offsetLogoX(empresa));
-        assertEquals(0, CabeceraLayout.offsetLogoY(empresa));
+        assertEquals(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01);
+        assertEquals(CabeceraLayout.ALTO_LOGO_FIJO, CabeceraLayout.altoLogoEfectivo(empresa), 0.01);
+        assertEquals(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.anchoLogoEfectivo(null), 0.01);
+        assertEquals(CabeceraLayout.ALTO_LOGO_FIJO, CabeceraLayout.altoLogoEfectivo(null), 0.01);
     }
 
     @Test
@@ -66,12 +59,12 @@ class CabeceraLayoutTest {
     }
 
     @Test
-    void elAltoDeCabeceraConLogoUsaLaAlturaDelLogo() {
+    void elAltoDeCabeceraConLogoUsaLaCajaFija() {
         Empresa empresa = empresaBase();
-        empresa.setLogoAncho(120);
-        empresa.setLogoAlto(60);
+        empresa.setLogoAncho(4000);
+        empresa.setLogoAlto(250);
         assertEquals(170f, CabeceraLayout.altoCabeceraLogo(empresa, 5), 0.01,
-                "26 + logo (120) + offset (0) + 24, mayor que el bloque de informacion");
+                "26 + caja fija (120) + 24, mayor que el bloque de informacion, sin depender de offsets");
     }
 
     @Test

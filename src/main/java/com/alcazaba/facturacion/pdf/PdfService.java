@@ -591,22 +591,6 @@ public class PdfService {
         return new float[]{superior, inferior};
     }
 
-    private float anchoLogoEfectivo(Empresa empresa) {
-        return CabeceraLayout.anchoLogoEfectivo(empresa);
-    }
-
-    private float altoLogoEfectivo(Empresa empresa) {
-        return CabeceraLayout.altoLogoEfectivo(empresa);
-    }
-
-    private int offsetLogoX(Empresa empresa) {
-        return CabeceraLayout.offsetLogoX(empresa);
-    }
-
-    private int offsetLogoY(Empresa empresa) {
-        return CabeceraLayout.offsetLogoY(empresa);
-    }
-
     private Image cargarLogo(Empresa empresa) {
         if (empresa == null || !"LOGO".equalsIgnoreCase(empresa.getCabeceraModo())
                 || empresa.getLogoPath() == null || empresa.getLogoPath().isBlank()) {
@@ -750,8 +734,7 @@ public class PdfService {
             dibujarBloqueFactura(cb, derecha, pagina.getHeight());
             if (logo != null) {
                 dibujarLogo(cb, izquierda, bordeSuperiorContenido);
-                float xInfo = izquierda + offsetLogoX(empresa)
-                        + Math.min(anchoLogoEfectivo(empresa), 330f) + 14f;
+                float xInfo = izquierda + CabeceraLayout.ANCHO_LOGO_FIJO + 14f;
                 dibujarDatosEmpresa(cb, xInfo, pagina.getHeight() - 34, 13f,
                         Math.max(derecha - RESERVA_FACTURA - xInfo, 80f));
             } else {
@@ -766,12 +749,8 @@ public class PdfService {
         }
 
         private void dibujarLogo(PdfContentByte cb, float izquierda, float bordeSuperiorContenido) {
-            float ancho = anchoLogoEfectivo(empresa);
-            float alto = altoLogoEfectivo(empresa);
-            logo.scaleToFit(ancho, alto);
-            float x = izquierda + offsetLogoX(empresa);
-            float y = bordeSuperiorContenido + Math.max(offsetLogoY(empresa), 0);
-            logo.setAbsolutePosition(x, y);
+            logo.scaleToFit(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.ALTO_LOGO_FIJO);
+            logo.setAbsolutePosition(izquierda, bordeSuperiorContenido + CabeceraLayout.HUECO_LOGO_INFERIOR);
             try {
                 cb.addImage(logo);
             } catch (Exception ignored) {

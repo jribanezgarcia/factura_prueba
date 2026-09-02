@@ -92,6 +92,7 @@ public class MenuController implements Vista {
         }
         logo.setImage(img);
         logo.setFitWidth(260);
+        logo.setFitHeight(100);
         logo.setPreserveRatio(true);
     }
 
