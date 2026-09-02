@@ -30,4 +30,4 @@
 ## 6. Cierre
 - [x] 6.1 Actualizar CONTINUAR_MAÑANA.md
 - [x] 6.2 /opsx-sync-specs (este change SI lleva delta) y /opsx-archive
-- [ ] 6.3 Commit y push
+- [x] 6.3 Commit y push
