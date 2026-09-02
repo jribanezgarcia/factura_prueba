@@ -4,6 +4,7 @@ import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.service.Servicios;
 import com.alcazaba.facturacion.service.Sesion;
 import com.alcazaba.facturacion.util.Formatos;
+import com.alcazaba.facturacion.util.LogoMarco;
 import javafx.fxml.FXML;
 import javafx.application.Platform;
 import javafx.scene.control.Label;
@@ -12,6 +13,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.StackPane;
 import javafx.stage.WindowEvent;
 
 import java.io.File;
@@ -31,6 +33,8 @@ public class MenuController implements Vista {
     private Label fechaTrabajo;
     @FXML
     private ImageView logo;
+    @FXML
+    private StackPane logoBox;
     @FXML
     private Label lblEmpresa;
     @FXML
@@ -81,20 +85,24 @@ public class MenuController implements Vista {
 
     private void cargarLogo(String ruta) {
         if (ruta == null || ruta.isBlank()) {
+            LogoMarco.limpiar(logoBox);
             return;
         }
         File f = new File(ruta);
         if (!f.exists()) {
+            LogoMarco.limpiar(logoBox);
             return;
         }
         Image img = new Image(f.toURI().toString());
         if (img.isError()) {
+            LogoMarco.limpiar(logoBox);
             return;
         }
         logo.setImage(img);
         logo.setFitWidth(260);
         logo.setFitHeight(100);
         logo.setPreserveRatio(true);
+        LogoMarco.aplicar(logoBox, img);
     }
 
     private void atajos() {
