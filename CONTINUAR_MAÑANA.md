@@ -287,7 +287,7 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - `MenuController` fija el logo del menú a 260×100 con `preserveRatio` para que no desborde la tarjeta de empresa.
 - TDD: `CabeceraLayoutTest` reescrito (6 tests de caja fija, incluidos nulos y absurdos) y comprobado que falla con el layout anterior (`expected 240.0 but was 480.0`).
 - Suite **125/125** en verde (126 − 1 test eliminado de offsets). Verificación visual del usuario OK en los 4 puntos: logos apaisado y cuadrado sin pisar FACTURA ni comprimir datos de empresa, PDF con la configuración por defecto idéntico al anterior, y la sección Cabecera y pie cabe a 1024×768.
-- Commits `c25020f` (implementación) y `xx` (sync de specs + archivo en OpenSpec), push realizado. Spec sincronizada: requisitos «Exportación a PDF» (logo a tamaño fijo no configurable, caja 240×120) y «Configuración» (escenario «Elegir modo de cabecera» sin ajuste de tamaño/posición), validadas (`openspec validate --specs` ok). Archivado como `2026-09-02-logo-tamano-fijo`.
+- Commits `c25020f` (implementación) y `7d47d9f` (sync de specs + archivo en OpenSpec), push realizado. Spec sincronizada: requisitos «Exportación a PDF» (logo a tamaño fijo no configurable, caja 240×120) y «Configuración» (escenario «Elegir modo de cabecera» sin ajuste de tamaño/posición), validadas (`openspec validate --specs` ok). Archivado como `2026-09-02-logo-tamano-fijo`.
 
 ## Proximos pasos
 
