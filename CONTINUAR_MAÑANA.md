@@ -74,8 +74,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-02-ficha-cliente-validada`
 - `openspec/changes/archive/2026-09-02-logo-tamano-fijo`
 - `openspec/changes/archive/2026-09-02-fix-exportar-pdf-agrupado`
+- `openspec/changes/archive/2026-09-02-fix-cancelar-salida`
 
-Cambio OpenSpec activo: ninguno (`ficha-cliente-validada`, `logo-tamano-fijo` y `fix-exportar-pdf-agrupado` archivados el 02/09/2026; `ficha-cliente-validada` y `fix-exportar-pdf-agrupado` sin delta de specs por `skip_specs`, `logo-tamano-fijo` con specs sincronizadas).
+Cambio OpenSpec activo: ninguno (`ficha-cliente-validada`, `logo-tamano-fijo`, `fix-exportar-pdf-agrupado` y `fix-cancelar-salida` archivados el 02/09/2026; todos sin delta de specs por `skip_specs` salvo `logo-tamano-fijo`, con specs sincronizadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -297,6 +298,14 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Fix: eliminar el try-with-resources del `FileOutputStream` y crear el stream inline en el constructor de `PdfCopy`; el `document.close()` del finally cierra `PdfCopy` → flush → stream.
 - Test nuevo: `exportarAgrupadoUneDosFacturasEnUnSoloPdf` verifica que dos facturas se fusionan en un solo PDF con ≥2 páginas.
 - Suite **126/126** en verde. `skip_specs` (fix puro, sin cambio de requisito). Archivado el 02/09/2026 en `2026-09-02-fix-exportar-pdf-agrupado`.
+
+### Change `fix-cancelar-salida` (archivado)
+
+- Al cerrar la app (X o Salir del menú) el diálogo «¿Seguro que deseas salir?» ahora se puede cancelar: si el usuario pulsa «No», la ventana sigue visible.
+- `Main.cerrarAplicacion()` pasa a devolver `boolean` (true si se cierra); el manejador de `setOnCloseRequest` consume el evento (`e.consume()`) cuando se cancela.
+- `MenuController.salir` dispara `WINDOW_CLOSE_REQUEST` en vez de `stage.close()`, de modo que el cierre con Salir pasa por el mismo manejador cancelable.
+- En la pantalla de arranque el cierre sigue sin preguntar (se mantiene el comportamiento).
+- Suite **126/126** en verde. `skip_specs`. Verificación visual del usuario OK en los 4 puntos. Archivado el 02/09/2026 en `2026-09-02-fix-cancelar-salida`.
 
 ## Proximos pasos
 
