@@ -1,6 +1,6 @@
 # Continuacion del proyecto de facturacion
 
-Estado actualizado: 01/09/2026
+Estado actualizado: 02/09/2026
 
 NOTA: hasta aqui se ha hecho la app con modelos gratuitos de OPENCODE.
 
@@ -66,8 +66,12 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-uniformizar-1024-scroll-editor`
 - `openspec/changes/archive/2026-09-01-fix-ventana-1024-transicion-arranque-menu`
 - `openspec/changes/archive/2026-09-01-fix-ventana-1024-tras-pulse`
+- `openspec/changes/archive/2026-09-01-reforzar-test-ventana`
+- `openspec/changes/archive/2026-09-01-fix-ventana-max-heredado-arranque`
+- `openspec/changes/archive/2026-09-01-editor-sin-scroll-factura-corta`
+- `openspec/changes/archive/2026-09-01-fix-styleclass-separador-fxml`
 
-Cambio OpenSpec activo: `editor-sin-scroll-factura-corta`, implementado y verificado, pendiente de archivar desde opencode. SI lleva delta de specs, asi que necesita `/opsx-sync-specs` antes de `/opsx-archive`. `fix-ventana-max-heredado-arranque` y `reforzar-test-ventana` archivados el 01/09/2026. `uniformizar-1024-scroll-editor` archivado el 01/09/2026 (1024×768 + scroll Editor + spec actualizada), `fix-ventana-1024-transicion-arranque-menu` archivado el 01/09/2026 (clamp de subida en `aplicarSinRedimensionar`) y `fix-ventana-1024-tras-pulse` archivado el 01/09/2026 (clamp diferido al layout, que es el que realmente resuelve la transición Arranque→menú).
+Cambio OpenSpec activo: `configuracion-secciones-laterales`, implementado y verificado, pendiente de sync y archivo desde opencode. SI lleva delta de specs, asi que necesita `/opsx-sync-specs` antes de `/opsx-archive`.
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -243,19 +247,28 @@ Cambio OpenSpec activo: `editor-sin-scroll-factura-corta`, implementado y verifi
 - `EditorTamanoMinimoTest` comprueba ahora, sobre el layout real, que `#lblTotal` y `#txtObservaciones` terminan dentro del alto de la escena y que la tabla conserva al menos 200 px. Con el FXML anterior falla: el total termina en 737 y el alto util es 729.
 - Suite **108/108** en verde y comprobacion visual con la app hecha.
 
-### BUG PENDIENTE: styleClass con espacios en 5 FXML
+### BUG RESUELTO: styleClass con espacios en 5 FXML
 
-Descubierto el 01/09/2026 mientras se rehacia el Editor, **sin arreglar todavia**.
+Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado): las 15 ocurrencias de `styleClass="card zona-contenido"` pasaron a `styleClass="card, zona-contenido"` en Backup, Clientes, Configuracion, Historico y Versiones. `StyleClassSeparadorTest` vigila que no reaparezcan espacios sin coma, y `Configuracion.fxml` reescrito en el change `configuracion-secciones-laterales` mantiene las comas.
 
-FXMLLoader parte los atributos de lista por comas, asi que `styleClass="card zona-contenido"` produce UNA sola clase llamada literalmente `card zona-contenido`, que no casa con ningun selector. Verificado con un diagnostico temporal sobre `Historico.fxml`: el nodo imprime `n=1 elementos=<card zona-contenido>` y `lookup(".zona-contenido")` devuelve null.
+## Sesion del 02/09/2026
 
-Consecuencia: esos nodos no tienen fondo de tarjeta, ni borde, ni esquinas redondeadas, ni padding. Es muy probablemente la causa de fondo de las quejas de "contenido pegado al borde" que se parchearon en `2026-08-31-fix-ui-spacing`.
+### Change `configuracion-secciones-laterales` (implementado, pendiente de sync y archivo)
 
-Son 15 ocurrencias, todas `styleClass="card zona-contenido"`: `Backup.fxml` (15, 26, 32), `Clientes.fxml` (15), `Configuracion.fxml` (24, 48, 68, 74, 110, 141, 183, 203, 218), `Historico.fxml` (15) y `Versiones.fxml` (15). El arreglo es cambiar el espacio por coma, pero OJO: al aplicarse por fin los dos paddings de 16 px, esas pantallas ganaran 32 px que hoy no tienen y hay que revisarlas a 1024x768. `Editor.fxml` ya esta corregido.
+- La pantalla de Configuracion deja de usar pestanas: navegacion lateral con `ListView` (200 px) + `StackPane` con un `VBox` por seccion, dos encabezados de grupo ("Configuracion general" y "Catalogos").
+- Siete secciones: Empresa, Cabecera y pie, PDF y apariencia (grupo con guardado global) e IVA, Retenciones, Series, Empresas (gestion fila a fila con sus propias acciones).
+- El boton "Guardar configuracion" se muestra/oculta con `visible`/`managed` segun la seccion: visible solo en las tres primeras.
+- El tema de la aplicacion se mueve de Empresa a la seccion "PDF y apariencia" (preferencia global compartida entre empresas).
+- `CabeceraLayout` (nuevo, paquete `pdf`): unica fuente de verdad de la geometria de cabecera (doble del logo con topes 480/170 y defectos 120/60, offsets X/Y, lineas de empresa con NIF destacado, margen lateral 40 pt y alto de cabecera minimo 108, tanto en modo texto como logo). `PdfService` delega en el sin cambiar ningun valor: el PDF resultante es identico (`PdfServiceTest` en verde).
+- `PreviaCabecera` (nuevo, paquete `ui`): previsualizacion aproximada a escala (A4 de ancho, banda superior) con el logo real cargado desde `logoPath` en posicion y tamano efectivos o el bloque de lineas de empresa con el NIF en chip, banda de acento, guias de margen y separador de banda. Repinta al cambiar modo, logo, X/Y, ancho/alto y color; muestra el tamano efectivo junto a los campos de ancho/alto y un aviso discreto de "Vista aproximada".
+- `base.css`: clases nuevas acotadas a la pantalla (`lista-secciones`, `seccion-config`, `alta-rapida`, `previa-cabecera`, `vista-aviso`, `grupo-secciones`) con colores derivados de `-fx-accent`/`-fx-base`; no se tocan `.card` ni `.zona-contenido`, que son globales.
+- Tests nuevos: `CabeceraLayoutTest` (7) y `ConfiguracionLayoutTest` (las 7 secciones caben a 1024×768 y la barra de guardado solo es visible en las 3 primeras; falla con el FXML anterior). Suite **119/119** en verde.
+- Verificacion visual a 1024×768 por el usuario: recorrido de las 7 secciones sin scroll ok, previa reacciona a logo/posicion/tamano/color, guardado y reentrada conservan todo, IVA/Retenciones/Series funcionan, los 7 temas ok y Historico/Clientes/Versiones/Backup sin cambios.
+- Commit `5c56ecf` (implementacion). Pendiente de `/opsx-sync-specs` y `/opsx-archive-change`.
 
 ## Proximos pasos
 
-- No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
+- Change activo: `configuracion-secciones-laterales` implementado y verificado (commit `5c56ecf`). Falta `/opsx-sync-specs` y despues `/opsx-archive-change`.
 - Opciones conocidas pendientes en el spec principal:
   - Flujo de **clientes inactivos** (clientes con facturas no se borran, se marcan inactivos y no se ofrecen al crear facturas nuevas).
   - **Copia de seguridad** manual (V1: solo copia del SQLite).
@@ -268,10 +281,11 @@ Son 15 ocurrencias, todas `styleClass="card zona-contenido"`: `Backup.fxml` (15,
 - Despues, fix definitivo con clamp diferido al pulse (`fix-ventana-1024-tras-pulse`) commiteado y pusheado.
 - **Editor sin scroll (01/09/2026)**: rediseno del Editor para que una factura corta quepa entera a 1024x768 con los totales siempre visibles. Maquetado previo revisado con el usuario antes de tocar codigo.
 - **Fix real del tamano de ventana (01/09/2026)**: los dos fixes anteriores no bastaban. La causa era el `maxWidth`/`maxHeight` de Arranque heredado por el Stage. Corregido en `VentanaConfig` (sin maximos en Arranque, `aplicar` determinista) y `Main` (transicion con la ventana oculta). Verificado a la vista con la app en marcha; suite **107/107**.
+- **Configuracion por secciones (02/09/2026)**: pantalla de Configuracion con lista lateral en vez de pestanas, `PdfService` delegando en `CabeceraLayout` y vista previa aproximada de la cabecera (`PreviaCabecera`). Suite **119/119**. Commit `5c56ecf` (implementacion) pusheado; el change `configuracion-secciones-laterales` queda pendiente de sync y archivo OpenSpec.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 105 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 119 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
