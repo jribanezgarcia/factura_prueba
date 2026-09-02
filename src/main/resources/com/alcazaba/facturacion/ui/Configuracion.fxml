@@ -59,19 +59,9 @@
                             <Label text="Logo" GridPane.rowIndex="1"/>
                             <TextField fx:id="txtLogoPath" editable="false" prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                             <Button onAction="#seleccionarLogo" styleClass="default-button" text="Elegir imagen..." GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                            <Label text="Posición X (pt)" GridPane.rowIndex="2"/>
-                            <TextField fx:id="txtLogoX" prefWidth="70" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                            <Label text="Posición Y (pt)" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                            <TextField fx:id="txtLogoY" prefWidth="70" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                            <Label text="Ancho (pt)" GridPane.rowIndex="3"/>
-                            <TextField fx:id="txtLogoAncho" prefWidth="70" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                            <Label text="Alto (pt)" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                            <TextField fx:id="txtLogoAlto" prefWidth="70" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                            <Label text="Tamaño efectivo:" GridPane.rowIndex="4"/>
-                            <Label fx:id="lblTamanoEfectivo" styleClass="muted" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="4"/>
-                            <Label text="Texto legal del pie" GridPane.rowIndex="5"/>
+                            <Label text="Texto legal del pie" GridPane.rowIndex="2"/>
                             <TextArea fx:id="txtPieLegal" prefRowCount="3" wrapText="true"
-                                      GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="5"/>
+                                      GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2"/>
                         </GridPane>
                         <VBox spacing="6" alignment="TOP_LEFT">
                             <PreviaCabecera fx:id="previaCabecera" styleClass="previa-cabecera"/>

@@ -16,31 +16,22 @@ public final class CabeceraLayout {
     public static final float ANCHO_A4 = 595f;
     public static final float MARGEN_LATERAL = 40f;
 
-    private static final float ANCHO_LOGO_DEFECTO = 120f;
-    private static final float ALTO_LOGO_DEFECTO = 60f;
-    private static final float ANCHO_LOGO_MAXIMO = 480f;
-    private static final float ALTO_LOGO_MAXIMO = 170f;
+    public static final float ANCHO_LOGO_FIJO = 240f;
+    public static final float ALTO_LOGO_FIJO = 120f;
+    public static final float HUECO_LOGO_SUPERIOR = 26f;
+    public static final float HUECO_LOGO_INFERIOR = 24f;
+
     private static final float ALTO_CABECERA_MINIMO = 108f;
 
     private CabeceraLayout() {
     }
 
     public static float anchoLogoEfectivo(Empresa empresa) {
-        float base = empresa != null && empresa.getLogoAncho() != null ? empresa.getLogoAncho() : ANCHO_LOGO_DEFECTO;
-        return Math.min(base * 2f, ANCHO_LOGO_MAXIMO);
+        return ANCHO_LOGO_FIJO;
     }
 
     public static float altoLogoEfectivo(Empresa empresa) {
-        float base = empresa != null && empresa.getLogoAlto() != null ? empresa.getLogoAlto() : ALTO_LOGO_DEFECTO;
-        return Math.min(base * 2f, ALTO_LOGO_MAXIMO);
-    }
-
-    public static int offsetLogoX(Empresa empresa) {
-        return empresa != null ? empresa.getLogoX() : 0;
-    }
-
-    public static int offsetLogoY(Empresa empresa) {
-        return empresa != null ? empresa.getLogoY() : 0;
+        return ALTO_LOGO_FIJO;
     }
 
     /**
@@ -52,14 +43,11 @@ public final class CabeceraLayout {
     }
 
     /**
-     * Alto de la cabecera en modo logo: la altura del logo con su
-     * desplazamiento o el bloque de informacion de la empresa, el que sea
-     * mayor, con un minimo de 108 pt.
+     * Alto de la cabecera en modo logo: la caja fija del logo o el bloque de
+     * informacion de la empresa, el que sea mayor, con un minimo de 108 pt.
      */
     public static float altoCabeceraLogo(Empresa empresa, int lineas) {
-        float alto = altoLogoEfectivo(empresa);
-        float desplazamiento = Math.max(offsetLogoY(empresa), 0);
-        float superior = 26f + alto + desplazamiento + 24f;
+        float superior = HUECO_LOGO_SUPERIOR + ALTO_LOGO_FIJO + HUECO_LOGO_INFERIOR;
         float altoInfo = 17f + lineas * 13f;
         superior = Math.max(superior, 34f + altoInfo + 8f);
         return Math.max(superior, ALTO_CABECERA_MINIMO);
