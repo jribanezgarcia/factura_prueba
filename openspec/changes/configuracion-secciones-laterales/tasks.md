@@ -36,5 +36,5 @@
 - [x] 6.6 Historico, Clientes, Versiones y Backup sin cambios
 
 ## 7. Cierre
-- [ ] 7.1 Actualizar CONTINUAR_MAÑANA.md
+- [x] 7.1 Actualizar CONTINUAR_MAÑANA.md
 - [ ] 7.2 Commit y push
