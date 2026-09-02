@@ -278,4 +278,24 @@ class PdfServiceTest {
             assertTrue(texto.contains("ALMERÍA"));
         }
     }
+
+    @Test
+    void exportarAgrupadoUneDosFacturasEnUnSoloPdf() throws Exception {
+        FacturaService.VersionCompleta vc1 = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(), List.of(lineaArmario()), null);
+        FacturaVersion v2 = versionMuestra();
+        v2.setNumero("C-59/8");
+        v2.setCliNombre("OTRO CLIENTE");
+        FacturaService.VersionCompleta vc2 = new FacturaService.VersionCompleta(
+                new Factura(), v2, List.of(lineaArmario()), null);
+
+        Path destino = tempDir.resolve("agrupado.pdf");
+        new PdfService().exportarAgrupado(List.of(vc1, vc2), empresaTexto(), destino, "#B08D57");
+
+        assertTrue(Files.exists(destino));
+        assertTrue(Files.size(destino) > 500);
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            assertTrue(reader.getNumberOfPages() >= 2);
+        }
+    }
 }

@@ -128,9 +128,9 @@ public class PdfService {
 
     private void concatenar(List<byte[]> pdfs, Path ruta) throws Exception {
         Document document = new Document();
-        try (FileOutputStream fos = new FileOutputStream(ruta.toFile())) {
-            PdfCopy copy = new PdfCopy(document, fos);
-            document.open();
+        PdfCopy copy = new PdfCopy(document, new FileOutputStream(ruta.toFile()));
+        document.open();
+        try {
             for (byte[] pdf : pdfs) {
                 PdfReader reader = new PdfReader(pdf);
                 for (int i = 1; i <= reader.getNumberOfPages(); i++) {
