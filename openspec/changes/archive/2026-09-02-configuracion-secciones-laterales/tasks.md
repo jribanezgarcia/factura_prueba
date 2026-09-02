@@ -37,4 +37,4 @@
 
 ## 7. Cierre
 - [x] 7.1 Actualizar CONTINUAR_MAÑANA.md
-- [ ] 7.2 Commit y push
+- [x] 7.2 Commit y push
