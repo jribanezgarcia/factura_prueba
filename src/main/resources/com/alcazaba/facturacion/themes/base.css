@@ -251,10 +251,29 @@
 
 /* Diálogos y tarjetas de confirmación */
 .dialog-card {
+    -fx-background-color: -fx-base;
     -fx-background-radius: 14px;
     -fx-border-radius: 14px;
+    -fx-border-color: derive(-fx-base, -10%);
     -fx-border-width: 1px;
     -fx-padding: 18px;
+}
+
+/* Cabecera del dialogo como la primera fila de las tablas */
+.dialog-card > .header-panel {
+    -fx-background-color: linear-gradient(to bottom, derive(-fx-base, 4%), derive(-fx-base, -5%));
+    -fx-background-insets: -18 -18 0 -18;
+    -fx-background-radius: 14px 14px 0 0;
+    -fx-border-color: derive(-fx-base, -12%);
+    -fx-border-insets: -18 -18 0 -18;
+    -fx-border-width: 0 0 1 0;
+    -fx-padding: 10px 18px;
+}
+
+.dialog-card > .header-panel .label {
+    -fx-text-fill: -fx-accent;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
 }
 
 /* Configuración por secciones */
