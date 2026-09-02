@@ -256,3 +256,77 @@
     -fx-border-width: 1px;
     -fx-padding: 18px;
 }
+
+/* Configuración por secciones */
+.area-secciones {
+    -fx-alignment: CENTER_LEFT;
+}
+
+.lista-secciones {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-padding: 0;
+}
+
+.lista-secciones .list-cell {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-width: 0;
+    -fx-padding: 8px 10px;
+    -fx-font-size: 13px;
+    -fx-text-fill: -fx-text-background-color;
+}
+
+.lista-secciones .list-cell:filled:hover {
+    -fx-background-color: derive(-fx-accent, 90%);
+    -fx-background-radius: 8px;
+}
+
+.lista-secciones .list-cell:filled:selected {
+    -fx-background-color: derive(-fx-accent, 84%);
+    -fx-background-radius: 8px;
+    -fx-text-fill: derive(-fx-accent, -35%);
+    -fx-font-weight: bold;
+}
+
+.lista-secciones .list-cell .grupo-secciones {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 12px 4px 2px 4px;
+    -fx-opacity: 0.55;
+}
+
+.seccion-config {
+    -fx-effect: none;
+}
+
+.seccion-config .text-field,
+.seccion-config .text-area,
+.seccion-config .combo-box,
+.seccion-config .color-picker {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+}
+
+.alta-rapida {
+    -fx-background-color: derive(-fx-base, -4%);
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: derive(-fx-base, -10%);
+    -fx-border-width: 1;
+    -fx-padding: 10px;
+}
+
+.previa-cabecera {
+    -fx-background-color: derive(-fx-base, -6%);
+    -fx-background-radius: 10px;
+    -fx-border-radius: 10px;
+    -fx-border-color: derive(-fx-base, -12%);
+    -fx-border-width: 1px;
+    -fx-padding: 10px;
+}
+
+.vista-aviso {
+    -fx-font-size: 11px;
+}

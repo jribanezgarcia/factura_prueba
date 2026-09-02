@@ -63,7 +63,7 @@ public class PdfService {
     private static final Color ROJO_ANULADA = new Color(0xB0, 0x00, 0x20);
     private static final Color ROJO_DESCUENTO = new Color(0x8A, 0x2B, 0x2B);
     private static final Color VALOR_SUAVE = new Color(0xC4, 0xBA, 0xAC);
-    private static final float MARGEN_LATERAL = 40f;
+    private static final float MARGEN_LATERAL = CabeceraLayout.MARGEN_LATERAL;
 
     /**
      * Reserva a la derecha para el bloque FACTURA/Serie-Nº/fecha en cabecera.
@@ -577,17 +577,12 @@ public class PdfService {
 
     private float[] margenes(Empresa empresa, Image logo, Colores c) {
         float superior;
+        int lineas = CabeceraLayout.lineasEmpresa(empresa).size();
         if (logo != null) {
-            float alto = altoLogoEfectivo(empresa);
-            float desplazamiento = Math.max(offsetLogoY(empresa), 0);
-            superior = 26f + alto + desplazamiento + 24f;
-            float altoInfo = 17f + lineasEmpresa(empresa).size() * 13f;
-            superior = Math.max(superior, 34f + altoInfo + 8f);
+            superior = CabeceraLayout.altoCabeceraLogo(empresa, lineas);
         } else {
-            int lineas = lineasEmpresa(empresa).size();
-            superior = 42f + lineas * 13f + 18f;
+            superior = CabeceraLayout.altoCabeceraTexto(lineas);
         }
-        superior = Math.max(superior, 108f);
 
         BaseFont bfPie = baseRegular();
         float anchoUtil = PageSize.A4.getWidth() - 2 * MARGEN_LATERAL - 16f;
@@ -597,21 +592,19 @@ public class PdfService {
     }
 
     private float anchoLogoEfectivo(Empresa empresa) {
-        float base = empresa != null && empresa.getLogoAncho() != null ? empresa.getLogoAncho() : 120f;
-        return Math.min(base * 2f, 480f);
+        return CabeceraLayout.anchoLogoEfectivo(empresa);
     }
 
     private float altoLogoEfectivo(Empresa empresa) {
-        float base = empresa != null && empresa.getLogoAlto() != null ? empresa.getLogoAlto() : 60f;
-        return Math.min(base * 2f, 170f);
+        return CabeceraLayout.altoLogoEfectivo(empresa);
     }
 
     private int offsetLogoX(Empresa empresa) {
-        return empresa != null ? empresa.getLogoX() : 0;
+        return CabeceraLayout.offsetLogoX(empresa);
     }
 
     private int offsetLogoY(Empresa empresa) {
-        return empresa != null ? empresa.getLogoY() : 0;
+        return CabeceraLayout.offsetLogoY(empresa);
     }
 
     private Image cargarLogo(Empresa empresa) {
@@ -626,29 +619,8 @@ public class PdfService {
         }
     }
 
-    private List<LineaCabecera> lineasEmpresa(Empresa empresa) {
-        List<LineaCabecera> lineas = new ArrayList<>();
-        if (empresa == null) {
-            return lineas;
-        }
-        if (!nz(empresa.getActividad()).isBlank()) {
-            lineas.add(new LineaCabecera(empresa.getActividad(), false));
-        }
-        if (!nz(empresa.getNif()).isBlank()) {
-            lineas.add(new LineaCabecera("NIF: " + empresa.getNif(), true));
-        }
-        if (!nz(empresa.getDireccion()).isBlank()) {
-            lineas.add(new LineaCabecera(empresa.getDireccion(), false));
-        }
-        String poblacion = joinNoVacio(" ", nz(empresa.getCp()), nz(empresa.getLocalidad()));
-        if (!poblacion.isBlank()) {
-            lineas.add(new LineaCabecera(poblacion, false));
-        }
-        String contacto = joinNoVacio("  ·  ", nz(empresa.getEmail()), nz(empresa.getTelefono()));
-        if (!contacto.isBlank()) {
-            lineas.add(new LineaCabecera(contacto, false));
-        }
-        return lineas;
+    private List<CabeceraLayout.LineaCabecera> lineasEmpresa(Empresa empresa) {
+        return CabeceraLayout.lineasEmpresa(empresa);
     }
 
     private List<String> partir(String texto, BaseFont bf, float size, float ancho) {
@@ -703,31 +675,8 @@ public class PdfService {
         doc.add(new Paragraph(new Phrase(" ", fuente(false, alto, TINTA))));
     }
 
-    private String joinNoVacio(String sep, String... partes) {
-        StringBuilder sb = new StringBuilder();
-        for (String p : partes) {
-            if (p != null && !p.isBlank()) {
-                if (sb.length() > 0) {
-                    sb.append(sep);
-                }
-                sb.append(p);
-            }
-        }
-        return sb.toString();
-    }
-
     private String nz(String s) {
         return s == null ? "" : s;
-    }
-
-    private static final class LineaCabecera {
-        final String texto;
-        final boolean chipNif;
-
-        LineaCabecera(String texto, boolean chipNif) {
-            this.texto = texto;
-            this.chipNif = chipNif;
-        }
     }
 
     /**
@@ -841,7 +790,7 @@ public class PdfService {
             cb.showTextAligned(Element.ALIGN_LEFT, nombre, x, y, 0);
             cb.endText();
             y -= tamNombre + 1;
-            for (LineaCabecera linea : lineasEmpresa(empresa)) {
+            for (CabeceraLayout.LineaCabecera linea : lineasEmpresa(empresa)) {
                 if (linea.chipNif) {
                     dibujarChipNif(cb, x, y, anchoDisponible);
                 } else {

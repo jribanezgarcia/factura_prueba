@@ -4,6 +4,7 @@ import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.model.TipoIva;
 import com.alcazaba.facturacion.model.TipoRetencion;
+import com.alcazaba.facturacion.pdf.CabeceraLayout;
 import com.alcazaba.facturacion.pdf.PdfService;
 import com.alcazaba.facturacion.service.EmpresaManager;
 import com.alcazaba.facturacion.service.Servicios;
@@ -13,10 +14,13 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
@@ -25,18 +29,21 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
 import java.io.File;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Configuracion con pestanas Empresa, Cabecera (texto/logo), Pie legal, IVA,
- * Series y PDFs. Empresa/Cabecera/Pie/PDFs se guardan con un unico boton; IVA
- * y Series se editan en su propia tabla.
+ * Configuracion por secciones con lista lateral: Empresa, Cabecera y pie, PDF
+ * y apariencia se guardan con un boton global; IVA, Retenciones, Series y
+ * Empresas se administran fila a fila con sus propias acciones.
  */
 public class ConfiguracionController implements Vista {
 
@@ -55,6 +62,30 @@ public class ConfiguracionController implements Vista {
     private final ObservableList<Serie> series = FXCollections.observableArrayList();
     private final ObservableList<EmpresaManager.EmpresaInfo> empresas = FXCollections.observableArrayList();
 
+    @FXML
+    private ListView<ItemSeccion> listaSecciones;
+    @FXML
+    private StackPane pilaSecciones;
+    @FXML
+    private VBox seccionEmpresa;
+    @FXML
+    private VBox seccionCabeceraPie;
+    @FXML
+    private VBox seccionPdfApariencia;
+    @FXML
+    private VBox seccionIva;
+    @FXML
+    private VBox seccionRetenciones;
+    @FXML
+    private VBox seccionSeries;
+    @FXML
+    private VBox seccionEmpresas;
+    @FXML
+    private HBox barraGuardar;
+    @FXML
+    private PreviaCabecera previaCabecera;
+    @FXML
+    private Label lblTamanoEfectivo;
     @FXML
     private ToggleGroup grupoCabecera;
     @FXML
@@ -197,6 +228,8 @@ public class ConfiguracionController implements Vista {
         cargarSeries();
         cargarEmpresas();
         cargarPdfs();
+        cablearPrevia();
+        configurarSecciones();
     }
 
     private void cargarTema() {
@@ -329,6 +362,126 @@ public class ConfiguracionController implements Vista {
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudo guardar: " + e.getMessage());
         }
+    }
+
+    // ------------------------------------------------------------------
+    // Secciones laterales
+    // ------------------------------------------------------------------
+
+    static final class ItemSeccion {
+        final String texto;
+        final Node panel;
+        final boolean grupo;
+        final boolean guardar;
+
+        ItemSeccion(String texto, Node panel, boolean grupo, boolean guardar) {
+            this.texto = texto;
+            this.panel = panel;
+            this.grupo = grupo;
+            this.guardar = guardar;
+        }
+    }
+
+    private void configurarSecciones() {
+        List<ItemSeccion> items = new ArrayList<>();
+        items.add(new ItemSeccion("CONFIGURACIÓN GENERAL", null, true, false));
+        items.add(new ItemSeccion("Empresa", seccionEmpresa, false, true));
+        items.add(new ItemSeccion("Cabecera y pie", seccionCabeceraPie, false, true));
+        items.add(new ItemSeccion("PDF y apariencia", seccionPdfApariencia, false, true));
+        items.add(new ItemSeccion("CATÁLOGOS", null, true, false));
+        items.add(new ItemSeccion("IVA", seccionIva, false, false));
+        items.add(new ItemSeccion("Retenciones", seccionRetenciones, false, false));
+        items.add(new ItemSeccion("Series", seccionSeries, false, false));
+        items.add(new ItemSeccion("Empresas", seccionEmpresas, false, false));
+        listaSecciones.getItems().setAll(items);
+        listaSecciones.setCellFactory(lv -> new ListCell<>() {
+            @Override
+            protected void updateItem(ItemSeccion item, boolean empty) {
+                super.updateItem(item, empty);
+                getStyleClass().remove("grupo-secciones");
+                if (empty || item == null) {
+                    setText(null);
+                    setGraphic(null);
+                    setDisable(false);
+                } else if (item.grupo) {
+                    Label encabezado = new Label(item.texto);
+                    encabezado.getStyleClass().add("grupo-secciones");
+                    setGraphic(encabezado);
+                    setText(null);
+                    setDisable(true);
+                } else {
+                    setText(item.texto);
+                    setGraphic(null);
+                    setDisable(false);
+                }
+            }
+        });
+        listaSecciones.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> {
+            if (b != null && !b.grupo) {
+                mostrarSeccion(b);
+            }
+        });
+        listaSecciones.getSelectionModel().select(1);
+    }
+
+    private void mostrarSeccion(ItemSeccion item) {
+        for (Node n : pilaSecciones.getChildren()) {
+            n.setVisible(false);
+            n.setManaged(false);
+        }
+        item.panel.setVisible(true);
+        item.panel.setManaged(true);
+        barraGuardar.setVisible(item.guardar);
+        barraGuardar.setManaged(item.guardar);
+    }
+
+    // ------------------------------------------------------------------
+    // Vista previa de cabecera
+    // ------------------------------------------------------------------
+
+    private void cablearPrevia() {
+        grupoCabecera.selectedToggleProperty().addListener((o, a, b) -> repintarPrevia());
+        for (TextField c : new TextField[]{txtLogoPath, txtLogoX, txtLogoY, txtLogoAncho, txtLogoAlto}) {
+            c.textProperty().addListener((o, a, b) -> repintarPrevia());
+        }
+        colorPdf.valueProperty().addListener((o, a, b) -> repintarPrevia());
+        for (TextField c : new TextField[]{txtLogoAncho, txtLogoAlto}) {
+            c.textProperty().addListener((o, a, b) -> actualizarTamanoEfectivo());
+        }
+        actualizarTamanoEfectivo();
+        repintarPrevia();
+    }
+
+    private void repintarPrevia() {
+        Empresa e = new Empresa();
+        e.setNombre(trim(txtNombre));
+        e.setNif(trim(txtNif));
+        e.setActividad(trim(txtActividad));
+        e.setDireccion(trim(txtDireccion));
+        e.setCp(trim(txtCp));
+        e.setLocalidad(trim(txtLocalidad));
+        e.setProvincia(trim(txtProvincia));
+        e.setEmail(trim(txtEmail));
+        e.setTelefono(trim(txtTelefono));
+        e.setCabeceraModo(rbLogo.isSelected() ? "LOGO" : "TEXTO");
+        e.setLogoPath(trim(txtLogoPath));
+        e.setLogoX(parseInt(txtLogoX, 0));
+        e.setLogoY(parseInt(txtLogoY, 0));
+        String ancho = trim(txtLogoAncho);
+        e.setLogoAncho(ancho.isBlank() ? null : parseInt(txtLogoAncho, 120));
+        String alto = trim(txtLogoAlto);
+        e.setLogoAlto(alto.isBlank() ? null : parseInt(txtLogoAlto, 60));
+        previaCabecera.mostrar(e, colorPdf.getValue());
+    }
+
+    private void actualizarTamanoEfectivo() {
+        Empresa e = new Empresa();
+        String ancho = trim(txtLogoAncho);
+        e.setLogoAncho(ancho.isBlank() ? null : parseInt(txtLogoAncho, 120));
+        String alto = trim(txtLogoAlto);
+        e.setLogoAlto(alto.isBlank() ? null : parseInt(txtLogoAlto, 60));
+        lblTamanoEfectivo.setText(Math.round(CabeceraLayout.anchoLogoEfectivo(e)) + " × "
+                + Math.round(CabeceraLayout.altoLogoEfectivo(e)) + " pt en el PDF (el doble de lo configurado)");
     }
 
     // ------------------------------------------------------------------

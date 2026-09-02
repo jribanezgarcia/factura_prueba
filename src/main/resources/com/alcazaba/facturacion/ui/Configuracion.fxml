@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.alcazaba.facturacion.ui.PreviaCabecera?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
@@ -19,59 +20,84 @@
         </VBox>
     </top>
     <center>
-        <TabPane tabClosingPolicy="UNAVAILABLE">
-            <Tab text="Empresa">
-                <GridPane hgap="8" vgap="6" styleClass="card, zona-contenido">
-                    <Label text="Nombre / razón social"/>
-                    <TextField fx:id="txtNombre" prefWidth="340" GridPane.columnIndex="1"/>
-                    <Label text="NIF" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtNif" prefWidth="160" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                    <Label text="Actividad" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtActividad" prefWidth="240" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                    <Label text="Dirección" GridPane.rowIndex="2"/>
-                    <TextField fx:id="txtDireccion" prefWidth="440" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2"/>
-                    <Label text="CP" GridPane.rowIndex="3"/>
-                    <TextField fx:id="txtCp" prefWidth="100" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                    <Label text="Localidad" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                    <TextField fx:id="txtLocalidad" prefWidth="180" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                    <Label text="Provincia" GridPane.rowIndex="4"/>
-                    <TextField fx:id="txtProvincia" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-                    <Label text="Email" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                    <TextField fx:id="txtEmail" prefWidth="220" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
-                    <Label text="Teléfono" GridPane.rowIndex="5"/>
-                    <TextField fx:id="txtTelefono" prefWidth="160" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
-                    <Label text="Tema de la aplicación" GridPane.rowIndex="6"/>
-                    <ComboBox fx:id="comboTema" prefWidth="240" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
-                </GridPane>
-            </Tab>
-            <Tab text="Cabecera">
-                <GridPane hgap="8" vgap="6" styleClass="card, zona-contenido">
-                    <Label text="Modo de cabecera"/>
-                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.columnSpan="3">
-                        <RadioButton fx:id="rbTexto" toggleGroup="$grupoCabecera" text="Texto con datos de empresa"/>
-                        <RadioButton fx:id="rbLogo" toggleGroup="$grupoCabecera" text="Logo / imagen"/>
-                    </VBox>
-                    <Label text="Logo" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtLogoPath" editable="false" prefWidth="360" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                    <Button onAction="#seleccionarLogo" styleClass="default-button" text="Elegir imagen..." GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                    <Label text="Posición X (pt)" GridPane.rowIndex="2"/>
-                    <TextField fx:id="txtLogoX" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                    <Label text="Posición Y (pt)" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                    <TextField fx:id="txtLogoY" prefWidth="80" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
-                    <Label text="Ancho (pt)" GridPane.rowIndex="3"/>
-                    <TextField fx:id="txtLogoAncho" prefWidth="80" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
-                    <Label text="Alto (pt)" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                    <TextField fx:id="txtLogoAlto" prefWidth="80" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
-                </GridPane>
-            </Tab>
-            <Tab text="Pie">
-                <VBox spacing="8" styleClass="card, zona-contenido">
-                    <Label text="Texto legal del pie (se repite en todas las páginas de los PDF)."/>
-                    <TextArea fx:id="txtPieLegal" prefRowCount="4" wrapText="true" VBox.vgrow="ALWAYS"/>
+        <HBox spacing="12" styleClass="area-secciones">
+            <ListView fx:id="listaSecciones" minWidth="200" prefWidth="200" maxWidth="200"
+                      styleClass="lista-secciones"/>
+            <StackPane fx:id="pilaSecciones" HBox.hgrow="ALWAYS">
+                <VBox fx:id="seccionEmpresa" visible="false" managed="false" spacing="8"
+                      styleClass="card, zona-contenido, seccion-config">
+                    <GridPane hgap="8" vgap="6">
+                        <Label text="Nombre / razón social"/>
+                        <TextField fx:id="txtNombre" prefWidth="340" GridPane.columnIndex="1"/>
+                        <Label text="NIF" GridPane.rowIndex="1"/>
+                        <TextField fx:id="txtNif" prefWidth="160" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="Actividad" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                        <TextField fx:id="txtActividad" prefWidth="240" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                        <Label text="Dirección" GridPane.rowIndex="2"/>
+                        <TextField fx:id="txtDireccion" prefWidth="440" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2"/>
+                        <Label text="CP" GridPane.rowIndex="3"/>
+                        <TextField fx:id="txtCp" prefWidth="100" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                        <Label text="Localidad" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                        <TextField fx:id="txtLocalidad" prefWidth="180" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+                        <Label text="Provincia" GridPane.rowIndex="4"/>
+                        <TextField fx:id="txtProvincia" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+                        <Label text="Email" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+                        <TextField fx:id="txtEmail" prefWidth="220" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
+                        <Label text="Teléfono" GridPane.rowIndex="5"/>
+                        <TextField fx:id="txtTelefono" prefWidth="160" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+                    </GridPane>
                 </VBox>
-            </Tab>
-            <Tab text="IVA">
-                <VBox spacing="8" styleClass="card, zona-contenido">
+                <VBox fx:id="seccionCabeceraPie" visible="false" managed="false" spacing="8"
+                      styleClass="card, zona-contenido, seccion-config">
+                    <HBox spacing="14">
+                        <GridPane hgap="8" vgap="6" HBox.hgrow="ALWAYS">
+                            <Label text="Modo de cabecera"/>
+                            <VBox spacing="4" GridPane.columnIndex="1" GridPane.columnSpan="3">
+                                <RadioButton fx:id="rbTexto" toggleGroup="$grupoCabecera" text="Texto con datos de empresa"/>
+                                <RadioButton fx:id="rbLogo" toggleGroup="$grupoCabecera" text="Logo / imagen"/>
+                            </VBox>
+                            <Label text="Logo" GridPane.rowIndex="1"/>
+                            <TextField fx:id="txtLogoPath" editable="false" prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                            <Button onAction="#seleccionarLogo" styleClass="default-button" text="Elegir imagen..." GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                            <Label text="Posición X (pt)" GridPane.rowIndex="2"/>
+                            <TextField fx:id="txtLogoX" prefWidth="70" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                            <Label text="Posición Y (pt)" GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                            <TextField fx:id="txtLogoY" prefWidth="70" GridPane.columnIndex="3" GridPane.rowIndex="2"/>
+                            <Label text="Ancho (pt)" GridPane.rowIndex="3"/>
+                            <TextField fx:id="txtLogoAncho" prefWidth="70" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                            <Label text="Alto (pt)" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                            <TextField fx:id="txtLogoAlto" prefWidth="70" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+                            <Label text="Tamaño efectivo:" GridPane.rowIndex="4"/>
+                            <Label fx:id="lblTamanoEfectivo" styleClass="muted" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="4"/>
+                            <Label text="Texto legal del pie" GridPane.rowIndex="5"/>
+                            <TextArea fx:id="txtPieLegal" prefRowCount="3" wrapText="true"
+                                      GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="5"/>
+                        </GridPane>
+                        <VBox spacing="6" alignment="TOP_LEFT">
+                            <PreviaCabecera fx:id="previaCabecera" styleClass="previa-cabecera"/>
+                            <Label styleClass="muted, vista-aviso"
+                                   text="Vista aproximada de la cabecera del PDF."/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+                <VBox fx:id="seccionPdfApariencia" visible="false" managed="false" spacing="8"
+                      styleClass="card, zona-contenido, seccion-config">
+                    <GridPane hgap="8" vgap="6">
+                        <Label text="Carpeta automática de almacenamiento"/>
+                        <TextField fx:id="txtCarpetaAuto" editable="false" prefWidth="420" GridPane.columnIndex="1"/>
+                        <Button onAction="#seleccionarCarpetaAuto" styleClass="default-button" text="Elegir carpeta..." GridPane.columnIndex="2"/>
+                        <Label text="Última carpeta de exportación" GridPane.rowIndex="1"/>
+                        <TextField fx:id="txtUltimaCarpeta" editable="false" prefWidth="420" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                        <Label text="Color del PDF" GridPane.rowIndex="2"/>
+                        <ColorPicker fx:id="colorPdf" prefWidth="220" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                        <Label styleClass="muted" text="Color de acento: cabeceras de tarjetas, totales y pie legal"
+                               GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                        <Label text="Tema de la aplicación" GridPane.rowIndex="3"/>
+                        <ComboBox fx:id="comboTema" prefWidth="240" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                    </GridPane>
+                </VBox>
+                <VBox fx:id="seccionIva" visible="false" managed="false" spacing="8"
+                      styleClass="card, zona-contenido, seccion-config">
                     <TableView fx:id="tablaIva" prefHeight="120" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colIvaNombre" prefWidth="180" text="Nombre"/>
@@ -83,7 +109,7 @@
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                         </columnResizePolicy>
                     </TableView>
-                    <FlowPane hgap="10" vgap="8">
+                    <FlowPane hgap="10" vgap="8" styleClass="alta-rapida">
                         <HBox spacing="4" alignment="CENTER_LEFT">
                             <Label text="Nombre"/>
                             <TextField fx:id="txtIvaNombre" prefWidth="160"/>
@@ -105,9 +131,8 @@
                     <Label fx:id="lblIvaAviso" styleClass="muted"
                            text="El porcentaje de un tipo ya usado en el histórico no se puede modificar."/>
                 </VBox>
-            </Tab>
-            <Tab text="Retenciones">
-                <VBox spacing="8" styleClass="card, zona-contenido">
+                <VBox fx:id="seccionRetenciones" visible="false" managed="false" spacing="8"
+                      styleClass="card, zona-contenido, seccion-config">
                     <TableView fx:id="tablaRetenciones" prefHeight="120" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colRetencionNombre" prefWidth="280" text="Nombre"/>
@@ -118,7 +143,7 @@
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                         </columnResizePolicy>
                     </TableView>
-                    <FlowPane hgap="10" vgap="8">
+                    <FlowPane hgap="10" vgap="8" styleClass="alta-rapida">
                         <HBox spacing="4" alignment="CENTER_LEFT">
                             <Label text="Nombre"/>
                             <TextField fx:id="txtRetencionNombre" prefWidth="180"/>
@@ -136,9 +161,8 @@
                     <Label fx:id="lblRetencionAviso" styleClass="muted"
                            text="El porcentaje de un tipo ya usado en el histórico no se puede modificar."/>
                 </VBox>
-            </Tab>
-            <Tab text="Series">
-                <VBox spacing="8" styleClass="card, zona-contenido">
+                <VBox fx:id="seccionSeries" visible="false" managed="false" spacing="8"
+                      styleClass="card, zona-contenido, seccion-config">
                     <TableView fx:id="tablaSeries" prefHeight="120" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colSerieCodigo" prefWidth="80" text="Código"/>
@@ -151,7 +175,7 @@
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                         </columnResizePolicy>
                     </TableView>
-                    <FlowPane hgap="10" vgap="8">
+                    <FlowPane hgap="10" vgap="8" styleClass="alta-rapida">
                         <HBox spacing="4" alignment="CENTER_LEFT">
                             <Label text="Código"/>
                             <TextField fx:id="txtSerieCodigo" prefWidth="80"/>
@@ -178,9 +202,8 @@
                         </HBox>
                     </FlowPane>
                 </VBox>
-            </Tab>
-            <Tab text="Empresas">
-                <VBox spacing="8" styleClass="card, zona-contenido">
+                <VBox fx:id="seccionEmpresas" visible="false" managed="false" spacing="8"
+                      styleClass="card, zona-contenido, seccion-config">
                     <TableView fx:id="tablaEmpresas" prefHeight="120" VBox.vgrow="ALWAYS">
                         <columns>
                             <TableColumn fx:id="colEmpresaNombre" prefWidth="240" text="Nombre"/>
@@ -192,30 +215,17 @@
                     </TableView>
                     <Label fx:id="lblEmpresasAviso" styleClass="muted"
                            text="Al eliminar una empresa se borra físicamente su carpeta de datos. Realiza antes una copia de seguridad."/>
-                    <FlowPane hgap="8" vgap="8">
+                    <FlowPane hgap="8" vgap="8" styleClass="alta-rapida">
                         <Button onAction="#nuevaEmpresa" styleClass="default-button" text="Nueva empresa"/>
                         <Button onAction="#cambiarEmpresa" styleClass="primary-button" text="Cambiar a esta"/>
                         <Button onAction="#eliminarEmpresa" styleClass="default-button" text="Eliminar"/>
                     </FlowPane>
                 </VBox>
-            </Tab>
-            <Tab text="PDFs">
-                <GridPane hgap="8" vgap="6" styleClass="card, zona-contenido">
-                    <Label text="Carpeta automática de almacenamiento"/>
-                    <TextField fx:id="txtCarpetaAuto" editable="false" prefWidth="420" GridPane.columnIndex="1"/>
-                    <Button onAction="#seleccionarCarpetaAuto" styleClass="default-button" text="Elegir carpeta..." GridPane.columnIndex="2"/>
-                    <Label text="Última carpeta de exportación" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtUltimaCarpeta" editable="false" prefWidth="420" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                    <Label text="Color del PDF" GridPane.rowIndex="2"/>
-                    <ColorPicker fx:id="colorPdf" prefWidth="220" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                    <Label styleClass="muted" text="Color de acento: cabeceras de tarjetas, totales y pie legal"
-                           GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                </GridPane>
-            </Tab>
-        </TabPane>
+            </StackPane>
+        </HBox>
     </center>
     <bottom>
-        <HBox spacing="8" alignment="CENTER_RIGHT" styleClass="card, zona-contenido">
+        <HBox fx:id="barraGuardar" spacing="8" alignment="CENTER_RIGHT" styleClass="card, zona-contenido">
             <Button onAction="#guardar" styleClass="primary-button" text="Guardar configuración"/>
             <Button onAction="#volver" styleClass="default-button" text="Volver"/>
         </HBox>
