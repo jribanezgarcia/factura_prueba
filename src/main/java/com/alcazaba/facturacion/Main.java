@@ -92,7 +92,11 @@ public class Main extends Application {
     private void configurarVentana() {
         stage.setTitle("Facturación");
         aplicarPreferenciasVentana(stage);
-        stage.setOnCloseRequest(e -> cerrarAplicacion());
+        stage.setOnCloseRequest(e -> {
+            if (!cerrarAplicacion()) {
+                e.consume();
+            }
+        });
     }
 
     private void mostrarArranque() {
@@ -130,18 +134,24 @@ public class Main extends Application {
         }
     }
 
-    private void cerrarAplicacion() {
+    /**
+     * Devuelve true si la aplicacion se cierra. Si el usuario cancela, la
+     * ventana debe seguir visible y quien llama consume el evento.
+     */
+    private boolean cerrarAplicacion() {
         if (actual != null && !actual.puedeCerrar()) {
-            return;
+            return false;
         }
-        if (actual == null || Dialogos.confirmar("Salir", "¿Seguro que deseas salir de la aplicación?")) {
-            if (actual != null) {
-                actual.alCerrar();
-            }
-            guardarPreferenciasVentana(stage);
-            liberarLock();
-            Platform.exit();
+        if (actual != null && !Dialogos.confirmar("Salir", "¿Seguro que deseas salir de la aplicación?")) {
+            return false;
         }
+        if (actual != null) {
+            actual.alCerrar();
+        }
+        guardarPreferenciasVentana(stage);
+        liberarLock();
+        Platform.exit();
+        return true;
     }
 
     private boolean adquirirLock() {
