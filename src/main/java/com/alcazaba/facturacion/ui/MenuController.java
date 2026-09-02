@@ -12,6 +12,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.stage.WindowEvent;
 
 import java.io.File;
 import java.time.LocalDate;
@@ -136,6 +137,6 @@ public class MenuController implements Vista {
 
     @FXML
     private void salir() {
-        nav.stage().close();
+        nav.stage().fireEvent(new WindowEvent(nav.stage(), WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 }
