@@ -70,8 +70,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-fix-ventana-max-heredado-arranque`
 - `openspec/changes/archive/2026-09-01-editor-sin-scroll-factura-corta`
 - `openspec/changes/archive/2026-09-01-fix-styleclass-separador-fxml`
+- `openspec/changes/archive/2026-09-02-configuracion-secciones-laterales`
 
-Cambio OpenSpec activo: `configuracion-secciones-laterales`, implementado y verificado, pendiente de sync y archivo desde opencode. SI lleva delta de specs, asi que necesita `/opsx-sync-specs` antes de `/opsx-archive`.
+Cambio OpenSpec activo: ninguno (`configuracion-secciones-laterales` archivado el 02/09/2026 y sus specs sincronizadas en `openspec/specs/invoicing/spec.md`).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -253,7 +254,7 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 
 ## Sesion del 02/09/2026
 
-### Change `configuracion-secciones-laterales` (implementado, pendiente de sync y archivo)
+### Change `configuracion-secciones-laterales` (archivado)
 
 - La pantalla de Configuracion deja de usar pestanas: navegacion lateral con `ListView` (200 px) + `StackPane` con un `VBox` por seccion, dos encabezados de grupo ("Configuracion general" y "Catalogos").
 - Siete secciones: Empresa, Cabecera y pie, PDF y apariencia (grupo con guardado global) e IVA, Retenciones, Series, Empresas (gestion fila a fila con sus propias acciones).
@@ -264,11 +265,11 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - `base.css`: clases nuevas acotadas a la pantalla (`lista-secciones`, `seccion-config`, `alta-rapida`, `previa-cabecera`, `vista-aviso`, `grupo-secciones`) con colores derivados de `-fx-accent`/`-fx-base`; no se tocan `.card` ni `.zona-contenido`, que son globales.
 - Tests nuevos: `CabeceraLayoutTest` (7) y `ConfiguracionLayoutTest` (las 7 secciones caben a 1024×768 y la barra de guardado solo es visible en las 3 primeras; falla con el FXML anterior). Suite **119/119** en verde.
 - Verificacion visual a 1024×768 por el usuario: recorrido de las 7 secciones sin scroll ok, previa reacciona a logo/posicion/tamano/color, guardado y reentrada conservan todo, IVA/Retenciones/Series funcionan, los 7 temas ok y Historico/Clientes/Versiones/Backup sin cambios.
-- Commit `5c56ecf` (implementacion). Pendiente de `/opsx-sync-specs` y `/opsx-archive-change`.
+- Commit `5c56ecf` (implementacion) y `bf4f564` (docs). Archivado el 02/09/2026 en `2026-09-02-configuracion-secciones-laterales`; specs sincronizadas y validadas (`openspec validate --specs` ok, 2 requisitos nuevos anadidos a `invoicing/spec.md`).
 
 ## Proximos pasos
 
-- Change activo: `configuracion-secciones-laterales` implementado y verificado (commit `5c56ecf`). Falta `/opsx-sync-specs` y despues `/opsx-archive-change`.
+- No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
 - Opciones conocidas pendientes en el spec principal:
   - Flujo de **clientes inactivos** (clientes con facturas no se borran, se marcan inactivos y no se ofrecen al crear facturas nuevas).
   - **Copia de seguridad** manual (V1: solo copia del SQLite).
@@ -281,7 +282,7 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Despues, fix definitivo con clamp diferido al pulse (`fix-ventana-1024-tras-pulse`) commiteado y pusheado.
 - **Editor sin scroll (01/09/2026)**: rediseno del Editor para que una factura corta quepa entera a 1024x768 con los totales siempre visibles. Maquetado previo revisado con el usuario antes de tocar codigo.
 - **Fix real del tamano de ventana (01/09/2026)**: los dos fixes anteriores no bastaban. La causa era el `maxWidth`/`maxHeight` de Arranque heredado por el Stage. Corregido en `VentanaConfig` (sin maximos en Arranque, `aplicar` determinista) y `Main` (transicion con la ventana oculta). Verificado a la vista con la app en marcha; suite **107/107**.
-- **Configuracion por secciones (02/09/2026)**: pantalla de Configuracion con lista lateral en vez de pestanas, `PdfService` delegando en `CabeceraLayout` y vista previa aproximada de la cabecera (`PreviaCabecera`). Suite **119/119**. Commit `5c56ecf` (implementacion) pusheado; el change `configuracion-secciones-laterales` queda pendiente de sync y archivo OpenSpec.
+- **Configuracion por secciones (02/09/2026)**: pantalla de Configuracion con lista lateral en vez de pestanas, `PdfService` delegando en `CabeceraLayout` y vista previa aproximada de la cabecera (`PreviaCabecera`). Suite **119/119**. Commits `5c56ecf` (implementacion), `bf4f564` (docs) y `c75c55f` (archivo OpenSpec + spec sincronizada).
 
 ## Notas tecnicas que evitan perder tiempo
 
