@@ -55,14 +55,14 @@ public class PdfService {
     public static final String PREF_COLOR = "color_pdf";
     public static final String COLOR_DEFECTO = "#B08D57";
 
-    private static final Color TINTA = new Color(0x3A, 0x33, 0x2B);
-    private static final Color GRIS = new Color(0x5F, 0x55, 0x48);
-    private static final Color GRIS_CLARO = new Color(0xA2, 0x93, 0x7F);
+    private static final Color TINTA = new Color(0x00, 0x00, 0x00);
+    private static final Color GRIS = new Color(0x55, 0x55, 0x55);
+    private static final Color GRIS_CLARO = new Color(0x77, 0x77, 0x77);
     private static final Color BLANCO = Color.WHITE;
     private static final Color NEGRO = Color.BLACK;
     private static final Color ROJO_ANULADA = new Color(0xB0, 0x00, 0x20);
     private static final Color ROJO_DESCUENTO = new Color(0x8A, 0x2B, 0x2B);
-    private static final Color VALOR_SUAVE = new Color(0xC4, 0xBA, 0xAC);
+    private static final Color VALOR_SUAVE = new Color(0x55, 0x55, 0x55);
     private static final float MARGEN_LATERAL = CabeceraLayout.MARGEN_LATERAL;
 
     /**
@@ -829,7 +829,7 @@ public class PdfService {
             y -= 9;
             cb.beginText();
             cb.setFontAndSize(baseNegrita(), 10);
-            cb.setColorFill(TINTA);
+            cb.setColorFill(c.oscuro);
             cb.showTextAligned(Element.ALIGN_RIGHT, nz(version.getNumero()), derecha, y, 0);
             cb.endText();
             y -= 14;
@@ -837,7 +837,7 @@ public class PdfService {
             y -= 9;
             cb.beginText();
             cb.setFontAndSize(baseNegrita(), 10);
-            cb.setColorFill(TINTA);
+            cb.setColorFill(c.oscuro);
             cb.showTextAligned(Element.ALIGN_RIGHT, Formatos.fecha(version.getFechaFactura()), derecha, y, 0);
             cb.endText();
             if (rectificativa) {
@@ -862,7 +862,7 @@ public class PdfService {
         private void dibujarRotulo(PdfContentByte cb, String texto, float derecha, float y) {
             cb.beginText();
             cb.setFontAndSize(baseNegrita(), 6.5f);
-            cb.setColorFill(GRIS_CLARO);
+            cb.setColorFill(c.oscuro);
             cb.showTextAligned(Element.ALIGN_RIGHT, texto, derecha, y, 0);
             cb.endText();
         }
