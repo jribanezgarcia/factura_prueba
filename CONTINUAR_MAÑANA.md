@@ -76,8 +76,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-02-fix-exportar-pdf-agrupado`
 - `openspec/changes/archive/2026-09-02-fix-cancelar-salida`
 - `openspec/changes/archive/2026-09-02-logo-relleno-tema`
+- `openspec/changes/archive/2026-09-02-pdf-texto-neutro-color-acento`
 
-Cambio OpenSpec activo: ninguno (`logo-relleno-tema` archivado el 02/09/2026 con delta de specs sincronizadas y validadas).
+Cambio OpenSpec activo: ninguno (`pdf-texto-neutro-color-acento` archivado el 02/09/2026 con delta de specs sincronizadas y validadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -320,6 +321,15 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - TDD: `LogoMarcoTest` (12 tests: plano blanco puro, plano de color exacto, transparente sin cambio, ruido→difuminado, imagen nula y 2×2→sin cambio, geometría del respaldo fit=caja+60 con `managed`/`mouseTransparent`, clip arqueado, y cambio foto⇄plano en los dos sentidos sin rastro). Suite **138/138** en verde (126 + 12). Verificación visual del usuario OK.
 - Sync de specs: MODIFIED «Identidad de empresa en la interfaz» (relleno por tipo de imagen, esquinas y grosor conservados, transparente con tema, logo del editor en caja fija + 3 escenarios nuevos). Archivado el 02/09/2026 en `2026-09-02-logo-relleno-tema`.
 
+### Change `pdf-texto-neutro-color-acento` (archivado)
+
+- El texto por defecto del PDF salía con un tinte marrón-arena fijo (constantes `TINTA` `#3A332B`, `GRIS` `#5F5548`, `GRIS_CLARO` `#A2937F`, `VALOR_SUAVE` `#C4BAAC`) independiente del color de acento configurable.
+- En `PdfService` se sustituyen esas constantes por una paleta neutra: valores en **negro** `#000000`, etiquetas/info secundaria y pie (`Página X de Y`) en **gris neutro** `#555555`, etiquetas pequeñas de la tarjeta FACTURAR A en **gris claro neutro** `#777777`. Se mantienen los rojos (anulada/descuento), el blanco y los tonos derivados del acento.
+- El bloque **`SERIE / Nº` y `FECHA`** (rótulo y valor) pasa a usar el **color de acento oscurecido** `c.oscuro` (mezcla 35 % negro), en lugar de la tinta marrón, para garantizar contraste sobre blanco.
+- Se añade un escenario nuevo; primera idea de campo de texto hex manual se **descartó a petición del usuario** (el `ColorPicker` ya permite elegir cualquier color de la paleta), quedando únicamente el selector.
+- `Configuracion.fxml`: se actualiza solo el texto informativo del `ColorPicker` ("...; también SERIE/Nº y FECHA").
+- Sync de specs: MODIFIED «Exportación a PDF» (texto por defecto en negro/gris neutro, SERIE/Nº–FECHA en color de acento, cabecera de «Datos de pago» y etiquetas/valores de tarjeta en gris neutro/negro, + 2 escenarios nuevos). Suite **138/138** en verde y verificación visual del usuario OK. Archivado el 02/09/2026 en `2026-09-02-pdf-texto-neutro-color-acento`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -338,6 +348,7 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - **Fix real del tamano de ventana (01/09/2026)**: los dos fixes anteriores no bastaban. La causa era el `maxWidth`/`maxHeight` de Arranque heredado por el Stage. Corregido en `VentanaConfig` (sin maximos en Arranque, `aplicar` determinista) y `Main` (transicion con la ventana oculta). Verificado a la vista con la app en marcha; suite **107/107**.
 - **Configuracion por secciones (02/09/2026)**: pantalla de Configuracion con lista lateral en vez de pestanas, `PdfService` delegando en `CabeceraLayout` y vista previa aproximada de la cabecera (`PreviaCabecera`). Suite **119/119**. Commits `5c56ecf` (implementacion), `bf4f564` (docs) y `c75c55f` (archivo OpenSpec + spec sincronizada).
 - **Logo relleno tema (02/09/2026)**: util `LogoMarco` + aplicacion al menu (280×100) y editor (110×40). TDD con `LogoMarcoTest` (12 tests, suite **138/138**). Sync de spec «Identidad de empresa en la interfaz» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
+- **PDF texto neutro / color acento (02/09/2026)**: paleta de tinta del PDF sin tinte arena (negro/gris neutro) y `SERIE / Nº`-`FECHA` en color de acento. Suite **138/138**. Sync de spec «Exportación a PDF» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 
 ## Notas tecnicas que evitan perder tiempo
 
