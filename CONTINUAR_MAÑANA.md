@@ -72,7 +72,7 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-01-fix-styleclass-separador-fxml`
 - `openspec/changes/archive/2026-09-02-configuracion-secciones-laterales`
 
-Cambio OpenSpec activo: ninguno (`configuracion-secciones-laterales` archivado el 02/09/2026 y sus specs sincronizadas en `openspec/specs/invoicing/spec.md`).
+Cambio OpenSpec activo: ninguno (`ficha-cliente-validada` archivado el 02/09/2026; sin delta de specs por `skip_specs`).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -267,12 +267,23 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Verificacion visual a 1024×768 por el usuario: recorrido de las 7 secciones sin scroll ok, previa reacciona a logo/posicion/tamano/color, guardado y reentrada conservan todo, IVA/Retenciones/Series funcionan, los 7 temas ok y Historico/Clientes/Versiones/Backup sin cambios.
 - Commit `5c56ecf` (implementacion) y `bf4f564` (docs). Archivado el 02/09/2026 en `2026-09-02-configuracion-secciones-laterales`; specs sincronizadas y validadas (`openspec validate --specs` ok, 2 requisitos nuevos anadidos a `invoicing/spec.md`).
 
+## Sesion del 02/09/2026 (continuacion)
+
+### Change `ficha-cliente-validada` (implementado, pendiente de archivar)
+
+- Validadores nuevos en `util`: `CodigoPostalValidator` (cinco digitos con las dos primeras cifras entre 01 y 52; en blanco o null NO valido) y `EmailValidator` (en blanco SI valido; con contenido, patron razonable `algo@algo.algo`). TDD: `CodigoPostalValidatorTest` (4) y `EmailValidatorTest` (3), en rojo antes de implementar.
+- Tema en todos los dialogos: `Dialogos.aplicarTema(DialogPane)` anade la clase `.dialog-card` y las hojas del tema activo (`ThemeManager.hojas()` nuevo, reutilizado por `seleccionar`); aplicado a error, info, confirmar, confirmarCambiosSinGuardar y modoGuardarVersion. `.dialog-card` completo con fondo `-fx-base` y borde `derive(-fx-base, -10%)`, y cabecera del dialogo con degradado gris y texto en el color de acento para que "Alta de cliente" parezca la primera fila de las tablas.
+- Ficha de cliente a 375 px (primero fue 560 y el usuario pidio un tercio menos), `ColumnConstraints` con hgrow ALWAYS + `maxWidth` infinito en los campos, Direccion con etiqueta y campo en la misma fila (el usuario rechazo la version en dos filas), tema aplicado y `initOwner(nav.stage())`.
+- Validaciones de CP y email calcando el patron del NIF con un ajuste pedido por el usuario: el CP NO avisa al salir del campo (solo al pulsar Guardar, para poder rellenar el resto) y limpia el borde rojo al enfocar o corregir. NIF intacto. `ClientesNifValidationTest` adaptado porque el CP ahora es obligatorio.
+- Suite **126/126** en verde. Verificacion visual del usuario OK en los 5 puntos (tema claro/oscuro, altas con invalidos, email en blanco, Direccion larga, editar cliente antiguo sin CP). Archivado el 02/09/2026 en `2026-09-02-ficha-cliente-validada` (sin delta de specs por `skip_specs`).
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
 - Opciones conocidas pendientes en el spec principal:
   - Flujo de **clientes inactivos** (clientes con facturas no se borran, se marcan inactivos y no se ofrecen al crear facturas nuevas).
   - **Copia de seguridad** manual (V1: solo copia del SQLite).
+- Idea futura anotada en el cambio y pendiente de un change propio: **buscador de codigos postales** en la ficha de cliente (buscar por localidad y que rellene el CP, o al reves). Es el dato que mas lata da al cumplimentar facturas.
 
 
 ## Git
@@ -286,7 +297,7 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 119 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 126 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
