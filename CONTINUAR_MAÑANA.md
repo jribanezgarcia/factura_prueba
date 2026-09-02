@@ -75,8 +75,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-02-logo-tamano-fijo`
 - `openspec/changes/archive/2026-09-02-fix-exportar-pdf-agrupado`
 - `openspec/changes/archive/2026-09-02-fix-cancelar-salida`
+- `openspec/changes/archive/2026-09-02-logo-relleno-tema`
 
-Cambio OpenSpec activo: ninguno (`ficha-cliente-validada`, `logo-tamano-fijo`, `fix-exportar-pdf-agrupado` y `fix-cancelar-salida` archivados el 02/09/2026; todos sin delta de specs por `skip_specs` salvo `logo-tamano-fijo`, con specs sincronizadas).
+Cambio OpenSpec activo: ninguno (`logo-relleno-tema` archivado el 02/09/2026 con delta de specs sincronizadas y validadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -307,6 +308,18 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - En la pantalla de arranque el cierre sigue sin preguntar (se mantiene el comportamiento).
 - Suite **126/126** en verde. `skip_specs`. Verificación visual del usuario OK en los 4 puntos. Archivado el 02/09/2026 en `2026-09-02-fix-cancelar-salida`.
 
+### Change `logo-relleno-tema` (archivado)
+
+- El recuadro que envuelve al logo (menú principal 280×100 y editor 110×40) se rellena con los colores del propio logo para que imagen y caja se vean como una sola pieza sea cual sea el tema. `util/LogoMarco` clasifica muestreando solo el marco exterior (~6 % por lado con paso, descartando píxeles con alfa < 0,9 y agrupando opacos en cubos de 5 bits por canal) y decide tres casos:
+  - **Plano** (fondo opaco uniforme): el recuadro adopta el color exacto vía `setStyle` inline pisando solo `-fx-background-color`/`-fx-border-color`; conserva esquinas redondeadas (radius del tema `.menu-logo-box`).
+  - **Difuminado** (foto/degradado): respaldo desenfocado (blur 25, desborde 60 px, `mouseTransparent`, no gestionado, tamaño fijo min=pref=max) como primer hijo + clip redondeado radio 10 ligado al tamaño de la caja, sin que el desenfoque se salga del recuadro.
+  - **Transparente** (PNG con canal alfa): no toca nada, queda el color del tema.
+- `LogoMarco.aplicar(StackPane, Image)` limpia antes (estilo inline + clip + respaldo marcado); `LogoMarco.limpiar(...)` deshace todo y se llama en las tres salidas tempranas de `MenuController.cargarLogo` y `EditorController.cargarLogo` (ruta vacía, fichero inexistente, imagen con error). No se tocan `base.css` ni `tema-*.css` ni el escalado del logo.
+- Menú (`MenuPrincipal.fxml`): StackPane `logoBox` con `fx:id`, fijo 280×100. Editor (`Editor.fxml`): el `ImageView` del logo se envuelve en un StackPane fijo 110×40 en el ToolBar; `EditorController.cargarLogo` añade `fitHeight=38` además del `fitWidth=92`.
+- Los tres logos reales del proyecto clasifican como **plano blanco** (`#FEFEFE`), así que quedan con caja blanca uniforme sin franjas ni borde visible.
+- TDD: `LogoMarcoTest` (12 tests: plano blanco puro, plano de color exacto, transparente sin cambio, ruido→difuminado, imagen nula y 2×2→sin cambio, geometría del respaldo fit=caja+60 con `managed`/`mouseTransparent`, clip arqueado, y cambio foto⇄plano en los dos sentidos sin rastro). Suite **138/138** en verde (126 + 12). Verificación visual del usuario OK.
+- Sync de specs: MODIFIED «Identidad de empresa en la interfaz» (relleno por tipo de imagen, esquinas y grosor conservados, transparente con tema, logo del editor en caja fija + 3 escenarios nuevos). Archivado el 02/09/2026 en `2026-09-02-logo-relleno-tema`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -324,10 +337,11 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - **Editor sin scroll (01/09/2026)**: rediseno del Editor para que una factura corta quepa entera a 1024x768 con los totales siempre visibles. Maquetado previo revisado con el usuario antes de tocar codigo.
 - **Fix real del tamano de ventana (01/09/2026)**: los dos fixes anteriores no bastaban. La causa era el `maxWidth`/`maxHeight` de Arranque heredado por el Stage. Corregido en `VentanaConfig` (sin maximos en Arranque, `aplicar` determinista) y `Main` (transicion con la ventana oculta). Verificado a la vista con la app en marcha; suite **107/107**.
 - **Configuracion por secciones (02/09/2026)**: pantalla de Configuracion con lista lateral en vez de pestanas, `PdfService` delegando en `CabeceraLayout` y vista previa aproximada de la cabecera (`PreviaCabecera`). Suite **119/119**. Commits `5c56ecf` (implementacion), `bf4f564` (docs) y `c75c55f` (archivo OpenSpec + spec sincronizada).
+- **Logo relleno tema (02/09/2026)**: util `LogoMarco` + aplicacion al menu (280×100) y editor (110×40). TDD con `LogoMarcoTest` (12 tests, suite **138/138**). Sync de spec «Identidad de empresa en la interfaz» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 126 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 138 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
