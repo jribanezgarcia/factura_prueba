@@ -73,8 +73,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-02-configuracion-secciones-laterales`
 - `openspec/changes/archive/2026-09-02-ficha-cliente-validada`
 - `openspec/changes/archive/2026-09-02-logo-tamano-fijo`
+- `openspec/changes/archive/2026-09-02-fix-exportar-pdf-agrupado`
 
-Cambio OpenSpec activo: ninguno (`ficha-cliente-validada` y `logo-tamano-fijo` archivados el 02/09/2026; `ficha-cliente-validada` sin delta de specs por `skip_specs`, `logo-tamano-fijo` con specs sincronizadas).
+Cambio OpenSpec activo: ninguno (`ficha-cliente-validada`, `logo-tamano-fijo` y `fix-exportar-pdf-agrupado` archivados el 02/09/2026; `ficha-cliente-validada` y `fix-exportar-pdf-agrupado` sin delta de specs por `skip_specs`, `logo-tamano-fijo` con specs sincronizadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -289,6 +290,14 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Suite **125/125** en verde (126 − 1 test eliminado de offsets). Verificación visual del usuario OK en los 4 puntos: logos apaisado y cuadrado sin pisar FACTURA ni comprimir datos de empresa, PDF con la configuración por defecto idéntico al anterior, y la sección Cabecera y pie cabe a 1024×768.
 - Commits `c25020f` (implementación) y `7d47d9f` (sync de specs + archivo en OpenSpec), push realizado. Spec sincronizada: requisitos «Exportación a PDF» (logo a tamaño fijo no configurable, caja 240×120) y «Configuración» (escenario «Elegir modo de cabecera» sin ajuste de tamaño/posición), validadas (`openspec validate --specs` ok). Archivado como `2026-09-02-logo-tamano-fijo`.
 
+### Change `fix-exportar-pdf-agrupado` (archivado)
+
+- Bug: la exportación de varias facturas como «Un único PDF agrupado» lanzaba `ExceptionConverter: Stream Closed`.
+- Causa raíz: en `PdfService.concatenar()`, el `FileOutputStream` estaba en try-with-resources que lo cerraba antes de que `document.close()` hiciera flush de `PdfCopy` (necesita el stream abierto para escribir la tabla de cross-references y trailer).
+- Fix: eliminar el try-with-resources del `FileOutputStream` y crear el stream inline en el constructor de `PdfCopy`; el `document.close()` del finally cierra `PdfCopy` → flush → stream.
+- Test nuevo: `exportarAgrupadoUneDosFacturasEnUnSoloPdf` verifica que dos facturas se fusionan en un solo PDF con ≥2 páginas.
+- Suite **126/126** en verde. `skip_specs` (fix puro, sin cambio de requisito). Archivado el 02/09/2026 en `2026-09-02-fix-exportar-pdf-agrupado`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -309,7 +318,7 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 125 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 126 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
