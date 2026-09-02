@@ -80,7 +80,7 @@
                         <TextField fx:id="txtUltimaCarpeta" editable="false" prefWidth="420" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                         <Label text="Color del PDF" GridPane.rowIndex="2"/>
                         <ColorPicker fx:id="colorPdf" prefWidth="220" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
-                        <Label styleClass="muted" text="Color de acento: cabeceras de tarjetas, totales y pie legal"
+                        <Label styleClass="muted" text="Color de acento: cabeceras de tarjetas, totales y pie legal; también SERIE/Nº y FECHA"
                                GridPane.columnIndex="2" GridPane.rowIndex="2"/>
                         <Label text="Tema de la aplicación" GridPane.rowIndex="3"/>
                         <ComboBox fx:id="comboTema" prefWidth="240" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
