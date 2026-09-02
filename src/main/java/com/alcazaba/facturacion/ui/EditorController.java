@@ -19,6 +19,7 @@ import com.alcazaba.facturacion.service.Sesion;
 import com.alcazaba.facturacion.service.ValidationException;
 import com.alcazaba.facturacion.util.DocumentoFiscalValidator;
 import com.alcazaba.facturacion.util.Formatos;
+import com.alcazaba.facturacion.util.LogoMarco;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -44,6 +45,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
@@ -104,6 +106,8 @@ public class EditorController implements Vista {
     private Label lblTotal;
     @FXML
     private ImageView logo;
+    @FXML
+    private StackPane logoBox;
     @FXML
     private HBox barraNavegacion;
     @FXML
@@ -213,19 +217,24 @@ public class EditorController implements Vista {
             Empresa empresa = servicios.config.getEmpresa();
             String ruta = empresa.getLogoPath();
             if (ruta == null || ruta.isBlank()) {
+                LogoMarco.limpiar(logoBox);
                 return;
             }
             File f = new File(ruta);
             if (!f.exists()) {
+                LogoMarco.limpiar(logoBox);
                 return;
             }
             Image img = new Image(f.toURI().toString());
             if (img.isError()) {
+                LogoMarco.limpiar(logoBox);
                 return;
             }
             logo.setImage(img);
             logo.setFitWidth(92);
+            logo.setFitHeight(38);
             logo.setPreserveRatio(true);
+            LogoMarco.aplicar(logoBox, img);
         } catch (Exception ignored) {
         }
     }

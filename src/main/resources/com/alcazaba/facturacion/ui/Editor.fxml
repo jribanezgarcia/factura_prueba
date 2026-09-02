@@ -15,7 +15,9 @@
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
             <VBox spacing="8" styleClass="card, card-editor">
                 <ToolBar styleClass="action-bar">
-                    <ImageView fx:id="logo" preserveRatio="true"/>
+                    <StackPane fx:id="logoBox" styleClass="menu-logo-box" prefWidth="110.0" prefHeight="40.0" maxWidth="110.0" maxHeight="40.0" minWidth="110.0" minHeight="40.0">
+                        <ImageView fx:id="logo" preserveRatio="true"/>
+                    </StackPane>
                     <Label fx:id="lblTitulo" styleClass="titulo, titulo-compacto" text="Nueva factura"/>
                     <Label fx:id="lblEstado" visible="false" managed="false" styleClass="chip-anulada" text="ANULADA"/>
                     <Region HBox.hgrow="ALWAYS"/>
