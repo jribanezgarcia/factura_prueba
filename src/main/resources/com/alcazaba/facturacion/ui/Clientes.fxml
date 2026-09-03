@@ -12,7 +12,7 @@
     <top>
         <VBox spacing="12">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="card, zona-contenido">
+            <VBox spacing="8" styleClass="card, zona-contenido, panel-busqueda">
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <TextField fx:id="txtBusqueda" prefWidth="280" promptText="Buscar por nombre o NIF..."/>
                     <Label fx:id="lblConteo" text=""/>

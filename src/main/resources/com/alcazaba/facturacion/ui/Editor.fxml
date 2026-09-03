@@ -13,7 +13,7 @@
     <top>
         <VBox spacing="8">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="card, card-editor">
+            <VBox spacing="8" styleClass="card, card-editor, panel-busqueda">
                 <ToolBar styleClass="action-bar">
                     <StackPane fx:id="logoBox" styleClass="menu-logo-box" prefWidth="110.0" prefHeight="40.0" maxWidth="110.0" maxHeight="40.0" minWidth="110.0" minHeight="40.0">
                         <ImageView fx:id="logo" preserveRatio="true"/>

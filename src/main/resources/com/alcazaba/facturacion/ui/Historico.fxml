@@ -12,7 +12,7 @@
     <top>
         <VBox spacing="12">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="card, zona-contenido">
+            <VBox spacing="8" styleClass="card, zona-contenido, panel-busqueda">
                 <FlowPane hgap="10" vgap="8">
                     <HBox spacing="4" alignment="CENTER_LEFT">
                         <Label text="Serie"/>

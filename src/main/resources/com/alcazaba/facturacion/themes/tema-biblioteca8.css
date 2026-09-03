@@ -24,8 +24,8 @@
 .default-button { -fx-background-color: #FFFFFF; -fx-text-fill: #1F2937; -fx-border-color: #D8DBDF; }
 .default-button:hover { -fx-border-color: #296796; -fx-text-fill: #296796; }
 .danger-button { -fx-background-color: #FFFFFF; -fx-text-fill: #C0392B; -fx-border-color: #E9B7AE; }
-.action-button { -fx-background-color: #B0B4B8; -fx-text-fill: #F3F5F6; -fx-border-color: #98A1AA; }
-.action-button:hover { -fx-background-color: #9EA2A7; -fx-text-fill: #F3F5F6; }
+.action-button { -fx-background-color: #FFFFFF; -fx-text-fill: #1F2937; -fx-border-color: #D8DBDF; }
+.action-button:hover { -fx-border-color: #296796; -fx-text-fill: #296796; }
 .action-danger-button { -fx-background-color: #B0B4B8; -fx-text-fill: #F3F5F6; -fx-border-color: #C9AEB6; }
 .action-danger-button:hover { -fx-background-color: #9EA2A7; -fx-text-fill: #F3F5F6; }
 
@@ -56,3 +56,5 @@
 .menu-item .icono { -fx-fill: #296796; }
 .menu-item .nombre { -fx-text-fill: #296796; }
 .menu-item .descripcion { -fx-text-fill: #6B7280; }
+
+.panel-busqueda { -fx-background-color: #F6F6F6; }
