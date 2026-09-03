@@ -10,18 +10,19 @@ import java.util.Optional;
  */
 public enum VentanaConfig {
 
-    ARRANQUE("/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, false),
-    MENU("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
-    EDITOR("/com/alcazaba/facturacion/ui/Editor.fxml", 1024, 768, 1024, 768, true),
-    CONFIGURACION("/com/alcazaba/facturacion/ui/Configuracion.fxml", 1024, 768, 1024, 768, true),
-    HISTORICO("/com/alcazaba/facturacion/ui/Historico.fxml", 1024, 768, 1024, 768, true),
-    CLIENTES("/com/alcazaba/facturacion/ui/Clientes.fxml", 1024, 768, 1024, 768, true),
-    VERSIONES("/com/alcazaba/facturacion/ui/Versiones.fxml", 1024, 768, 1024, 768, true),
-    BACKUP("/com/alcazaba/facturacion/ui/Backup.fxml", 1024, 768, 1024, 768, true),
-    GENERAR_MENSUAL("/com/alcazaba/facturacion/ui/GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
+    ARRANQUE("Seleccion de empresa", "/com/alcazaba/facturacion/ui/Arranque.fxml", 760, 520, 760, 520, false),
+    MENU("Menu Principal", "/com/alcazaba/facturacion/ui/MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
+    EDITOR("Editor de factura", "/com/alcazaba/facturacion/ui/Editor.fxml", 1024, 768, 1024, 768, true),
+    CONFIGURACION("Configuracion", "/com/alcazaba/facturacion/ui/Configuracion.fxml", 1024, 768, 1024, 768, true),
+    HISTORICO("Historico", "/com/alcazaba/facturacion/ui/Historico.fxml", 1024, 768, 1024, 768, true),
+    CLIENTES("Clientes", "/com/alcazaba/facturacion/ui/Clientes.fxml", 1024, 768, 1024, 768, true),
+    VERSIONES("Versiones", "/com/alcazaba/facturacion/ui/Versiones.fxml", 1024, 768, 1024, 768, true),
+    BACKUP("Copias", "/com/alcazaba/facturacion/ui/Backup.fxml", 1024, 768, 1024, 768, true),
+    GENERAR_MENSUAL("Generar facturas mensuales", "/com/alcazaba/facturacion/ui/GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
 
     private static final String CLAVE_CONFIG = "com.alcazaba.facturacion.ventanaConfig";
 
+    private final String titulo;
     private final String fxml;
     private final double ancho;
     private final double alto;
@@ -32,12 +33,13 @@ public enum VentanaConfig {
     private final boolean redimensionable;
     private final boolean maximizado;
 
-    VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto, boolean redimensionable) {
-        this(fxml, ancho, alto, minAncho, minAlto, Double.MAX_VALUE, Double.MAX_VALUE, redimensionable, false);
+    VentanaConfig(String titulo, String fxml, double ancho, double alto, double minAncho, double minAlto, boolean redimensionable) {
+        this(titulo, fxml, ancho, alto, minAncho, minAlto, Double.MAX_VALUE, Double.MAX_VALUE, redimensionable, false);
     }
 
-    VentanaConfig(String fxml, double ancho, double alto, double minAncho, double minAlto,
+    VentanaConfig(String titulo, String fxml, double ancho, double alto, double minAncho, double minAlto,
                   double maxAncho, double maxAlto, boolean redimensionable, boolean maximizado) {
+        this.titulo = titulo;
         this.fxml = fxml;
         this.ancho = ancho;
         this.alto = alto;
@@ -51,6 +53,10 @@ public enum VentanaConfig {
 
     public String fxml() {
         return fxml;
+    }
+
+    public String titulo() {
+        return titulo;
     }
 
     public double ancho() {

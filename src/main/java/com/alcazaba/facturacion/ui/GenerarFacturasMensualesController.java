@@ -114,7 +114,8 @@ public class GenerarFacturasMensualesController {
             Stage dialog = new Stage();
             dialog.initOwner(nav.stage());
             dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.setTitle("Generar facturas mensuales");
+            dialog.setTitle(Ventanas.PREFIJO + "Generar facturas mensuales");
+            Ventanas.aplicarIcono(dialog);
             Scene scene = new Scene(root);
             ThemeManager.aplicar(scene, nav.servicios());
             dialog.setScene(scene);
