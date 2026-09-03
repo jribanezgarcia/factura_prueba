@@ -81,8 +81,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-03-restaurar-copia-seguridad`
 - `openspec/changes/archive/2026-09-03-fix-restaurar-validacion-y-rollback`
 - `openspec/changes/archive/2026-09-03-icono-app-y-titulos-ventana`
+- `openspec/changes/archive/2026-09-03-ajuste-colores-historico-clientes-editor`
 
-Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa`, `restaurar-copia-seguridad`, `fix-restaurar-validacion-y-rollback` e `icono-app-y-titulos-ventana` archivados el 03/09/2026 con delta de specs sincronizadas y validadas).
+Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa`, `restaurar-copia-seguridad`, `fix-restaurar-validacion-y-rollback`, `icono-app-y-titulos-ventana` y `ajuste-colores-historico-clientes-editor` archivados el 03/09/2026 con delta de specs sincronizadas y validadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -380,6 +381,16 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Test nuevo `ventanaMuestraTituloConMarcaYIconoDeLaAplicacion` en `VentanaTransicionTest` (verifica título «CaboFactu® Menu Principal» e icono). Suite **156/156** en verde.
 - Sync de specs (ADDED «Identidad de la aplicación en la interfaz»: icono en ventana principal y secundarias + título con marca por pantalla, 4 escenarios), archivado el 03/09/2026 en `2026-09-03-icono-app-y-titulos-ventana`.
 
+### Change `ajuste-colores-historico-clientes-editor` (archivado)
+
+- Ajuste de colores en el **tema Biblioteca8** (theme por defecto) únicamente; los otros 7 temas quedan intactos.
+- Los botones de acción del Editor (`action-button`: Exportar PDF, Versiones, Crear rectificativa, Restaurar, Nueva factura, Volver, Añadir línea, Eliminar línea) pasan a **blanco con texto negro** (`-fx-background-color: #FFFFFF`, texto `#1F2937`, borde `#D8DBDF`); hover con texto/borde `#296796`. Guardar (primario) y Anular (peligro) intactos.
+- Nueva clase `panel-busqueda` con fondo gris claro **`#F6F6F6`** en `tema-biblioteca8.css`, aplicada a la tarjeta superior de **Histórico** y **Clientes** (que comparten el selector `card, zona-contenido` con Backup/Configuración/Versiones, por eso se introduce clase propia para no sobre-aplicar).
+- La **tarjeta superior del Editor** (que usa `card, card-editor`) se unifica también con el gris `#F6F6F6` mediante `panel-busqueda`.
+- Prototipo HTML temporal de colores en `prototipos/colores-historico-clientes.html` (para decidir el tono; NO se commitea).
+- Suite **156/156** en verde (dos ejecuciones). `git diff` confirma que solo se tocaron `tema-biblioteca8.css`, `Historico.fxml`, `Clientes.fxml`, `Editor.fxml` y los specs/archive.
+- Sync de specs (MODIFIED «Identidad de la aplicación en la interfaz»: requisito «Estilo de zona de acciones en tema por defecto» para botones blancos/texto negro y tarjeta superior `#F6F6F6` con escenarios de Histórico/Clientes y del Editor), archivado el 03/09/2026 en `2026-09-03-ajuste-colores-historico-clientes-editor`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -403,6 +414,7 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - **Restaurar copia de seguridad (03/09/2026)**: pantalla de Copia de seguridad con restauración (resumen, validación, copia de rescate automática, reemplazar la activa o crear empresa nueva, regla del NIF). `leerResumen`, `restaurarEnEmpresaActiva`, `restaurarComoEmpresaNueva`, `verificarEstructura`, `rutaLibre` en `BackupService`; `ToggleGroup` en `fx:define` en `Backup.fxml`. Suite **153/153**. Sync de spec «Copia de seguridad» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Fix restaurar validación y rollback (03/09/2026)**: `verificarEstructura` se separa en `comprobarTablasNucleo` (siempre exigidas, `TABLAS_NUCLEO`) y `estructuraCompleta` (solo exigida si la copia es de esquema posterior), aceptando y migrando copias de esquema anterior; rollback de `restaurarEnEmpresaActiva` que cierra la conexión antes de copiar el rescate y propaga el error original (`IOException`); limpieza en `restaurarComoEmpresaNueva`; `borrarDiario` derivado de `dbPath()`; UI con nombre visible de empresa y fin en pantalla Copias al responder «NO». Suite **155/155**. Sync de spec «Copia de seguridad» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Icono de aplicación y títulos con marca (03/09/2026)**: nuevo `ui/Ventanas` (`PREFIJO "CaboFactu® "` + `aplicarIcono(Stage)` idempotente), recurso `images/icono-aplicacion.png` (copia de `logos/logo1.png`, commiteado), `VentanaConfig.titulo` por vista, `Navegador.mostrar` titula y pone el icono en cada pantalla, `Main` fija título+icono inicial y la ventana «Generar facturas mensuales» también lleva icono y marca. Suite **156/156**. Sync de spec (ADDED «Identidad de la aplicación en la interfaz») + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
+- **Ajuste de colores Histórico/Clientes/Editor (03/09/2026)**: en tema Biblioteca8, botones de acción del Editor blancos con texto negro (`#FFFFFF`/`#1F2937`) y tarjeta superior de Histórico/Clientes/Editor en gris claro `#F6F6F6` vía clase `panel-busqueda`. Suite **156/156**. Sync de spec «Identidad de la aplicación en la interfaz» (requisito «Estilo de zona de acciones en tema por defecto») + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`.
 
 ## Notas tecnicas que evitan perder tiempo
 

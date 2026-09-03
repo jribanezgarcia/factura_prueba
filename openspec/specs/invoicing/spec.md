@@ -769,6 +769,34 @@ La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus v
 - **WHEN** se abre una ventana secundaria de tipo `Stage` con su propio título
 - **THEN** el título mostrado es «CaboFactu® <título propio de la ventana>»
 
+### Requirement: Estilo de zona de acciones en tema por defecto
+
+En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL distinguirse visualmente sin que resalte: las tarjetas superiores del Histórico, de Clientes y del Editor (Nueva factura), que contienen los campos de búsqueda o de factura y los botones de acción, SHALL tener un fondo gris claro `#F6F6F6`. En el Editor, los botones de acción (Exportar PDF, Versiones, Crear rectificativa, Restaurar, Nueva factura, Volver, Añadir línea y Eliminar línea) SHALL mostrarse con fondo blanco y texto negro. Guardar y Anular SHALL mantener su estilo actual (primario y de peligro respectivamente). Este estilo SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto de temas no cambian.
+
+#### Scenario: Tarjeta del Histórico con fondo gris claro
+- **WHEN** el usuario abre el Histórico con el tema por defecto
+- **THEN** la tarjeta que contiene los campos de búsqueda y la fila de botones muestra un fondo gris claro `#F6F6F6`
+
+#### Scenario: Tarjeta de Clientes con fondo gris claro
+- **WHEN** el usuario abre Clientes con el tema por defecto
+- **THEN** la tarjeta que contiene el campo de búsqueda y la fila de botones muestra el mismo fondo gris claro `#F6F6F6`
+
+#### Scenario: Tarjeta del Editor con fondo gris claro
+- **WHEN** el usuario abre el Editor (Nueva factura) con el tema por defecto
+- **THEN** la tarjeta superior que contiene la cabecera de la factura muestra el mismo fondo gris claro `#F6F6F6`
+
+#### Scenario: Botones del Editor en blanco y negro
+- **WHEN** el usuario abre el Editor con el tema por defecto
+- **THEN** los botones de acción (Exportar PDF, Versiones, Crear rectificativa, Restaurar, Nueva factura, Volver, Añadir línea y Eliminar línea) se muestran con fondo blanco y texto negro
+
+#### Scenario: Botones del Editor que conservan su estilo
+- **WHEN** el usuario abre el Editor con el tema por defecto
+- **THEN** los botones Guardar (estilo primario) y Anular (estilo de peligro) conservan su aspecto actual
+
+#### Scenario: El resto de temas no cambian
+- **WHEN** el usuario abre el Histórico, Clientes o el Editor con un tema distinto del por defecto
+- **THEN** los colores de esas zonas son los propios de cada tema, sin los cambios del tema por defecto
+
 ### Requirement: Facturación mensual por cliente
 
 La aplicación SHALL permitir generar múltiples facturas mensuales para un único cliente desde un diálogo específico. El usuario SHALL seleccionar el cliente, el año, el rango de meses, la serie de numeración y el día del mes que se usará como fecha de cada factura, pudiendo elegir entre un día fijo editable, el primer día del mes o el último día del mes. El usuario SHALL poder configurar las líneas de concepto que se replicarán en cada factura, con la opción de añadir automáticamente el nombre del mes a la descripción de cada línea. El usuario SHALL seleccionar el tipo de IVA y, opcionalmente, el tipo de retención IRPF que se aplicarán a todas las facturas generadas. El sistema SHALL crear una factura por cada mes del rango, asignando a cada una el siguiente número de la serie seleccionado y la fecha correspondiente. Si para un mes ya existe una factura para ese cliente y año, el sistema SHALL mostrar una advertencia con los meses afectados y SHALL permitir al usuario decidir si genera las facturas de todos modos o cancela la operación. Las facturas generadas SHALL aparecer en el histórico y SHALL poder exportarse a PDF.
