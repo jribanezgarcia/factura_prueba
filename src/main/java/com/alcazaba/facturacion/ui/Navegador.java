@@ -17,6 +17,7 @@ public class Navegador {
     private final Stage stage;
     private final Servicios servicios;
     private Consumer<Vista> onVistaCambio;
+    private Vista vistaActual;
 
     public Navegador(Stage stage, Servicios servicios) {
         this.stage = stage;
@@ -35,7 +36,15 @@ public class Navegador {
         return stage;
     }
 
+    /**
+     * Carga la vista y la muestra en la ventana, previa confirmacion de la
+     * vista actual. Si la vista actual cancela la salida
+     * (`puedeCerrar() == false`), no se navega y se devuelve `null`.
+     */
     public <T extends Vista> T mostrar(String fxml) {
+        if (vistaActual != null && !vistaActual.puedeCerrar()) {
+            return null;
+        }
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
             Parent root = loader.load();
@@ -51,6 +60,7 @@ public class Navegador {
             if (vista != null) {
                 vista.setServicios(servicios);
                 vista.setNavegador(this);
+                vistaActual = vista;
                 if (onVistaCambio != null) {
                     onVistaCambio.accept(vista);
                 }

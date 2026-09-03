@@ -185,6 +185,9 @@ public class HistoricoController implements Vista {
 
     private void abrirVersion(HistorialFila fila) {
         EditorController editor = nav.mostrar("/com/alcazaba/facturacion/ui/Editor.fxml");
+        if (editor == null) {
+            return;
+        }
         editor.cargarVersion(fila.getVersionId());
     }
 
