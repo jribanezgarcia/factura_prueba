@@ -276,6 +276,11 @@
     -fx-font-weight: bold;
 }
 
+/* Icono de aviso de los dialogos, coloreado con el acento del tema */
+.dialog-icon {
+    -fx-fill: -fx-accent;
+}
+
 /* Configuración por secciones */
 .area-secciones {
     -fx-alignment: CENTER_LEFT;
