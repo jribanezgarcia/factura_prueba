@@ -62,7 +62,7 @@
                 <TableColumn fx:id="colVersion" prefWidth="70" text="Versión"/>
                 <TableColumn fx:id="colCliente" prefWidth="220" text="Cliente"/>
                 <TableColumn fx:id="colNif" prefWidth="120" text="NIF"/>
-                <TableColumn fx:id="colBase" prefWidth="100" text="Base"/>
+                <TableColumn fx:id="colBase" prefWidth="100" text="Base imponible"/>
                 <TableColumn fx:id="colIva" prefWidth="100" text="IVA"/>
                 <TableColumn fx:id="colRetencion" prefWidth="100" text="Retención"/>
                 <TableColumn fx:id="colTotal" prefWidth="110" text="Total"/>

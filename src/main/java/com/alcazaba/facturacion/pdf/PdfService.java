@@ -481,12 +481,19 @@ public class PdfService {
         for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
             BigDecimal importeBase = conDescuento ? g.getBaseBruta() : g.getBase();
             filaResumen(t, nombreBaseGrupo(g, unSoloGrupo), Formatos.moneda(importeBase));
-            filaResumen(t, g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
-                    Formatos.moneda(g.getCuota()));
+            if (!conDescuento) {
+                filaResumen(t, g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
+                        Formatos.moneda(g.getCuota()));
+            }
         }
         if (conDescuento) {
             filaDescuento(t, "Descuento " + descuento + "%",
                     "-" + Formatos.moneda(r.getImporteDescuento()));
+            filaResumen(t, "Base imponible", Formatos.moneda(r.getBaseTotal()));
+            for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+                filaResumen(t, g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
+                        Formatos.moneda(g.getCuota()));
+            }
         }
         if (r.getImporteRetencion() != null && r.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0) {
             String etiqueta = r.getNombreRetencion() != null && !r.getNombreRetencion().isBlank()
@@ -524,11 +531,11 @@ public class PdfService {
      */
     private String nombreBaseGrupo(ResumenFactura.IvaGrupo g, boolean unSoloGrupo) {
         if (g.isExento()) {
-            return "Base exenta" + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
+            return "Subtotal exento" + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
                     ? " (" + g.getMotivoExencion() + ")"
                     : "");
         }
-        return unSoloGrupo ? "Base" : "Base " + g.getPorcentaje() + "%";
+        return unSoloGrupo ? "Subtotal" : "Subtotal " + g.getPorcentaje() + "%";
     }
 
     private void filaDescuento(PdfPTable t, String etiqueta, String valor) {
