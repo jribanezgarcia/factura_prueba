@@ -95,6 +95,16 @@ public class EditorController implements Vista {
     @FXML
     private Label lblEstado;
     @FXML
+    private HBox filaBaseBruta;
+    @FXML
+    private Label lblBaseBruta;
+    @FXML
+    private HBox filaDescuento;
+    @FXML
+    private Label lblDescuentoNombre;
+    @FXML
+    private Label lblDescuentoImporte;
+    @FXML
     private Label lblBaseTotal;
     @FXML
     private Label lblIvaTotal;
@@ -822,6 +832,16 @@ public class EditorController implements Vista {
 
     private void actualizarResumen() {
         ResumenFactura r = CalculoService.resumen(lineas, descuento, retencionActual);
+        boolean conDescuento = r.getImporteDescuento() != null && r.getImporteDescuento().compareTo(BigDecimal.ZERO) > 0;
+        filaBaseBruta.setVisible(conDescuento);
+        filaBaseBruta.setManaged(conDescuento);
+        filaDescuento.setVisible(conDescuento);
+        filaDescuento.setManaged(conDescuento);
+        if (conDescuento) {
+            lblBaseBruta.setText(Formatos.moneda(r.getBaseBruta()));
+            lblDescuentoNombre.setText("Descuento " + descuento + "%");
+            lblDescuentoImporte.setText("-" + Formatos.moneda(r.getImporteDescuento()));
+        }
         lblBaseTotal.setText(Formatos.moneda(r.getBaseTotal()));
         lblIvaTotal.setText(Formatos.moneda(r.getIvaTotal()));
         boolean conRetencion = r.getImporteRetencion() != null && r.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0;

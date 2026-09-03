@@ -145,13 +145,21 @@ class PdfServiceTest {
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
-            assertTrue(texto.contains("Base"));
+            assertTrue(texto.contains("Subtotal"));
             assertTrue(texto.contains("IVA 21%"));
             assertTrue(texto.contains("Descuento 10%"));
+            assertTrue(texto.contains("Base imponible"));
             assertTrue(texto.contains("-312,81"));
             assertTrue(texto.contains("3.406,50"));
             assertFalse(texto.contains("Base total"));
             assertFalse(texto.contains("IVA total"));
+            int iBase = texto.indexOf("Subtotal");
+            int iDescuento = texto.indexOf("Descuento 10%");
+            int iImponible = texto.indexOf("Base imponible");
+            int iIva = texto.indexOf("IVA 21%");
+            int iTotal = texto.lastIndexOf("TOTAL");
+            assertTrue(iBase >= 0 && iBase < iDescuento && iDescuento < iImponible
+                    && iImponible < iIva && iIva < iTotal);
         }
     }
 

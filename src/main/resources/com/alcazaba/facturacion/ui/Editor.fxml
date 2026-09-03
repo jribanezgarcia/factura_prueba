@@ -122,6 +122,16 @@
                 <TextArea fx:id="txtObservaciones" wrapText="true" prefRowCount="2" VBox.vgrow="ALWAYS"/>
             </VBox>
             <VBox styleClass="totales, totales-compacta" minWidth="300.0" maxWidth="300.0">
+                <HBox fx:id="filaBaseBruta" styleClass="total-fila, total-fila-primera" alignment="CENTER_LEFT">
+                    <Label text="Subtotal"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblBaseBruta" styleClass="valor"/>
+                </HBox>
+                <HBox fx:id="filaDescuento" styleClass="total-fila" alignment="CENTER_LEFT">
+                    <Label fx:id="lblDescuentoNombre" text="Descuento"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <Label fx:id="lblDescuentoImporte" styleClass="valor"/>
+                </HBox>
                 <HBox styleClass="total-fila, total-fila-primera" alignment="CENTER_LEFT">
                     <Label text="Base imponible"/>
                     <Region HBox.hgrow="ALWAYS"/>
