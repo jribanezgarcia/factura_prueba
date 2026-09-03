@@ -1,6 +1,6 @@
 # Continuacion del proyecto de facturacion
 
-Estado actualizado: 02/09/2026
+Estado actualizado: 03/09/2026
 
 NOTA: hasta aqui se ha hecho la app con modelos gratuitos de OPENCODE.
 
@@ -78,8 +78,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-02-logo-relleno-tema`
 - `openspec/changes/archive/2026-09-02-pdf-texto-neutro-color-acento`
 - `openspec/changes/archive/2026-09-03-fix-crear-empresa-no-cambia-activa`
+- `openspec/changes/archive/2026-09-03-restaurar-copia-seguridad`
 
-Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa` archivado el 03/09/2026 con delta de specs sincronizadas y validadas).
+Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa` y `restaurar-copia-seguridad` archivados el 03/09/2026 con delta de specs sincronizadas y validadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -344,13 +345,25 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Tests (`EmpresaManagerTest`, de 6 a 9): `creaEmpresaYLaDejaActiva` renombrado a `crearCreaLaBaseSinActivarla`; `dosEmpresasNoCompartenDatos`, `eliminarEmpresaBorraCarpeta` y `noSePuedeEliminarLaActiva` intercalan `conectar(...)`. Nuevos: `crearNoCambiaLaEmpresaActiva`, `crearNoRompeLaConexionEnCurso` (reproduce el fallo real) y `laBaseNuevaTieneElEsquemaCompleto` (`PRAGMA user_version == Migrations.ultimaVersion()`).
 - Suite **141/141** en verde. Sync de specs (MODIFIED «Gestión de empresas»: crear desde Configuración SHALL NOT cambiar la empresa activa/la conexión/la última empresa; cambiar de empresa SHALL ser acción explícita; escenario «Crear una nueva empresa» reescrito, nuevos «Crear y aceptar el cambio»), archivado el 03/09/2026 en `2026-09-03-fix-crear-empresa-no-cambia-activa`.
 
+### Change `restaurar-copia-seguridad` (archivado)
+
+- La pantalla de Copia de seguridad permite **restaurar** una copia del SQLite además de crearla. Al seleccionar un archivo `*.db` muestra un resumen (empresa, NIF, nº de facturas, última fecha y versión de esquema).
+- `BackupService.leerResumen(Path)` valida antes de tocar nada: archivo legible, no ser la propia base activa, `PRAGMA quick_check` (rechaza no-SQLite), existencia de todas las tablas de la aplicación y `user_version > 0`; rechaza copias de esquema más nuevo solo si su estructura de tablas/columnas no coincide (permite las que coinciden avisando). `verificarEstructura` comprueba tablas y columnas conocidas (`COLUMNAS_APLICACION`).
+- `restaurarEnEmpresaActiva(Path)`: guarda copia de rescate en `copias_previas`, `resetConnection`, `Files.copy`, limpia `-wal`/`-shm` y reconecta; si algo falla hace rollback.
+- `restaurarComoEmpresaNueva(Path, nombre)`: `crearEmpresa` (ya no activa), copia sobre `dbPathDe(slug)`, limpia diario y migra con conexión local.
+- `crearBackup` usa `rutaLibre` para evitar colisiones de timestamp dentro del mismo segundo.
+- `Migrations.userVersion(Connection)` pasa a ser público.
+- UI: `Backup.fxml` con una tarjeta «Restaurar una copia» (origen, resumen, `radio` Reemplazar/Crear nueva, nombre de nueva empresa, botón Restaurar), contenido en `ScrollPane`. `BackupController` con `seleccionarOrigen`, regla del NIF (deshabilita Reemplazar si el NIF de la copia no coincide con la empresa activa, salvo que la activa esté vacía y sin facturas) y `restaurar` en `Task` con navegación post-restauración.
+- Fix menor de FXML: el `ToggleGroup` se declara dentro de `<fx:define>` (un `ToggleGroup` no es un `Node` y no puede ser hijo de layout; rompía el load con `Unable to coerce ToggleGroup to Node`).
+- Tests nuevos: `BackupServiceTest` (11) y `BackupLayoutTest` (layout con las dos tarjetas sin desbordar). Suite **153/153** en verde.
+- Sync de specs (MODIFIED «Copia de seguridad» con restauración, resumen, validación, copia de rescate, reemplazar/crear nueva, regla del NIF, esquema posterior y logo inexistente + 9 escenarios), archivado el 03/09/2026 en `2026-09-03-restaurar-copia-seguridad`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
-- Proximo change con plan guardado en `PLAN_RESTAURAR_BACKUP.md`: **restaurar copia de seguridad** (en cola, `restaurar-copia-seguridad`).
 - Opciones conocidas pendientes en el spec principal:
   - Flujo de **clientes inactivos** (clientes con facturas no se borran, se marcan inactivos y no se ofrecen al crear facturas nuevas).
-  - **Copia de seguridad** manual (V1: solo copia del SQLite).
+  - **Copia de seguridad** manual ya implementada (crear y restaurar) en `restaurar-copia-seguridad`.
 - Idea futura anotada en el cambio y pendiente de un change propio: **buscador de codigos postales** en la ficha de cliente (buscar por localidad y que rellene el CP, o al reves). Es el dato que mas lata da al cumplimentar facturas.
 
 
@@ -365,10 +378,11 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - **Logo relleno tema (02/09/2026)**: util `LogoMarco` + aplicacion al menu (280×100) y editor (110×40). TDD con `LogoMarcoTest` (12 tests, suite **138/138**). Sync de spec «Identidad de empresa en la interfaz» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **PDF texto neutro / color acento (02/09/2026)**: paleta de tinta del PDF sin tinte arena (negro/gris neutro) y `SERIE / Nº`-`FECHA` en color de acento. Suite **138/138**. Sync de spec «Exportación a PDF» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Crear empresa sin activar (03/09/2026)**: `crearEmpresa` deja de activar la empresa nueva (crea base con conexión local + catálogo, sin tocar estado global); desde Configuración se ofrece cambiar a ella. `Migrations.ultimaVersion()` nuevo. Suite **141/141**. Sync de spec «Gestión de empresas» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
+- **Restaurar copia de seguridad (03/09/2026)**: pantalla de Copia de seguridad con restauración (resumen, validación, copia de rescate automática, reemplazar la activa o crear empresa nueva, regla del NIF). `leerResumen`, `restaurarEnEmpresaActiva`, `restaurarComoEmpresaNueva`, `verificarEstructura`, `rutaLibre` en `BackupService`; `ToggleGroup` en `fx:define` en `Backup.fxml`. Suite **153/153**. Sync de spec «Copia de seguridad» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 141 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 153 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
