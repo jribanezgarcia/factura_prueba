@@ -41,4 +41,4 @@
 
 - [x] 9.1 Sincronizar la spec delta con `openspec/specs/invoicing/spec.md`.
 - [x] 9.2 Archivar el change y actualizar CONTINUAR_MAÑANA.md.
-- [ ] 9.3 Commit y push.
+- [x] 9.3 Commit y push.
