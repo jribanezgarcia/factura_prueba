@@ -7,6 +7,7 @@ import com.alcazaba.facturacion.service.Servicios;
 import com.alcazaba.facturacion.ui.ArranqueController;
 import com.alcazaba.facturacion.ui.Dialogos;
 import com.alcazaba.facturacion.ui.Navegador;
+import com.alcazaba.facturacion.ui.Ventanas;
 import com.alcazaba.facturacion.ui.Vista;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -90,7 +91,8 @@ public class Main extends Application {
     }
 
     private void configurarVentana() {
-        stage.setTitle("Facturación");
+        stage.setTitle(Ventanas.PREFIJO + "Seleccion de empresa");
+        Ventanas.aplicarIcono(stage);
         aplicarPreferenciasVentana(stage);
         stage.setOnCloseRequest(e -> {
             if (!cerrarAplicacion()) {

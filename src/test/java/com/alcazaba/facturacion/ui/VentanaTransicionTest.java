@@ -146,6 +146,27 @@ class VentanaTransicionTest {
         enFx("No se pudo cerrar la ventana", stage::hide);
     }
 
+    @Test
+    void ventanaMuestraTituloConMarcaYIconoDeLaAplicacion() throws Exception {
+        Servicios servicios = new Servicios();
+        AtomicReference<Stage> stageRef = new AtomicReference<>();
+
+        enFx("JavaFX no cargo el Menu", () -> {
+            Stage stage = new Stage();
+            Navegador nav = new Navegador(stage, servicios);
+            nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+            stage.show();
+            stageRef.set(stage);
+        });
+
+        Stage stage = stageRef.get();
+        assertEquals("CaboFactu\u00AE Menu Principal", stage.getTitle(),
+                "La ventana debe titularse con la marca y el nombre de la pantalla");
+        assertFalse(stage.getIcons().isEmpty(), "La ventana debe tener el icono de la aplicacion");
+
+        enFx("No se pudo cerrar la ventana", stage::hide);
+    }
+
     private void enFx(String mensajeTimeout, Runnable accion) throws Exception {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Throwable> error = new AtomicReference<>();
