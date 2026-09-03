@@ -480,7 +480,7 @@ public class PdfService {
 
         for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
             BigDecimal importeBase = conDescuento ? g.getBaseBruta() : g.getBase();
-            filaResumen(t, nombreBaseGrupo(g, unSoloGrupo), Formatos.moneda(importeBase));
+            filaResumen(t, nombreBaseGrupo(g, unSoloGrupo, conDescuento), Formatos.moneda(importeBase));
             if (!conDescuento) {
                 filaResumen(t, g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
                         Formatos.moneda(g.getCuota()));
@@ -489,8 +489,8 @@ public class PdfService {
         if (conDescuento) {
             filaDescuento(t, "Descuento " + descuento + "%",
                     "-" + Formatos.moneda(r.getImporteDescuento()));
-            filaResumen(t, "Base imponible", Formatos.moneda(r.getBaseTotal()));
             for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+                filaResumen(t, nombreBaseImponibleGrupo(g, unSoloGrupo), Formatos.moneda(g.getBase()));
                 filaResumen(t, g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
                         Formatos.moneda(g.getCuota()));
             }
@@ -526,16 +526,35 @@ public class PdfService {
     }
 
     /**
-     * Etiqueta de la fila de base: sin tipo cuando solo hay un grupo y con el
-     * porcentaje cuando hay varios; las exentas llevan su motivo.
+     * Etiqueta de la fila de base del primer bloque: con descuento es el
+     * subtotal previo al descuento; sin descuento esa fila ya es la base
+     * imponible. Sin tipo cuando solo hay un grupo y con el porcentaje
+     * cuando hay varios; las exentas llevan su motivo.
      */
-    private String nombreBaseGrupo(ResumenFactura.IvaGrupo g, boolean unSoloGrupo) {
+    private String nombreBaseGrupo(ResumenFactura.IvaGrupo g, boolean unSoloGrupo, boolean conDescuento) {
         if (g.isExento()) {
-            return "Subtotal exento" + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
+            String base = conDescuento ? "Subtotal exento" : "Base exenta";
+            return base + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
                     ? " (" + g.getMotivoExencion() + ")"
                     : "");
         }
+        if (!conDescuento) {
+            return unSoloGrupo ? "Base imponible" : "Base imponible " + g.getPorcentaje() + "%";
+        }
         return unSoloGrupo ? "Subtotal" : "Subtotal " + g.getPorcentaje() + "%";
+    }
+
+    /**
+     * Etiqueta de la fila de base del bloque posterior al descuento: siempre
+     * base imponible por tipo.
+     */
+    private String nombreBaseImponibleGrupo(ResumenFactura.IvaGrupo g, boolean unSoloGrupo) {
+        if (g.isExento()) {
+            return "Base exenta" + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
+                    ? " (" + g.getMotivoExencion() + ")"
+                    : "");
+        }
+        return unSoloGrupo ? "Base imponible" : "Base imponible " + g.getPorcentaje() + "%";
     }
 
     private void filaDescuento(PdfPTable t, String etiqueta, String valor) {

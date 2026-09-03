@@ -70,6 +70,17 @@ class PdfServiceTest {
         return v;
     }
 
+    private LineaFactura linea(String base, Integer porcentaje) {
+        LineaFactura l = new LineaFactura();
+        l.setCantidad(1);
+        l.setDescripcion("CONCEPTO " + porcentaje + "%");
+        l.setPrecioUnitario(new BigDecimal(base));
+        l.setTotalBase(new BigDecimal(base));
+        l.setIvaNombre("IVA " + porcentaje + "%");
+        l.setIvaPorcentaje(porcentaje);
+        return l;
+    }
+
     private String textoDe(PdfReader reader) throws IOException {
         StringBuilder sb = new StringBuilder();
         PdfTextExtractor extractor = new PdfTextExtractor(reader);
@@ -113,6 +124,8 @@ class PdfServiceTest {
             assertFalse(texto.contains("Forma de pago"));
             assertFalse(texto.contains("Vencimiento"));
             assertTrue(texto.contains("3.785,00"));
+            assertTrue(texto.contains("Base imponible"));
+            assertFalse(texto.contains("Subtotal"));
             assertTrue(texto.contains("RGPD"));
         }
     }
@@ -160,6 +173,57 @@ class PdfServiceTest {
             int iTotal = texto.lastIndexOf("TOTAL");
             assertTrue(iBase >= 0 && iBase < iDescuento && iDescuento < iImponible
                     && iImponible < iIva && iIva < iTotal);
+        }
+    }
+
+    @Test
+    void desgloseConVariosTiposYDescuentoMuestraBasePorTipo() throws Exception {
+        FacturaVersion v = versionMuestra();
+        v.setDescuentoPorcentaje(10);
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), v, List.of(linea("1000.00", 21), linea("500.00", 10)), null);
+
+        Path destino = tempDir.resolve("varios-tipos.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("Base imponible 21%"));
+            assertTrue(texto.contains("900,00"));
+            assertTrue(texto.contains("Base imponible 10%"));
+            assertTrue(texto.contains("450,00"));
+            assertTrue(texto.contains("189,00"));
+            assertTrue(texto.contains("45,00"));
+            assertTrue(texto.contains("1.584,00"));
+            int iSub21 = texto.indexOf("Subtotal 21%");
+            int iSub10 = texto.indexOf("Subtotal 10%");
+            int iDto = texto.indexOf("Descuento 10%");
+            int iBase21 = texto.indexOf("Base imponible 21%");
+            int iIva21 = texto.indexOf("IVA 21%");
+            int iBase10 = texto.indexOf("Base imponible 10%");
+            int iIva10 = texto.indexOf("IVA 10%");
+            int iTotal = texto.lastIndexOf("TOTAL");
+            assertTrue(iSub21 >= 0 && iSub21 < iSub10 && iSub10 < iDto && iDto < iBase21
+                    && iBase21 < iIva21 && iIva21 < iBase10 && iBase10 < iIva10 && iIva10 < iTotal);
+        }
+    }
+
+    @Test
+    void retencionApareceComoFilaPropiaEnElPdf() throws Exception {
+        FacturaVersion v = versionMuestra();
+        v.setTipoRetencionId(1L);
+        v.setTipoRetencionNombre("IRPF profesional");
+        v.setTipoRetencionPorcentaje(15);
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), v, List.of(lineaArmario()), null);
+
+        Path destino = tempDir.resolve("retencion.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("IRPF profesional 15%"));
+            assertTrue(texto.contains("-469,22"));
         }
     }
 
