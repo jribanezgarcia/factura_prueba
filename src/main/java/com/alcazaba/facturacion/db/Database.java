@@ -120,6 +120,13 @@ public final class Database {
         return dataDir().resolve(DB_FILE);
     }
 
+    /**
+     * Ruta de la base de datos de una empresa cualquiera, sin activarla.
+     */
+    public static Path dbPathDe(String slug) {
+        return baseDataDir.resolve(slug).resolve(DB_FILE);
+    }
+
     public static Path lockPath() {
         return dataDir().resolve("facturas.lock");
     }

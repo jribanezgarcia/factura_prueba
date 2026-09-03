@@ -891,9 +891,16 @@ public class ConfiguracionController implements Vista {
         }
         try {
             EmpresaManager.EmpresaInfo nueva = EmpresaManager.crearEmpresa(nombre);
-            Dialogos.info("Nueva empresa",
-                    "Empresa \"" + nueva.nombre() + "\" creada (carpeta: " + nueva.slug() + ").");
             refrescarEmpresas();
+            if (Dialogos.confirmar("Nueva empresa",
+                    "Empresa \"" + nueva.nombre() + "\" creada (carpeta: " + nueva.slug() + ").\n\n"
+                            + "¿Quieres cambiar a ella ahora?")) {
+                empresas.stream()
+                        .filter(e -> e.slug().equals(nueva.slug()))
+                        .findFirst()
+                        .ifPresent(e -> tablaEmpresas.getSelectionModel().select(e));
+                cambiarEmpresa();
+            }
         } catch (Exception e) {
             Dialogos.error("Nueva empresa", "No se pudo crear la empresa: " + e.getMessage());
         }

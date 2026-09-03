@@ -1,12 +1,16 @@
 package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.db.Database;
+import com.alcazaba.facturacion.db.Migrations;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -42,22 +46,26 @@ public final class EmpresaManager {
 
     /**
      * Crea una empresa nueva: carpeta, base de datos vacia con todas las
-     * migraciones, entrada en el catalogo y la deja como activa.
+     * migraciones y entrada en el catalogo. No cambia la empresa activa ni la
+     * conexion en curso.
      */
     public static EmpresaInfo crearEmpresa(String nombre) throws Exception {
         String slug = slugDe(nombre);
         if (Database.getEmpresasDisponibles().contains(slug)) {
             throw new IllegalArgumentException("Ya existe una empresa con esa carpeta de datos: " + slug);
         }
-        Database.setEmpresaActiva(slug);
-        Database.resetConnection();
-        Database.getConnection();
+        Path destino = Database.dbPathDe(slug);
+        Files.createDirectories(destino.getParent());
+        try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + destino)) {
+            try (Statement st = c.createStatement()) {
+                st.execute("PRAGMA foreign_keys = ON");
+            }
+            Migrations.migrate(c);
+        }
 
         Properties catalogo = cargarCatalogo();
         catalogo.setProperty(claveNombre(slug), nombre.trim());
         guardarCatalogo(catalogo);
-        PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, slug);
-        Sesion.inicializar(slug, Sesion.fechaTrabajo() != null ? Sesion.fechaTrabajo() : LocalDate.now());
         return new EmpresaInfo(slug, nombre.trim());
     }
 
