@@ -105,6 +105,8 @@ public class EditorController implements Vista {
     @FXML
     private Label lblDescuentoImporte;
     @FXML
+    private HBox filaBaseImponible;
+    @FXML
     private Label lblBaseTotal;
     @FXML
     private Label lblIvaTotal;
@@ -837,6 +839,8 @@ public class EditorController implements Vista {
         filaBaseBruta.setManaged(conDescuento);
         filaDescuento.setVisible(conDescuento);
         filaDescuento.setManaged(conDescuento);
+        togglePrimera(filaBaseBruta, conDescuento);
+        togglePrimera(filaBaseImponible, !conDescuento);
         if (conDescuento) {
             lblBaseBruta.setText(Formatos.moneda(r.getBaseBruta()));
             lblDescuentoNombre.setText("Descuento " + descuento + "%");
@@ -857,6 +861,16 @@ public class EditorController implements Vista {
             lblRetencionImporte.setText("-" + Formatos.moneda(r.getImporteRetencion()));
         }
         lblTotal.setText(Formatos.moneda(r.getTotal()));
+    }
+
+    private static void togglePrimera(HBox fila, boolean primera) {
+        if (primera) {
+            if (!fila.getStyleClass().contains("total-fila-primera")) {
+                fila.getStyleClass().add("total-fila-primera");
+            }
+        } else {
+            fila.getStyleClass().remove("total-fila-primera");
+        }
     }
 
     // ------------------------------------------------------------------
