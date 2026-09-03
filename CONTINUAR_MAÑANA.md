@@ -82,8 +82,11 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-03-fix-restaurar-validacion-y-rollback`
 - `openspec/changes/archive/2026-09-03-icono-app-y-titulos-ventana`
 - `openspec/changes/archive/2026-09-03-ajuste-colores-historico-clientes-editor`
+- `openspec/changes/archive/2026-09-03-estetica-generar-mensuales`
+- `openspec/changes/archive/2026-09-03-fix-retencion-sobre-base-imponible`
+- `openspec/changes/archive/2026-09-03-reorden-desglose-totales`
 
-Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa`, `restaurar-copia-seguridad`, `fix-restaurar-validacion-y-rollback`, `icono-app-y-titulos-ventana` y `ajuste-colores-historico-clientes-editor` archivados el 03/09/2026 con delta de specs sincronizadas y validadas).
+Cambio OpenSpec activo: ninguno (`fix-retencion-sobre-base-imponible` y `reorden-desglose-totales` archivados el 03/09/2026 con deltas sincronizadas y validadas; el spec sincronizado incluye ademas el requisito pendiente de `estetica-generar-mensuales`).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -391,6 +394,26 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Suite **156/156** en verde (dos ejecuciones). `git diff` confirma que solo se tocaron `tema-biblioteca8.css`, `Historico.fxml`, `Clientes.fxml`, `Editor.fxml` y los specs/archive.
 - Sync de specs (MODIFIED «Identidad de la aplicación en la interfaz»: requisito «Estilo de zona de acciones en tema por defecto» para botones blancos/texto negro y tarjeta superior `#F6F6F6` con escenarios de Histórico/Clientes y del Editor), archivado el 03/09/2026 en `2026-09-03-ajuste-colores-historico-clientes-editor`.
 
+### Change `fix-retencion-sobre-base-imponible` (archivado)
+
+- La retencion de IRPF se calculaba sobre la **base bruta** mientras el IVA iba sobre la base descontada (dos bases en el mismo documento). Ahora va sobre la **base imponible**, la misma que el IVA. Formula intacta: `Total = Base − Descuento + IVA − Retencion`.
+- Fix de una linea en `CalculoService.resumen` (`:149`): `baseTotalSinDescuento` → `baseTotalDescontada`. Unico punto de calculo; editor, versionado y PDF heredan el cambio. Javadoc de clase y metodo actualizados.
+- Efecto colateral resuelto: con descuento 100 % el total salia negativo (−150); ahora queda en 0,00 sin validacion nueva.
+- Tests (`CalculoServiceTest`): `retencionConDescuentoUsaBaseBruta` reescrito como `retencionUsaLaBaseImponibleDescontada` (171,00 / 918,00) y `retencionSobreBaseBrutaRestaDelTotal` renombrado a `retencionSinDescuentoRestaDelTotal`; nuevo `descuentoDelCienPorCienNoDaTotalNegativo`. Los dos nuevos **fallan con el codigo anterior** (190,00 y retencion 150,00) antes del fix.
+- Regresion intacta sin tocar: `FacturaServiceTest` (7/7) y `FacturacionMensualServiceTest` (11/11), ambos con descuento 0.
+- Sync de specs (MODIFIED «Retención de IRPF» y «Retención en rectificativas»: base imponible + escenarios 900/189/135/954 y 100 %), archivado el 03/09/2026 en `2026-09-03-fix-retencion-sobre-base-imponible`.
+- Verificacion manual del usuario con factura real: base 200, dto 10 %, IVA 21 %, ret 15 % → imponible 180, IVA 37,80, retencion 27, total 190,80. OK.
+- Riesgo anotado (no abordado): `PdfService.exportar` recalcula totales en vez de leer los guardados, asi que reexportar una factura antigua con dto+retencion da otro total. Trabajo aparte.
+- Suite **157/157** en verde. Commit `2ab5652`, push realizado.
+
+### Change `reorden-desglose-totales` (archivado)
+
+- El PDF mostraba base bruta junto a cuota de IVA calculada sobre base descontada, con el descuento despues del IVA; el editor ni mostraba base bruta ni descuento. Orden nuevo identico en ambos: **Subtotal → Descuento → Base imponible → IVA → Retención → TOTAL** (filas de subtotal y descuento solo con dto > 0).
+- `PdfService.bloqueTotales`: con descuento pinta subtotal por grupo, fila unica de descuento, fila unica de base imponible total, cuotas por grupo, retencion y TOTAL; sin descuento queda como antes. `Editor.fxml` + `actualizarResumen`: dos filas nuevas con `visible/managed` condicionados (mismo patron que retencion).
+- Etiqueta **«Subtotal»** en vez de «Base» a peticion del usuario (es lo habitual en facturas; «Base imponible» se reserva para la linea post-descuento). `Subtotal N %` por grupo, `Subtotal exento (motivo)` en exentas. La columna `Base` del Historico pasa a **`Base imponible`** porque muestra la `base_total` guardada (no es la bruta).
+- `PdfServiceTest.totalesConDescuentoSeMuestranRestandoYCuadran` ampliado con `Base imponible` y asercion de orden relativo. Suite **157/157** en verde. Verificacion visual del usuario OK.
+- Sync de specs (ADDED «Orden del desglose de totales» + 4 escenarios), archivado el 03/09/2026 en `2026-09-03-reorden-desglose-totales`. Commit `3bd4b7f`, push realizado.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -415,10 +438,13 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - **Fix restaurar validación y rollback (03/09/2026)**: `verificarEstructura` se separa en `comprobarTablasNucleo` (siempre exigidas, `TABLAS_NUCLEO`) y `estructuraCompleta` (solo exigida si la copia es de esquema posterior), aceptando y migrando copias de esquema anterior; rollback de `restaurarEnEmpresaActiva` que cierra la conexión antes de copiar el rescate y propaga el error original (`IOException`); limpieza en `restaurarComoEmpresaNueva`; `borrarDiario` derivado de `dbPath()`; UI con nombre visible de empresa y fin en pantalla Copias al responder «NO». Suite **155/155**. Sync de spec «Copia de seguridad» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Icono de aplicación y títulos con marca (03/09/2026)**: nuevo `ui/Ventanas` (`PREFIJO "CaboFactu® "` + `aplicarIcono(Stage)` idempotente), recurso `images/icono-aplicacion.png` (copia de `logos/logo1.png`, commiteado), `VentanaConfig.titulo` por vista, `Navegador.mostrar` titula y pone el icono en cada pantalla, `Main` fija título+icono inicial y la ventana «Generar facturas mensuales» también lleva icono y marca. Suite **156/156**. Sync de spec (ADDED «Identidad de la aplicación en la interfaz») + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Ajuste de colores Histórico/Clientes/Editor (03/09/2026)**: en tema Biblioteca8, botones de acción del Editor blancos con texto negro (`#FFFFFF`/`#1F2937`) y tarjeta superior de Histórico/Clientes/Editor en gris claro `#F6F6F6` vía clase `panel-busqueda`. Suite **156/156**. Sync de spec «Identidad de la aplicación en la interfaz» (requisito «Estilo de zona de acciones en tema por defecto») + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`.
+- **Retención sobre base imponible (03/09/2026)**: fix de una línea en `CalculoService:149` + Javadoc, tests reescritos (fallo previo confirmado: 190,00 en vez de 171,00) y caso de dto 100 %. Sync de spec «Retención de IRPF»/«Retención en rectificativas» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`. Suite **157/157**. Commits `2ab5652` (fix) y `e497d09` (docs), push realizado.
+- **Reorden del desglose + Subtotal (03/09/2026)**: `PdfService.bloqueTotales` reestructurado y 2 filas nuevas en el editor (visibles solo con dto > 0); etiqueta «Base» → «Subtotal» y columna del Histórico → «Base imponible». Test de PDF con aserción de orden. Sync de spec (ADDED «Orden del desglose de totales») + archive OpenSpec + verificación visual del usuario OK + update de `CONTINUAR_MAÑANA.md`. Suite **157/157**. Commit `3bd4b7f`, push realizado.
+- **Push con commits separados (03/09/2026)**: a petición del usuario, 4 commits (`2ab5652` fix, `3bd4b7f` feat, `e497d09` docs openspec, `544bc54` chore con pendientes previos: gitignore, docs, estética generar-mensuales y su archive). `git push origin main` (`f1362e8..544bc54`). Árbol limpio.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 156 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 157 tests, todos verdes). `mvn clean` puede fallar por `target` bloqueado (ficheros en uso); en ese caso basta `mvn test` sin `clean`. IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
@@ -428,3 +454,4 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - En los PDF el `.xlsx` original es referencia de formato: la columna TOTAL lleva IVA incluido (base × 1,21).
 - El texto extraible de un PDF no incluye lo dibujado via plantilla/XObject (p. ej. la cifra final de «Pagina X de Y»): para testear el pie solo se puede afirmar hasta «de »; la cifra completa se comprueba a la vista.
 - No crear dentro del proyecto carpetas/archivos de metadatos de IA ni documentacion no pedida.
+- OpenSpec CLI: `openspec archive "<nombre>" -y --json` archiva y sincroniza deltas al spec principal; `openspec validate "<nombre>" --json` valida un change (el nombre va posicional, `--change` no existe en `validate`).
