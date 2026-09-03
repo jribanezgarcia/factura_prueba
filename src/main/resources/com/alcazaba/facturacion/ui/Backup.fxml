@@ -10,23 +10,47 @@
         <Insets top="12" right="16" bottom="12" left="16"/>
     </padding>
     <top>
-        <VBox spacing="12">
-            <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="card, zona-contenido">
-                <Label styleClass="titulo" text="Copia de seguridad"/>
-                <Label text="La copia guarda una fotografía completa de la base de datos (facturas_AAAAMMDD_HHMMSS.db)."/>
-                <HBox spacing="8" alignment="CENTER_LEFT">
-                    <Button onAction="#seleccionarDestino" styleClass="default-button" text="Seleccionar carpeta de destino..."/>
-                    <Label fx:id="lblDestino" text="(ninguna carpeta seleccionada)" styleClass="muted"/>
-                </HBox>
-            </VBox>
-        </VBox>
+        <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
     </top>
     <center>
-        <VBox spacing="8" styleClass="card, zona-contenido" alignment="TOP_CENTER">
-            <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button" text="Crear copia de seguridad"/>
-            <Label fx:id="lblResultado" wrapText="true"/>
-        </VBox>
+        <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
+            <VBox spacing="12">
+                <VBox spacing="8" styleClass="card, zona-contenido">
+                    <Label styleClass="titulo" text="Copia de seguridad"/>
+                    <Label text="La copia guarda una fotografía completa de la base de datos (facturas_AAAAMMDD_HHMMSS.db)."/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Button onAction="#seleccionarDestino" styleClass="default-button" text="Seleccionar carpeta de destino..."/>
+                        <Label fx:id="lblDestino" text="(ninguna carpeta seleccionada)" styleClass="muted"/>
+                    </HBox>
+                    <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button" text="Crear copia de seguridad"/>
+                    <Label fx:id="lblResultado" wrapText="true"/>
+                </VBox>
+                <VBox spacing="8" styleClass="card, zona-contenido">
+                    <Label styleClass="titulo" text="Restaurar una copia"/>
+                    <Label styleClass="muted" wrapText="true" text="Restaurar reemplaza los datos de la empresa activa. Antes se guarda una copia de rescate automática."/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Button onAction="#seleccionarOrigen" styleClass="default-button" text="Seleccionar copia a restaurar..."/>
+                        <Label fx:id="lblOrigen" text="(ninguna copia seleccionada)" styleClass="muted"/>
+                    </HBox>
+                    <VBox fx:id="cajaResumen" visible="false" managed="false" spacing="4" styleClass="card, zona-contenido">
+                        <Label fx:id="lblResumen" wrapText="true"/>
+                    </VBox>
+                    <fx:define>
+                        <ToggleGroup fx:id="grupoDestino"/>
+                    </fx:define>
+                    <HBox spacing="16" alignment="CENTER_LEFT">
+                        <RadioButton fx:id="rbReemplazar" toggleGroup="$grupoDestino" text="Reemplazar la empresa activa"/>
+                        <RadioButton fx:id="rbCrearNueva" toggleGroup="$grupoDestino" text="Crear una empresa nueva con estos datos"/>
+                    </HBox>
+                    <HBox fx:id="filaNombreEmpresa" spacing="8" alignment="CENTER_LEFT" visible="false" managed="false">
+                        <Label text="Nombre de la nueva empresa:"/>
+                        <TextField fx:id="txtNombreEmpresa" prefWidth="300"/>
+                    </HBox>
+                    <Button fx:id="btnRestaurar" disable="true" onAction="#restaurar" styleClass="primary-button" text="Restaurar copia"/>
+                    <Label fx:id="lblResultadoRestauracion" wrapText="true"/>
+                </VBox>
+            </VBox>
+        </ScrollPane>
     </center>
     <bottom>
         <HBox alignment="CENTER_RIGHT" styleClass="card, zona-contenido">
