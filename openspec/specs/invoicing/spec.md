@@ -749,6 +749,26 @@ La aplicación SHALL abrir su ventana con las siguientes medidas: en la primera 
 - **WHEN** la aplicación pasa de la pantalla de arranque (760x520) al menú u otra vista principal con tamaño mínimo 1024x768 con la ventana ya visible
 - **THEN** la ventana crece a 1024x768 (o hasta el mínimo de la vista de destino) al cargar la vista, sin necesidad de redimensionar o maximizar manualmente
 
+### Requirement: Identidad de la aplicación en la interfaz
+
+La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus ventanas. El icono SHALL aplicarse a la ventana principal y a las ventanas secundarias (`Stage`) que la aplicación abre, de modo que se vea en la barra de tareas, en la esquina de la ventana y en la vista minimizada. La ventana principal SHALL mostrarse siempre con un título compuesto por la marca «CaboFactu®», un espacio y el nombre de la pantalla activa. Las ventanas secundarias SHALL mostrar el mismo prefijo de marca delante de su propio título («CaboFactu® » + título).
+
+#### Scenario: Icono en la ventana principal
+- **WHEN** la aplicación inicia su ventana principal
+- **THEN** la ventana muestra el icono de aplicación en su barra de título, en la barra de tareas de Windows y en la vista minimizada
+
+#### Scenario: Icono en ventanas secundarias
+- **WHEN** la aplicación abre una ventana secundaria de tipo `Stage` (p. ej. el diálogo «Generar facturas mensuales»)
+- **THEN** esa ventana muestra el mismo icono de aplicación en su barra de título y en la barra de tareas de Windows
+
+#### Scenario: Título de la ventana principal por pantalla
+- **WHEN** el usuario navega entre las pantallas de la aplicación (Menú Principal, Histórico, Configuración, Editor, Clientes, Versiones, Copias o Arranque)
+- **THEN** la ventana principal se titula «CaboFactu® <nombre de la pantalla actual>»
+
+#### Scenario: Título con prefijo de marca en ventanas secundarias
+- **WHEN** se abre una ventana secundaria de tipo `Stage` con su propio título
+- **THEN** el título mostrado es «CaboFactu® <título propio de la ventana>»
+
 ### Requirement: Facturación mensual por cliente
 
 La aplicación SHALL permitir generar múltiples facturas mensuales para un único cliente desde un diálogo específico. El usuario SHALL seleccionar el cliente, el año, el rango de meses, la serie de numeración y el día del mes que se usará como fecha de cada factura, pudiendo elegir entre un día fijo editable, el primer día del mes o el último día del mes. El usuario SHALL poder configurar las líneas de concepto que se replicarán en cada factura, con la opción de añadir automáticamente el nombre del mes a la descripción de cada línea. El usuario SHALL seleccionar el tipo de IVA y, opcionalmente, el tipo de retención IRPF que se aplicarán a todas las facturas generadas. El sistema SHALL crear una factura por cada mes del rango, asignando a cada una el siguiente número de la serie seleccionado y la fecha correspondiente. Si para un mes ya existe una factura para ese cliente y año, el sistema SHALL mostrar una advertencia con los meses afectados y SHALL permitir al usuario decidir si genera las facturas de todos modos o cancela la operación. Las facturas generadas SHALL aparecer en el histórico y SHALL poder exportarse a PDF.
