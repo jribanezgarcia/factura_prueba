@@ -28,6 +28,11 @@ public final class Migrations {
     private Migrations() {
     }
 
+    /** Numero total de migraciones (ultima version de esquema conocida). */
+    public static int ultimaVersion() {
+        return SCRIPTS.size();
+    }
+
     public static synchronized void migrate(Connection conn) throws SQLException {
         int current = userVersion(conn);
         for (int i = 0; i < SCRIPTS.size(); i++) {
