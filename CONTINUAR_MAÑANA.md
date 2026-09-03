@@ -80,8 +80,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-03-fix-crear-empresa-no-cambia-activa`
 - `openspec/changes/archive/2026-09-03-restaurar-copia-seguridad`
 - `openspec/changes/archive/2026-09-03-fix-restaurar-validacion-y-rollback`
+- `openspec/changes/archive/2026-09-03-icono-app-y-titulos-ventana`
 
-Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa`, `restaurar-copia-seguridad` y `fix-restaurar-validacion-y-rollback` archivados el 03/09/2026 con delta de specs sincronizadas y validadas).
+Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa`, `restaurar-copia-seguridad`, `fix-restaurar-validacion-y-rollback` e `icono-app-y-titulos-ventana` archivados el 03/09/2026 con delta de specs sincronizadas y validadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -370,6 +371,15 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Tests: `rechazaCopiaSinLasTablasDeLaAplicacion` ahora deja caer `factura` (tabla núcleo) en vez de `numero_disponible` (legítimo que falte en una copia antigua); nuevos `rechazaCopiaSinLasTablasNucleo` (user_version 1 sin `factura` → rechaza) y `restaurarCopiaDeEsquemaAnteriorSeMigra` (DROP `numero_disponible` + user_version 6 → restaura y la base activa recupera la tabla y queda en `ultimaVersion()`). `restaurarComoEmpresaNuevaNoDejaBasuraSiFalla` se documenta en vez de montar un test artificial. Suite **155/155** en verde.
 - Sync de specs (MODIFIED «Copia de seguridad»: tablas fundamentales siempre exigidas, copia de esquema anterior aceptada y migrada, estructura completa solo si es posterior + 2 escenarios nuevos), archivado el 03/09/2026 en `2026-09-03-fix-restaurar-validacion-y-rollback`.
 
+### Change `icono-app-y-titulos-ventana` (archivado)
+
+- La aplicación gana **identidad visual** propia: un icono de aplicación y un título con la marca «CaboFactu® » en todas sus ventanas.
+- Se copia `logos/logo1.png` a `src/main/resources/com/alcazaba/facturacion/images/icono-aplicacion.png` (commiteado y dentro del JAR). Nuevo helper `ui/Ventanas` con `PREFIJO = "CaboFactu® "` y `aplicarIcono(Stage)` (por classpath, idempotente y silencioso si falta el recurso).
+- `VentanaConfig` gana un campo `titulo` por vista (Arranque, Menú Principal, Editor, Configuración, Histórico, Clientes, Versiones, Copias, Generar mensual); `Navegador.mostrar` fija `stage.setTitle(PREFIJO + titulo)` y aplica el icono a cada vista navegada. `Main.configurarVentana` aplica el icono y el título inicial en la ventana principal («CaboFactu® Seleccion de empresa»).
+- La ventana secundaria «Generar facturas mensuales» también recibe el icono y el título «CaboFactu® Generar facturas mensuales».
+- Test nuevo `ventanaMuestraTituloConMarcaYIconoDeLaAplicacion` en `VentanaTransicionTest` (verifica título «CaboFactu® Menu Principal» e icono). Suite **156/156** en verde.
+- Sync de specs (ADDED «Identidad de la aplicación en la interfaz»: icono en ventana principal y secundarias + título con marca por pantalla, 4 escenarios), archivado el 03/09/2026 en `2026-09-03-icono-app-y-titulos-ventana`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -392,10 +402,11 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - **Crear empresa sin activar (03/09/2026)**: `crearEmpresa` deja de activar la empresa nueva (crea base con conexión local + catálogo, sin tocar estado global); desde Configuración se ofrece cambiar a ella. `Migrations.ultimaVersion()` nuevo. Suite **141/141**. Sync de spec «Gestión de empresas» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Restaurar copia de seguridad (03/09/2026)**: pantalla de Copia de seguridad con restauración (resumen, validación, copia de rescate automática, reemplazar la activa o crear empresa nueva, regla del NIF). `leerResumen`, `restaurarEnEmpresaActiva`, `restaurarComoEmpresaNueva`, `verificarEstructura`, `rutaLibre` en `BackupService`; `ToggleGroup` en `fx:define` en `Backup.fxml`. Suite **153/153**. Sync de spec «Copia de seguridad» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Fix restaurar validación y rollback (03/09/2026)**: `verificarEstructura` se separa en `comprobarTablasNucleo` (siempre exigidas, `TABLAS_NUCLEO`) y `estructuraCompleta` (solo exigida si la copia es de esquema posterior), aceptando y migrando copias de esquema anterior; rollback de `restaurarEnEmpresaActiva` que cierra la conexión antes de copiar el rescate y propaga el error original (`IOException`); limpieza en `restaurarComoEmpresaNueva`; `borrarDiario` derivado de `dbPath()`; UI con nombre visible de empresa y fin en pantalla Copias al responder «NO». Suite **155/155**. Sync de spec «Copia de seguridad» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
+- **Icono de aplicación y títulos con marca (03/09/2026)**: nuevo `ui/Ventanas` (`PREFIJO "CaboFactu® "` + `aplicarIcono(Stage)` idempotente), recurso `images/icono-aplicacion.png` (copia de `logos/logo1.png`, commiteado), `VentanaConfig.titulo` por vista, `Navegador.mostrar` titula y pone el icono en cada pantalla, `Main` fija título+icono inicial y la ventana «Generar facturas mensuales» también lleva icono y marca. Suite **156/156**. Sync de spec (ADDED «Identidad de la aplicación en la interfaz») + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 155 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 156 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
