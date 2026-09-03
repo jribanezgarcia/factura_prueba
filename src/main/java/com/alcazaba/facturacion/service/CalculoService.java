@@ -22,6 +22,8 @@ import java.util.Map;
  *   base descontado.
  * - el resumen expone ademas la base bruta (antes del descuento) y el
  *   importe descontado para poder pintar el cuadre en el PDF.
+ * - retencion de IRPF: se aplica sobre la base imponible (despues del
+ *   descuento), la misma base sobre la que se calcula el IVA.
  */
 public final class CalculoService {
 
@@ -85,7 +87,7 @@ public final class CalculoService {
 
     /**
      * Calcula el resumen completo de la factura con descuento global, desglose
-     * por tipo de IVA y retencion de IRPF aplicada sobre la base bruta.
+     * por tipo de IVA y retencion de IRPF aplicada sobre la base imponible.
      */
     public static ResumenFactura resumen(List<LineaFactura> lineas, int descuento, TipoRetencion retencion) {
         BigDecimal factor = CIEN.subtract(BigDecimal.valueOf(descuento)).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP);
@@ -146,7 +148,7 @@ public final class CalculoService {
 
         BigDecimal importeRetencion = BigDecimal.ZERO;
         if (retencion != null && retencion.getPorcentaje() != null) {
-            importeRetencion = round2(baseTotalSinDescuento.multiply(BigDecimal.valueOf(retencion.getPorcentaje())).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP));
+            importeRetencion = round2(baseTotalDescontada.multiply(BigDecimal.valueOf(retencion.getPorcentaje())).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP));
             resumen.setTipoRetencionId(retencion.getId());
             resumen.setNombreRetencion(retencion.getNombre());
             resumen.setPorcentajeRetencion(retencion.getPorcentaje());
