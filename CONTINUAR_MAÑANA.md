@@ -77,8 +77,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-02-fix-cancelar-salida`
 - `openspec/changes/archive/2026-09-02-logo-relleno-tema`
 - `openspec/changes/archive/2026-09-02-pdf-texto-neutro-color-acento`
+- `openspec/changes/archive/2026-09-03-fix-crear-empresa-no-cambia-activa`
 
-Cambio OpenSpec activo: ninguno (`pdf-texto-neutro-color-acento` archivado el 02/09/2026 con delta de specs sincronizadas y validadas).
+Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa` archivado el 03/09/2026 con delta de specs sincronizadas y validadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -330,9 +331,23 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - `Configuracion.fxml`: se actualiza solo el texto informativo del `ColorPicker` ("...; también SERIE/Nº y FECHA").
 - Sync de specs: MODIFIED «Exportación a PDF» (texto por defecto en negro/gris neutro, SERIE/Nº–FECHA en color de acento, cabecera de «Datos de pago» y etiquetas/valores de tarjeta en gris neutro/negro, + 2 escenarios nuevos). Suite **138/138** en verde y verificación visual del usuario OK. Archivado el 02/09/2026 en `2026-09-02-pdf-texto-neutro-color-acento`.
 
+## Sesion del 03/09/2026
+
+### Change `fix-crear-empresa-no-cambia-activa` (archivado)
+
+- Bug: `EmpresaManager.crearEmpresa()` activaba en silencio la empresa nueva. Desde Configuración con una empresa en uso, la UI seguía mostrando la empresa anterior pero todo lo que se guardaba escribía en la base de datos de la empresa nueva vacía, y además cambiaba la última empresa recordada.
+- `Database`: nuevo accesor `dbPathDe(String slug)` que construye la ruta de la base de una empresa sin activarla.
+- `EmpresaManager.crearEmpresa`: ahora solo crea carpeta, base de datos migrada y entrada en el catálogo, sin tocar el estado global (no activa la empresa, no cierra la conexión en curso, no cambia `ULTIMA_EMPRESA` ni la sesión). Crea la base sobre una conexión JDBC local y temporal y la cierra.
+- `ConfiguracionController.nuevaEmpresa`: tras crear, ofrece al usuario cambiar a la empresa nueva («¿Quieres cambiar a ella ahora?»); si acepta, selecciona por slug y llama a `cambiarEmpresa()`; si no, se queda en Configuración con su empresa activa intacta.
+- `Migrations`: se expone `ultimaVersion()` (número de migraciones) para el test de esquema completo.
+- `Main` y `ArranqueController` no se tocan: el arranque ya selecciona explícitamente por slug y conecta al entrar; en `Main.prepararDatos()` se verifica que no se llama a `Database.getConnection()` en la ventana sin empresa.
+- Tests (`EmpresaManagerTest`, de 6 a 9): `creaEmpresaYLaDejaActiva` renombrado a `crearCreaLaBaseSinActivarla`; `dosEmpresasNoCompartenDatos`, `eliminarEmpresaBorraCarpeta` y `noSePuedeEliminarLaActiva` intercalan `conectar(...)`. Nuevos: `crearNoCambiaLaEmpresaActiva`, `crearNoRompeLaConexionEnCurso` (reproduce el fallo real) y `laBaseNuevaTieneElEsquemaCompleto` (`PRAGMA user_version == Migrations.ultimaVersion()`).
+- Suite **141/141** en verde. Sync de specs (MODIFIED «Gestión de empresas»: crear desde Configuración SHALL NOT cambiar la empresa activa/la conexión/la última empresa; cambiar de empresa SHALL ser acción explícita; escenario «Crear una nueva empresa» reescrito, nuevos «Crear y aceptar el cambio»), archivado el 03/09/2026 en `2026-09-03-fix-crear-empresa-no-cambia-activa`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
+- Proximo change con plan guardado en `PLAN_RESTAURAR_BACKUP.md`: **restaurar copia de seguridad** (en cola, `restaurar-copia-seguridad`).
 - Opciones conocidas pendientes en el spec principal:
   - Flujo de **clientes inactivos** (clientes con facturas no se borran, se marcan inactivos y no se ofrecen al crear facturas nuevas).
   - **Copia de seguridad** manual (V1: solo copia del SQLite).
@@ -349,10 +364,11 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - **Configuracion por secciones (02/09/2026)**: pantalla de Configuracion con lista lateral en vez de pestanas, `PdfService` delegando en `CabeceraLayout` y vista previa aproximada de la cabecera (`PreviaCabecera`). Suite **119/119**. Commits `5c56ecf` (implementacion), `bf4f564` (docs) y `c75c55f` (archivo OpenSpec + spec sincronizada).
 - **Logo relleno tema (02/09/2026)**: util `LogoMarco` + aplicacion al menu (280×100) y editor (110×40). TDD con `LogoMarcoTest` (12 tests, suite **138/138**). Sync de spec «Identidad de empresa en la interfaz» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **PDF texto neutro / color acento (02/09/2026)**: paleta de tinta del PDF sin tinte arena (negro/gris neutro) y `SERIE / Nº`-`FECHA` en color de acento. Suite **138/138**. Sync de spec «Exportación a PDF» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
+- **Crear empresa sin activar (03/09/2026)**: `crearEmpresa` deja de activar la empresa nueva (crea base con conexión local + catálogo, sin tocar estado global); desde Configuración se ofrece cambiar a ella. `Migrations.ultimaVersion()` nuevo. Suite **141/141**. Sync de spec «Gestión de empresas» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 138 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 141 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).
