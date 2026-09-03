@@ -139,7 +139,7 @@ class CalculoServiceTest {
     }
 
     @Test
-    void retencionSobreBaseBrutaRestaDelTotal() {
+    void retencionSinDescuentoRestaDelTotal() {
         ResumenFactura r = CalculoService.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%")), 0, retencion(15));
         assertEquals(new BigDecimal("1000.00"), r.getBaseBruta());
@@ -149,14 +149,24 @@ class CalculoServiceTest {
     }
 
     @Test
-    void retencionConDescuentoUsaBaseBruta() {
+    void retencionUsaLaBaseImponibleDescontada() {
         ResumenFactura r = CalculoService.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%")), 10, retencion(19));
         assertEquals(new BigDecimal("1000.00"), r.getBaseBruta());
         assertEquals(new BigDecimal("900.00"), r.getBaseTotal());
         assertEquals(new BigDecimal("189.00"), r.getIvaTotal());
-        assertEquals(new BigDecimal("190.00"), r.getImporteRetencion());
-        assertEquals(new BigDecimal("899.00"), r.getTotal());
+        assertEquals(new BigDecimal("171.00"), r.getImporteRetencion());
+        assertEquals(new BigDecimal("918.00"), r.getTotal());
+    }
+
+    @Test
+    void descuentoDelCienPorCienNoDaTotalNegativo() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "1000.00", 21, "IVA 21%")), 100, retencion(15));
+        assertEquals(new BigDecimal("0.00"), r.getBaseTotal());
+        assertEquals(new BigDecimal("0.00"), r.getIvaTotal());
+        assertEquals(new BigDecimal("0.00"), r.getImporteRetencion());
+        assertEquals(new BigDecimal("0.00"), r.getTotal());
     }
 
     @Test
