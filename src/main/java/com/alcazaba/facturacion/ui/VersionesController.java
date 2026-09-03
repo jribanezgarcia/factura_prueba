@@ -96,6 +96,9 @@ public class VersionesController implements Vista {
 
     private void abrirVersion(FacturaVersion v) {
         EditorController editor = nav.mostrar("/com/alcazaba/facturacion/ui/Editor.fxml");
+        if (editor == null) {
+            return;
+        }
         editor.cargarVersion(v.getId());
     }
 

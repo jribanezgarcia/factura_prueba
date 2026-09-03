@@ -68,7 +68,9 @@ class EditorNifValidationTest {
 
         @Override
         public Dialogos.CambiosSinGuardar confirmarCambiosSinGuardar() {
-            return Dialogos.CambiosSinGuardar.CANCELAR;
+            // Los tests navegan entre editores: descartar para que la
+            // guarda de Navegador.mostrar() no bloquee ni cancele.
+            return Dialogos.CambiosSinGuardar.DESCARTAR;
         }
     }
 

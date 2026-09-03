@@ -1181,10 +1181,10 @@ public class EditorController implements Vista {
             Dialogos.info("Versiones", "Guarde primero la factura para tener versiones.");
             return;
         }
-        if (!puedeCerrar()) {
+        VersionesController vc = nav.mostrar("/com/alcazaba/facturacion/ui/Versiones.fxml");
+        if (vc == null) {
             return;
         }
-        VersionesController vc = nav.mostrar("/com/alcazaba/facturacion/ui/Versiones.fxml");
         vc.cargarFactura(facturaAbiertaId);
     }
 
@@ -1328,16 +1328,12 @@ public class EditorController implements Vista {
 
     @FXML
     private void nuevaFactura() {
-        if (puedeCerrar()) {
-            nav.mostrar("/com/alcazaba/facturacion/ui/Editor.fxml");
-        }
+        nav.mostrar("/com/alcazaba/facturacion/ui/Editor.fxml");
     }
 
     @FXML
     private void volver() {
-        if (puedeCerrar()) {
-            nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
-        }
+        nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
     }
 
     // ------------------------------------------------------------------
