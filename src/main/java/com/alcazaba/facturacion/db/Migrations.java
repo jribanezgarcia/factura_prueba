@@ -64,7 +64,7 @@ public final class Migrations {
         }
     }
 
-    private static int userVersion(Connection conn) throws SQLException {
+    public static int userVersion(Connection conn) throws SQLException {
         try (Statement st = conn.createStatement();
              ResultSet rs = st.executeQuery("PRAGMA user_version")) {
             return rs.next() ? rs.getInt(1) : 0;
