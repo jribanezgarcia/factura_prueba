@@ -79,8 +79,9 @@ Cambios OpenSpec archivados:
 - `openspec/changes/archive/2026-09-02-pdf-texto-neutro-color-acento`
 - `openspec/changes/archive/2026-09-03-fix-crear-empresa-no-cambia-activa`
 - `openspec/changes/archive/2026-09-03-restaurar-copia-seguridad`
+- `openspec/changes/archive/2026-09-03-fix-restaurar-validacion-y-rollback`
 
-Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa` y `restaurar-copia-seguridad` archivados el 03/09/2026 con delta de specs sincronizadas y validadas).
+Cambio OpenSpec activo: ninguno (`fix-crear-empresa-no-cambia-activa`, `restaurar-copia-seguridad` y `fix-restaurar-validacion-y-rollback` archivados el 03/09/2026 con delta de specs sincronizadas y validadas).
 
 ## Sesion del 31/08/2026 (cerrada y commiteada)
 
@@ -358,6 +359,17 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - Tests nuevos: `BackupServiceTest` (11) y `BackupLayoutTest` (layout con las dos tarjetas sin desbordar). Suite **153/153** en verde.
 - Sync de specs (MODIFIED «Copia de seguridad» con restauración, resumen, validación, copia de rescate, reemplazar/crear nueva, regla del NIF, esquema posterior y logo inexistente + 9 escenarios), archivado el 03/09/2026 en `2026-09-03-restaurar-copia-seguridad`.
 
+### Change `fix-restaurar-validacion-y-rollback` (archivado)
+
+- **Fallo 1 (validación demasiado estricta)**: `verificarEstructura` exigía TODAS las tablas de la aplicación, así que rechazaba una copia de un esquema anterior legítimo (p. ej. sin `numero_disponible`).
+  - `BackupService`: nueva constante `TABLAS_NUCLEO` (cliente, serie, tipo_iva, factura, factura_version, factura_linea, empresa, preferencias). `verificarEstructura` se sustituye por `comprobarTablasNucleo(Connection)` (exige siempre las tablas núcleo; falta alguna → `ValidationException`) y `estructuraCompleta(Connection)` (todas las tablas y columnas conocidas, devuelve `boolean`). `leerResumen` llama siempre a `comprobarTablasNucleo` y, solo cuando `user_version > Migrations.ultimaVersion()`, a `estructuraCompleta`. Una copia de esquema anterior se acepta y se migra al restaurar (`Database.getConnection()` migra al reconectar; `restaurarComoEmpresaNueva` migra con conexión local).
+- **Fallo 2 (rollback con conexión abierta)**: en `restaurarEnEmpresaActiva` el `catch` copiaba el rescate con la conexión SQLite aún abierta; Windows impedía sobrescribir y enmascaraba el error original.
+  - El `catch` ahora empieza con `Database.resetConnection()` (cierra → copia rescate → `borrarDiario` → reabre), y propaga la causa original: firma `throws IOException, SQLException, ValidationException` (deja de ser `Exception` genérica).
+- **Menores**: `restaurarComoEmpresaNueva` envuelve los pasos posteriores a `crearEmpresa` en `try/catch` que llama a `EmpresaManager.eliminarEmpresa(nueva.slug())` si algo falla (no deja basura de carpeta/catálogo); `borrarDiario` deriva `-wal`/`-shm` de `Database.dbPath().getFileName()` en vez de hardcodear `facturas.db`.
+- **UI (`BackupController`)**: el mensaje de confirmación muestra el **nombre visible** de la empresa activa vía `EmpresaManager.listarEmpresas()` (slug de respaldo); `aplicarReglaNif` se aplana (empresa activa vacía sin NIF/facturas → permitir reemplazar; NIFs iguales → permitir; en cualquier otro caso solo crear nueva) eliminando la rama muerta; al crear empresa nueva y responder «NO» al cambio se **queda en la pantalla de Copias** (`Backup.fxml`) en lugar de ir al menú.
+- Tests: `rechazaCopiaSinLasTablasDeLaAplicacion` ahora deja caer `factura` (tabla núcleo) en vez de `numero_disponible` (legítimo que falte en una copia antigua); nuevos `rechazaCopiaSinLasTablasNucleo` (user_version 1 sin `factura` → rechaza) y `restaurarCopiaDeEsquemaAnteriorSeMigra` (DROP `numero_disponible` + user_version 6 → restaura y la base activa recupera la tabla y queda en `ultimaVersion()`). `restaurarComoEmpresaNuevaNoDejaBasuraSiFalla` se documenta en vez de montar un test artificial. Suite **155/155** en verde.
+- Sync de specs (MODIFIED «Copia de seguridad»: tablas fundamentales siempre exigidas, copia de esquema anterior aceptada y migrada, estructura completa solo si es posterior + 2 escenarios nuevos), archivado el 03/09/2026 en `2026-09-03-fix-restaurar-validacion-y-rollback`.
+
 ## Proximos pasos
 
 - No hay changes activos. Esperar instrucciones del usuario para el siguiente change.
@@ -379,10 +391,11 @@ Corregido el 01/09/2026 con el change `fix-styleclass-separador-fxml` (archivado
 - **PDF texto neutro / color acento (02/09/2026)**: paleta de tinta del PDF sin tinte arena (negro/gris neutro) y `SERIE / Nº`-`FECHA` en color de acento. Suite **138/138**. Sync de spec «Exportación a PDF» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Crear empresa sin activar (03/09/2026)**: `crearEmpresa` deja de activar la empresa nueva (crea base con conexión local + catálogo, sin tocar estado global); desde Configuración se ofrece cambiar a ella. `Migrations.ultimaVersion()` nuevo. Suite **141/141**. Sync de spec «Gestión de empresas» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 - **Restaurar copia de seguridad (03/09/2026)**: pantalla de Copia de seguridad con restauración (resumen, validación, copia de rescate automática, reemplazar la activa o crear empresa nueva, regla del NIF). `leerResumen`, `restaurarEnEmpresaActiva`, `restaurarComoEmpresaNueva`, `verificarEstructura`, `rutaLibre` en `BackupService`; `ToggleGroup` en `fx:define` en `Backup.fxml`. Suite **153/153**. Sync de spec «Copia de seguridad» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
+- **Fix restaurar validación y rollback (03/09/2026)**: `verificarEstructura` se separa en `comprobarTablasNucleo` (siempre exigidas, `TABLAS_NUCLEO`) y `estructuraCompleta` (solo exigida si la copia es de esquema posterior), aceptando y migrando copias de esquema anterior; rollback de `restaurarEnEmpresaActiva` que cierra la conexión antes de copiar el rescate y propaga el error original (`IOException`); limpieza en `restaurarComoEmpresaNueva`; `borrarDiario` derivado de `dbPath()`; UI con nombre visible de empresa y fin en pantalla Copias al responder «NO». Suite **155/155**. Sync de spec «Copia de seguridad» + archive OpenSpec + update de `CONTINUAR_MAÑANA.md`, commit y push.
 
 ## Notas tecnicas que evitan perder tiempo
 
-- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 153 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
+- Comando Maven: `& "C:\Program Files\Apache NetBeans\java\maven\bin\mvn.cmd" test` (suite completa: 155 tests, todos verdes). IMPORTANTE: lanzar maven siempre desde el directorio del proyecto; si se lanza desde otro workdir falla sin POM y los pasos siguientes usan clases viejas. IMPORTANTE: si la app sigue mostrando tamaños antiguos tras cambiar código, borrar `target\` y `mvn clean` (el compilador incremental puede dejar `.class` mezclados).
 - Para inspeccionar PDFs visualmente: rasterizar pagina con `Windows.Data.Pdf` desde PowerShell 5.1 (`render.ps1` en %TEMP%\opencode\pdfcheck) y leer el PNG; el modelo no lee PDFs directamente.
 - `PdfPCellEvent.cellLayout(PdfCell, Rectangle, PdfContentByte[])` dibuja DESPUES del contenido: usar `canvases[PdfPTable.TEXTCANVAS]` para contornos; para fondo+texto juntos, pintar ambos dentro del evento con celda de frase vacia. `PdfReader.getPageN(1).getAsDict(PdfName.RESOURCES)` + `PdfDictionary.getKeys()` para inspeccionar fuentes embebidas (no existe `getPageResources`).
 - FXML: `maxWidth="USE_PREF_SIZE"` es invalido; usar `maxWidth="-Infinity"`. Para que un control CREZCA dentro de una celda de GridPane con `hgrow` hacen falta AMBAS cosas: `ColumnConstraints hgrow="ALWAYS" fillWidth="true"` y `maxWidth="Infinity"` en el control (los controles no crecen por defecto). Las filas que deben envolver usan `FlowPane` con cada grupo etiqueta+campo en su propio HBox (FlowPane no tiene hgrow).

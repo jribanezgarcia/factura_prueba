@@ -619,7 +619,7 @@ La aplicación SHALL permitir gestionar varias empresas con datos totalmente ais
 
 ### Requirement: Copia de seguridad
 
-La aplicación SHALL tener un botón para crear una copia de seguridad manual. En la V1 la copia SHALL ser únicamente del archivo SQLite; no se incluyen PDFs ni configuración. La aplicación SHALL permitir restaurar una copia de seguridad desde la misma pantalla. Antes de restaurar, la aplicación SHALL mostrar un resumen del contenido del archivo (empresa, NIF, número de facturas, última fecha y versión de esquema). La aplicación SHALL validar la copia antes de sustituir nada: rechazará archivos que no sean bases de datos válidas de la aplicación, que no contengan las tablas necesarias o que sean la propia base activa. Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de rescate del estado previo de la empresa activa. La aplicación SHALL permitir restaurar sobre la empresa activa o crear una nueva empresa a partir de la copia. La aplicación SHALL NOT permitir sobrescribir una empresa con los datos de otra con NIF distinto; en ese caso solo se ofrecerá crear una empresa nueva. La aplicación SHALL aceptar una copia de una versión de esquema posterior únicamente cuando su estructura de tablas coincida con la que la aplicación conoce, y SHALL avisar antes de continuar. Si el logo referenciado en la copia no existe en la máquina, la aplicación SHALL avisar y continuar sin bloquear.
+La aplicación SHALL tener un botón para crear una copia de seguridad manual. En la V1 la copia SHALL ser únicamente del archivo SQLite; no se incluyen PDFs ni configuración. La aplicación SHALL permitir restaurar una copia de seguridad desde la misma pantalla. Antes de restaurar, la aplicación SHALL mostrar un resumen del contenido del archivo (empresa, NIF, número de facturas, última fecha y versión de esquema). La aplicación SHALL validar la copia antes de sustituir nada: rechazará archivos que no sean bases de datos válidas de la aplicación, que no contengan las tablas fundamentales de la aplicación ni que sean la propia base activa. La aplicación SHALL aceptar una copia de una versión de esquema anterior y SHALL aplicarle las migraciones pendientes al restaurarla. La aplicación SHALL NOT exigir la estructura completa de tablas salvo que la versión de esquema de la copia sea posterior a la que la aplicación conoce; en ese caso SHALL exigir la estructura completa y avisar antes de continuar. Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de rescate del estado previo de la empresa activa. La aplicación SHALL permitir restaurar sobre la empresa activa o crear una nueva empresa a partir de la copia. La aplicación SHALL NOT permitir sobrescribir una empresa con los datos de otra con NIF distinto; en ese caso solo se ofrecerá crear una empresa nueva. Si el logo referenciado en la copia no existe en la máquina, la aplicación SHALL avisar y continuar sin bloquear.
 
 #### Scenario: Crear copia de seguridad
 - **WHEN** el usuario pulsa el botón de copia de seguridad y elige dónde guardarla
@@ -632,6 +632,14 @@ La aplicación SHALL tener un botón para crear una copia de seguridad manual. E
 #### Scenario: Copia de rescate automática
 - **WHEN** el usuario restaura una copia sobre la empresa activa
 - **THEN** antes de restaurar queda guardada una copia del estado previo en la subcarpeta `copias_previas`
+
+#### Scenario: Restaurar una copia de esquema anterior
+- **WHEN** el usuario restaura una copia cuya versión de esquema es anterior a la de la aplicación
+- **THEN** la aplicación la acepta, la restaura y le aplica las migraciones pendientes, quedando al esquema actual
+
+#### Scenario: Archivo sin las tablas fundamentales
+- **WHEN** el usuario selecciona un archivo que no contiene las tablas fundamentales de la aplicación
+- **THEN** la aplicación rechaza el archivo e informa del error sin tocar los datos
 
 #### Scenario: Crear empresa nueva desde una copia
 - **WHEN** el usuario selecciona un archivo de copia, elige «Crear una empresa nueva con estos datos», introduce un nombre y confirma
