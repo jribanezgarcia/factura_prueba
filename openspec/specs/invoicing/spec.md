@@ -365,6 +365,26 @@ Cada diálogo de aviso de la aplicación SHALL mostrar el icono correspondiente 
 - **WHEN** la aplicación muestra un diálogo de aviso
 - **THEN** la barra de título y la barra de tareas de Windows de esa ventana muestran el icono de aplicación de la marca
 
+### Requirement: Pantalla de generación mensual con estética alineada
+
+La pantalla de generación de facturas mensuales SHALL presentar la misma estética visual que el resto de la aplicación. El título de la pantalla SHALL distinguirse con el mismo estilo de título del resto de ventanas, mostrándose en negrita y con el color de texto del tema de apariencia activo. Las etiquetas del formulario (cliente, serie, año, mes de inicio, mes de fin, día del mes, tipo de IVA y retención de IRPF) SHALL mostrarse con una separación clara respecto a los campos y a los bordes del panel, sin quedar pegadas, y SHALL usar el mismo estilo de etiqueta de formulario que el resto de pantallas. El panel que contiene el formulario SHALL usar un fondo neutro acorde con la ventana (no un fondo blanco plano contrastado) y coherente con el resto de pantallas de la aplicación. La pantalla SHALL conservar los mismos campos, controles, botones y flujo de generación actuales; la modificación es exclusivamente de apariencia.
+
+#### Scenario: Título destacado con el color del tema
+- **WHEN** la aplicación muestra la pantalla de generación de facturas mensuales
+- **THEN** el título «Generar facturas mensuales» se muestra con el mismo estilo destacado (negrita y color de texto del tema) que los títulos del resto de pantallas
+
+#### Scenario: Etiquetas separadas de los campos y del borde
+- **WHEN** la aplicación muestra el formulario de la pantalla de generación mensual
+- **THEN** cada etiqueta (cliente, serie, año, mes de inicio, mes de fin, día del mes, tipo de IVA, retención de IRPF) se muestra con separación clara respecto al borde del panel y a su campo, usando el estilo de etiqueta de formulario del resto de pantallas
+
+#### Scenario: Panel con fondo neutro
+- **WHEN** la aplicación muestra el panel del formulario de la pantalla de generación mensual
+- **THEN** el panel se muestra con un fondo neutro del tema acorde con la ventana, y no como un bloque blanco plano contrastado
+
+#### Scenario: Los campos y el flujo se mantienen
+- **WHEN** el usuario abre la pantalla de generación mensual tras el cambio de apariencia
+- **THEN** los mismos campos, controles, botones y el flujo de generación siguen disponibles y se comportan igual que antes
+
 ### Requirement: Atajos de teclado
 
 La aplicación SHALL proporcionar los atajos Ctrl+N para Nueva factura, Ctrl+S para Guardar, Ctrl+F para Buscar, Ctrl+P para Exportar PDF y Esc para volver/cancelar cuando corresponda.
@@ -444,15 +464,23 @@ La sección Cabecera y pie SHALL mostrar una previsualización de la cabecera de
 
 ### Requirement: Retención de IRPF
 
-La aplicación SHALL permitir aplicar una retención de IRPF a las facturas. La empresa SHALL poder configurar una lista de tipos de retención (nombre y porcentaje), gestionada de forma similar a los tipos de IVA. Cada factura SHALL poder seleccionar un tipo de retención configurado o ninguno. La retención SHALL calcularse sobre la base bruta de la factura (antes de aplicar el descuento global). El total de la factura SHALL ser `Base − Descuento + IVA − Retención`. La retención seleccionada y su importe SHALL guardarse en cada versión de la factura. Si no se selecciona ningún tipo de retención, el comportamiento SHALL ser el actual: `Total = Base − Descuento + IVA`.
+La aplicación SHALL permitir aplicar una retención de IRPF a las facturas. La empresa SHALL poder configurar una lista de tipos de retención (nombre y porcentaje), gestionada de forma similar a los tipos de IVA. Cada factura SHALL poder seleccionar un tipo de retención configurado o ninguno. La retención SHALL calcularse sobre la **base imponible** de la factura, es decir, sobre la misma base sobre la que se calcula el IVA, después de aplicar el descuento global. El total de la factura SHALL ser `Base − Descuento + IVA − Retención`. La retención seleccionada y su importe SHALL guardarse en cada versión de la factura. Si no se selecciona ningún tipo de retención, el comportamiento SHALL ser el actual: `Total = Base − Descuento + IVA`. El total de una factura SHALL NOT ser negativo por efecto de la retención.
 
 #### Scenario: Factura con retención del 15%
-- **WHEN** el usuario crea una factura con base 1.000,00 €, descuento 0 %, IVA 21 % y selecciona una retención del 15 % sobre la base bruta
+- **WHEN** el usuario crea una factura con base 1.000,00 €, descuento 0 %, IVA 21 % y selecciona una retención del 15 %
 - **THEN** el importe de retención es 150,00 € y el total es 1.060,00 €
 
 #### Scenario: Factura con descuento y retención
-- **WHEN** el usuario crea una factura con base 1.000,00 €, descuento global del 10 %, IVA 21 % y retención del 15 % sobre la base bruta
-- **THEN** la base descontada es 900,00 €, el IVA es 189,00 €, la retención es 150,00 € y el total es 939,00 €
+- **WHEN** el usuario crea una factura con base 1.000,00 €, descuento global del 10 %, IVA 21 % y retención del 15 %
+- **THEN** la base imponible es 900,00 €, el IVA es 189,00 €, la retención es 135,00 € (el 15 % de 900,00) y el total es 954,00 €
+
+#### Scenario: La retención usa la misma base que el IVA
+- **WHEN** una factura tiene descuento global y retención
+- **THEN** el importe de retención se calcula sobre la base imponible descontada, la misma sobre la que se calcula la cuota de IVA, de modo que el porcentaje de retención que se deduce del resumen coincide con el tipo seleccionado
+
+#### Scenario: Descuento del 100 % con retención
+- **WHEN** el usuario crea una factura con base 1.000,00 €, descuento global del 100 % y una retención del 15 %
+- **THEN** la base imponible es 0,00 €, el IVA es 0,00 €, la retención es 0,00 € y el total es 0,00 €, nunca un importe negativo
 
 #### Scenario: Factura sin retención
 - **WHEN** el usuario crea una factura y no selecciona ningún tipo de retención
@@ -480,7 +508,7 @@ La exportación a PDF SHALL incluir una fila de retención en el resumen de tota
 
 ### Requirement: Retención en rectificativas
 
-Al crear una rectificativa desde una factura, la aplicación SHALL copiar el tipo de retención de la factura original. El usuario SHALL poder modificar o quitar la retención en la rectificativa antes de guardarla. El cálculo del total de la rectificativa SHALL aplicar la misma fórmula de retención sobre la base bruta.
+Al crear una rectificativa desde una factura, la aplicación SHALL copiar el tipo de retención de la factura original. El usuario SHALL poder modificar o quitar la retención en la rectificativa antes de guardarla. El cálculo del total de la rectificativa SHALL aplicar la misma fórmula de retención sobre la base imponible.
 
 #### Scenario: Rectificativa hereda retención
 - **WHEN** el usuario crea una rectificativa desde una factura que tiene una retención del 15 %
@@ -1044,3 +1072,23 @@ El Editor de facturas SHALL mostrar completa una factura de pocas lineas en el t
 #### Scenario: La tabla aprovecha el alto disponible
 - **WHEN** el usuario amplia o maximiza la ventana del Editor
 - **THEN** la tabla de lineas absorbe todo el alto adicional y el resto de zonas conserva su tamaño
+
+### Requirement: Orden del desglose de totales
+
+El bloque de totales de la factura SHALL presentar las líneas en este orden: subtotal, descuento, base imponible, cuotas de IVA, retención y TOTAL. El resumen del editor y el PDF exportado SHALL usar el mismo orden. Las líneas de subtotal y descuento SHALL aparecer solo cuando el descuento global sea mayor que 0; sin descuento el desglose SHALL mostrar directamente la base, las cuotas de IVA, la retención si la hay y el TOTAL.
+
+#### Scenario: Factura con descuento en el PDF
+- **WHEN** el usuario exporta el PDF de una factura con base 200,00 €, descuento global del 10 %, IVA 21 % y retención del 15 %
+- **THEN** el bloque de totales muestra, en este orden: Subtotal 200,00 €, Descuento 10 % −20,00 €, Base imponible 180,00 €, IVA 21 % 37,80 €, retención 15 % −27,00 € y TOTAL 190,80 €
+
+#### Scenario: Factura con descuento en el editor
+- **WHEN** el usuario edita una factura con base 200,00 €, descuento global del 10 %, IVA 21 % y retención del 15 %
+- **THEN** el resumen muestra, en este orden: subtotal 200,00 €, descuento −20,00 €, base imponible 180,00 €, IVA 37,80 €, retención −27,00 € y total 190,80 €
+
+#### Scenario: Factura sin descuento
+- **WHEN** la factura no tiene descuento global
+- **THEN** el desglose no muestra líneas de subtotal ni de descuento, ni en el editor ni en el PDF
+
+#### Scenario: Los importes no cambian
+- **WHEN** se presenta el desglose reordenado de cualquier factura
+- **THEN** todos los importes son idénticos a los calculados antes del reorden
