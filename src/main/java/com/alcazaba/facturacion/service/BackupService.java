@@ -28,6 +28,11 @@ public class BackupService {
 
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
+    private static final List<String> TABLAS_NUCLEO = List.of(
+            "cliente", "serie", "tipo_iva", "factura", "factura_version",
+            "factura_linea", "empresa", "preferencias"
+    );
+
     private static final List<String> TABLAS_APLICACION = List.of(
             "cliente", "serie", "tipo_iva", "factura", "factura_version",
             "factura_linea", "empresa", "preferencias", "serie_siguiente",
@@ -108,7 +113,8 @@ public class BackupService {
                 }
             }
 
-            boolean tablasCoinciden = verificarEstructura(c);
+            comprobarTablasNucleo(c);
+
             int uv;
             try (Statement st = c.createStatement();
                  ResultSet rs = st.executeQuery("PRAGMA user_version")) {
@@ -117,7 +123,10 @@ public class BackupService {
             if (uv <= 0) {
                 throw new ValidationException("La copia no tiene una versión de esquema válida.");
             }
+
+            boolean tablasCoinciden = true;
             if (uv > Migrations.ultimaVersion()) {
+                tablasCoinciden = estructuraCompleta(c);
                 if (!tablasCoinciden) {
                     throw new ValidationException("La copia es de una versión de esquema más nueva ("
                             + uv + ") que la aplicación (" + Migrations.ultimaVersion()
@@ -164,7 +173,7 @@ public class BackupService {
         }
     }
 
-    public Path restaurarEnEmpresaActiva(Path origen) throws Exception {
+    public Path restaurarEnEmpresaActiva(Path origen) throws IOException, SQLException, ValidationException {
         leerResumen(origen);
 
         Path carpetaRescate = Database.dataDir().resolve("copias_previas");
@@ -177,45 +186,72 @@ public class BackupService {
             borrarDiario(Database.dataDir());
             Database.getConnection();
         } catch (Exception e) {
+            Database.resetConnection();
             Files.copy(rescate, Database.dbPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
             borrarDiario(Database.dataDir());
-            Database.resetConnection();
             Database.getConnection();
-            throw new Exception("No se pudo restaurar; se ha recuperado la base anterior: " + e.getMessage(), e);
+            throw new IOException("No se pudo restaurar; se ha recuperado la base anterior: " + e.getMessage(), e);
         }
 
         return rescate;
     }
 
-    public EmpresaManager.EmpresaInfo restaurarComoEmpresaNueva(Path origen, String nombre) throws Exception {
+    public EmpresaManager.EmpresaInfo restaurarComoEmpresaNueva(Path origen, String nombre)
+            throws IOException, ValidationException {
         leerResumen(origen);
 
-        EmpresaManager.EmpresaInfo nueva = EmpresaManager.crearEmpresa(nombre);
+        EmpresaManager.EmpresaInfo nueva = null;
+        try {
+            nueva = EmpresaManager.crearEmpresa(nombre);
 
-        Path destino = Database.dbPathDe(nueva.slug());
-        Files.copy(origen, destino, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-        borrarDiario(destino.getParent());
+            Path destino = Database.dbPathDe(nueva.slug());
+            Files.copy(origen, destino, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            borrarDiario(destino.getParent());
 
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + destino)) {
-            Migrations.migrate(c);
+            try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + destino)) {
+                Migrations.migrate(c);
+            }
+        } catch (Exception e) {
+            if (nueva != null) {
+                try {
+                    EmpresaManager.eliminarEmpresa(nueva.slug());
+                } catch (Exception ignored) {
+                }
+            }
+            throw new IOException("No se pudo crear la empresa desde la copia: " + e.getMessage(), e);
         }
 
         return nueva;
     }
 
     private static void borrarDiario(Path carpeta) throws IOException {
-        Files.deleteIfExists(carpeta.resolve("facturas.db-wal"));
-        Files.deleteIfExists(carpeta.resolve("facturas.db-shm"));
+        String base = Database.dbPath().getFileName().toString();
+        Files.deleteIfExists(carpeta.resolve(base + "-wal"));
+        Files.deleteIfExists(carpeta.resolve(base + "-shm"));
     }
 
-    private static boolean verificarEstructura(Connection c) throws SQLException, ValidationException {
-        for (String tabla : TABLAS_APLICACION) {
+    private static void comprobarTablasNucleo(Connection c) throws SQLException, ValidationException {
+        for (String tabla : TABLAS_NUCLEO) {
             try (Statement st = c.createStatement();
                  ResultSet rs = st.executeQuery(
                          "SELECT name FROM sqlite_master WHERE type='table' AND name='" + tabla + "'")) {
                 if (!rs.next()) {
                     throw new ValidationException("Falta la tabla '" + tabla + "' en la copia.");
                 }
+            }
+        }
+    }
+
+    private static boolean estructuraCompleta(Connection c) throws SQLException {
+        for (String tabla : TABLAS_APLICACION) {
+            boolean existe = false;
+            try (Statement st = c.createStatement();
+                 ResultSet rs = st.executeQuery(
+                         "SELECT name FROM sqlite_master WHERE type='table' AND name='" + tabla + "'")) {
+                existe = rs.next();
+            }
+            if (!existe) {
+                return false;
             }
         }
         for (Map.Entry<String, List<String>> e : COLUMNAS_APLICACION.entrySet()) {

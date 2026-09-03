@@ -207,10 +207,53 @@ class BackupServiceTest {
         Files.copy(copia, mutilada);
         try (var c = DriverManager.getConnection("jdbc:sqlite:" + mutilada);
              Statement st = c.createStatement()) {
-            st.executeUpdate("DROP TABLE numero_disponible");
+            st.executeUpdate("DROP TABLE factura");
         }
 
         assertThrows(ValidationException.class, () -> servicio.leerResumen(mutilada));
+    }
+
+    @Test
+    void rechazaCopiaSinLasTablasNucleo() throws Exception {
+        insertarDatosBasicos();
+        Path copia = crearCopia();
+
+        Path sinNucleo = tempDir.resolve("sin_nucleo.db");
+        Files.copy(copia, sinNucleo);
+        try (var c = DriverManager.getConnection("jdbc:sqlite:" + sinNucleo);
+             Statement st = c.createStatement()) {
+            st.executeUpdate("DROP TABLE factura");
+            st.executeUpdate("PRAGMA user_version = 1");
+        }
+
+        assertThrows(ValidationException.class, () -> servicio.leerResumen(sinNucleo));
+    }
+
+    @Test
+    void restaurarCopiaDeEsquemaAnteriorSeMigra() throws Exception {
+        insertarDatosBasicos();
+        Path copia = crearCopia();
+
+        Path anterior = tempDir.resolve("anterior.db");
+        Files.copy(copia, anterior);
+        try (var c = DriverManager.getConnection("jdbc:sqlite:" + anterior);
+             Statement st = c.createStatement()) {
+            st.executeUpdate("DROP TABLE numero_disponible");
+            st.executeUpdate("PRAGMA user_version = 6");
+        }
+
+        try (Statement st = Database.getConnection().createStatement()) {
+            st.executeUpdate("UPDATE empresa SET nif='Z00000000' WHERE id=1");
+        }
+
+        servicio.restaurarEnEmpresaActiva(anterior);
+
+        try (Statement st = Database.getConnection().createStatement();
+             ResultSet rs = st.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='numero_disponible'")) {
+            assertTrue(rs.next(), "La tabla numero_disponible debe recrearse al migrar");
+        }
+
+        assertEquals(Migrations.ultimaVersion(), Migrations.userVersion(Database.getConnection()));
     }
 
     @Test

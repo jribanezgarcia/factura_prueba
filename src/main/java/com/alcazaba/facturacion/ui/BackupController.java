@@ -180,22 +180,8 @@ public class BackupController implements Vista {
         String nifBackup = normalizarNif(r.nif());
         String nifActiva = normalizarNif(obtenerNifActiva());
 
-        if (nifBackup.isEmpty() || nifActiva.isEmpty()) {
-            int facturasActivas = contarFacturasActivas();
-            if (nifActiva.isEmpty() && facturasActivas == 0) {
-                rbReemplazar.setDisable(false);
-                rbCrearNueva.setDisable(false);
-                grupoDestino.selectToggle(rbReemplazar);
-            } else if (nifBackup.equals(nifActiva) || (nifActiva.isEmpty() && facturasActivas == 0)) {
-                rbReemplazar.setDisable(false);
-                rbCrearNueva.setDisable(false);
-                grupoDestino.selectToggle(rbReemplazar);
-            } else {
-                rbReemplazar.setDisable(true);
-                rbCrearNueva.setDisable(false);
-                grupoDestino.selectToggle(rbCrearNueva);
-            }
-        } else if (nifBackup.equals(nifActiva)) {
+        boolean activaVacia = nifActiva.isEmpty() && contarFacturasActivas() == 0;
+        if (activaVacia || nifBackup.equals(nifActiva)) {
             rbReemplazar.setDisable(false);
             rbCrearNueva.setDisable(false);
             grupoDestino.selectToggle(rbReemplazar);
@@ -232,6 +218,19 @@ public class BackupController implements Vista {
         }
     }
 
+    private String nombreEmpresaActiva() {
+        String slug = Sesion.empresaSlug();
+        try {
+            for (EmpresaManager.EmpresaInfo e : EmpresaManager.listarEmpresas()) {
+                if (e.slug().equals(slug)) {
+                    return e.nombre();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return slug;
+    }
+
     @FXML
     private void restaurar() {
         if (origenSeleccionado == null) {
@@ -244,7 +243,7 @@ public class BackupController implements Vista {
             return;
         }
 
-        String empresaActiva = Sesion.empresaSlug();
+        String empresaActiva = nombreEmpresaActiva();
         String msg = reemplazar
                 ? "¿Reemplazar los datos de la empresa activa (" + empresaActiva + ") con la copia seleccionada?\n"
                         + "Se guardará una copia de rescate antes de continuar. Esta operación no se puede deshacer desde la aplicación."
@@ -290,8 +289,10 @@ public class BackupController implements Vista {
                         Dialogos.error("Restaurar copia", "No se pudo conectar: " + ex.getMessage());
                         return;
                     }
+                    nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+                } else {
+                    nav.mostrar("/com/alcazaba/facturacion/ui/Backup.fxml");
                 }
-                nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
             }
         });
         t.setOnFailed(e -> {
