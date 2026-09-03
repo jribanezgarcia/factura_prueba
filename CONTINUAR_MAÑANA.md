@@ -12,12 +12,12 @@ Este documento sirve como traspaso para continuar con cualquier IA. El proyecto 
 
 ## REGLA OBLIGATORIA: usar OpenSpec siempre
 
-Todo trabajo en este proyecto (nuevas funcionalidades, cambios, fixes, redisenos de interfaz, temas, etc.) se realiza SIEMPRE con el flujo OpenSpec a traves de las skills/commands de opencode (`/opsx-*`): primero `/opsx-propose`, despues `/opsx-apply-change`, luego `/opsx-sync-specs` y por ultimo `/opsx-archive-change`.
+Todo trabajo en este proyecto (nuevas funcionalidades, cambios, fixes, redisenos de interfaz, temas, etc.) se realiza SIEMPRE con el flujo OpenSpec a traves de las skills/commands de opencode (`/opsx-*`): primero `/opsx-propose`, despues `/opsx-apply`, luego `/opsx-sync` y por ultimo `/opsx-archive`.
 
 No se permite:
 
 - tocar codigo ni spec fuera del flujo OpenSpec;
-- modificar `openspec/specs/invoicing/spec.md` a mano sin pasar por `/opsx-sync-specs`;
+- modificar `openspec/specs/invoicing/spec.md` a mano sin pasar por `/opsx-sync`;
 - implementar cambios sin su cambio OpenSpec correspondiente (ni siquiera redisenos "rapidos");
 
 El CLI `openspec` ya esta instalado (version 1.10.0). Cualquier IA que trabaje en este proyecto debe seguir este flujo en todas las sesiones.

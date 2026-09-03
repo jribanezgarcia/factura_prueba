@@ -3,19 +3,19 @@
 ## Instrucciones para OpenCode / OpenSpec
 
 **Regla obligatoria:** todo el trabajo en este proyecto se realiza SIEMPRE
-con el flujo OpenSpec (`/opsx-propose` → `/opsx-apply-change` →
-`/opsx-sync-specs` → `/opsx-archive-change`). No se toca código ni la spec
+con el flujo OpenSpec (`/opsx-propose` → `/opsx-apply` →
+`/opsx-sync` → `/opsx-archive`). No se toca código ni la spec
 fuera de ese flujo. El CLI `openspec` ya está instalado.
 
 Este documento describe el objetivo y los requisitos conocidos de una
 nueva aplicación de facturación. Se utilizará como contexto para
-`/opsx:explore`.
+`/opsx-explore`.
 
 **Importante:** en esta fase NO quiero que implementes código, NO quiero
 que crees todavía la arquitectura definitiva ni que empieces a
 programar. Quiero explorar y entender bien el problema, detectar
 contradicciones o decisiones importantes que falten y preparar el
-terreno para `/opsx:propose`.
+terreno para `/opsx-propose`.
 
 La aplicación debe ser una primera versión sencilla y funcional. No hay
 que sobrediseñarla.
@@ -747,7 +747,7 @@ No convertir esta aplicación en un ERP.
 
 ------------------------------------------------------------------------
 
-# 26. Qué quiero de `/opsx:explore`
+# 26. Qué quiero de `/opsx-explore`
 
 En esta fase quiero que OpenCode:
 
@@ -759,10 +759,10 @@ En esta fase quiero que OpenCode:
 5.  Proponga las preguntas mínimas que aún sean imprescindibles.
 6.  No implemente código.
 7.  No cree todavía la solución definitiva.
-8.  No pase todavía a `/opsx:propose`.
+8.  No pase todavía a `/opsx-propose`.
 
 Si faltan detalles menores, elige la opción más sencilla y razonable
 para una V1 en lugar de preguntarme por cada pequeño detalle.
 
 El objetivo de esta fase es terminar con una comprensión clara del
-producto y estar preparados para pasar después a `/opsx:propose`.
+producto y estar preparados para pasar después a `/opsx-propose`.

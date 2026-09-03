@@ -10,37 +10,40 @@
         <Insets top="12" right="12" bottom="12" left="12"/>
     </padding>
     <top>
-        <Label text="Generar facturas mensuales" styleClass="titulo-dialogo" BorderPane.alignment="CENTER_LEFT"/>
+        <Label text="Generar facturas mensuales" styleClass="titulo" BorderPane.alignment="CENTER_LEFT"/>
     </top>
     <center>
-        <ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED" styleClass="card">
+        <ScrollPane fitToWidth="true" hbarPolicy="AS_NEEDED" vbarPolicy="AS_NEEDED" styleClass="panel-neutro">
             <VBox spacing="8">
-                <GridPane vgap="8" hgap="10">
+                <padding>
+                    <Insets top="16" right="16" bottom="16" left="16"/>
+                </padding>
+                <GridPane vgap="10" hgap="12">
                     <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="110" prefWidth="130"/>
                         <ColumnConstraints hgrow="ALWAYS" minWidth="180" prefWidth="220"/>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="110" prefWidth="130"/>
                         <ColumnConstraints hgrow="ALWAYS" minWidth="160" prefWidth="200"/>
                     </columnConstraints>
-                    <Label text="Cliente" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                    <Label text="Cliente" styleClass="form-label" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
                     <ComboBox fx:id="comboCliente" GridPane.rowIndex="0" GridPane.columnIndex="1" GridPane.columnSpan="3"/>
 
-                    <Label text="Serie" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                    <Label text="Serie" styleClass="form-label" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
                     <ComboBox fx:id="comboSerie" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
 
-                    <Label text="Año" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+                    <Label text="Año" styleClass="form-label" GridPane.rowIndex="1" GridPane.columnIndex="2"/>
                     <Spinner fx:id="spinnerAnio" GridPane.rowIndex="1" GridPane.columnIndex="3"/>
 
-                    <Label text="Mes inicio" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                    <Label text="Mes inicio" styleClass="form-label" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
                     <ComboBox fx:id="comboMesInicio" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
 
-                    <Label text="Mes fin" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+                    <Label text="Mes fin" styleClass="form-label" GridPane.rowIndex="2" GridPane.columnIndex="2"/>
                     <ComboBox fx:id="comboMesFin" GridPane.rowIndex="2" GridPane.columnIndex="3"/>
 
-                    <Label text="Día del mes" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+                    <Label text="Día del mes" styleClass="form-label" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
                     <Spinner fx:id="spinnerDia" prefWidth="90" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
 
-                    <Label text="Tipo de IVA" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+                    <Label text="Tipo de IVA" styleClass="form-label" GridPane.rowIndex="3" GridPane.columnIndex="2"/>
                     <ComboBox fx:id="comboIva" GridPane.rowIndex="3" GridPane.columnIndex="3"/>
 
                     <HBox spacing="12" alignment="CENTER_LEFT" GridPane.rowIndex="4" GridPane.columnIndex="1" GridPane.columnSpan="3">
@@ -49,11 +52,11 @@
                         <RadioButton fx:id="radioUltimoDia" text="Último día del mes"/>
                     </HBox>
 
-                    <Label text="Retención IRPF" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+                    <Label text="Retención IRPF" styleClass="form-label" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
                     <ComboBox fx:id="comboRetencion" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
                 </GridPane>
 
-                <Label text="Líneas de cada factura" styleClass="subtitulo-dialogo"/>
+                <Label text="Líneas de cada factura" styleClass="section-title"/>
                 <TableView fx:id="tablaLineas" prefHeight="120">
                     <columns>
                         <TableColumn fx:id="colCantidad" prefWidth="80" text="Cant."/>
