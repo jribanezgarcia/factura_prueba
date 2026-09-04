@@ -186,6 +186,10 @@ public class EditorController implements Vista {
     private Button btnAnadirLinea;
     @FXML
     private Button btnEliminarLinea;
+    @FXML
+    private Button btnVersiones;
+    @FXML
+    private Button btnRectificativa;
 
     @Override
     public void setServicios(Servicios s) {
@@ -1032,6 +1036,8 @@ public class EditorController implements Vista {
         btnRestaurar.setVisible(anulada);
         btnRestaurar.setManaged(anulada);
         btnExportar.setDisable(versionAbiertaId == null);
+        btnVersiones.setDisable(!abierta);
+        btnRectificativa.setDisable(!abierta);
     }
 
     private void setEditable(boolean e) {

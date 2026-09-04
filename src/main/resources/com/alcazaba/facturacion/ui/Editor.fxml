@@ -14,22 +14,22 @@
         <VBox spacing="8">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
             <VBox spacing="8" styleClass="card, card-editor, panel-busqueda">
-                <ToolBar styleClass="action-bar">
+                <HBox styleClass="action-bar" alignment="CENTER_LEFT">
                     <StackPane fx:id="logoBox" styleClass="menu-logo-box" prefWidth="110.0" prefHeight="40.0" maxWidth="110.0" maxHeight="40.0" minWidth="110.0" minHeight="40.0">
                         <ImageView fx:id="logo" preserveRatio="true"/>
                     </StackPane>
-                    <Label fx:id="lblTitulo" styleClass="titulo, titulo-compacto" text="Nueva factura"/>
-                    <Label fx:id="lblEstado" visible="false" managed="false" styleClass="chip-anulada" text="ANULADA"/>
+                    <Label fx:id="lblTitulo" styleClass="titulo, titulo-compacto" text="Nueva factura" maxWidth="130.0" minWidth="0.0"/>
+                    <Label fx:id="lblEstado" visible="false" managed="false" styleClass="chip-anulada" text="ANULADA" maxWidth="80.0"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button fx:id="btnGuardar" onAction="#guardar" styleClass="primary-button" text="Guardar"/>
                     <Button fx:id="btnExportar" onAction="#exportarPdf" styleClass="action-button" text="Exportar PDF"/>
                     <Button fx:id="btnVersiones" onAction="#verVersiones" styleClass="action-button" text="Versiones"/>
-                    <Button fx:id="btnRectificativa" onAction="#crearRectificativa" styleClass="action-button" text="Crear rectificativa"/>
+                    <Button fx:id="btnRectificativa" onAction="#crearRectificativa" styleClass="action-button" text="Rectificativa"/>
                     <Button fx:id="btnAnular" onAction="#anular" styleClass="action-danger-button" text="Anular"/>
                     <Button fx:id="btnRestaurar" onAction="#restaurar" styleClass="action-button" text="Restaurar"/>
-                    <Button onAction="#nuevaFactura" styleClass="action-button" text="Nueva factura"/>
+                    <Button onAction="#nuevaFactura" styleClass="action-button" text="Nueva"/>
                     <Button onAction="#volver" styleClass="action-button" text="Volver"/>
-                </ToolBar>
+                </HBox>
                 <HBox spacing="14" alignment="TOP_LEFT">
                     <VBox spacing="5" prefWidth="380" HBox.hgrow="ALWAYS">
                         <Label styleClass="bloque-titulo" text="FACTURA"/>
@@ -92,7 +92,9 @@
         <VBox spacing="6" styleClass="zona-editor">
             <HBox spacing="8" alignment="CENTER_LEFT">
                 <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" styleClass="action-button" text="Añadir línea"/>
-                <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" styleClass="action-button" text="Eliminar línea (Supr)"/>
+                <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" styleClass="action-button" text="Eliminar línea">
+                    <tooltip><Tooltip text="Eliminar línea (Supr)"/></tooltip>
+                </Button>
                 <CheckBox fx:id="chkTotalConIva" text="Total de línea con IVA incluido"/>
                 <Region HBox.hgrow="ALWAYS"/>
                 <Label text="Retención"/>
