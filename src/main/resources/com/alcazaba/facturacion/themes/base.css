@@ -86,8 +86,8 @@
 /* Navegación */
 .nav-bar {
     -fx-alignment: CENTER;
-    -fx-spacing: 34px;
-    -fx-padding: 10px 0 16px 0;
+    -fx-spacing: 22px;
+    -fx-padding: 6px 0 8px 0;
 }
 
 .nav-button {
@@ -98,6 +98,13 @@
     -fx-padding: 4px 8px;
     -fx-cursor: hand;
     -fx-background-radius: 6px;
+    -fx-content-display: top;
+    -fx-graphic-text-gap: 6px;
+    -fx-font-size: 10px;
+    -fx-alignment: CENTER;
+    -fx-min-width: 80;
+    -fx-pref-width: 80;
+    -fx-max-width: 80;
 }
 
 .nav-button:hover {

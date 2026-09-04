@@ -15,6 +15,7 @@
 
 .nav-bar { -fx-background-color: #7D82D9; }
 .nav-button .nav-icon { -fx-fill: #060B1E; }
+.nav-button { -fx-text-fill: #060B1E; }
 .nav-button:hover { -fx-background-color: rgba(6, 11, 30, 0.18); }
 .nav-button.activo { -fx-border-color: transparent transparent #060B1E transparent; }
 
