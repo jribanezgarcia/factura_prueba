@@ -152,7 +152,7 @@ public class HistoricoController implements Vista {
         itemExportar.setOnAction(e -> exportarPdf());
         MenuItem itemAnular = new MenuItem("Anular facturas seleccionadas");
         itemAnular.setOnAction(e -> anularSeleccionadas());
-        MenuItem itemBorrar = new MenuItem("Borrar facturas seleccionadas");
+        MenuItem itemBorrar = new MenuItem("Eliminar facturas seleccionadas");
         itemBorrar.setOnAction(e -> borrarSeleccionadas());
         menu.getItems().addAll(itemExportar, itemAnular, itemBorrar);
         tabla.setContextMenu(menu);

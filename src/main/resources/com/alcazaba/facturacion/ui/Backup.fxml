@@ -22,7 +22,7 @@
                         <Button onAction="#seleccionarDestino" styleClass="default-button" text="Seleccionar carpeta de destino..."/>
                         <Label fx:id="lblDestino" text="(ninguna carpeta seleccionada)" styleClass="muted"/>
                     </HBox>
-                    <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button" text="Crear copia de seguridad"/>
+                    <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button" text="Crear copia"/>
                     <Label fx:id="lblResultado" wrapText="true"/>
                 </VBox>
                 <VBox spacing="8" styleClass="card, zona-contenido">
@@ -46,7 +46,7 @@
                         <Label text="Nombre de la nueva empresa:"/>
                         <TextField fx:id="txtNombreEmpresa" prefWidth="300"/>
                     </HBox>
-                    <Button fx:id="btnRestaurar" disable="true" onAction="#restaurar" styleClass="primary-button" text="Restaurar copia"/>
+                    <Button fx:id="btnRestaurar" disable="true" onAction="#restaurar" styleClass="primary-button" text="Restaurar"/>
                     <Label fx:id="lblResultadoRestauracion" wrapText="true"/>
                 </VBox>
             </VBox>
