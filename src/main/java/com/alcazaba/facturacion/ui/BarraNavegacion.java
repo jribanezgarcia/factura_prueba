@@ -36,22 +36,23 @@ public final class BarraNavegacion {
         barra.getStyleClass().add("nav-bar");
         barra.setAlignment(Pos.CENTER);
         barra.getChildren().addAll(
-                boton("Menú principal", ICONO_INICIO, () -> nav.mostrar(RUTA_MENU), "menu".equals(actual)),
-                boton("Nueva factura", ICONO_NUEVA, () -> nav.mostrar(RUTA_EDITOR), "editor".equals(actual)),
-                boton("Histórico", ICONO_HISTORICO, () -> nav.mostrar(RUTA_HISTORICO), "historico".equals(actual)),
-                boton("Clientes", ICONO_CLIENTES, () -> nav.mostrar(RUTA_CLIENTES), "clientes".equals(actual)),
-                boton("Configuración", ICONO_CONFIG, () -> nav.mostrar(RUTA_CONFIG), "configuracion".equals(actual)),
-                boton("Copia de seguridad", ICONO_BACKUP, () -> nav.mostrar(RUTA_BACKUP), "backup".equals(actual)),
-                boton("Salir", ICONO_SALIR, () -> nav.stage().fireEvent(new WindowEvent(nav.stage(), WindowEvent.WINDOW_CLOSE_REQUEST)), false));
+                boton("Inicio", "Menú principal", ICONO_INICIO, () -> nav.mostrar(RUTA_MENU), "menu".equals(actual)),
+                boton("Nueva", "Nueva factura", ICONO_NUEVA, () -> nav.mostrar(RUTA_EDITOR), "editor".equals(actual)),
+                boton("Histórico", "Histórico", ICONO_HISTORICO, () -> nav.mostrar(RUTA_HISTORICO), "historico".equals(actual)),
+                boton("Clientes", "Clientes", ICONO_CLIENTES, () -> nav.mostrar(RUTA_CLIENTES), "clientes".equals(actual)),
+                boton("Configuración", "Configuración", ICONO_CONFIG, () -> nav.mostrar(RUTA_CONFIG), "configuracion".equals(actual)),
+                boton("Copias", "Copia de seguridad", ICONO_BACKUP, () -> nav.mostrar(RUTA_BACKUP), "backup".equals(actual)),
+                boton("Salir", "Salir", ICONO_SALIR, () -> nav.stage().fireEvent(new WindowEvent(nav.stage(), WindowEvent.WINDOW_CLOSE_REQUEST)), false));
         return barra;
     }
 
-    private static Button boton(String tooltip, String svg, Runnable accion, boolean activo) {
+    private static Button boton(String etiqueta, String tooltip, String svg, Runnable accion, boolean activo) {
         Button b = new Button();
         b.getStyleClass().add("nav-button");
         if (activo) {
             b.getStyleClass().add("activo");
         }
+        b.setText(etiqueta);
         b.setGraphic(icono(svg));
         b.setTooltip(new Tooltip(tooltip));
         b.setOnAction(e -> accion.run());
