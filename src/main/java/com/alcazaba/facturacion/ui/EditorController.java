@@ -284,6 +284,7 @@ public class EditorController implements Vista {
                 cargarDatosCliente(cli);
 
                 lineas.setAll(vc.lineas());
+                asegurarTiposIvaEnLista(lineas);
                 descuento = vc.version().getDescuentoPorcentaje();
                 txtDescuento.setText(String.valueOf(descuento));
                 asegurarRetencionEnLista(vc.version().getTipoRetencionId(),
@@ -382,6 +383,40 @@ public class EditorController implements Vista {
             tiposIva.setAll(servicios.ivas.listar(true));
         } catch (Exception e) {
             tiposIva.clear();
+        }
+    }
+
+    private void asegurarTiposIvaEnLista(ObservableList<LineaFactura> lineasCargadas) {
+        for (LineaFactura l : lineasCargadas) {
+            if (l.getTipoIvaId() == null) {
+                continue;
+            }
+            boolean yaEsta = false;
+            for (TipoIva t : tiposIva) {
+                if (t.getId() != null && t.getId().equals(l.getTipoIvaId())) {
+                    yaEsta = true;
+                    break;
+                }
+            }
+            if (yaEsta) {
+                continue;
+            }
+            TipoIva existente = null;
+            try {
+                existente = servicios.ivas.getById(l.getTipoIvaId());
+            } catch (Exception ignored) {
+            }
+            if (existente != null) {
+                tiposIva.add(existente);
+            } else {
+                TipoIva snapshot = new TipoIva();
+                snapshot.setId(l.getTipoIvaId());
+                snapshot.setNombre(l.getIvaNombre() != null ? l.getIvaNombre() : "");
+                snapshot.setPorcentaje(l.getIvaPorcentaje());
+                snapshot.setMotivoExencion(l.getIvaMotivoExencion());
+                snapshot.setActivo(false);
+                tiposIva.add(snapshot);
+            }
         }
     }
 
@@ -701,7 +736,7 @@ public class EditorController implements Vista {
                 }
             }
         }
-        return tiposIva.isEmpty() ? null : tiposIva.get(0);
+        return null;
     }
 
     private LineaFactura lineaDeCelda(TableCell<LineaFactura, ?> celda) {
@@ -1491,19 +1526,20 @@ public class EditorController implements Vista {
 
     private final class CeldaIva extends TableCell<LineaFactura, TipoIva> {
         private final ComboBox<TipoIva> combo = new ComboBox<>();
+        private final javafx.event.EventHandler<javafx.event.ActionEvent> handler = e -> {
+            LineaFactura l = lineaDeCelda(this);
+            TipoIva t = combo.getValue();
+            if (l != null && t != null && !Objects.equals(t.getId(), l.getTipoIvaId())) {
+                aplicarIva(l, t);
+                refrescarLineas();
+                actualizarResumen();
+            }
+        };
 
         CeldaIva() {
             combo.setItems(tiposIva);
             combo.setMaxWidth(Double.MAX_VALUE);
-            combo.setOnAction(e -> {
-                LineaFactura l = lineaDeCelda(this);
-                TipoIva t = combo.getValue();
-                if (l != null && t != null && !Objects.equals(t.getId(), l.getTipoIvaId())) {
-                    aplicarIva(l, t);
-                    refrescarLineas();
-                    actualizarResumen();
-                }
-            });
+            combo.setOnAction(handler);
         }
 
         @Override
@@ -1512,7 +1548,9 @@ public class EditorController implements Vista {
             LineaFactura l = lineaDeCelda(this);
             setGraphic(empty || l == null ? null : combo);
             if (l != null) {
+                combo.setOnAction(null);
                 combo.setValue(tipoIvaDe(l));
+                combo.setOnAction(handler);
             }
         }
     }
