@@ -56,5 +56,8 @@
 .empresa-info { -fx-text-fill: #6D7DB6; }
 .menu-item:hover { -fx-background-color: #1B2350; }
 .menu-item .icono { -fx-fill: #7D82D9; }
+.default-button .icono-boton, .action-button .icono-boton { -fx-fill: #7D82D9; }
+.primary-button .icono-boton { -fx-fill: #060B1E; }
+.danger-button .icono-boton, .action-danger-button .icono-boton { -fx-fill: #ED5B5A; }
 .menu-item .nombre { -fx-text-fill: #9A9EE8; }
 .menu-item .descripcion { -fx-text-fill: #6D7DB6; }

@@ -834,7 +834,7 @@ public class ConfiguracionController implements Vista {
         try {
             if (servicios.facturas.serieTieneFacturas(s.getId())) {
                 Dialogos.error("Series", "La serie \"" + codigoOBlanco(s)
-                        + "\" no puede borrarse: tiene facturas (activas o históricas). El histórico no se elimina.");
+                        + "\" no puede eliminarse: tiene facturas (activas o históricas). El histórico no se elimina.");
                 return;
             }
         } catch (Exception e) {
@@ -844,14 +844,14 @@ public class ConfiguracionController implements Vista {
         String etiqueta = (s.getCodigo() == null || s.getCodigo().isBlank())
                 ? (s.getDescripcion() == null || s.getDescripcion().isBlank() ? "esta serie" : s.getDescripcion())
                 : s.getCodigo();
-        if (!Dialogos.confirmar("Borrar serie", "¿Seguro que deseas borrar la serie \"" + etiqueta + "\"?")) {
+        if (!Dialogos.confirmar("Eliminar serie", "¿Seguro que deseas eliminar la serie \"" + etiqueta + "\"?")) {
             return;
         }
         try {
             servicios.series.eliminar(s.getId());
             refrescarSeries();
         } catch (Exception e) {
-            Dialogos.error("Series", "No se pudo borrar la serie: " + e.getMessage());
+            Dialogos.error("Series", "No se pudo eliminar la serie: " + e.getMessage());
         }
     }
 
@@ -935,7 +935,7 @@ public class ConfiguracionController implements Vista {
         }
         if (!Dialogos.confirmar("Eliminar empresa",
                 "¿Seguro que deseas eliminar \"" + elegida.nombre() + "\"?\n"
-                        + "Se borrará físicamente su carpeta de datos. Esta acción no se puede deshacer.")) {
+                        + "Se eliminará físicamente su carpeta de datos. Esta acción no se puede deshacer.")) {
             return;
         }
         try {

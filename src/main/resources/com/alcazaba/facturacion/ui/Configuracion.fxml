@@ -28,21 +28,21 @@
                       styleClass="card, zona-contenido, seccion-config">
                     <GridPane hgap="8" vgap="6">
                         <Label text="Nombre / razón social"/>
-                        <TextField fx:id="txtNombre" prefWidth="340" GridPane.columnIndex="1"/>
+                        <TextField fx:id="txtNombre" prefWidth="300" GridPane.columnIndex="1"/>
                         <Label text="NIF" GridPane.rowIndex="1"/>
                         <TextField fx:id="txtNif" prefWidth="160" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                         <Label text="Actividad" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                        <TextField fx:id="txtActividad" prefWidth="240" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                        <TextField fx:id="txtActividad" prefWidth="200" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
                         <Label text="Dirección" GridPane.rowIndex="2"/>
-                        <TextField fx:id="txtDireccion" prefWidth="440" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2"/>
+                        <TextField fx:id="txtDireccion" prefWidth="400" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2"/>
                         <Label text="CP" GridPane.rowIndex="3"/>
                         <TextField fx:id="txtCp" prefWidth="100" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
                         <Label text="Localidad" GridPane.columnIndex="2" GridPane.rowIndex="3"/>
-                        <TextField fx:id="txtLocalidad" prefWidth="180" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
+                        <TextField fx:id="txtLocalidad" prefWidth="160" GridPane.columnIndex="3" GridPane.rowIndex="3"/>
                         <Label text="Provincia" GridPane.rowIndex="4"/>
                         <TextField fx:id="txtProvincia" prefWidth="200" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
                         <Label text="Email" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
-                        <TextField fx:id="txtEmail" prefWidth="220" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
+                        <TextField fx:id="txtEmail" prefWidth="200" GridPane.columnIndex="3" GridPane.rowIndex="4"/>
                         <Label text="Teléfono" GridPane.rowIndex="5"/>
                         <TextField fx:id="txtTelefono" prefWidth="160" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
                     </GridPane>

@@ -347,23 +347,66 @@ Solo SHALL tenerse una factura abierta a la vez. No SHALL existir la opción "Nu
 
 ### Requirement: Barra de acciones del editor sin desbordamiento
 
-La barra de acciones del editor de facturas SHALL mostrar todos sus botones visibles a la vez en el tamaño mínimo de ventana (1024×768), sin recurrir a un menú de desbordamiento. En particular, la aparición del botón de anular al guardar una factura SHALL NO ocultar ningún otro botón.
+La barra de acciones del editor de facturas SHALL mostrar todos sus botones visibles a la vez en el tamaño mínimo de ventana (1024×768), sin recurrir a un menú de desbordamiento. En particular, la aparición del botón de anular al guardar una factura SHALL NOT ocultar ningún otro botón.
 
-El título de la factura SHALL tener una anchura máxima y recortarse con elipsis, de modo que un número de factura largo no reduzca el espacio disponible para los botones.
+Ningún botón de la barra SHALL comprimirse por debajo de su anchura preferida ni salirse del ancho de la ventana. Los separadores entre grupos SHALL NOT contar como botones a efectos de este requisito.
+
+Todos los botones de la barra SHALL tener la misma anchura, y esa anchura SHALL ser independiente de la longitud de la etiqueta: una etiqueta que no quepa en una línea SHALL envolverse a dos en lugar de ensanchar el botón.
+
+El botón `Nueva` SHALL ir inmediatamente después de `Guardar`, de modo que las dos acciones de escritura queden juntas.
+
+El título de la factura SHALL conservar su texto completo mientras haya espacio para él. SHALL tener una anchura máxima y recortarse con elipsis únicamente cuando el espacio disponible se reduzca, como ocurre al mostrarse el distintivo de factura anulada, de modo que un número de factura largo nunca desplace a los botones.
 
 Los botones que requieren una factura ya guardada SHALL mostrarse deshabilitados mientras no la haya, en lugar de responder con un aviso al pulsarlos.
 
 #### Scenario: Guardar una factura no esconde botones
 - **WHEN** el usuario guarda una factura nueva y aparece el botón de anular
-- **THEN** todos los botones de la barra siguen visibles y no aparece ningún menú de desbordamiento
+- **THEN** todos los botones de la barra siguen visibles y ninguno queda comprimido por debajo de su anchura preferida
+
+#### Scenario: El título se lee entero en una factura emitida
+- **WHEN** el usuario abre una factura emitida cuyo título es «Factura C-59/7 (v1)»
+- **THEN** el título se muestra completo, sin elipsis
 
 #### Scenario: Número de factura largo
-- **WHEN** se abre una factura cuyo número hace el título especialmente largo
-- **THEN** el título se recorta con elipsis y los botones de la barra conservan su posición y visibilidad
+- **WHEN** se abre una factura cuyo número hace el título especialmente largo, o se muestra el distintivo de anulada
+- **THEN** el título se recorta con elipsis y los botones de la barra conservan su posición, su visibilidad y su anchura
 
 #### Scenario: Botones que necesitan una factura guardada
 - **WHEN** el usuario está en una factura nueva todavía sin guardar
 - **THEN** los botones de Versiones y Rectificativa se muestran deshabilitados
+
+#### Scenario: Nueva junto a Guardar
+- **WHEN** el usuario mira la barra de acciones del Editor
+- **THEN** el botón `Nueva` aparece inmediatamente después de `Guardar`
+
+#### Scenario: Etiquetas largas no ensanchan el botón
+- **WHEN** el usuario mira los botones `Guardar` y `Rectificativa` en la misma barra
+- **THEN** ambos miden exactamente lo mismo de ancho, y el texto de `Rectificativa` se ha envuelto a dos líneas
+
+### Requirement: Distribución estable al redimensionar en Editor e Histórico
+
+Los campos del Editor SHALL ocupar siempre la misma anchura, tanto en el tamaño mínimo de ventana (1024×768) como maximizado: el espacio sobrante SHALL quedar vacío a la derecha y solo la tabla de líneas SHALL crecer. Las etiquetas de los bloques FACTURA y CLIENTE SHALL verse enteras a 1024×768, sin recortes ni puntos suspensivos.
+
+En el bloque CLIENTE, los campos Nombre, Email y Localidad SHALL tener anchura suficiente para nombres de empresa y de persona habituales —al menos el doble que los campos NIF, CP y Provincia— y las etiquetas NIF, CP y Provincia SHALL quedar próximas a sus campos, sin huecos que las desconecten visualmente de ellos.
+
+Los filtros del Histórico SHALL mantener siempre las mismas filas y posiciones, tanto a 1024×768 como maximizado: solo la tabla de facturas SHALL crecer con el ancho disponible.
+
+#### Scenario: Etiquetas del Editor legibles a 1024
+- **WHEN** el usuario abre el Editor en el tamaño mínimo de ventana
+- **THEN** las etiquetas «Forma de pago» y «Vencimiento» se leen enteras, sin «…»
+
+#### Scenario: Editor idéntico maximizado
+- **WHEN** el usuario maximiza la ventana con el Editor abierto
+- **THEN** los campos ocupan exactamente el mismo ancho que a 1024, el hueco queda a la derecha y solo la tabla de líneas se ensancha
+
+#### Scenario: Campos de cliente anchos y etiquetas próximas
+- **WHEN** el usuario mira el bloque CLIENTE del Editor a 1024×768
+- **THEN** los campos Nombre, Email y Localidad muestran al menos el doble de ancho que los campos NIF, CP y Provincia
+- **AND** las etiquetas NIF, CP y Provincia aparecen junto a sus campos
+
+#### Scenario: Filtros del Histórico estables
+- **WHEN** el usuario abre el Histórico a 1024 y luego maximiza
+- **THEN** los 7 filtros mantienen las mismas filas y posiciones y solo la tabla crece
 
 ### Requirement: Cambios sin guardar
 
@@ -445,6 +488,8 @@ La aplicación SHALL proporcionar los atajos Ctrl+N para Nueva factura, Ctrl+S p
 
 La aplicación SHALL tener una pantalla de Configuración que permita configurar: los datos de la empresa (nombre, NIF, dirección, código postal, localidad, provincia y resto de datos necesarios para la cabecera); la cabecera del documento en dos modos, texto con datos de empresa o imagen/logo; el pie con texto legal libre configurable por el usuario; el tema de apariencia de la interfaz; los tipos de IVA; los tipos de retención de IRPF; las series (crear/configurar, ver y modificar el siguiente número, configurar la reutilización de números anulados y eliminar series sin facturas); las carpetas de PDF; el color de acento usado en los PDF exportados; y la gestión de empresas (ver el listado de empresas, crear una nueva, cambiar a otra y eliminar una empresa distinta de la actual). El color SHALL guardarse como preferencia `color_pdf`; si nunca se configura, los PDF SHALL usar arena Alcazaba (`#B08D57`), y del color elegido SHALL derivarse el resto de tonos del documento. La aplicación SHALL recordar preferencias de trabajo: última serie utilizada, tamaño/posición de ventana, última carpeta de exportación y tema de apariencia. El tamaño/posición de ventana y el tema SHALL guardarse de forma global, compartidos entre empresas.
 
+En el tamaño mínimo de ventana (1024×768), todos los campos de la sección Empresa SHALL verse completos, sin recortes por el borde derecho.
+
 #### Scenario: Configurar empresa
 - **WHEN** el usuario guarda los datos de la empresa en Configuración
 - **THEN** esos datos se usan en las nuevas exportaciones a PDF
@@ -477,6 +522,10 @@ La aplicación SHALL tener una pantalla de Configuración que permita configurar
 #### Scenario: Configurar tipos de retención
 - **WHEN** el usuario añade un tipo de retención del 15% con nombre "IRPF 15%" en Configuración
 - **THEN** ese tipo queda disponible para seleccionar en las facturas de esa empresa
+
+#### Scenario: Campos de empresa legibles a 1024×768
+- **WHEN** el usuario abre la sección Empresa de Configuración en el tamaño mínimo de ventana
+- **THEN** los campos Nombre / razón social, Actividad y Localidad se ven enteros, sin recortes
 
 ### Requirement: Configuración organizada por secciones
 
@@ -871,7 +920,7 @@ La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus v
 
 ### Requirement: Estilo de zona de acciones en tema por defecto
 
-En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL distinguirse visualmente sin que resalte: las tarjetas superiores del Histórico, de Clientes y del Editor (Nueva factura), que contienen los campos de búsqueda o de factura y los botones de acción, SHALL tener un fondo gris claro `#F6F6F6`. En el Editor, los botones de acción (Exportar PDF, Versiones, Crear rectificativa, Restaurar, Nueva factura, Volver, Añadir línea y Eliminar línea) SHALL mostrarse con fondo blanco y texto negro. Guardar y Anular SHALL mantener su estilo actual (primario y de peligro respectivamente). Este estilo SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto de temas no cambian.
+En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL distinguirse visualmente sin que resalte: las tarjetas superiores del Histórico, de Clientes y del Editor (Nueva factura), que contienen los campos de búsqueda o de factura y los botones de acción, SHALL tener un fondo gris claro `#F6F6F6`. En el Editor, los botones de acción (Exportar PDF, Versiones, Crear rectificativa, Restaurar, Nueva factura, Volver, Añadir línea y Eliminar línea) SHALL mostrarse con fondo blanco y texto negro. Guardar SHALL mantener su estilo primario. Anular SHALL mantener estilo de peligro, con fondo blanco y texto rojo, de modo que un Anular habilitado SHALL NOT confundirse con un botón deshabilitado. Este estilo SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto de temas no cambian.
 
 #### Scenario: Tarjeta del Histórico con fondo gris claro
 - **WHEN** el usuario abre el Histórico con el tema por defecto
@@ -891,7 +940,11 @@ En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL
 
 #### Scenario: Botones del Editor que conservan su estilo
 - **WHEN** el usuario abre el Editor con el tema por defecto
-- **THEN** los botones Guardar (estilo primario) y Anular (estilo de peligro) conservan su aspecto actual
+- **THEN** el botón Guardar conserva su estilo primario y el botón Anular su estilo de peligro, con fondo blanco y texto rojo
+
+#### Scenario: Anular habilitado no parece deshabilitado
+- **WHEN** el usuario mira el botón Anular habilitado junto a un botón deshabilitado con el tema por defecto
+- **THEN** el Anular se ve blanco con texto rojo y se distingue a simple vista del botón deshabilitado en gris
 
 #### Scenario: El resto de temas no cambian
 - **WHEN** el usuario abre el Histórico, Clientes o el Editor con un tema distinto del por defecto
@@ -1159,6 +1212,8 @@ El botón SHALL nombrar la **acción**, dejando que el objeto lo aporte la panta
 
 Se SHALL usar un único verbo por concepto. En particular, la acción destructiva SHALL llamarse siempre «Eliminar» y SHALL NOT llamarse «Borrar» en ninguna pantalla.
 
+El criterio SHALL alcanzar también al **texto de los diálogos** que abre cada botón: el título y el cuerpo del mensaje SHALL usar el mismo verbo que el botón desde el que se llega, de modo que el usuario no tenga que decidir si dos palabras distintas nombran la misma acción justo antes de confirmarla. El título de un diálogo SHALL NOT nombrar una acción que ese flujo no realiza.
+
 «Volver» SHALL usarse para salir de una pantalla conservando lo realizado. «Cancelar» SHALL usarse únicamente en diálogos modales, donde el gesto descarta lo que se estaba componiendo.
 
 Los atajos de teclado SHALL indicarse en el tooltip del botón y SHALL NOT formar parte del texto de la etiqueta.
@@ -1170,6 +1225,14 @@ Las etiquetas SHALL ser lo bastante cortas como para que las barras de acciones 
 #### Scenario: La acción destructiva se llama igual en todas partes
 - **WHEN** el usuario compara el botón de eliminar del Histórico con el de la pantalla de Clientes
 - **THEN** ambos dicen «Eliminar», y ninguna pantalla usa «Borrar»
+
+#### Scenario: El diálogo dice lo mismo que el botón
+- **WHEN** el usuario pulsa «Eliminar» en el Histórico y aparece la confirmación
+- **THEN** el título y el cuerpo del diálogo hablan de eliminar, no de borrar
+
+#### Scenario: El título del diálogo no nombra acciones que no ocurren
+- **WHEN** el usuario anula facturas desde el Histórico
+- **THEN** el diálogo se titula «Anular» y no menciona borrar, porque la anulación crea una versión nueva y no elimina nada
 
 #### Scenario: Volver frente a Cancelar
 - **WHEN** el usuario está en una pantalla principal
@@ -1183,3 +1246,37 @@ Las etiquetas SHALL ser lo bastante cortas como para que las barras de acciones 
 #### Scenario: Una función, un nombre
 - **WHEN** el usuario abre la generación de facturas mensuales desde el Menú principal y desde el Histórico
 - **THEN** el botón se llama igual en los dos sitios
+
+### Requirement: Botones de acción con icono identificativo
+
+Los botones de las barras de acciones del Editor y del Histórico SHALL mostrar un icono identificativo de la acción encima de su etiqueta de texto, en un botón de forma cuadrada delimitado por un borde visible.
+
+Los iconos SHALL ser monocromo de un solo color, dibujados como trazado vectorial, de modo que el tema activo pueda recolorearlos. SHALL NOT usarse imágenes de mapa de bits ni iconos multicolor de color fijo.
+
+El color del icono SHALL provenir del tema activo y SHALL mantener contraste legible sobre el fondo del botón en los siete temas, incluidos los oscuros. En un botón de acción principal el icono SHALL ir en el color del texto sobre acento; en un botón secundario, en el color de acento del tema; en un botón destructivo, en el color de peligro del tema.
+
+Una misma acción SHALL llevar el mismo icono en todas las pantallas donde aparezca, y dos acciones distintas SHALL NOT compartir icono.
+
+Los botones de una barra de acciones SHALL agruparse por afinidad, y los grupos SHALL separarse visualmente mediante un separador vertical. La agrupación SHALL NOT alterar el significado ni el comportamiento de ningún botón.
+
+Este requisito alcanza únicamente a las barras de acciones del Editor y del Histórico. Los botones de formulario, los de los diálogos modales y los de las demás pantallas SHALL conservar su aspecto actual mientras no se especifique lo contrario.
+
+#### Scenario: Icono sobre el texto en la barra del Editor
+- **WHEN** el usuario abre el Editor
+- **THEN** cada botón de la barra de acciones muestra un icono encima de su etiqueta, dentro de un recuadro cuadrado con borde
+
+#### Scenario: El icono cambia de color con el tema
+- **WHEN** el usuario cambia el tema desde Configuración
+- **THEN** los iconos de los botones de acción adoptan el color del tema nuevo y siguen leyéndose con contraste suficiente, también en los temas oscuros
+
+#### Scenario: Un icono por acción, coherente entre pantallas
+- **WHEN** el usuario compara el botón de exportar a PDF del Editor con el del Histórico
+- **THEN** ambos muestran el mismo icono
+
+#### Scenario: Grupos separados en la barra
+- **WHEN** el usuario mira la barra de acciones del Editor
+- **THEN** ve las acciones repartidas en grupos separados por una línea vertical, con las de escritura juntas y las destructivas en su propio grupo
+
+#### Scenario: Las pantallas fuera de alcance no cambian
+- **WHEN** el usuario abre Clientes, Configuración o Copia de seguridad
+- **THEN** sus botones siguen siendo rectangulares y solo con texto, exactamente como antes

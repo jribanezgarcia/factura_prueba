@@ -1035,6 +1035,7 @@ public class EditorController implements Vista {
         btnAnular.setManaged(emitida);
         btnRestaurar.setVisible(anulada);
         btnRestaurar.setManaged(anulada);
+        lblTitulo.setMaxWidth(anulada ? 130 : 200);
         btnExportar.setDisable(versionAbiertaId == null);
         btnVersiones.setDisable(!abierta);
         btnRectificativa.setDisable(!abierta);
