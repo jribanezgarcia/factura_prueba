@@ -1,8 +1,8 @@
 package com.alcazaba.facturacion.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import com.alcazaba.facturacion.db.Database;
@@ -12,7 +12,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import javafx.application.Platform;
-import javafx.geometry.Bounds;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
@@ -90,25 +89,23 @@ class EditorBarraAccionesTest {
                 Label lblTitulo = (Label) root.lookup("#lblTitulo");
                 assertNotNull(lblTitulo, "lblTitulo debe existir");
                 lblTitulo.setText("Factura R-12/2026 (v3)");
+                lblTitulo.setMaxWidth(200);
 
                 root.applyCss();
                 root.layout();
 
                 double anchoEscena = stage.getScene().getWidth();
 
-                Node overflow = root.lookup(".tool-bar-overflow-button");
-                assertFalse(overflow != null && overflow.isVisible(),
-                        "No debe aparecer el boton de desbordamiento de ToolBar");
-
                 Node actionBarNode = root.lookup(".action-bar");
                 assertNotNull(actionBarNode, "La action-bar debe existir");
                 HBox actionBar = (HBox) actionBarNode;
                 for (Node child : actionBar.getChildren()) {
-                    if (child instanceof Button) {
-                        Bounds bounds = child.localToScene(child.getBoundsInLocal());
-                        assertFalse(bounds.isEmpty(),
-                                "El boton " + ((Button) child).getText()
-                                        + " no debe tener bounds vacios");
+                    if (child instanceof Button b && b.isManaged()) {
+                        assertTrue(b.getBoundsInParent().getMaxX() <= anchoEscena,
+                                "El boton " + b.getText() + " se sale del ancho de la escena");
+                        assertTrue(b.getWidth() >= b.prefWidth(-1) - 0.5,
+                                "El boton " + b.getText()
+                                        + " esta comprimido por debajo de su ancho preferido");
                     }
                 }
             } catch (Throwable t) {
@@ -183,24 +180,25 @@ class EditorBarraAccionesTest {
                 Label lblTitulo = (Label) root.lookup("#lblTitulo");
                 assertNotNull(lblTitulo, "lblTitulo debe existir");
                 lblTitulo.setText("Factura R-12/2026 (v3)");
+                lblTitulo.setMaxWidth(130);
 
                 root.applyCss();
                 root.layout();
 
-                Node overflow = root.lookup(".tool-bar-overflow-button");
-                assertFalse(overflow != null && overflow.isVisible(),
-                        "No debe aparecer el boton de desbordamiento de ToolBar"
-                                + " con factura anulada y titulo largo");
+                double anchoEscena = stage.getScene().getWidth();
 
                 Node actionBarNode = root.lookup(".action-bar");
                 assertNotNull(actionBarNode, "La action-bar debe existir");
                 HBox actionBar = (HBox) actionBarNode;
                 for (Node child : actionBar.getChildren()) {
-                    if (child instanceof Button) {
-                        Bounds bounds = child.localToScene(child.getBoundsInLocal());
-                        assertFalse(bounds.isEmpty(),
-                                "El boton " + ((Button) child).getText()
-                                        + " no debe tener bounds vacios");
+                    if (child instanceof Button b && b.isManaged()) {
+                        assertTrue(b.getBoundsInParent().getMaxX() <= anchoEscena,
+                                "El boton " + b.getText()
+                                        + " se sale del ancho de la escena con factura anulada");
+                        assertTrue(b.getWidth() >= b.prefWidth(-1) - 0.5,
+                                "El boton " + b.getText()
+                                        + " esta comprimido por debajo de su ancho preferido"
+                                        + " con factura anulada");
                     }
                 }
             } catch (Throwable t) {

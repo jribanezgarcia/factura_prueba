@@ -4,6 +4,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.SVGPath;
 import javafx.stage.WindowEvent;
 
@@ -36,33 +37,38 @@ public final class BarraNavegacion {
         barra.getStyleClass().add("nav-bar");
         barra.setAlignment(Pos.CENTER);
         barra.getChildren().addAll(
-                boton("Inicio", "Menú principal", ICONO_INICIO, () -> nav.mostrar(RUTA_MENU), "menu".equals(actual)),
-                boton("Nueva", "Nueva factura", ICONO_NUEVA, () -> nav.mostrar(RUTA_EDITOR), "editor".equals(actual)),
-                boton("Histórico", "Histórico", ICONO_HISTORICO, () -> nav.mostrar(RUTA_HISTORICO), "historico".equals(actual)),
-                boton("Clientes", "Clientes", ICONO_CLIENTES, () -> nav.mostrar(RUTA_CLIENTES), "clientes".equals(actual)),
-                boton("Configuración", "Configuración", ICONO_CONFIG, () -> nav.mostrar(RUTA_CONFIG), "configuracion".equals(actual)),
-                boton("Copias", "Copia de seguridad", ICONO_BACKUP, () -> nav.mostrar(RUTA_BACKUP), "backup".equals(actual)),
-                boton("Salir", "Salir", ICONO_SALIR, () -> nav.stage().fireEvent(new WindowEvent(nav.stage(), WindowEvent.WINDOW_CLOSE_REQUEST)), false));
+                boton("Inicio", "Menú principal", ICONO_INICIO, 0, () -> nav.mostrar(RUTA_MENU), "menu".equals(actual)),
+                boton("Nueva", "Nueva factura", ICONO_NUEVA, 0, () -> nav.mostrar(RUTA_EDITOR), "editor".equals(actual)),
+                boton("Histórico", "Histórico", ICONO_HISTORICO, -1.3, () -> nav.mostrar(RUTA_HISTORICO), "historico".equals(actual)),
+                boton("Clientes", "Clientes", ICONO_CLIENTES, 0, () -> nav.mostrar(RUTA_CLIENTES), "clientes".equals(actual)),
+                boton("Configuración", "Configuración", ICONO_CONFIG, 0, () -> nav.mostrar(RUTA_CONFIG), "configuracion".equals(actual)),
+                boton("Copias", "Copia de seguridad", ICONO_BACKUP, 0, () -> nav.mostrar(RUTA_BACKUP), "backup".equals(actual)),
+                boton("Salir", "Salir", ICONO_SALIR, 2.8, () -> nav.stage().fireEvent(new WindowEvent(nav.stage(), WindowEvent.WINDOW_CLOSE_REQUEST)), false));
         return barra;
     }
 
-    private static Button boton(String etiqueta, String tooltip, String svg, Runnable accion, boolean activo) {
+    private static Button boton(String etiqueta, String tooltip, String svg, double offsetX, Runnable accion, boolean activo) {
         Button b = new Button();
         b.getStyleClass().add("nav-button");
         if (activo) {
             b.getStyleClass().add("activo");
         }
         b.setText(etiqueta);
-        b.setGraphic(icono(svg));
+        b.setGraphic(icono(svg, offsetX));
         b.setTooltip(new Tooltip(tooltip));
         b.setOnAction(e -> accion.run());
         return b;
     }
 
-    private static SVGPath icono(String contenido) {
+    private static StackPane icono(String contenido, double offsetX) {
         SVGPath p = new SVGPath();
         p.setContent(contenido);
         p.getStyleClass().add("nav-icon");
-        return p;
+        StackPane caja = new StackPane(p);
+        caja.setMinSize(26, 26);
+        caja.setPrefSize(26, 26);
+        caja.setMaxSize(26, 26);
+        caja.setTranslateX(offsetX);
+        return caja;
     }
 }

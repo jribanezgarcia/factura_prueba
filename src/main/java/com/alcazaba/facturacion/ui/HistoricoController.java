@@ -200,14 +200,14 @@ public class HistoricoController implements Vista {
     private void anularSeleccionadas() {
         List<HistorialFila> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
         if (seleccion.isEmpty()) {
-            Dialogos.info("Borrar/Anular", "Selecciona al menos una factura del histórico.");
+            Dialogos.info("Anular", "Selecciona al menos una factura del histórico.");
             return;
         }
         Set<Long> facturaIds = new LinkedHashSet<>();
         for (HistorialFila fila : seleccion) {
             facturaIds.add(fila.getFacturaId());
         }
-        if (!Dialogos.confirmar("Borrar/Anular",
+        if (!Dialogos.confirmar("Anular",
                 "Se anularán " + facturaIds.size() + " factura(s).\n"
                         + "Las ya anuladas no se modificarán.\n\n¿Continuar?")) {
             return;
@@ -220,10 +220,10 @@ public class HistoricoController implements Vista {
             if (resultado.getFallos() > 0) {
                 msg.append("\n\nFallos:\n").append(String.join("\n", resultado.getErrores()));
             }
-            Dialogos.info("Borrar/Anular", msg.toString());
+            Dialogos.info("Anular", msg.toString());
             buscar();
         } catch (Exception e) {
-            Dialogos.error("Borrar/Anular", "Error al anular: " + e.getMessage());
+            Dialogos.error("Anular", "Error al anular: " + e.getMessage());
         }
     }
 
@@ -231,7 +231,7 @@ public class HistoricoController implements Vista {
     private void borrarSeleccionadas() {
         List<HistorialFila> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
         if (seleccion.isEmpty()) {
-            Dialogos.info("Borrar", "Selecciona al menos una factura del histórico.");
+            Dialogos.info("Eliminar", "Selecciona al menos una factura del histórico.");
             return;
         }
         Set<Long> facturaIds = new LinkedHashSet<>();
@@ -247,11 +247,11 @@ public class HistoricoController implements Vista {
                 totalLineas += r.lineas();
             }
         } catch (Exception e) {
-            Dialogos.error("Borrar", "Error al calcular el resumen: " + e.getMessage());
+            Dialogos.error("Eliminar", "Error al calcular el resumen: " + e.getMessage());
             return;
         }
-        if (!Dialogos.confirmar("Borrar",
-                "Se van a borrar físicamente " + facturaIds.size() + " factura(s).\n"
+        if (!Dialogos.confirmar("Eliminar",
+                "Se van a eliminar físicamente " + facturaIds.size() + " factura(s).\n"
                         + "Se eliminarán " + totalVersiones + " versión(es) y " + totalLineas + " línea(s).\n\n"
                         + "¿Continuar?")) {
             return;
@@ -269,12 +269,12 @@ public class HistoricoController implements Vista {
             }
         }
         StringBuilder msg = new StringBuilder();
-        msg.append("Borradas: ").append(borradas).append("\n");
+        msg.append("Eliminadas: ").append(borradas).append("\n");
         msg.append("Fallos: ").append(fallos);
         if (!errores.isEmpty()) {
             msg.append("\n\nErrores:\n").append(String.join("\n", errores));
         }
-        Dialogos.info("Borrar", msg.toString());
+        Dialogos.info("Eliminar", msg.toString());
         buscar();
     }
 

@@ -102,9 +102,8 @@
     -fx-graphic-text-gap: 6px;
     -fx-font-size: 10px;
     -fx-alignment: CENTER;
-    -fx-min-width: 80;
-    -fx-pref-width: 80;
-    -fx-max-width: 80;
+    -fx-min-width: 90;
+    -fx-pref-width: 90;
 }
 
 .nav-button:hover {
@@ -139,6 +138,32 @@
     -fx-padding: 8px 10px;
     -fx-font-size: 13px;
     -fx-cursor: hand;
+}
+
+/* Botones de barra de acciones estilo ribbon: icono arriba, texto debajo */
+.btn-ribbon {
+    -fx-content-display: top;
+    -fx-graphic-text-gap: 4px;
+    -fx-font-size: 10px;
+    -fx-alignment: CENTER;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+    -fx-min-width: 64;
+    -fx-pref-width: 64;
+    -fx-max-width: 64;
+    -fx-min-height: 68;
+    -fx-padding: 6px 2px;
+    -fx-background-radius: 4px;
+    -fx-border-radius: 4px;
+}
+
+.btn-ribbon .icono-boton {
+    -fx-scale-x: 1.05;
+    -fx-scale-y: 1.05;
+}
+
+.ribbon-sep {
+    -fx-padding: 0 2px;
 }
 
 /* Tablas */
@@ -200,6 +225,12 @@
 .grid-editor {
     -fx-hgap: 8px;
     -fx-vgap: 4px;
+    -fx-padding: 0;
+}
+
+.grid-filtros {
+    -fx-hgap: 10px;
+    -fx-vgap: 8px;
     -fx-padding: 0;
 }
 
