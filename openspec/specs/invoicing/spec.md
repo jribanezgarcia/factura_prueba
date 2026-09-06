@@ -920,7 +920,13 @@ La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus v
 
 ### Requirement: Estilo de zona de acciones en tema por defecto
 
-En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL distinguirse visualmente sin que resalte: las tarjetas superiores del Histórico, de Clientes y del Editor (Nueva factura), que contienen los campos de búsqueda o de factura y los botones de acción, SHALL tener un fondo gris claro `#F6F6F6`. En el Editor, los botones de acción (Exportar PDF, Versiones, Crear rectificativa, Restaurar, Nueva factura, Volver, Añadir línea y Eliminar línea) SHALL mostrarse con fondo blanco y texto negro. Guardar SHALL mantener su estilo primario. Anular SHALL mantener estilo de peligro, con fondo blanco y texto rojo, de modo que un Anular habilitado SHALL NOT confundirse con un botón deshabilitado. Este estilo SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto de temas no cambian.
+En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL distinguirse visualmente sin que resalte: las tarjetas superiores del Histórico, de Clientes y del Editor (Nueva factura), que contienen los campos de búsqueda o de factura y los botones de acción, SHALL tener un fondo gris claro `#F6F6F6`.
+
+Los botones de la barra de acciones del Editor y del Histórico SHALL NOT mostrarse con fondo blanco: SHALL ser planos y adoptar el color del contenedor en el que están, según el requisito «Botones de acción con icono identificativo». Guardar SHALL mantener su condición de acción principal mediante el color de acento en su icono y su etiqueta, en lugar de mediante un fondo de acento. Anular SHALL mantener su color de peligro, de modo que un Anular habilitado SHALL NOT confundirse con un botón deshabilitado.
+
+Los botones de tabla del Editor (Añadir línea y Eliminar línea) SHALL conservar su fondo blanco y su texto negro, porque no forman parte de la barra de acciones.
+
+Este estilo SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto de temas no cambian.
 
 #### Scenario: Tarjeta del Histórico con fondo gris claro
 - **WHEN** el usuario abre el Histórico con el tema por defecto
@@ -936,15 +942,19 @@ En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL
 
 #### Scenario: Botones del Editor en blanco y negro
 - **WHEN** el usuario abre el Editor con el tema por defecto
-- **THEN** los botones de acción (Exportar PDF, Versiones, Crear rectificativa, Restaurar, Nueva factura, Volver, Añadir línea y Eliminar línea) se muestran con fondo blanco y texto negro
+- **THEN** los botones de tabla Añadir línea y Eliminar línea siguen mostrándose con fondo blanco y texto negro
+
+#### Scenario: La barra de acciones pierde el fondo blanco de sus botones
+- **WHEN** el usuario abre el Editor con el tema por defecto
+- **THEN** los botones Guardar, Nueva, Exportar PDF, Versiones, Rectificativa, Anular, Restaurar y Volver se ven sin recuadro blanco, con el color de la barra de fondo
 
 #### Scenario: Botones del Editor que conservan su estilo
 - **WHEN** el usuario abre el Editor con el tema por defecto
-- **THEN** el botón Guardar conserva su estilo primario y el botón Anular su estilo de peligro, con fondo blanco y texto rojo
+- **THEN** el botón Guardar se lee como acción principal por su color de acento y su negrita, y el botón Anular conserva su texto rojo de peligro
 
 #### Scenario: Anular habilitado no parece deshabilitado
 - **WHEN** el usuario mira el botón Anular habilitado junto a un botón deshabilitado con el tema por defecto
-- **THEN** el Anular se ve blanco con texto rojo y se distingue a simple vista del botón deshabilitado en gris
+- **THEN** el Anular se ve con su rojo a plena intensidad y se distingue a simple vista del botón deshabilitado, que aparece atenuado
 
 #### Scenario: El resto de temas no cambian
 - **WHEN** el usuario abre el Histórico, Clientes o el Editor con un tema distinto del por defecto
@@ -1262,21 +1272,37 @@ Las etiquetas SHALL ser lo bastante cortas como para que las barras de acciones 
 
 ### Requirement: Botones de acción con icono identificativo
 
-Los botones de las barras de acciones del Editor y del Histórico SHALL mostrar un icono identificativo de la acción encima de su etiqueta de texto, en un botón de forma cuadrada delimitado por un borde visible.
+Los botones de las barras de acciones del Editor y del Histórico SHALL mostrar un icono identificativo de la acción encima de su etiqueta de texto.
+
+En reposo el botón SHALL NOT pintar fondo ni borde propios: SHALL adoptar el color del contenedor en el que está, de modo que lo único visible sea la silueta del icono y su etiqueta, igual que en los botones de la barra de navegación superior. El botón SHALL conservar su forma y su tamaño, de manera que todos los botones de una misma barra sigan midiendo lo mismo.
+
+Al pasar el puntero por encima, el botón SHALL insinuar su superficie con un velo translúcido neutro, y SHALL oscurecerlo al mantenerlo pulsado. Al recibir el foco de teclado, el botón SHALL dibujar un borde en el color de acento del tema, de modo que la navegación con teclado siga siendo visible pese a la ausencia de borde en reposo.
 
 Los iconos SHALL ser monocromo de un solo color, dibujados como trazado vectorial, de modo que el tema activo pueda recolorearlos. SHALL NOT usarse imágenes de mapa de bits ni iconos multicolor de color fijo.
 
-El color del icono SHALL provenir del tema activo y SHALL mantener contraste legible sobre el fondo del botón en los siete temas, incluidos los oscuros. En un botón de acción principal el icono SHALL ir en el color del texto sobre acento; en un botón secundario, en el color de acento del tema; en un botón destructivo, en el color de peligro del tema.
+El color del icono SHALL provenir del tema activo y SHALL mantener contraste legible sobre el fondo de la barra en los siete temas, incluidos los oscuros. En un botón de acción principal el icono y la etiqueta SHALL ir en el color de acento del tema, y la etiqueta SHALL ir en negrita, de modo que la acción principal se distinga de las secundarias sin recurrir a un fondo de color. En un botón secundario el icono SHALL ir en el color de acento del tema; en un botón destructivo, en el color de peligro del tema.
 
 Una misma acción SHALL llevar el mismo icono en todas las pantallas donde aparezca, y dos acciones distintas SHALL NOT compartir icono.
 
 Los botones de una barra de acciones SHALL agruparse por afinidad, y los grupos SHALL separarse visualmente mediante un separador vertical. La agrupación SHALL NOT alterar el significado ni el comportamiento de ningún botón.
 
-Este requisito alcanza únicamente a las barras de acciones del Editor y del Histórico. Los botones de formulario, los de los diálogos modales y los de las demás pantallas SHALL conservar su aspecto actual mientras no se especifique lo contrario.
+Este requisito alcanza únicamente a las barras de acciones del Editor y del Histórico. Los botones de formulario, los de las tablas, los de los diálogos modales y los de las demás pantallas SHALL conservar su aspecto actual mientras no se especifique lo contrario.
 
 #### Scenario: Icono sobre el texto en la barra del Editor
 - **WHEN** el usuario abre el Editor
-- **THEN** cada botón de la barra de acciones muestra un icono encima de su etiqueta, dentro de un recuadro cuadrado con borde
+- **THEN** cada botón de la barra de acciones muestra un icono encima de su etiqueta, sin recuadro ni borde alrededor, fundido con el fondo de la barra
+
+#### Scenario: El botón resalta al pasar el ratón
+- **WHEN** el usuario pasa el puntero sobre un botón de la barra de acciones
+- **THEN** aparece un velo translúcido que delimita el botón, y desaparece al retirar el puntero
+
+#### Scenario: El foco de teclado es visible
+- **WHEN** el usuario recorre la barra de acciones con el tabulador
+- **THEN** el botón enfocado muestra un borde en el color de acento del tema
+
+#### Scenario: La acción principal se distingue sin fondo de color
+- **WHEN** el usuario mira el botón Guardar junto a Nueva y a Exportar PDF
+- **THEN** Guardar muestra su icono y su etiqueta en el color de acento del tema y con la etiqueta en negrita, mientras que los otros dos usan el color de texto normal
 
 #### Scenario: El icono cambia de color con el tema
 - **WHEN** el usuario cambia el tema desde Configuración
@@ -1292,7 +1318,7 @@ Este requisito alcanza únicamente a las barras de acciones del Editor y del His
 
 #### Scenario: Las pantallas fuera de alcance no cambian
 - **WHEN** el usuario abre Clientes, Configuración o Copia de seguridad
-- **THEN** sus botones siguen siendo rectangulares y solo con texto, exactamente como antes
+- **THEN** sus botones siguen siendo rectangulares, con fondo y borde propios y solo con texto, exactamente como antes
 
 ### Requirement: Suplidos
 
@@ -1303,6 +1329,10 @@ Un suplido SHALL introducirse como una línea más de la factura, eligiendo el t
 Una línea de suplido SHALL NOT formar parte de la base imponible, SHALL NOT generar cuota de IVA, SHALL NOT entrar en la base sobre la que se calcula la retención y SHALL NOT verse afectada por el descuento global. Su importe SHALL sumarse al total de la factura.
 
 Las líneas de suplido SHALL NOT aparecer en el desglose por tipo de IVA, que solo describe operaciones sujetas.
+
+En el PDF, las líneas de suplido SHALL NOT aparecer en la tabla de líneas junto a las operaciones facturadas, y SHALL NOT rotularse como exentas: un suplido no es una operación exenta de IVA. SHALL presentarse en un bloque propio, situado tras la tabla de líneas y antes del bloque de totales, con la descripción y el importe de cada suplido. Ese bloque SHALL llevar una nota que deje constancia de que se han pagado en nombre y por cuenta del cliente, facturados a su nombre, y de que no están sujetos a IVA ni a retención. El bloque SHALL aparecer solo cuando la factura tenga al menos un suplido.
+
+Cuando todas las líneas de la factura sean suplidos, la tabla de líneas SHALL omitirse en lugar de imprimirse con solo la cabecera.
 
 El total de suplidos SHALL guardarse en la versión de la factura, de modo que reabrir una factura antigua muestre los mismos importes.
 
@@ -1315,7 +1345,24 @@ El total de suplidos SHALL guardarse en la versión de la factura, de modo que r
 - **WHEN** la factura anterior lleva además un descuento global del 10 %
 - **THEN** la base imponible pasa a 900,00 € y la cuota a 189,00 €, mientras el suplido sigue siendo 250,00 €
 
+#### Scenario: El suplido tiene su propio bloque en el PDF
+- **WHEN** el usuario exporta el PDF de una factura con una línea al 21 % y un suplido de 250,00 €
+- **THEN** la tabla de líneas muestra solo la línea al 21 %
+- **AND** un bloque titulado «SUPLIDOS» muestra la descripción del suplido y su importe de 250,00 €
+- **AND** ese bloque lleva la nota de que se han pagado en nombre y por cuenta del cliente y no están sujetos a IVA ni a retención
+- **AND** la fila «Suplidos» del bloque de totales sigue mostrando 250,00 €
+
+#### Scenario: Un suplido nunca se rotula como exento
+- **WHEN** el usuario exporta el PDF de una factura que contiene un suplido
+- **THEN** ninguna fila del documento describe ese suplido como una operación exenta de IVA
+
+#### Scenario: Factura de solo suplidos
+- **WHEN** todas las líneas de la factura son suplidos
+- **THEN** el PDF no imprime la tabla de líneas, ni siquiera su cabecera
+- **AND** el bloque de suplidos recoge todas las líneas
+
 #### Scenario: Factura sin suplidos
 - **WHEN** ninguna línea de la factura es un suplido
 - **THEN** el desglose no muestra la fila de suplidos, ni en el editor ni en el PDF
+- **AND** el PDF no incluye el bloque de suplidos ni su nota
 - **AND** todos los importes son idénticos a los calculados antes de existir los suplidos
