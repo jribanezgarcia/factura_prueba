@@ -165,8 +165,11 @@ public class BackupController implements Vista {
         sb.append("Facturas: ").append(r.numFacturas()).append("\n");
         sb.append("Última fecha: ").append(r.ultimaFecha() == null ? "(ninguna)" : r.ultimaFecha()).append("\n");
         sb.append("Versión de esquema: ").append(r.userVersion());
-        if (r.tablasCoinciden() && r.userVersion() > com.alcazaba.facturacion.db.Migrations.ultimaVersion()) {
-            sb.append(" (versión más nueva, tablas compatibles)");
+        int app = com.alcazaba.facturacion.db.Migrations.ultimaVersion();
+        if (r.userVersion() < app) {
+            sb.append(" (anterior a la de la aplicación)");
+        } else if (r.userVersion() > app) {
+            sb.append(" (posterior a la de la aplicación)");
         }
         if (!r.logoExiste() && !r.logoPath().isEmpty()) {
             sb.append("\n⚠ El logo del backup no se encontrará en esta máquina.");

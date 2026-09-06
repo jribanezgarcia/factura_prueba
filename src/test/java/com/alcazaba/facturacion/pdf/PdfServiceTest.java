@@ -261,6 +261,19 @@ class PdfServiceTest {
         }
     }
 
+    private LineaFactura lineaExenta(String descripcion, String base) {
+        LineaFactura l = new LineaFactura();
+        l.setCantidad(1);
+        l.setDescripcion(descripcion);
+        l.setPrecioUnitario(new BigDecimal(base));
+        l.setTotalBase(new BigDecimal(base));
+        l.setIvaNombre("Exento");
+        l.setIvaPorcentaje(null);
+        l.setIvaMotivoExencion("Art. 20.1");
+        l.setIvaImporte(BigDecimal.ZERO);
+        return l;
+    }
+
     private LineaFactura lineaSuplido(String descripcion, String importe) {
         LineaFactura l = new LineaFactura();
         l.setCantidad(1);
@@ -277,7 +290,8 @@ class PdfServiceTest {
     void suplidoTieneBloquePropioYNoSeRotulaExento() throws Exception {
         FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
                 new Factura(), versionMuestra(),
-                List.of(lineaArmario(), lineaSuplido("TASAS MUNICIPALES SUPLIDAS", "250.00")), null);
+                List.of(lineaArmario(), lineaExenta("ASESORAMIENTO EXENTO", "200.00"),
+                        lineaSuplido("TASAS MUNICIPALES SUPLIDAS", "250.00")), null);
 
         Path destino = tempDir.resolve("bloque-suplidos.pdf");
         new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
@@ -287,11 +301,13 @@ class PdfServiceTest {
             assertTrue(texto.contains("SUPLIDOS"));
             assertTrue(texto.contains("No sujetos a IVA ni a retención"));
             assertTrue(texto.contains("250,00"));
-            assertTrue(texto.contains("4.035,00"));
-            assertFalse(texto.contains("Exento"));
+            assertTrue(texto.contains("4.235,00"));
+            assertTrue(texto.contains("Exento"));
             int iBloque = texto.indexOf("SUPLIDOS");
-            int iDescripcion = texto.indexOf("TASAS MUNICIPALES SUPLIDAS");
-            assertTrue(iBloque >= 0 && iBloque < iDescripcion);
+            int iExenta = texto.indexOf("ASESORAMIENTO EXENTO");
+            int iSuplido = texto.indexOf("TASAS MUNICIPALES SUPLIDAS");
+            assertTrue(iExenta >= 0 && iExenta < iBloque);
+            assertTrue(iBloque >= 0 && iBloque < iSuplido);
         }
     }
 

@@ -230,34 +230,23 @@ class BackupServiceTest {
     }
 
     @Test
-    void restaurarCopiaDeEsquemaAnteriorSeMigra() throws Exception {
+    void restaurarDejaLaBaseMigrada() throws Exception {
         insertarDatosBasicos();
         Path copia = crearCopia();
-
-        Path anterior = tempDir.resolve("anterior.db");
-        Files.copy(copia, anterior);
-        try (var c = DriverManager.getConnection("jdbc:sqlite:" + anterior);
-             Statement st = c.createStatement()) {
-            st.executeUpdate("DROP TABLE numero_disponible");
-            st.executeUpdate("ALTER TABLE tipo_iva DROP COLUMN es_suplido");
-            st.executeUpdate("ALTER TABLE factura_linea DROP COLUMN es_suplido");
-            st.executeUpdate("ALTER TABLE factura_version DROP COLUMN total_suplidos");
-            st.executeUpdate("DELETE FROM tipo_iva WHERE id = 4");
-            st.executeUpdate("PRAGMA user_version = 6");
-        }
 
         try (Statement st = Database.getConnection().createStatement()) {
             st.executeUpdate("UPDATE empresa SET nif='Z00000000' WHERE id=1");
         }
 
-        servicio.restaurarEnEmpresaActiva(anterior);
-
-        try (Statement st = Database.getConnection().createStatement();
-             ResultSet rs = st.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='numero_disponible'")) {
-            assertTrue(rs.next(), "La tabla numero_disponible debe recrearse al migrar");
-        }
+        servicio.restaurarEnEmpresaActiva(copia);
 
         assertEquals(Migrations.ultimaVersion(), Migrations.userVersion(Database.getConnection()));
+
+        try (Statement st = Database.getConnection().createStatement();
+             ResultSet rs = st.executeQuery("SELECT nif FROM empresa WHERE id=1")) {
+            assertTrue(rs.next());
+            assertEquals("B12345678", rs.getString("nif"));
+        }
     }
 
     @Test
@@ -298,7 +287,10 @@ class BackupServiceTest {
             st.executeUpdate("PRAGMA user_version = 99");
         }
 
-        assertThrows(ValidationException.class, () -> servicio.leerResumen(distinta));
+        ValidationException e = assertThrows(
+                ValidationException.class, () -> servicio.leerResumen(distinta));
+        assertTrue(e.getMessage().contains("numero_disponible"),
+                "El rechazo debe mencionar lo que falta: " + e.getMessage());
     }
 
     @Test

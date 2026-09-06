@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -42,14 +43,15 @@ public class BackupService {
     private static final Map<String, List<String>> COLUMNAS_APLICACION = Map.ofEntries(
             Map.entry("cliente", List.of("id", "nombre", "nif", "direccion", "cp", "localidad", "provincia", "activo", "email")),
             Map.entry("serie", List.of("id", "codigo", "descripcion", "es_rectificativa", "siguiente_correlativo", "reutilizar_anulados", "sufijo_fecha")),
-            Map.entry("tipo_iva", List.of("id", "nombre", "porcentaje", "motivo_exencion", "activo")),
+            Map.entry("tipo_iva", List.of("id", "nombre", "porcentaje", "motivo_exencion", "activo", "es_suplido")),
             Map.entry("factura", List.of("id", "serie_id", "correlativo", "cliente_id")),
             Map.entry("factura_version", List.of("id", "factura_id", "version_num", "numero", "fecha_factura", "fecha_guardado", "estado",
                     "descuento_porcentaje", "observaciones", "referencia_rectifica", "cli_nombre", "cli_nif", "cli_direccion",
                     "cli_cp", "cli_localidad", "cli_provincia", "base_total", "iva_total", "total", "cli_email", "forma_pago",
-                    "vencimiento", "realizada_por", "tipo_retencion_id", "importe_retencion", "tipo_retencion_nombre", "tipo_retencion_porcentaje")),
+                    "vencimiento", "realizada_por", "tipo_retencion_id", "importe_retencion", "tipo_retencion_nombre", "tipo_retencion_porcentaje",
+                    "total_suplidos")),
             Map.entry("factura_linea", List.of("id", "factura_version_id", "orden", "cantidad", "descripcion", "precio_unitario",
-                    "total_base", "tipo_iva_id", "iva_nombre", "iva_porcentaje", "iva_motivo_exencion", "iva_importe")),
+                    "total_base", "tipo_iva_id", "iva_nombre", "iva_porcentaje", "iva_motivo_exencion", "iva_importe", "es_suplido")),
             Map.entry("empresa", List.of("id", "nombre", "nif", "direccion", "cp", "localidad", "provincia", "actividad", "email",
                     "telefono", "cabecera_modo", "logo_path", "logo_x", "logo_y", "logo_ancho", "logo_alto", "pie_legal")),
             Map.entry("preferencias", List.of("clave", "valor")),
@@ -124,15 +126,12 @@ public class BackupService {
                 throw new ValidationException("La copia no tiene una versión de esquema válida.");
             }
 
-            boolean tablasCoinciden = true;
-            if (uv > Migrations.ultimaVersion()) {
-                tablasCoinciden = estructuraCompleta(c);
-                if (!tablasCoinciden) {
-                    throw new ValidationException("La copia es de una versión de esquema más nueva ("
-                            + uv + ") que la aplicación (" + Migrations.ultimaVersion()
-                            + ") y su estructura no coincide.");
-                }
+            List<String> faltantes = elementosFaltantes(c);
+            if (!faltantes.isEmpty()) {
+                throw new ValidationException("La copia no contiene "
+                        + String.join(", ", faltantes) + "." + notaVersion(uv));
             }
+            boolean tablasCoinciden = true;
 
             String nombre = "";
             String nif = "";
@@ -242,7 +241,19 @@ public class BackupService {
         }
     }
 
-    private static boolean estructuraCompleta(Connection c) throws SQLException {
+    private static String notaVersion(int uv) {
+        int app = Migrations.ultimaVersion();
+        if (uv < app) {
+            return " La versión de esquema de la copia (" + uv + ") es anterior a la de la aplicación (" + app + ").";
+        }
+        if (uv > app) {
+            return " La versión de esquema de la copia (" + uv + ") es posterior a la de la aplicación (" + app + ").";
+        }
+        return "";
+    }
+
+    private static List<String> elementosFaltantes(Connection c) throws SQLException {
+        List<String> faltantes = new ArrayList<>();
         for (String tabla : TABLAS_APLICACION) {
             boolean existe = false;
             try (Statement st = c.createStatement();
@@ -251,7 +262,7 @@ public class BackupService {
                 existe = rs.next();
             }
             if (!existe) {
-                return false;
+                faltantes.add("la tabla '" + tabla + "'");
             }
         }
         for (Map.Entry<String, List<String>> e : COLUMNAS_APLICACION.entrySet()) {
@@ -265,10 +276,10 @@ public class BackupService {
             }
             for (String col : e.getValue()) {
                 if (!columnas.contains(col)) {
-                    return false;
+                    faltantes.add("la columna '" + col + "' de '" + tabla + "'");
                 }
             }
         }
-        return true;
+        return faltantes;
     }
 }

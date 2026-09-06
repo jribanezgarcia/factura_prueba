@@ -16,15 +16,7 @@ import java.util.List;
 public final class Migrations {
 
     private static final List<String> SCRIPTS = List.of(
-            "db/migrations/001_init.sql",
-            "db/migrations/002_datos_factura_pdf.sql",
-            "db/migrations/003_formato_numeracion_series.sql",
-            "db/migrations/004_serie_siguiente.sql",
-            "db/migrations/005_retencion_irpf.sql",
-            "db/migrations/006_retencion_irpf_snapshot.sql",
-            "db/migrations/007_numeros_disponibles.sql",
-            "db/migrations/008_suplidos.sql",
-            "db/migrations/009_suplido_seed.sql"
+            "db/migrations/001_baseline.sql"
     );
 
     private Migrations() {

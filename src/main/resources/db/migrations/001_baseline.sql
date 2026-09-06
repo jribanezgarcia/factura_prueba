@@ -6,7 +6,8 @@ CREATE TABLE IF NOT EXISTS cliente (
   cp TEXT,
   localidad TEXT,
   provincia TEXT,
-  activo INTEGER NOT NULL DEFAULT 1
+  activo INTEGER NOT NULL DEFAULT 1,
+  email TEXT
 );
 
 CREATE TABLE IF NOT EXISTS serie (
@@ -15,7 +16,15 @@ CREATE TABLE IF NOT EXISTS serie (
   descripcion TEXT,
   es_rectificativa INTEGER NOT NULL DEFAULT 0,
   siguiente_correlativo INTEGER NOT NULL DEFAULT 1,
-  reutilizar_anulados INTEGER NOT NULL DEFAULT 0
+  reutilizar_anulados INTEGER NOT NULL DEFAULT 0,
+  sufijo_fecha TEXT NOT NULL DEFAULT 'MES'
+);
+
+CREATE TABLE IF NOT EXISTS serie_siguiente (
+  serie_id INTEGER NOT NULL REFERENCES serie(id),
+  anio INTEGER NOT NULL,
+  siguiente INTEGER NOT NULL DEFAULT 1,
+  PRIMARY KEY (serie_id, anio)
 );
 
 CREATE TABLE IF NOT EXISTS tipo_iva (
@@ -23,6 +32,14 @@ CREATE TABLE IF NOT EXISTS tipo_iva (
   nombre TEXT NOT NULL,
   porcentaje INTEGER,
   motivo_exencion TEXT,
+  activo INTEGER NOT NULL DEFAULT 1,
+  es_suplido INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS tipo_retencion (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  nombre TEXT NOT NULL,
+  porcentaje INTEGER NOT NULL,
   activo INTEGER NOT NULL DEFAULT 1
 );
 
@@ -50,9 +67,18 @@ CREATE TABLE IF NOT EXISTS factura_version (
   cli_cp TEXT,
   cli_localidad TEXT,
   cli_provincia TEXT,
+  cli_email TEXT,
+  forma_pago TEXT,
+  vencimiento TEXT,
+  realizada_por TEXT,
   base_total TEXT NOT NULL DEFAULT '0.00',
   iva_total TEXT NOT NULL DEFAULT '0.00',
-  total TEXT NOT NULL DEFAULT '0.00'
+  total TEXT NOT NULL DEFAULT '0.00',
+  tipo_retencion_id INTEGER REFERENCES tipo_retencion(id),
+  tipo_retencion_nombre TEXT,
+  tipo_retencion_porcentaje INTEGER,
+  importe_retencion TEXT NOT NULL DEFAULT '0.00',
+  total_suplidos TEXT NOT NULL DEFAULT '0.00'
 );
 
 CREATE INDEX IF NOT EXISTS idx_version_factura ON factura_version(factura_id, version_num);
@@ -69,10 +95,21 @@ CREATE TABLE IF NOT EXISTS factura_linea (
   iva_nombre TEXT,
   iva_porcentaje INTEGER,
   iva_motivo_exencion TEXT,
-  iva_importe TEXT NOT NULL DEFAULT '0.00'
+  iva_importe TEXT NOT NULL DEFAULT '0.00',
+  es_suplido INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_linea_version ON factura_linea(factura_version_id, orden);
+
+CREATE TABLE IF NOT EXISTS numero_disponible (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  serie_id INTEGER NOT NULL REFERENCES serie(id),
+  anio INTEGER NOT NULL,
+  correlativo INTEGER NOT NULL,
+  UNIQUE(serie_id, anio, correlativo)
+);
+
+CREATE INDEX IF NOT EXISTS idx_numero_disp ON numero_disponible(serie_id, anio, correlativo);
 
 CREATE TABLE IF NOT EXISTS empresa (
   id INTEGER PRIMARY KEY CHECK (id = 1),
@@ -99,8 +136,9 @@ CREATE TABLE IF NOT EXISTS preferencias (
   valor TEXT
 );
 
-INSERT OR IGNORE INTO tipo_iva (id, nombre, porcentaje, motivo_exencion, activo) VALUES (1, 'IVA 21%', 21, NULL, 1);
-INSERT OR IGNORE INTO tipo_iva (id, nombre, porcentaje, motivo_exencion, activo) VALUES (2, 'IVA 10%', 10, NULL, 1);
-INSERT OR IGNORE INTO tipo_iva (id, nombre, porcentaje, motivo_exencion, activo) VALUES (3, 'Exento', NULL, NULL, 1);
+INSERT INTO tipo_iva (nombre, porcentaje, motivo_exencion, activo, es_suplido) VALUES ('IVA 21%', 21, NULL, 1, 0);
+INSERT INTO tipo_iva (nombre, porcentaje, motivo_exencion, activo, es_suplido) VALUES ('IVA 10%', 10, NULL, 1, 0);
+INSERT INTO tipo_iva (nombre, porcentaje, motivo_exencion, activo, es_suplido) VALUES ('Exento', NULL, NULL, 1, 0);
+INSERT INTO tipo_iva (nombre, porcentaje, motivo_exencion, activo, es_suplido) VALUES ('Suplido', NULL, NULL, 1, 1);
 
 INSERT OR IGNORE INTO empresa (id) VALUES (1);
