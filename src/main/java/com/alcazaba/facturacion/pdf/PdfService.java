@@ -115,8 +115,16 @@ public class PdfService {
 
             doc.add(tarjetas(vc, colores));
             espacio(doc, 8f);
-            doc.add(tablaLineas(vc, colores));
-            espacio(doc, 4f);
+            List<LineaFactura> suplidos = suplidosDe(vc);
+            boolean hayOperaciones = vc.lineas() != null && vc.lineas().size() != suplidos.size();
+            if (hayOperaciones) {
+                doc.add(tablaLineas(vc, colores));
+                espacio(doc, 4f);
+            }
+            if (!suplidos.isEmpty()) {
+                doc.add(bloqueSuplidos(suplidos, colores));
+                espacio(doc, 4f);
+            }
             doc.add(bloqueTotales(resumen, vc.version().getDescuentoPorcentaje(), colores));
             String obs = vc.version().getObservaciones();
             if (obs != null && !obs.isBlank()) {
@@ -410,6 +418,9 @@ public class PdfService {
 
         int fila = 0;
         for (LineaFactura l : vc.lineas()) {
+            if (l.isEsSuplido()) {
+                continue;
+            }
             t.addCell(celdaLinea(String.valueOf(l.getCantidad()), fila, Element.ALIGN_CENTER, c));
             t.addCell(celdaLinea(nz(l.getDescripcion()), fila, Element.ALIGN_LEFT, c));
             t.addCell(celdaLinea(Formatos.moneda(l.getPrecioUnitario()), fila, Element.ALIGN_RIGHT, c));
@@ -418,6 +429,39 @@ public class PdfService {
             t.addCell(celdaLinea(Formatos.moneda(totalConIva(l)), fila, Element.ALIGN_RIGHT, c));
             fila++;
         }
+        return t;
+    }
+
+    private static List<LineaFactura> suplidosDe(FacturaService.VersionCompleta vc) {
+        if (vc.lineas() == null) {
+            return List.of();
+        }
+        return vc.lineas().stream().filter(LineaFactura::isEsSuplido).toList();
+    }
+
+    private PdfPTable bloqueSuplidos(List<LineaFactura> suplidos, Colores c) {
+        PdfPTable t = new PdfPTable(new float[]{6.4f, 1.9f});
+        t.setWidthPercentage(100);
+        t.setSpacingBefore(6);
+
+        t.addCell(celdaCabeceraColumna("SUPLIDOS", c));
+        t.addCell(celdaCabeceraColumna("IMPORTE", c));
+
+        int fila = 0;
+        for (LineaFactura l : suplidos) {
+            t.addCell(celdaLinea(nz(l.getDescripcion()), fila, Element.ALIGN_LEFT, c));
+            BigDecimal importe = l.getTotalBase() == null ? BigDecimal.ZERO : l.getTotalBase();
+            t.addCell(celdaLinea(Formatos.moneda(importe), fila, Element.ALIGN_RIGHT, c));
+            fila++;
+        }
+
+        PdfPCell nota = new PdfPCell(new Phrase(
+                "Suplidos pagados en nombre y por cuenta del cliente, facturados a su nombre. No sujetos a IVA ni a retención.",
+                fuente(false, 7f, c.oscuro)));
+        nota.setColspan(2);
+        nota.setBorder(Rectangle.NO_BORDER);
+        nota.setPaddingTop(3f);
+        t.addCell(nota);
         return t;
     }
 

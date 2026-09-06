@@ -23,7 +23,8 @@ public final class Migrations {
             "db/migrations/005_retencion_irpf.sql",
             "db/migrations/006_retencion_irpf_snapshot.sql",
             "db/migrations/007_numeros_disponibles.sql",
-            "db/migrations/008_suplidos.sql"
+            "db/migrations/008_suplidos.sql",
+            "db/migrations/009_suplido_seed.sql"
     );
 
     private Migrations() {

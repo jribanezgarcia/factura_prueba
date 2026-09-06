@@ -252,10 +252,80 @@ class PdfServiceTest {
             assertTrue(texto.contains("Suplidos"));
             assertTrue(texto.contains("250,00"));
             assertTrue(texto.contains("3.565,78"));
+            int iBloque = texto.indexOf("SUPLIDOS");
             int iRetencion = texto.indexOf("IRPF profesional 15%");
-            int iSuplidos = texto.indexOf("Suplidos");
+            int iSuplidosTotales = texto.lastIndexOf("Suplidos");
             int iTotal = texto.lastIndexOf("TOTAL");
-            assertTrue(iRetencion >= 0 && iRetencion < iSuplidos && iSuplidos < iTotal);
+            assertTrue(iBloque >= 0 && iBloque < iRetencion && iRetencion < iSuplidosTotales
+                    && iSuplidosTotales < iTotal);
+        }
+    }
+
+    private LineaFactura lineaSuplido(String descripcion, String importe) {
+        LineaFactura l = new LineaFactura();
+        l.setCantidad(1);
+        l.setDescripcion(descripcion);
+        l.setPrecioUnitario(new BigDecimal(importe));
+        l.setTotalBase(new BigDecimal(importe));
+        l.setIvaNombre("Suplido");
+        l.setIvaPorcentaje(null);
+        l.setEsSuplido(true);
+        return l;
+    }
+
+    @Test
+    void suplidoTieneBloquePropioYNoSeRotulaExento() throws Exception {
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(),
+                List.of(lineaArmario(), lineaSuplido("TASAS MUNICIPALES SUPLIDAS", "250.00")), null);
+
+        Path destino = tempDir.resolve("bloque-suplidos.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("SUPLIDOS"));
+            assertTrue(texto.contains("No sujetos a IVA ni a retención"));
+            assertTrue(texto.contains("250,00"));
+            assertTrue(texto.contains("4.035,00"));
+            assertFalse(texto.contains("Exento"));
+            int iBloque = texto.indexOf("SUPLIDOS");
+            int iDescripcion = texto.indexOf("TASAS MUNICIPALES SUPLIDAS");
+            assertTrue(iBloque >= 0 && iBloque < iDescripcion);
+        }
+    }
+
+    @Test
+    void sinSuplidosNoHayBloqueNiNota() throws Exception {
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(), List.of(lineaArmario()), null);
+
+        Path destino = tempDir.resolve("sin-suplidos.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertFalse(texto.contains("SUPLIDOS"));
+            assertFalse(texto.contains("No sujetos a IVA ni a retención"));
+            assertTrue(texto.contains("DESCRIPCIÓN"));
+            assertTrue(texto.contains("3.785,00"));
+        }
+    }
+
+    @Test
+    void soloSuplidosOmiteLaTablaDeLineas() throws Exception {
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(), List.of(lineaSuplido("TASAS", "250.00")), null);
+
+        Path destino = tempDir.resolve("solo-suplidos.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertFalse(texto.contains("DESCRIPCIÓN"));
+            assertTrue(texto.contains("SUPLIDOS"));
+            assertTrue(texto.contains("TASAS"));
+            assertTrue(texto.contains("250,00"));
         }
     }
 
