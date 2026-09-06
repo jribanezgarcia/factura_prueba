@@ -92,6 +92,7 @@
                         <columns>
                             <TableColumn fx:id="colIvaNombre" prefWidth="180" text="Nombre"/>
                             <TableColumn fx:id="colIvaPorcentaje" prefWidth="90" text="Tipo"/>
+                            <TableColumn fx:id="colIvaSuplido" prefWidth="70" text="Suplido"/>
                             <TableColumn fx:id="colIvaMotivo" prefWidth="240" text="Motivo exención"/>
                             <TableColumn fx:id="colIvaActivo" prefWidth="80" text="Activo"/>
                         </columns>
@@ -107,6 +108,9 @@
                         <HBox spacing="4" alignment="CENTER_LEFT">
                             <Label text="Tipo (vacío = exento)"/>
                             <TextField fx:id="txtIvaPorcentaje" prefWidth="80" promptText="21"/>
+                        </HBox>
+                        <HBox spacing="4" alignment="CENTER_LEFT">
+                            <CheckBox fx:id="chkIvaSuplido" text="Es suplido"/>
                         </HBox>
                         <HBox spacing="4" alignment="CENTER_LEFT">
                             <Label text="Motivo"/>

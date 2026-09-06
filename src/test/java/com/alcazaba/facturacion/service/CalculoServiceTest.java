@@ -176,4 +176,56 @@ class CalculoServiceTest {
         assertEquals(new BigDecimal("1210.00"), r.getTotal());
         assertEquals(0, BigDecimal.ZERO.compareTo(r.getImporteRetencion()));
     }
+
+    private LineaFactura suplido(String importe) {
+        LineaFactura l = new LineaFactura();
+        l.setCantidad(1);
+        l.setPrecioUnitario(new BigDecimal(importe));
+        l.setTotalBase(new BigDecimal(importe));
+        l.setIvaNombre("Suplido");
+        l.setIvaPorcentaje(null);
+        l.setEsSuplido(true);
+        return l;
+    }
+
+    @Test
+    void suplidoSoloSumaAlTotal() {
+        ResumenFactura r = CalculoService.resumen(List.of(suplido("250.00")), 0);
+        assertEquals(0, r.getBaseTotal().compareTo(BigDecimal.ZERO));
+        assertEquals(0, r.getIvaTotal().compareTo(BigDecimal.ZERO));
+        assertEquals(new BigDecimal("250.00"), r.getTotalSuplidos());
+        assertEquals(new BigDecimal("250.00"), r.getTotal());
+        assertTrue(r.getGrupos().isEmpty());
+    }
+
+    @Test
+    void suplidoNoEntraEnBaseNiCuotaNiRetencion() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "1000.00", 21, "IVA 21%"), suplido("250.00")), 0, retencion(15));
+        assertEquals(new BigDecimal("1000.00"), r.getBaseTotal());
+        assertEquals(new BigDecimal("210.00"), r.getIvaTotal());
+        assertEquals(new BigDecimal("150.00"), r.getImporteRetencion());
+        assertEquals(new BigDecimal("250.00"), r.getTotalSuplidos());
+        assertEquals(new BigDecimal("1310.00"), r.getTotal());
+        assertTrue(r.getGrupos().stream().noneMatch(g -> "Suplido".equals(g.getNombre())));
+    }
+
+    @Test
+    void descuentoGlobalNoAfectaAlSuplido() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "1000.00", 21, "IVA 21%"), suplido("250.00")), 10, retencion(15));
+        assertEquals(new BigDecimal("900.00"), r.getBaseTotal());
+        assertEquals(new BigDecimal("189.00"), r.getIvaTotal());
+        assertEquals(new BigDecimal("135.00"), r.getImporteRetencion());
+        assertEquals(new BigDecimal("250.00"), r.getTotalSuplidos());
+        assertEquals(new BigDecimal("1204.00"), r.getTotal());
+    }
+
+    @Test
+    void sinSuplidosTotalSuplidosCeroYTotalInalterado() {
+        ResumenFactura r = CalculoService.resumen(
+                List.of(linea(1, "1000.00", 21, "IVA 21%")), 10, retencion(15));
+        assertEquals(0, r.getTotalSuplidos().compareTo(BigDecimal.ZERO));
+        assertEquals(new BigDecimal("954.00"), r.getTotal());
+    }
 }

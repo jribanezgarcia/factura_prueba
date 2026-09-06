@@ -15,6 +15,7 @@ public class LineaFactura {
     private Integer ivaPorcentaje;
     private String ivaMotivoExencion;
     private BigDecimal ivaImporte = BigDecimal.ZERO;
+    private boolean esSuplido;
 
     public LineaFactura() {
     }
@@ -111,6 +112,14 @@ public class LineaFactura {
         return ivaPorcentaje == null;
     }
 
+    public boolean isEsSuplido() {
+        return esSuplido;
+    }
+
+    public void setEsSuplido(boolean esSuplido) {
+        this.esSuplido = esSuplido;
+    }
+
     public LineaFactura copia() {
         LineaFactura c = new LineaFactura();
         c.setOrden(orden);
@@ -123,6 +132,7 @@ public class LineaFactura {
         c.setIvaPorcentaje(ivaPorcentaje);
         c.setIvaMotivoExencion(ivaMotivoExencion);
         c.setIvaImporte(ivaImporte);
+        c.setEsSuplido(esSuplido);
         return c;
     }
 }

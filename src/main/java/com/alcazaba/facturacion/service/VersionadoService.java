@@ -70,6 +70,7 @@ public class VersionadoService {
         v.setTipoRetencionNombre(resumen.getNombreRetencion());
         v.setTipoRetencionPorcentaje(resumen.getPorcentajeRetencion());
         v.setTotal(resumen.getTotal());
+        v.setTotalSuplidos(resumen.getTotalSuplidos());
 
         long id = versionRepository.insertarVersion(v);
         v.setId(id);
@@ -123,6 +124,7 @@ public class VersionadoService {
         v.setTipoRetencionNombre(resumen.getNombreRetencion());
         v.setTipoRetencionPorcentaje(resumen.getPorcentajeRetencion());
         v.setTotal(resumen.getTotal());
+        v.setTotalSuplidos(resumen.getTotalSuplidos());
 
         versionRepository.actualizarVersion(v);
         lineaRepository.eliminarPorVersion(versionId);

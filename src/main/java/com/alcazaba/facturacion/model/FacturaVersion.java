@@ -33,6 +33,7 @@ public class FacturaVersion {
     private String tipoRetencionNombre;
     private Integer tipoRetencionPorcentaje;
     private BigDecimal importeRetencion = BigDecimal.ZERO;
+    private BigDecimal totalSuplidos = BigDecimal.ZERO;
 
     public Long getId() {
         return id;
@@ -248,5 +249,13 @@ public class FacturaVersion {
 
     public void setImporteRetencion(BigDecimal importeRetencion) {
         this.importeRetencion = importeRetencion;
+    }
+
+    public BigDecimal getTotalSuplidos() {
+        return totalSuplidos;
+    }
+
+    public void setTotalSuplidos(BigDecimal totalSuplidos) {
+        this.totalSuplidos = totalSuplidos;
     }
 }

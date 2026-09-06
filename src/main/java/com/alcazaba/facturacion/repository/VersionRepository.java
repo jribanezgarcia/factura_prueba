@@ -27,8 +27,8 @@ public class VersionRepository {
                     cli_nombre, cli_nif, cli_direccion, cli_cp, cli_localidad, cli_provincia,
                     cli_email, forma_pago, vencimiento, realizada_por,
                     base_total, iva_total, total, tipo_retencion_id, tipo_retencion_nombre,
-                    tipo_retencion_porcentaje, importe_retencion)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    tipo_retencion_porcentaje, importe_retencion, total_suplidos)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setLong(1, v.getFacturaId());
@@ -61,6 +61,7 @@ public class VersionRepository {
             ps.setString(24, nzTexto(v.getTipoRetencionNombre()));
             ps.setObject(25, v.getTipoRetencionPorcentaje(), java.sql.Types.INTEGER);
             ps.setString(26, v.getImporteRetencion() == null ? "0.00" : v.getImporteRetencion().toPlainString());
+            ps.setString(27, v.getTotalSuplidos() == null ? "0.00" : v.getTotalSuplidos().toPlainString());
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
@@ -87,7 +88,7 @@ public class VersionRepository {
                     cli_nombre = ?, cli_nif = ?, cli_direccion = ?, cli_cp = ?, cli_localidad = ?,
                     cli_provincia = ?, cli_email = ?, forma_pago = ?, vencimiento = ?, realizada_por = ?,
                     base_total = ?, iva_total = ?, total = ?, tipo_retencion_id = ?, tipo_retencion_nombre = ?,
-                    tipo_retencion_porcentaje = ?, importe_retencion = ?
+                    tipo_retencion_porcentaje = ?, importe_retencion = ?, total_suplidos = ?
                 WHERE id = ?
                 """;
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
@@ -119,7 +120,8 @@ public class VersionRepository {
             ps.setString(22, nzTexto(v.getTipoRetencionNombre()));
             ps.setObject(23, v.getTipoRetencionPorcentaje(), java.sql.Types.INTEGER);
             ps.setString(24, v.getImporteRetencion() == null ? "0.00" : v.getImporteRetencion().toPlainString());
-            ps.setLong(25, v.getId());
+            ps.setString(25, v.getTotalSuplidos() == null ? "0.00" : v.getTotalSuplidos().toPlainString());
+            ps.setLong(26, v.getId());
             ps.executeUpdate();
         }
     }
@@ -217,6 +219,8 @@ public class VersionRepository {
         v.setTipoRetencionPorcentaje(rs.wasNull() ? null : trPct);
         String impRet = rs.getString("importe_retencion");
         v.setImporteRetencion(impRet == null || impRet.isBlank() ? BigDecimal.ZERO : new BigDecimal(impRet));
+        String totSupl = rs.getString("total_suplidos");
+        v.setTotalSuplidos(totSupl == null || totSupl.isBlank() ? BigDecimal.ZERO : new BigDecimal(totSupl));
         return v;
     }
 

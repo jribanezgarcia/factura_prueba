@@ -129,6 +129,8 @@ public class ConfiguracionController implements Vista {
     @FXML
     private TableColumn<TipoIva, String> colIvaPorcentaje;
     @FXML
+    private TableColumn<TipoIva, String> colIvaSuplido;
+    @FXML
     private TableColumn<TipoIva, String> colIvaMotivo;
     @FXML
     private TableColumn<TipoIva, String> colIvaActivo;
@@ -138,6 +140,8 @@ public class ConfiguracionController implements Vista {
     private TextField txtIvaPorcentaje;
     @FXML
     private TextField txtIvaMotivo;
+    @FXML
+    private CheckBox chkIvaSuplido;
     @FXML
     private Label lblIvaAviso;
 
@@ -448,9 +452,12 @@ public class ConfiguracionController implements Vista {
     private void cargarIvas() {
         colIvaNombre.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getNombre())));
         colIvaPorcentaje.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().label()));
+        colIvaSuplido.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isEsSuplido() ? "Sí" : "No"));
         colIvaMotivo.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getMotivoExencion())));
         colIvaActivo.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isActivo() ? "Sí" : "No"));
         tablaIva.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> seleccionarIva(b));
+        chkIvaSuplido.selectedProperty().addListener((o, a, b) ->
+                txtIvaPorcentaje.setDisable(b || (ivaSeleccionado != null && enUsoIva(ivaSeleccionado))));
         refrescarIvas();
     }
 
@@ -471,8 +478,9 @@ public class ConfiguracionController implements Vista {
         txtIvaNombre.setText(nz(t.getNombre()));
         txtIvaPorcentaje.setText(t.isExento() ? "" : String.valueOf(t.getPorcentaje()));
         txtIvaMotivo.setText(nz(t.getMotivoExencion()));
+        chkIvaSuplido.setSelected(t.isEsSuplido());
         boolean enUso = enUsoIva(t);
-        txtIvaPorcentaje.setDisable(enUso);
+        txtIvaPorcentaje.setDisable(enUso || t.isEsSuplido());
         lblIvaAviso.setVisible(enUso);
         lblIvaAviso.setManaged(enUso);
     }
@@ -491,6 +499,7 @@ public class ConfiguracionController implements Vista {
         txtIvaNombre.clear();
         txtIvaPorcentaje.clear();
         txtIvaMotivo.clear();
+        chkIvaSuplido.setSelected(false);
         txtIvaPorcentaje.setDisable(false);
         lblIvaAviso.setVisible(false);
         lblIvaAviso.setManaged(false);
@@ -505,6 +514,7 @@ public class ConfiguracionController implements Vista {
             return;
         }
         Integer porcentaje = null;
+        boolean suplido = chkIvaSuplido.isSelected();
         String pct = trim(txtIvaPorcentaje);
         if (!pct.isBlank()) {
             try {
@@ -517,6 +527,9 @@ public class ConfiguracionController implements Vista {
                 return;
             }
         }
+        if (suplido) {
+            porcentaje = null;
+        }
         if (porcentaje == null && ivaSeleccionado != null && !ivaSeleccionado.isExento()) {
             Dialogos.error("IVA", "Un tipo ya usado en el histórico no puede pasarse a exento.");
             return;
@@ -525,11 +538,20 @@ public class ConfiguracionController implements Vista {
             Dialogos.error("IVA", "Un tipo de exención ya usado en el histórico no puede convertirse a porcentaje.");
             return;
         }
+        if (suplido && ivaSeleccionado != null && !ivaSeleccionado.isEsSuplido()) {
+            Dialogos.error("IVA", "Un tipo existente no puede convertirse a suplido.");
+            return;
+        }
+        if (!suplido && ivaSeleccionado != null && ivaSeleccionado.isEsSuplido()) {
+            Dialogos.error("IVA", "Un suplido existente no puede dejar de ser suplido.");
+            return;
+        }
         try {
             TipoIva t = ivaSeleccionado != null ? ivaSeleccionado : new TipoIva();
             t.setNombre(nombre);
             t.setPorcentaje(porcentaje);
             t.setMotivoExencion(trim(txtIvaMotivo));
+            t.setEsSuplido(suplido);
             if (t.getId() == null) {
                 t.setActivo(true);
                 t.setId(servicios.ivas.insertar(t));

@@ -24,6 +24,9 @@ import java.util.Map;
  *   importe descontado para poder pintar el cuadre en el PDF.
  * - retencion de IRPF: se aplica sobre la base imponible (despues del
  *   descuento), la misma base sobre la que se calcula el IVA.
+ * - suplidos: las lineas marcadas como suplido no entran en bases, cuotas,
+ *   ajuste de centimos, descuento ni base de retencion; se acumulan aparte
+ *   en totalSuplidos y se suman al total.
  */
 public final class CalculoService {
 
@@ -95,9 +98,14 @@ public final class CalculoService {
         Map<ClaveIva, BigDecimal> bases = new LinkedHashMap<>();
         Map<ClaveIva, BigDecimal> cuotasSinDescuento = new LinkedHashMap<>();
         BigDecimal baseTotalSinDescuento = BigDecimal.ZERO;
+        BigDecimal totalSuplidos = BigDecimal.ZERO;
 
         if (lineas != null) {
             for (LineaFactura l : lineas) {
+                if (l.isEsSuplido()) {
+                    totalSuplidos = totalSuplidos.add(nz(l.getTotalBase()));
+                    continue;
+                }
                 ClaveIva clave = new ClaveIva(l.getIvaNombre(), l.getIvaPorcentaje(), l.getIvaMotivoExencion());
                 bases.merge(clave, nz(l.getTotalBase()), BigDecimal::add);
                 cuotasSinDescuento.merge(clave, nz(l.getIvaImporte()), BigDecimal::add);
@@ -155,7 +163,8 @@ public final class CalculoService {
         }
         resumen.setImporteRetencion(importeRetencion);
         resumen.setIvaTotal(ivaTotal);
-        resumen.setTotal(round2(baseTotalDescontada.add(ivaTotal).subtract(importeRetencion)));
+        resumen.setTotalSuplidos(round2(totalSuplidos));
+        resumen.setTotal(round2(baseTotalDescontada.add(ivaTotal).subtract(importeRetencion).add(resumen.getTotalSuplidos())));
         resumen.getGrupos().addAll(grupos);
         return resumen;
     }

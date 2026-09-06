@@ -34,7 +34,7 @@ public class IvaRepository {
     }
 
     public long insertar(TipoIva t) throws SQLException {
-        String sql = "INSERT INTO tipo_iva (nombre, porcentaje, motivo_exencion, activo) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO tipo_iva (nombre, porcentaje, motivo_exencion, activo, es_suplido) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, t.getNombre());
             if (t.isExento()) {
@@ -44,6 +44,7 @@ public class IvaRepository {
             }
             ps.setString(3, t.getMotivoExencion());
             ps.setInt(4, t.isActivo() ? 1 : 0);
+            ps.setInt(5, t.isEsSuplido() ? 1 : 0);
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
@@ -53,7 +54,7 @@ public class IvaRepository {
     }
 
     public void actualizar(TipoIva t) throws SQLException {
-        String sql = "UPDATE tipo_iva SET nombre = ?, porcentaje = ?, motivo_exencion = ?, activo = ? WHERE id = ?";
+        String sql = "UPDATE tipo_iva SET nombre = ?, porcentaje = ?, motivo_exencion = ?, activo = ?, es_suplido = ? WHERE id = ?";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             ps.setString(1, t.getNombre());
             if (t.isExento()) {
@@ -63,7 +64,8 @@ public class IvaRepository {
             }
             ps.setString(3, t.getMotivoExencion());
             ps.setInt(4, t.isActivo() ? 1 : 0);
-            ps.setLong(5, t.getId());
+            ps.setInt(5, t.isEsSuplido() ? 1 : 0);
+            ps.setLong(6, t.getId());
             ps.executeUpdate();
         }
     }
@@ -98,6 +100,7 @@ public class IvaRepository {
         t.setPorcentaje(rs.wasNull() ? null : pct);
         t.setMotivoExencion(rs.getString("motivo_exencion"));
         t.setActivo(rs.getInt("activo") == 1);
+        t.setEsSuplido(rs.getInt("es_suplido") == 1);
         return t;
     }
 }

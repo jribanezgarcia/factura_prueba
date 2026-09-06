@@ -242,6 +242,27 @@
     -fx-padding: 8px 0 0 0;
 }
 
+/* Editor: la matriz de IVA ajusta su alto al numero de filas desde codigo */
+#matrizIva {
+    -fx-min-height: 0;
+}
+
+#matrizIva .column-header {
+    -fx-size: 26px;
+}
+
+#escalera .total-fila {
+    -fx-padding: 2px 12px;
+}
+
+#escalera .total-grande {
+    -fx-padding: 5px 12px;
+}
+
+.zona-editor-pie .text-area .content {
+    -fx-padding: 3px;
+}
+
 .totales-compacta .total-fila {
     -fx-padding: 4px 12px;
 }

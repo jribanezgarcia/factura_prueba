@@ -239,6 +239,10 @@ class BackupServiceTest {
         try (var c = DriverManager.getConnection("jdbc:sqlite:" + anterior);
              Statement st = c.createStatement()) {
             st.executeUpdate("DROP TABLE numero_disponible");
+            st.executeUpdate("ALTER TABLE tipo_iva DROP COLUMN es_suplido");
+            st.executeUpdate("ALTER TABLE factura_linea DROP COLUMN es_suplido");
+            st.executeUpdate("ALTER TABLE factura_version DROP COLUMN total_suplidos");
+            st.executeUpdate("DELETE FROM tipo_iva WHERE id = 4");
             st.executeUpdate("PRAGMA user_version = 6");
         }
 

@@ -15,8 +15,8 @@ public class LineaRepository {
     public void insertarLineas(long versionId, List<LineaFactura> lineas) throws SQLException {
         String sql = """
                 INSERT INTO factura_linea (factura_version_id, orden, cantidad, descripcion, precio_unitario,
-                    total_base, tipo_iva_id, iva_nombre, iva_porcentaje, iva_motivo_exencion, iva_importe)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    total_base, tipo_iva_id, iva_nombre, iva_porcentaje, iva_motivo_exencion, iva_importe, es_suplido)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql)) {
             for (LineaFactura l : lineas) {
@@ -39,6 +39,7 @@ public class LineaRepository {
                 }
                 ps.setString(10, l.getIvaMotivoExencion());
                 ps.setString(11, l.getIvaImporte() == null ? "0.00" : l.getIvaImporte().toPlainString());
+                ps.setInt(12, l.isEsSuplido() ? 1 : 0);
                 ps.addBatch();
             }
             ps.executeBatch();
@@ -74,6 +75,7 @@ public class LineaRepository {
                     l.setIvaPorcentaje(rs.wasNull() ? null : pct);
                     l.setIvaMotivoExencion(rs.getString("iva_motivo_exencion"));
                     l.setIvaImporte(new BigDecimal(rs.getString("iva_importe")));
+                    l.setEsSuplido(rs.getInt("es_suplido") == 1);
                     lista.add(l);
                 }
             }

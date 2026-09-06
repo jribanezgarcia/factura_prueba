@@ -501,6 +501,9 @@ public class PdfService {
                     : "Retención " + r.getPorcentajeRetencion() + "%";
             filaDescuento(t, etiqueta, "-" + Formatos.moneda(r.getImporteRetencion()));
         }
+        if (r.getTotalSuplidos() != null && r.getTotalSuplidos().compareTo(BigDecimal.ZERO) > 0) {
+            filaResumen(t, "Suplidos", Formatos.moneda(r.getTotalSuplidos()));
+        }
 
         PdfPCell hueco = new PdfPCell(new Phrase(" "));
         hueco.setBorder(Rectangle.NO_BORDER);
