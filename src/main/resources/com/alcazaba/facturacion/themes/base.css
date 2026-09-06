@@ -166,6 +166,51 @@
     -fx-padding: 0 2px;
 }
 
+/* Variante plana: el boton no pinta caja, solo icono y texto sobre el fondo de la barra */
+.primary-button.btn-ribbon,
+.default-button.btn-ribbon,
+.danger-button.btn-ribbon,
+.action-button.btn-ribbon,
+.action-danger-button.btn-ribbon {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+}
+
+.primary-button.btn-ribbon {
+    -fx-text-fill: -fx-accent;
+    -fx-font-weight: bold;
+}
+
+.primary-button.btn-ribbon .icono-boton {
+    -fx-fill: -fx-accent;
+}
+
+.primary-button.btn-ribbon:hover,
+.default-button.btn-ribbon:hover,
+.danger-button.btn-ribbon:hover,
+.action-button.btn-ribbon:hover,
+.action-danger-button.btn-ribbon:hover {
+    -fx-background-color: rgba(128, 128, 128, 0.18);
+    -fx-border-color: transparent;
+}
+
+.primary-button.btn-ribbon:pressed,
+.default-button.btn-ribbon:pressed,
+.danger-button.btn-ribbon:pressed,
+.action-button.btn-ribbon:pressed,
+.action-danger-button.btn-ribbon:pressed {
+    -fx-background-color: rgba(128, 128, 128, 0.28);
+}
+
+.primary-button.btn-ribbon:focused,
+.default-button.btn-ribbon:focused,
+.danger-button.btn-ribbon:focused,
+.action-button.btn-ribbon:focused,
+.action-danger-button.btn-ribbon:focused {
+    -fx-border-color: -fx-accent;
+}
+
 /* Tablas */
 .table-view {
     -fx-background-radius: 10px;
