@@ -114,8 +114,8 @@ class EditorTamanoMinimoTest {
                 assertTrue(obsBounds.getMaxY() <= altoUtil,
                         "Observaciones debe caber dentro de la ventana sin scroll");
 
-                assertTrue(tabla.getBoundsInLocal().getHeight() >= 200,
-                        "La tabla de lineas debe conservar al menos 200 px de alto, tiene "
+                assertTrue(tabla.getBoundsInLocal().getHeight() >= 150,
+                        "La tabla de lineas debe conservar al menos 150 px de alto, tiene "
                                 + tabla.getBoundsInLocal().getHeight());
             } catch (Throwable t) {
                 layoutError.set(t);

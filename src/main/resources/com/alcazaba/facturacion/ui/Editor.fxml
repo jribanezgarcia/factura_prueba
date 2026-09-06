@@ -155,43 +155,60 @@
         </VBox>
     </center>
     <bottom>
-        <HBox spacing="12" alignment="TOP_LEFT" styleClass="zona-editor-pie">
-            <VBox spacing="3" HBox.hgrow="ALWAYS">
+        <VBox spacing="4" styleClass="zona-editor-pie">
+            <HBox spacing="8" alignment="CENTER_LEFT">
                 <Label text="Observaciones"/>
-                <TextArea fx:id="txtObservaciones" wrapText="true" prefRowCount="2" VBox.vgrow="ALWAYS"/>
-            </VBox>
-            <VBox styleClass="totales, totales-compacta" minWidth="300.0" maxWidth="300.0">
-                <HBox fx:id="filaBaseBruta" styleClass="total-fila, total-fila-primera" alignment="CENTER_LEFT">
-                    <Label text="Subtotal"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="lblBaseBruta" styleClass="valor"/>
-                </HBox>
-                <HBox fx:id="filaDescuento" styleClass="total-fila" alignment="CENTER_LEFT">
-                    <Label fx:id="lblDescuentoNombre" text="Descuento"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="lblDescuentoImporte" styleClass="valor"/>
-                </HBox>
-                <HBox fx:id="filaBaseImponible" styleClass="total-fila" alignment="CENTER_LEFT">
-                    <Label text="Base imponible"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="lblBaseTotal" styleClass="valor"/>
-                </HBox>
-                <HBox styleClass="total-fila" alignment="CENTER_LEFT">
-                    <Label text="IVA total"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="lblIvaTotal" styleClass="valor"/>
-                </HBox>
-                <HBox styleClass="total-fila" alignment="CENTER_LEFT">
-                    <Label fx:id="lblRetencionNombre" text="Retención"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="lblRetencionImporte" styleClass="valor"/>
-                </HBox>
-                <HBox styleClass="total-grande" alignment="CENTER_LEFT">
-                    <Label text="TOTAL"/>
-                    <Region HBox.hgrow="ALWAYS"/>
-                    <Label fx:id="lblTotal" styleClass="valor"/>
-                </HBox>
-            </VBox>
-        </HBox>
+                <TextArea fx:id="txtObservaciones" wrapText="true" prefRowCount="1" HBox.hgrow="ALWAYS"/>
+            </HBox>
+            <HBox spacing="8" alignment="TOP_LEFT">
+                <TableView fx:id="matrizIva" styleClass="tabla-productos" HBox.hgrow="ALWAYS">
+                    <columns>
+                        <TableColumn fx:id="colMatrizIva" text="IVA" sortable="false"/>
+                        <TableColumn fx:id="colMatrizBase" text="Base imponible" sortable="false"/>
+                        <TableColumn fx:id="colMatrizCuota" text="Cuota IVA" sortable="false"/>
+                    </columns>
+                    <columnResizePolicy>
+                        <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+                    </columnResizePolicy>
+                </TableView>
+                <VBox fx:id="escalera" styleClass="totales, totales-compacta" minWidth="236.0" maxWidth="236.0">
+                    <HBox fx:id="filaBaseBruta" styleClass="total-fila, total-fila-primera" alignment="CENTER_LEFT">
+                        <Label text="Subtotal"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblBaseBruta" styleClass="valor"/>
+                    </HBox>
+                    <HBox fx:id="filaDescuento" styleClass="total-fila" alignment="CENTER_LEFT">
+                        <Label fx:id="lblDescuentoNombre" text="Descuento"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblDescuentoImporte" styleClass="valor"/>
+                    </HBox>
+                    <HBox fx:id="filaBaseImponible" styleClass="total-fila" alignment="CENTER_LEFT">
+                        <Label text="Base imponible"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblBaseTotal" styleClass="valor"/>
+                    </HBox>
+                    <HBox styleClass="total-fila" alignment="CENTER_LEFT">
+                        <Label text="IVA total"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblIvaTotal" styleClass="valor"/>
+                    </HBox>
+                    <HBox fx:id="filaRetencion" visible="false" managed="false" styleClass="total-fila" alignment="CENTER_LEFT">
+                        <Label fx:id="lblRetencionNombre" text="Retención"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblRetencionImporte" styleClass="valor"/>
+                    </HBox>
+                    <HBox fx:id="filaSuplidos" visible="false" managed="false" styleClass="total-fila" alignment="CENTER_LEFT">
+                        <Label text="Suplidos"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblSuplidos" styleClass="valor"/>
+                    </HBox>
+                    <HBox styleClass="total-grande" alignment="CENTER_LEFT">
+                        <Label text="TOTAL FACTURA"/>
+                        <Region HBox.hgrow="ALWAYS"/>
+                        <Label fx:id="lblTotal" styleClass="valor"/>
+                    </HBox>
+                </VBox>
+            </HBox>
+        </VBox>
     </bottom>
 </BorderPane>

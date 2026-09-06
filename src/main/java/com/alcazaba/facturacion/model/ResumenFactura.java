@@ -16,6 +16,7 @@ public class ResumenFactura {
     private BigDecimal importeDescuento = BigDecimal.ZERO;
     private BigDecimal ivaTotal = BigDecimal.ZERO;
     private BigDecimal importeRetencion = BigDecimal.ZERO;
+    private BigDecimal totalSuplidos = BigDecimal.ZERO;
     private BigDecimal total = BigDecimal.ZERO;
     private int descuentoPorcentaje;
     private Long tipoRetencionId;
@@ -126,6 +127,14 @@ public class ResumenFactura {
 
     public void setIvaTotal(BigDecimal ivaTotal) {
         this.ivaTotal = ivaTotal;
+    }
+
+    public BigDecimal getTotalSuplidos() {
+        return totalSuplidos;
+    }
+
+    public void setTotalSuplidos(BigDecimal totalSuplidos) {
+        this.totalSuplidos = totalSuplidos;
     }
 
     public BigDecimal getTotal() {

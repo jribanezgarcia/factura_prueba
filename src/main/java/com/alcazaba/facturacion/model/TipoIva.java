@@ -7,6 +7,7 @@ public class TipoIva {
     private Integer porcentaje;
     private String motivoExencion;
     private boolean activo = true;
+    private boolean esSuplido;
 
     public Long getId() {
         return id;
@@ -52,7 +53,18 @@ public class TipoIva {
         return porcentaje == null;
     }
 
+    public boolean isEsSuplido() {
+        return esSuplido;
+    }
+
+    public void setEsSuplido(boolean esSuplido) {
+        this.esSuplido = esSuplido;
+    }
+
     public String label() {
+        if (isEsSuplido()) {
+            return "Suplido";
+        }
         if (isExento()) {
             return "Exento";
         }

@@ -228,6 +228,38 @@ class PdfServiceTest {
     }
 
     @Test
+    void suplidosAparecenEntreRetencionYTotal() throws Exception {
+        FacturaVersion v = versionMuestra();
+        v.setTipoRetencionId(1L);
+        v.setTipoRetencionNombre("IRPF profesional");
+        v.setTipoRetencionPorcentaje(15);
+        LineaFactura suplido = new LineaFactura();
+        suplido.setCantidad(1);
+        suplido.setDescripcion("TASAS");
+        suplido.setPrecioUnitario(new BigDecimal("250.00"));
+        suplido.setTotalBase(new BigDecimal("250.00"));
+        suplido.setIvaNombre("Suplido");
+        suplido.setIvaPorcentaje(null);
+        suplido.setEsSuplido(true);
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), v, List.of(lineaArmario(), suplido), null);
+
+        Path destino = tempDir.resolve("suplidos.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("Suplidos"));
+            assertTrue(texto.contains("250,00"));
+            assertTrue(texto.contains("3.565,78"));
+            int iRetencion = texto.indexOf("IRPF profesional 15%");
+            int iSuplidos = texto.indexOf("Suplidos");
+            int iTotal = texto.lastIndexOf("TOTAL");
+            assertTrue(iRetencion >= 0 && iRetencion < iSuplidos && iSuplidos < iTotal);
+        }
+    }
+
+    @Test
     void paginacionReflejaPaginasReales() throws Exception {
         List<LineaFactura> lineas = new ArrayList<>();
         for (int i = 0; i < 60; i++) {

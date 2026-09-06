@@ -115,7 +115,21 @@ public class EditorController implements Vista {
     @FXML
     private Label lblRetencionImporte;
     @FXML
+    private HBox filaRetencion;
+    @FXML
     private Label lblTotal;
+    @FXML
+    private TableView<ResumenFactura.IvaGrupo> matrizIva;
+    @FXML
+    private TableColumn<ResumenFactura.IvaGrupo, String> colMatrizIva;
+    @FXML
+    private TableColumn<ResumenFactura.IvaGrupo, String> colMatrizBase;
+    @FXML
+    private TableColumn<ResumenFactura.IvaGrupo, String> colMatrizCuota;
+    @FXML
+    private HBox filaSuplidos;
+    @FXML
+    private Label lblSuplidos;
     @FXML
     private ImageView logo;
     @FXML
@@ -214,6 +228,7 @@ public class EditorController implements Vista {
             configurarBusquedaCliente();
             configurarDetalleCliente();
             configurarTabla();
+            configurarMatriz();
             configurarCambios();
             atajos();
             actualizarVisibilidadReferencia(comboSerie.getValue());
@@ -418,6 +433,7 @@ public class EditorController implements Vista {
                 snapshot.setNombre(l.getIvaNombre() != null ? l.getIvaNombre() : "");
                 snapshot.setPorcentaje(l.getIvaPorcentaje());
                 snapshot.setMotivoExencion(l.getIvaMotivoExencion());
+                snapshot.setEsSuplido(l.isEsSuplido());
                 snapshot.setActivo(false);
                 tiposIva.add(snapshot);
             }
@@ -613,6 +629,8 @@ public class EditorController implements Vista {
             if (!cargando) {
                 marcarModificado();
             }
+            int parrafos = Math.max(1, txtObservaciones.getParagraphs().size());
+            txtObservaciones.setPrefRowCount(Math.min(3, parrafos));
         });
         txtFormaPago.textProperty().addListener((o, a, b) -> {
             if (!cargando) {
@@ -675,6 +693,31 @@ public class EditorController implements Vista {
         }
     }
 
+    private void configurarMatriz() {
+        matrizIva.setPlaceholder(new Label("Sin desglose."));
+        matrizIva.setFocusTraversable(false);
+        matrizIva.setMouseTransparent(true);
+        matrizIva.setFixedCellSize(22);
+        colMatrizIva.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(etiquetaMatriz(c.getValue())));
+        colMatrizBase.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getBase())));
+        colMatrizCuota.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getCuota())));
+    }
+
+    private static String etiquetaMatriz(ResumenFactura.IvaGrupo g) {
+        if ("Totales".equals(g.getNombre())) {
+            return "Totales";
+        }
+        if (g.isExento()) {
+            String motivo = g.getMotivoExencion();
+            return "Exento" + (motivo != null && !motivo.isBlank() ? " (" + motivo + ")" : "");
+        }
+        String nombre = g.getNombre() != null ? g.getNombre().trim() : "";
+        if (nombre.endsWith("%")) {
+            return g.getNombre();
+        }
+        return (nombre.isEmpty() ? "" : nombre + " ") + g.getPorcentaje() + "%";
+    }
+
     private void trazarFoco(String paso, Object foco) {
         if (!DIAGNOSTICO_FOCO) {
             return;
@@ -704,6 +747,7 @@ public class EditorController implements Vista {
             l.setIvaNombre(t.getNombre());
             l.setIvaPorcentaje(t.getPorcentaje());
             l.setIvaMotivoExencion(t.getMotivoExencion());
+            l.setEsSuplido(t.isEsSuplido());
         }
         return l;
     }
@@ -784,6 +828,7 @@ public class EditorController implements Vista {
         l.setIvaNombre(t.getNombre());
         l.setIvaPorcentaje(t.getPorcentaje());
         l.setIvaMotivoExencion(t.getMotivoExencion());
+        l.setEsSuplido(t.isEsSuplido());
         l.setIvaImporte(CalculoService.ivaDeBase(l.getTotalBase(), t.getPorcentaje()));
         marcarModificado();
     }
@@ -887,11 +932,15 @@ public class EditorController implements Vista {
         }
         lblBaseTotal.setText(Formatos.moneda(r.getBaseTotal()));
         lblIvaTotal.setText(Formatos.moneda(r.getIvaTotal()));
+        boolean conSuplidos = r.getTotalSuplidos() != null && r.getTotalSuplidos().compareTo(BigDecimal.ZERO) > 0;
+        filaSuplidos.setVisible(conSuplidos);
+        filaSuplidos.setManaged(conSuplidos);
+        if (conSuplidos) {
+            lblSuplidos.setText(Formatos.moneda(r.getTotalSuplidos()));
+        }
         boolean conRetencion = r.getImporteRetencion() != null && r.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0;
-        lblRetencionNombre.setVisible(conRetencion);
-        lblRetencionNombre.setManaged(conRetencion);
-        lblRetencionImporte.setVisible(conRetencion);
-        lblRetencionImporte.setManaged(conRetencion);
+        filaRetencion.setVisible(conRetencion);
+        filaRetencion.setManaged(conRetencion);
         if (conRetencion) {
             String nombre = r.getNombreRetencion() != null && !r.getNombreRetencion().isBlank()
                     ? r.getNombreRetencion()
@@ -900,6 +949,14 @@ public class EditorController implements Vista {
             lblRetencionImporte.setText("-" + Formatos.moneda(r.getImporteRetencion()));
         }
         lblTotal.setText(Formatos.moneda(r.getTotal()));
+        ObservableList<ResumenFactura.IvaGrupo> filasMatriz = FXCollections.observableArrayList(r.getGrupos());
+        ResumenFactura.IvaGrupo totales = new ResumenFactura.IvaGrupo();
+        totales.setNombre("Totales");
+        totales.setBase(r.getBaseTotal());
+        totales.setCuota(r.getIvaTotal());
+        filasMatriz.add(totales);
+        matrizIva.setItems(filasMatriz);
+        matrizIva.setPrefHeight(26 + 22 * filasMatriz.size() + 2);
     }
 
     private static void togglePrimera(HBox fila, boolean primera) {
