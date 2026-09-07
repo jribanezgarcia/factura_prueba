@@ -581,4 +581,152 @@ class PdfServiceTest {
             assertTrue(reader.getNumberOfPages() >= 2);
         }
     }
+
+    @Test
+    void yTarjetasNoEntraEnAreaTexto() {
+        assertEquals(108f, PdfService.yTarjetas(100f, 0f), 0.001);
+        float b = 500f;
+        for (float h : new float[]{0f, 10f, 30f, 60f, 120f}) {
+            assertTrue(PdfService.yTarjetas(b, h) - h >= b - 0.001,
+                    "borde inferior de tarjeta no debe entrar en area de texto h=" + h);
+        }
+        assertEquals(b + PdfService.HUECO_TARJETAS, PdfService.yTarjetas(b, 0f), 0.001);
+        assertEquals(b + PdfService.HUECO_TARJETAS + 50f, PdfService.yTarjetas(b, 50f), 0.001);
+    }
+
+    @Test
+    void altoFilaRellenoIgualAReal() {
+        PdfService.Colores c = new PdfService.Colores(java.awt.Color.decode("#B08D57"));
+        float alto = new PdfService().altoFilaLinea(c);
+        com.lowagie.text.pdf.PdfPTable filler = new PdfService().tablaRelleno(0, 1, c, alto);
+        filler.setTotalWidth(com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f);
+        filler.setLockedWidth(true);
+        filler.calculateHeights(true);
+        float altoFiller = filler.getRowHeight(0);
+        assertEquals(alto, altoFiller, 0.5, "filler debe tener mismo alto que fila real");
+    }
+
+    @Test
+    void filasDeRellenoCasos() {
+        float alto = 20f;
+        assertEquals(27, PdfService.filasDeRelleno(700f, 50f, 100f, alto));
+        assertEquals(5, PdfService.filasDeRelleno(200f, 50f, 50f, alto));
+        assertEquals(0, PdfService.filasDeRelleno(150f, 50f, 100f, alto));
+        assertEquals(0, PdfService.filasDeRelleno(50f, 50f, 100f, alto));
+        assertEquals(0, PdfService.filasDeRelleno(30f, 50f, 100f, alto));
+        assertEquals(2, PdfService.filasDeRelleno(105f, 50f, 0f, alto));
+        assertEquals(0, PdfService.filasDeRelleno(700f, 50f, 100f, 0f));
+    }
+
+    private FacturaVersion versionConPago() {
+        FacturaVersion v = versionMuestra();
+        v.setFormaPago("Transferencia");
+        v.setRealizadaPor("Juan");
+        v.setVencimiento(LocalDate.of(2026, 10, 1));
+        return v;
+    }
+
+    private List<LineaFactura> lineasN(int n) {
+        List<LineaFactura> out = new ArrayList<>();
+        for (int i = 0; i < n; i++) out.add(lineaArmario());
+        return out;
+    }
+
+    private String textoPagina(PdfReader reader, int pagina) throws IOException {
+        return new PdfTextExtractor(reader).getTextFromPage(pagina);
+    }
+
+    @Test
+    void numeroPaginasPorCasos() throws Exception {
+        assertEquals(1, paginasDe(lineasN(2), null, null));
+        assertEquals(1, paginasDe(lineasN(10), null, null));
+        assertEquals(1, paginasDe(lineasN(20), null, null));
+        assertEquals(1, paginasDe(List.of(lineaArmario(), lineaSuplido("TASAS", "250.00")), null, null));
+        assertEquals(1, paginasDe(List.of(lineaSuplido("TASAS", "250.00")), null, null));
+    }
+
+    private int paginasDe(List<LineaFactura> lineas, String obs, FacturaVersion ver) throws Exception {
+        FacturaVersion v = ver != null ? ver : versionMuestra();
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        if (obs != null) v.setObservaciones(obs);
+        Path destino = tempDir.resolve("pag-" + System.nanoTime() + ".pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        try (PdfReader r = new PdfReader(destino.toString())) { return r.getNumberOfPages(); }
+    }
+
+    @Test
+    void cierreEnUltimaPagina() throws Exception {
+        List<LineaFactura> lineas = new ArrayList<>();
+        for (int i = 0; i < 60; i++) {
+            LineaFactura l = lineaArmario();
+            l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA OCUPAR VARIAS PAGINAS");
+            lineas.add(l);
+        }
+        FacturaVersion v = versionMuestra();
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        Path destino = tempDir.resolve("cierre-ultima.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        try (PdfReader r = new PdfReader(destino.toString())) {
+            int n = r.getNumberOfPages();
+            assertTrue(n >= 2, "factura larga debe tener al menos 2 paginas");
+            for (int p = 1; p < n; p++) {
+                String t = textoPagina(r, p);
+                assertFalse(t.contains("LIQUIDACIÓN"), "LIQUIDACION no debe estar en pagina " + p);
+                assertFalse(t.contains("€"), "banda TOTAL con euro no debe estar en pagina " + p);
+            }
+            String ultima = textoPagina(r, n);
+            assertTrue(ultima.contains("LIQUIDACIÓN"), "LIQUIDACION debe estar en ultima pagina");
+            assertTrue(ultima.contains("€"), "banda TOTAL con euro debe estar en ultima pagina");
+        }
+    }
+
+    @Test
+    void tarjetaPorPagina() throws Exception {
+        List<LineaFactura> lineas = new ArrayList<>();
+        for (int i = 0; i < 60; i++) {
+            LineaFactura l = lineaArmario();
+            l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA OCUPAR VARIAS PAGINAS");
+            lineas.add(l);
+        }
+        FacturaVersion v = versionConPago();
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        Path destino = tempDir.resolve("tarjeta-pagina.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        try (PdfReader r = new PdfReader(destino.toString())) {
+            int n = r.getNumberOfPages();
+            assertTrue(n >= 2, "debe tener al menos 2 paginas");
+            String all = textoDe(r);
+            assertEquals(n, contarApariciones(all, "FACTURAR A"), "FACTURAR A una vez por pagina");
+            assertEquals(1, contarApariciones(all, "DATOS DE PAGO"), "DATOS DE PAGO solo pagina 1");
+            for (int p = 1; p <= n; p++) {
+                String tp = textoPagina(r, p);
+                assertTrue(tp.contains("FACTURAR A"), "pagina " + p + " debe tener FACTURAR A");
+                if (p == 1) assertTrue(tp.contains("DATOS DE PAGO"));
+                else assertFalse(tp.contains("DATOS DE PAGO"), "pagina " + p + " no debe tener DATOS DE PAGO");
+            }
+        }
+    }
+
+    @Test
+    void ningunaPaginaEnBlanco() throws Exception {
+        List<LineaFactura> lineas = new ArrayList<>();
+        for (int i = 0; i < 60; i++) {
+            LineaFactura l = lineaArmario();
+            l.setDescripcion("LINEA " + (i + 1) + " LARGA");
+            lineas.add(l);
+        }
+        FacturaVersion v = versionConPago();
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        Path destino = tempDir.resolve("no-blanco.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        try (PdfReader r = new PdfReader(destino.toString())) {
+            int n = r.getNumberOfPages();
+            for (int p = 1; p <= n; p++) {
+                String t = textoPagina(r, p).trim();
+                assertFalse(t.isBlank(), "pagina " + p + " no debe estar vacia");
+                // cada pagina debe tener al menos cabecera+contenido: al menos 30 caracteres extraibles
+                assertTrue(t.length() > 30, "pagina " + p + " parece vacia: '" + t.substring(0, Math.min(30, t.length())) + "'");
+            }
+        }
+    }
 }
