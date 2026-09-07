@@ -48,6 +48,11 @@ class PdfServiceTest {
         empresa.setNombre("COMERCIAL ALCAZABA, S.C.");
         empresa.setNif("B04444444");
         empresa.setActividad("Cocinas y armarios");
+        empresa.setDireccion("Avda. Alhambra nº 18");
+        empresa.setCp("04007");
+        empresa.setLocalidad("Almería");
+        empresa.setProvincia("Almería");
+        empresa.setEmail("cial.alcazaba@hotmail.com");
         empresa.setCabeceraModo("TEXTO");
         empresa.setPieLegal("Protección de datos RGPD texto legal de prueba.");
         return empresa;
@@ -422,7 +427,7 @@ class PdfServiceTest {
     }
 
     @Test
-    void soloSuplidosOmiteLaTablaDeLineas() throws Exception {
+    void soloSuplidosMuestraTablaVacia() throws Exception {
         FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaSuplido("TASAS", "250.00")), null);
 
@@ -431,7 +436,8 @@ class PdfServiceTest {
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
-            assertFalse(texto.contains("DESCRIPCIÓN"));
+            assertTrue(texto.contains("DESCRIPCIÓN"));
+            assertTrue(texto.contains("CANT."));
             assertTrue(texto.contains("SUPLIDOS"));
             assertTrue(texto.contains("TASAS"));
             assertTrue(texto.contains("250,00"));
@@ -840,5 +846,104 @@ class PdfServiceTest {
                 assertFalse(t.isBlank());
             }
         }
+    }
+
+    @Test
+    void cierreSolitarioConTabla() throws Exception {
+        String pieReal = Files.readString(Path.of("capturas_pantalla/pie_factura.txt")).trim();
+        Empresa emp = empresaTexto();
+        emp.setPieLegal(pieReal);
+        FacturaVersion v = versionMuestra();
+        v.setObservaciones("Observacion larga que ocupa espacio y ayuda a forzar el salto de pagina del cierre. ".repeat(10));
+        List<LineaFactura> lineas = new ArrayList<>();
+        for (int i = 0; i < 28; i++) {
+            LineaFactura l = lineaArmario();
+            l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA FORZAR PAGINA");
+            lineas.add(l);
+        }
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        Path destino = tempDir.resolve("cierre-solitario.pdf");
+        new PdfService().exportar(vc, emp, destino, "#B08D57");
+        try (PdfReader r = new PdfReader(destino.toString())) {
+            int n = r.getNumberOfPages();
+            assertTrue(n >= 2, "debe tener al menos 2 paginas para forzar cierre solitario");
+            String ultima = textoPagina(r, n);
+            assertTrue(ultima.contains("DESCRIPCIÓN"), "ultima pagina debe tener cabecera DESCRIPCIÓN");
+            assertTrue(ultima.contains("LIQUIDACIÓN"), "ultima pagina debe tener cierre LIQUIDACIÓN");
+            assertTrue(ultima.contains("€"), "ultima pagina debe tener banda TOTAL");
+            String penultima = n > 1 ? textoPagina(r, n - 1) : "";
+            assertFalse(penultima.contains("LIQUIDACIÓN"), "penultima no debe tener cierre");
+        }
+    }
+
+    @Test
+    void alturasTarjetasDistintas() {
+        FacturaVersion v = versionMuestra();
+        v.setCliNombre("MARIA MARTAGON AVALOS");
+        v.setCliNif("49122168X");
+        v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
+        v.setCliCp("04009");
+        v.setCliLocalidad("ALMERIA");
+        v.setCliProvincia("Almería");
+        v.setCliEmail("maria.martagon@correo.es");
+        v.setFormaPago("Transferencia");
+        v.setVencimiento(LocalDate.of(2026, 8, 14));
+        v.setRealizadaPor("AURORA");
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
+        PdfService svc = new PdfService();
+        PdfService.Colores c = new PdfService.Colores(java.awt.Color.decode("#B08D57"));
+        // Con OpenPDF no se puede verificar el alto dibujado sin generar PDF y analizar el stream grafico
+        com.lowagie.text.pdf.PdfPTable tarjetas = svc.tarjetas(vc, c);
+        com.lowagie.text.pdf.PdfPCell cellCliente = tarjetas.getRow(0).getCells()[0];
+        com.lowagie.text.pdf.PdfPCell cellPago = tarjetas.getRow(0).getCells()[2];
+        assertTrue(cellCliente.getCellEvent() == null, "borde no debe estar en celda exterior cliente");
+        assertTrue(cellPago.getCellEvent() == null, "borde no debe estar en celda exterior pago");
+        assertTrue(cellCliente.getTable() == null, "celda debe estar en modo composite");
+        assertTrue(cellPago.getTable() == null, "celda debe estar en modo composite");
+        com.lowagie.text.pdf.PdfPTable cliente = svc.tarjetaCliente(vc, c);
+        com.lowagie.text.pdf.PdfPTable pago = svc.tarjetaPago(svc.filasDatosPago(vc), c);
+        assertTrue(cliente.getTableEvent() instanceof PdfService.ContornoTabla, "cliente debe tener borde en tabla");
+        assertTrue(pago.getTableEvent() instanceof PdfService.ContornoTabla, "pago debe tener borde en tabla");
+        float ancho = com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f;
+        cliente.setTotalWidth(ancho * 0.49f);
+        cliente.setLockedWidth(true);
+        cliente.calculateHeights(true);
+        pago.setTotalWidth(ancho * 0.49f);
+        pago.setLockedWidth(true);
+        pago.calculateHeights(true);
+        assertTrue(Math.abs(cliente.getTotalHeight() - pago.getTotalHeight()) > 5f,
+                "alturas deben ser distintas: cliente " + cliente.getTotalHeight() + " vs pago " + pago.getTotalHeight());
+    }
+
+    @Test
+    void invarianteD4() throws Exception {
+        FacturaVersion v = versionMuestra();
+        v.setCliNombre("MARIA MARTAGON AVALOS");
+        v.setCliNif("49122168X");
+        v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
+        v.setCliCp("04009");
+        v.setCliLocalidad("ALMERIA");
+        v.setCliProvincia("Almería");
+        v.setCliEmail("maria.martagon@correo.es");
+        v.setFormaPago("Transferencia");
+        v.setVencimiento(LocalDate.of(2026, 8, 14));
+        v.setRealizadaPor("AURORA");
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
+        PdfService svc = new PdfService();
+        PdfService.Colores c = new PdfService.Colores(java.awt.Color.decode("#B08D57"));
+        com.lowagie.text.pdf.PdfPTable tarjetas = svc.tarjetas(vc, c);
+        float ancho = com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f;
+        tarjetas.setTotalWidth(ancho);
+        tarjetas.setLockedWidth(true);
+        tarjetas.calculateHeights(true);
+        float altoTarjetas = tarjetas.getTotalHeight();
+        com.lowagie.text.pdf.PdfPTable sinPago = svc.tarjetasSinPago(vc, c);
+        sinPago.setTotalWidth(ancho);
+        sinPago.setLockedWidth(true);
+        for (com.lowagie.text.pdf.PdfPCell cell : sinPago.getRow(0).getCells()) {
+            if (cell != null) cell.setFixedHeight(altoTarjetas);
+        }
+        sinPago.calculateHeights(true);
+        assertEquals(altoTarjetas, sinPago.getTotalHeight(), 0.5, "alto reservado debe ser igual al fijado en paginas siguientes");
     }
 }
