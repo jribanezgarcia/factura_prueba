@@ -82,6 +82,8 @@ public class PdfService {
     static final float HUECO_TARJETAS = 8f;
     static final float ESP_SUPLIDOS = 4f;
     static final float ESP_OBS = 6f;
+    static final float ESP_PIE = 6f;
+    private static final float MARGEN_INFERIOR = 36f;
 
     public void exportar(FacturaService.VersionCompleta vc, Empresa empresa, Path ruta) throws Exception {
         exportar(vc, empresa, ruta, null);
@@ -159,15 +161,18 @@ public class PdfService {
             altoObs = cajaObs.getTotalHeight();
         }
         float altoTotales = bloqueTot.getTotalHeight();
+        String pieLegal = empresa != null ? nz(empresa.getPieLegal()) : "";
+        boolean hayPie = pieLegal != null && !pieLegal.isBlank();
+        PdfPTable cajaPie = hayPie ? cajaPieLegal(pieLegal, colores) : null;
+        float altoPie = 0;
+        if (cajaPie != null) {
+            medir(cajaPie, ancho);
+            altoPie = cajaPie.getTotalHeight();
+        }
         float hCierre = (haySuplidos ? ESP_SUPLIDOS + altoSuplidos + ESP_SUPLIDOS : 0)
                 + altoTotales
-                + (hayObs ? ESP_OBS + altoObs : 0);
-
-        float altoFila = altoFilaLinea(colores);
-        int numReales = 0;
-        if (hayOperaciones && vc.lineas() != null) {
-            for (LineaFactura l : vc.lineas()) if (!l.isEsSuplido()) numReales++;
-        }
+                + (hayObs ? ESP_OBS + altoObs : 0)
+                + (hayPie ? ESP_PIE + altoPie : 0);
 
         float[] margenes = margenes(empresa, logo, colores, altoTarjetas);
 
@@ -185,14 +190,7 @@ public class PdfService {
 
             if (hueco > 0) {
                 if (hayOperaciones) {
-                    int filas = filasDeRelleno(y, doc.bottom(), hCierre, altoFila);
-                    float resto = hueco - filas * altoFila;
-                    if (filas > 0) {
-                        doc.add(tablaRelleno(numReales, filas, colores, altoFila));
-                    }
-                    if (resto > 0.01f) {
-                        doc.add(espaciador(resto));
-                    }
+                    doc.add(tablaRelleno(hueco, colores));
                 } else {
                     doc.add(espaciador(hueco));
                 }
@@ -200,14 +198,7 @@ public class PdfService {
                 if (hayOperaciones) {
                     float restante = y - doc.bottom();
                     if (restante > 0.01f) {
-                        int filasR = filasDeRelleno(y, doc.bottom(), 0, altoFila);
-                        float restoR = restante - filasR * altoFila;
-                        if (filasR > 0) {
-                            doc.add(tablaRelleno(numReales, filasR, colores, altoFila));
-                        }
-                        if (restoR > 0.01f) {
-                            doc.add(espaciador(restoR));
-                        }
+                        doc.add(tablaRelleno(restante, colores));
                     }
                     doc.newPage();
                 } else {
@@ -229,6 +220,10 @@ public class PdfService {
             if (hayObs) {
                 doc.add(espaciador(ESP_OBS));
                 doc.add(cajaObs);
+            }
+            if (hayPie) {
+                doc.add(espaciador(ESP_PIE));
+                doc.add(cajaPie);
             }
         }
     }
@@ -514,6 +509,7 @@ public class PdfService {
         t.addCell(celdaCabeceraColumna("PRECIO", c));
         t.addCell(celdaCabeceraColumna("IVA %", c));
         t.addCell(celdaCabeceraColumna("TOTAL", c));
+        t.setHeaderRows(1);
 
         int fila = 0;
         for (LineaFactura l : vc.lineas()) {
@@ -801,6 +797,50 @@ public class PdfService {
         return t;
     }
 
+    PdfPTable cajaPieLegal(String pie, Colores c) {
+        PdfPTable t = new PdfPTable(1);
+        t.setWidthPercentage(100);
+        t.setSplitLate(true);
+        t.setKeepTogether(true);
+        PdfPCell cell = new PdfPCell();
+        cell.setBackgroundColor(c.clarisimo);
+        cell.setBorder(Rectangle.NO_BORDER);
+        cell.setPadding(8);
+        cell.setPaddingLeft(10);
+        cell.setCellEvent(new FondoPieLegal(RADIO_CAJA, c));
+        Paragraph p = new Paragraph();
+        p.setLeading(PIE_LEGAL_INTERLINEADO);
+        p.add(new Chunk(pie, fuente(false, PIE_LEGAL_TAM, GRIS)));
+        cell.setPhrase(p);
+        t.addCell(cell);
+        return t;
+    }
+
+    private static final class FondoPieLegal implements PdfPCellEvent {
+        private final float radio;
+        private final Colores c;
+        FondoPieLegal(float radio, Colores c) {
+            this.radio = radio;
+            this.c = c;
+        }
+        @Override
+        public void cellLayout(PdfPCell cell, Rectangle rect, PdfContentByte[] canvases) {
+            PdfContentByte cb = canvases[PdfPTable.BACKGROUNDCANVAS];
+            cb.saveState();
+            cb.setColorFill(c.clarisimo);
+            cb.roundRectangle(rect.getLeft() - 0.4f, rect.getBottom() - 0.4f, rect.getWidth() + 0.8f, rect.getHeight() + 0.8f, radio);
+            cb.fill();
+            cb.setColorStroke(c.bordeTabla);
+            cb.setLineWidth(0.7f);
+            cb.roundRectangle(rect.getLeft() - 0.4f, rect.getBottom() - 0.4f, rect.getWidth() + 0.8f, rect.getHeight() + 0.8f, radio);
+            cb.stroke();
+            cb.setColorFill(c.base);
+            cb.roundRectangle(rect.getLeft() - 0.4f, rect.getBottom() - 0.4f, 3f, rect.getHeight() + 0.8f, radio);
+            cb.fill();
+            cb.restoreState();
+        }
+    }
+
     // ------------------------------------------------------------------
     // Margenes dinamicos segun cabecera y pie legal
     // ------------------------------------------------------------------
@@ -814,22 +854,11 @@ public class PdfService {
             superior = CabeceraLayout.altoCabeceraTexto(lineas);
         }
         superior += altoTarjetas + HUECO_TARJETAS;
-
-        BaseFont bfPie = baseRegular();
-        float anchoUtil = PageSize.A4.getWidth() - 2 * MARGEN_LATERAL - 16f;
-        List<String> lineasPie = partir(empresa != null ? nz(empresa.getPieLegal()) : "", bfPie, PIE_LEGAL_TAM, anchoUtil);
-        float inferior = Math.max(112f, 30f + lineasPie.size() * PIE_LEGAL_INTERLINEADO + 12f + 16f);
-        return new float[]{superior, inferior};
+        return new float[]{superior, MARGEN_INFERIOR};
     }
 
     static float yTarjetas(float bordeSuperiorContenido, float altoTarjetas) {
         return bordeSuperiorContenido + HUECO_TARJETAS + altoTarjetas;
-    }
-
-    static int filasDeRelleno(float y, float bottom, float hCierre, float altoFila) {
-        float hueco = y - bottom - hCierre;
-        if (hueco <= 0 || altoFila <= 0) return 0;
-        return (int) Math.floor(hueco / altoFila);
     }
 
     private static float anchoContenido() {
@@ -842,29 +871,16 @@ public class PdfService {
         t.calculateHeights(true);
     }
 
-    float altoFilaLinea(Colores c) {
-        PdfPTable t = new PdfPTable(new float[]{0.7f, 4.3f, 1.4f, 1.0f, 1.9f});
-        t.setTotalWidth(anchoContenido());
-        t.setLockedWidth(true);
-        t.addCell(celdaLinea("1", 0, Element.ALIGN_CENTER, c));
-        t.addCell(celdaLinea("X", 0, Element.ALIGN_LEFT, c));
-        t.addCell(celdaLinea("1.000,00", 0, Element.ALIGN_RIGHT, c));
-        t.addCell(celdaLinea("21 %", 0, Element.ALIGN_CENTER, c));
-        t.addCell(celdaLinea("1.210,00", 0, Element.ALIGN_RIGHT, c));
-        t.calculateHeights(true);
-        return t.getRowHeight(0);
-    }
-
-    PdfPTable tablaRelleno(int filaInicial, int filas, Colores c, float altoFila) {
+    PdfPTable tablaRelleno(float hueco, Colores c) {
         PdfPTable t = new PdfPTable(new float[]{0.7f, 4.3f, 1.4f, 1.0f, 1.9f});
         t.setWidthPercentage(100);
-        for (int i = 0; i < filas; i++) {
-            int fila = filaInicial + i;
-            PdfPCell c1 = celdaLinea(" ", fila, Element.ALIGN_CENTER, c); c1.setFixedHeight(altoFila); t.addCell(c1);
-            PdfPCell c2 = celdaLinea(" ", fila, Element.ALIGN_LEFT, c); c2.setFixedHeight(altoFila); t.addCell(c2);
-            PdfPCell c3 = celdaLinea(" ", fila, Element.ALIGN_RIGHT, c); c3.setFixedHeight(altoFila); t.addCell(c3);
-            PdfPCell c4 = celdaLinea(" ", fila, Element.ALIGN_CENTER, c); c4.setFixedHeight(altoFila); t.addCell(c4);
-            PdfPCell c5 = celdaLinea(" ", fila, Element.ALIGN_RIGHT, c); c5.setFixedHeight(altoFila); t.addCell(c5);
+        for (int col = 0; col < 5; col++) {
+            PdfPCell cell = new PdfPCell(new Phrase(" "));
+            cell.setFixedHeight(hueco);
+            cell.setBorder(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.BOTTOM);
+            cell.setBorderColor(c.bordeTabla);
+            cell.setBorderWidth(0.7f);
+            t.addCell(cell);
         }
         return t;
     }
@@ -1053,7 +1069,7 @@ public class PdfService {
             }
             dibujarSeparador(cb, izquierda, derecha, bordeSuperiorContenido, altoTarjetas);
             dibujarTarjetas(cb, izquierda, bordeSuperiorContenido);
-            dibujarPieLegal(writer, cb, izquierda, derecha, bordeInferiorContenido);
+            dibujarPaginacion(writer, cb, derecha);
             if (anulada) {
                 dibujarMarcaAnulada(writer, cb, pagina);
             }
@@ -1195,36 +1211,7 @@ public class PdfService {
             cb.stroke();
         }
 
-        private void dibujarPieLegal(PdfWriter writer, PdfContentByte cb, float izquierda, float derecha,
-                                     float bordeInferior) {
-            String pie = empresa != null && empresa.getPieLegal() != null ? empresa.getPieLegal() : "";
-            BaseFont bf = baseRegular();
-            float anchoUtil = derecha - izquierda - 16f;
-            List<String> lineas = partir(pie, bf, PIE_LEGAL_TAM, anchoUtil);
-
-            float cajaInferior = 30f;
-            float alturaCaja = lineas.size() * PIE_LEGAL_INTERLINEADO + 10f;
-            cb.setColorFill(c.clarisimo);
-            cb.roundRectangle(izquierda - 4, cajaInferior, derecha - izquierda + 8, alturaCaja, RADIO_CAJA);
-            cb.fill();
-            cb.setColorStroke(c.bordeTabla);
-            cb.setLineWidth(0.7f);
-            cb.roundRectangle(izquierda - 4, cajaInferior, derecha - izquierda + 8, alturaCaja, RADIO_CAJA);
-            cb.stroke();
-            cb.setColorFill(c.base);
-            cb.roundRectangle(izquierda - 4, cajaInferior, 3f, alturaCaja, RADIO_CAJA);
-            cb.fill();
-
-            float y = cajaInferior + alturaCaja - 7f;
-            for (String linea : lineas) {
-                cb.beginText();
-                cb.setFontAndSize(bf, PIE_LEGAL_TAM);
-                cb.setColorFill(GRIS);
-                cb.showTextAligned(Element.ALIGN_LEFT, linea, izquierda + 4, y, 0);
-                cb.endText();
-                y -= PIE_LEGAL_INTERLINEADO;
-            }
-
+        private void dibujarPaginacion(PdfWriter writer, PdfContentByte cb, float derecha) {
             BaseFont bfPie = baseRegular();
             float wHueco = bfPie.getWidthPoint("00", 8);
             float xTotal = derecha - wHueco;
