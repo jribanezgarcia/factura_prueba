@@ -38,15 +38,19 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Exportacion a PDF con el diseno aprobado inspirado en la hoja de calculo:
  * A4 vertical, cabecera repetida con logo al doble del tamano configurado
  * junto a los datos de empresa con NIF destacado, bloque FACTURA/Serie-Nº/fecha a la
  * derecha, tarjetas bicolor (Facturar a / Datos de pago), tabla de lineas con
- * celdas bordeadas y total por linea con IVA incluido, resumen con fila TOTAL
+ * celdas bordeadas y total por linea con IVA incluido, bloque de totales en dos
+ * rejillas hermanas con banda TOTAL
  * en color, observaciones en caja y pie legal en recuadro repetido en todas
  * las paginas con Página X de Y. El color de acento es configurable.
  */
@@ -423,10 +427,10 @@ public class PdfService {
             }
             t.addCell(celdaLinea(String.valueOf(l.getCantidad()), fila, Element.ALIGN_CENTER, c));
             t.addCell(celdaLinea(nz(l.getDescripcion()), fila, Element.ALIGN_LEFT, c));
-            t.addCell(celdaLinea(Formatos.moneda(l.getPrecioUnitario()), fila, Element.ALIGN_RIGHT, c));
+            t.addCell(celdaLinea(importePdf(l.getPrecioUnitario()), fila, Element.ALIGN_RIGHT, c));
             t.addCell(celdaLinea(l.isExenta() ? "Exento"
                     : l.getIvaPorcentaje() + " %", fila, Element.ALIGN_CENTER, c));
-            t.addCell(celdaLinea(Formatos.moneda(totalConIva(l)), fila, Element.ALIGN_RIGHT, c));
+            t.addCell(celdaLinea(importePdf(totalConIva(l)), fila, Element.ALIGN_RIGHT, c));
             fila++;
         }
         return t;
@@ -444,14 +448,14 @@ public class PdfService {
         t.setWidthPercentage(100);
         t.setSpacingBefore(6);
 
-        t.addCell(celdaCabeceraColumna("SUPLIDOS", c));
-        t.addCell(celdaCabeceraColumna("IMPORTE", c));
+        t.addCell(celdaCabeceraColumnaCompacta("SUPLIDOS", c));
+        t.addCell(celdaCabeceraColumnaCompacta("IMPORTE", c));
 
         int fila = 0;
         for (LineaFactura l : suplidos) {
-            t.addCell(celdaLinea(nz(l.getDescripcion()), fila, Element.ALIGN_LEFT, c));
+            t.addCell(celdaLineaCompacta(nz(l.getDescripcion()), fila, Element.ALIGN_LEFT, c));
             BigDecimal importe = l.getTotalBase() == null ? BigDecimal.ZERO : l.getTotalBase();
-            t.addCell(celdaLinea(Formatos.moneda(importe), fila, Element.ALIGN_RIGHT, c));
+            t.addCell(celdaLineaCompacta(importePdf(importe), fila, Element.ALIGN_RIGHT, c));
             fila++;
         }
 
@@ -463,6 +467,26 @@ public class PdfService {
         nota.setPaddingTop(3f);
         t.addCell(nota);
         return t;
+    }
+
+    private PdfPCell celdaCabeceraColumnaCompacta(String texto, Colores c) {
+        PdfPCell celula = new PdfPCell(new Phrase(texto, fuente(true, 7f, c.oscuro)));
+        celula.setBackgroundColor(c.claro);
+        celula.setHorizontalAlignment(Element.ALIGN_CENTER);
+        celula.setPadding(3);
+        celula.setBorderColor(c.bordeTabla);
+        return celula;
+    }
+
+    private PdfPCell celdaLineaCompacta(String texto, int fila, int alineacion, Colores c) {
+        PdfPCell celula = new PdfPCell(new Phrase(texto, fuente(false, 8f, TINTA)));
+        celula.setHorizontalAlignment(alineacion);
+        celula.setPadding(2.5f);
+        celula.setBorderColor(c.bordeTabla);
+        if (fila % 2 == 1) {
+            celula.setBackgroundColor(c.clarisimo);
+        }
+        return celula;
     }
 
     private PdfPCell celdaCabeceraColumna(String texto, Colores c) {
@@ -512,121 +536,161 @@ public class PdfService {
     // Totales
     // ------------------------------------------------------------------
 
-    private PdfPTable bloqueTotales(ResumenFactura r, int descuento, Colores c) {
-        PdfPTable t = new PdfPTable(new float[]{3.1f, 1.7f});
-        t.setWidthPercentage(44);
-        t.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        t.setSpacingBefore(2);
+    private static final DecimalFormat REJILLA_TIPO = new DecimalFormat("0.00",
+            DecimalFormatSymbols.getInstance(new Locale("es", "ES")));
 
-        boolean conDescuento = r.getImporteDescuento() != null
-                && r.getImporteDescuento().compareTo(BigDecimal.ZERO) > 0;
-        boolean unSoloGrupo = r.getGrupos().size() == 1;
+    private PdfPTable bloqueTotales(ResumenFactura r, int descuento, Colores c) {
+        PdfPTable contenedor = new PdfPTable(new float[]{3.3f, 3.0f});
+        contenedor.setWidthPercentage(100);
+        contenedor.setSpacingBefore(2);
+
+        PdfPCell celdaIzquierda = new PdfPCell();
+        celdaIzquierda.setBorder(Rectangle.NO_BORDER);
+        celdaIzquierda.setVerticalAlignment(Element.ALIGN_TOP);
+        celdaIzquierda.setPaddingRight(7f);
+        celdaIzquierda.addElement(rejillaDesgloseIva(r, c));
+        Paragraph nota = notaDescuento(r, descuento, c);
+        if (nota != null) {
+            celdaIzquierda.addElement(nota);
+        }
+
+        PdfPCell celdaDerecha = new PdfPCell();
+        celdaDerecha.setBorder(Rectangle.NO_BORDER);
+        celdaDerecha.setVerticalAlignment(Element.ALIGN_TOP);
+        celdaDerecha.setPaddingLeft(7f);
+        celdaDerecha.addElement(rejillaLiquidacion(r, c));
+
+        contenedor.addCell(celdaIzquierda);
+        contenedor.addCell(celdaDerecha);
+        return contenedor;
+    }
+
+    private PdfPTable rejillaDesgloseIva(ResumenFactura r, Colores c) {
+        PdfPTable t = new PdfPTable(new float[]{1.0f, 2.0f, 1.7f});
+        t.setWidthPercentage(100);
+        t.addCell(celdaCabeceraRejilla("TIPO", c));
+        t.addCell(celdaCabeceraRejilla("BASE IMPONIBLE", c));
+        t.addCell(celdaCabeceraRejilla("CUOTA IVA", c));
 
         for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
-            BigDecimal importeBase = conDescuento ? g.getBaseBruta() : g.getBase();
-            filaResumen(t, nombreBaseGrupo(g, unSoloGrupo, conDescuento), Formatos.moneda(importeBase));
-            if (!conDescuento) {
-                filaResumen(t, g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
-                        Formatos.moneda(g.getCuota()));
-            }
+            t.addCell(celdaCuerpoRejilla(g.isExento() ? "Exento" : porcentajeRejilla(g.getPorcentaje()),
+                    Element.ALIGN_CENTER, c, false, false));
+            t.addCell(celdaCuerpoRejilla(importePdf(g.getBase()), Element.ALIGN_RIGHT, c, false, false));
+            t.addCell(celdaCuerpoRejilla(g.isExento() ? "—" : importePdf(g.getCuota()),
+                    Element.ALIGN_RIGHT, c, false, false));
         }
-        if (conDescuento) {
-            filaDescuento(t, "Descuento " + descuento + "%",
-                    "-" + Formatos.moneda(r.getImporteDescuento()));
-            for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
-                filaResumen(t, nombreBaseImponibleGrupo(g, unSoloGrupo), Formatos.moneda(g.getBase()));
-                filaResumen(t, g.isExento() ? "IVA exento" : "IVA " + g.getPorcentaje() + "%",
-                        Formatos.moneda(g.getCuota()));
-            }
+
+        t.addCell(celdaCuerpoRejilla("Totales", Element.ALIGN_CENTER, c, true, false));
+        t.addCell(celdaCuerpoRejilla(importePdf(r.getBaseTotal()), Element.ALIGN_RIGHT, c, true, false));
+        t.addCell(celdaCuerpoRejilla(importePdf(r.getIvaTotal()), Element.ALIGN_RIGHT, c, true, false));
+        return t;
+    }
+
+    private Paragraph notaDescuento(ResumenFactura r, int descuento, Colores c) {
+        if (r.getImporteDescuento() == null || r.getImporteDescuento().compareTo(BigDecimal.ZERO) <= 0) {
+            return null;
         }
+        String nota = "Bases netas tras el descuento comercial del " + descuento
+                + " % (−" + importePdf(r.getImporteDescuento())
+                + " s/ " + importePdf(r.getBaseBruta()) + ").";
+        String motivo = r.getGrupos().stream()
+                .filter(g -> g.isExento())
+                .map(ResumenFactura.IvaGrupo::getMotivoExencion)
+                .filter(m -> m != null && !m.isBlank())
+                .findFirst()
+                .orElse(null);
+        if (motivo != null) {
+            nota += " Exención " + motivo + ".";
+        }
+        Paragraph p = new Paragraph();
+        p.add(new Chunk(nota, fuente(false, 7f, c.oscuro)));
+        p.setLeading(8.5f);
+        p.setSpacingBefore(3f);
+        p.setAlignment(Element.ALIGN_LEFT);
+        return p;
+    }
+
+    private PdfPTable rejillaLiquidacion(ResumenFactura r, Colores c) {
+        PdfPTable t = new PdfPTable(new float[]{2.2f, 1.4f});
+        t.setWidthPercentage(100);
+
+        PdfPCell cabecera = celdaCabeceraRejilla("LIQUIDACIÓN", c);
+        cabecera.setColspan(2);
+        t.addCell(cabecera);
+
+        filaLiquidacion(t, "Base imponible", importePdf(r.getBaseTotal()), c, false);
+        filaLiquidacion(t, "Total IVA repercutido", importePdf(r.getIvaTotal()), c, false);
+
         if (r.getImporteRetencion() != null && r.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0) {
             String etiqueta = r.getNombreRetencion() != null && !r.getNombreRetencion().isBlank()
-                    ? r.getNombreRetencion() + " " + r.getPorcentajeRetencion() + "%"
-                    : "Retención " + r.getPorcentajeRetencion() + "%";
-            filaDescuento(t, etiqueta, "-" + Formatos.moneda(r.getImporteRetencion()));
+                    ? r.getNombreRetencion() + " " + r.getPorcentajeRetencion() + " %"
+                    : "Retención " + r.getPorcentajeRetencion() + " %";
+            filaLiquidacion(t, etiqueta, "−" + importePdf(r.getImporteRetencion()), c, true);
         }
         if (r.getTotalSuplidos() != null && r.getTotalSuplidos().compareTo(BigDecimal.ZERO) > 0) {
-            filaResumen(t, "Suplidos", Formatos.moneda(r.getTotalSuplidos()));
+            filaLiquidacion(t, "Suplidos", "+" + importePdf(r.getTotalSuplidos()), c, false);
         }
 
-        PdfPCell hueco = new PdfPCell(new Phrase(" "));
-        hueco.setBorder(Rectangle.NO_BORDER);
-        hueco.setFixedHeight(6f);
-        t.addCell(hueco);
-        PdfPCell hueco2 = new PdfPCell(new Phrase(" "));
-        hueco2.setBorder(Rectangle.NO_BORDER);
-        hueco2.setFixedHeight(6f);
-        t.addCell(hueco2);
-
-        PdfPCell etiquetaTotal = new PdfPCell(new Phrase("TOTAL", fuente(true, 12, BLANCO)));
+        PdfPCell etiquetaTotal = new PdfPCell(new Phrase("TOTAL", fuente(true, 11f, BLANCO)));
         etiquetaTotal.setBackgroundColor(c.base);
+        etiquetaTotal.setPadding(5f);
         etiquetaTotal.setBorderColor(c.oscuro);
-        etiquetaTotal.setPadding(5);
-        PdfPCell importeTotal = new PdfPCell(new Phrase(Formatos.moneda(r.getTotal()), fuente(true, 12, BLANCO)));
+        etiquetaTotal.setBorder(Rectangle.LEFT | Rectangle.TOP | Rectangle.BOTTOM);
+        etiquetaTotal.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        PdfPCell importeTotal = new PdfPCell(new Phrase(Formatos.moneda(r.getTotal()), fuente(true, 11f, BLANCO)));
         importeTotal.setBackgroundColor(c.base);
-        importeTotal.setBorderColor(c.oscuro);
         importeTotal.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        importeTotal.setPadding(5);
+        importeTotal.setPadding(5f);
+        importeTotal.setBorderColor(c.oscuro);
+        importeTotal.setBorder(Rectangle.RIGHT | Rectangle.TOP | Rectangle.BOTTOM);
+        importeTotal.setVerticalAlignment(Element.ALIGN_MIDDLE);
         t.addCell(etiquetaTotal);
         t.addCell(importeTotal);
         return t;
     }
 
-    /**
-     * Etiqueta de la fila de base del primer bloque: con descuento es el
-     * subtotal previo al descuento; sin descuento esa fila ya es la base
-     * imponible. Sin tipo cuando solo hay un grupo y con el porcentaje
-     * cuando hay varios; las exentas llevan su motivo.
-     */
-    private String nombreBaseGrupo(ResumenFactura.IvaGrupo g, boolean unSoloGrupo, boolean conDescuento) {
-        if (g.isExento()) {
-            String base = conDescuento ? "Subtotal exento" : "Base exenta";
-            return base + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
-                    ? " (" + g.getMotivoExencion() + ")"
-                    : "");
-        }
-        if (!conDescuento) {
-            return unSoloGrupo ? "Base imponible" : "Base imponible " + g.getPorcentaje() + "%";
-        }
-        return unSoloGrupo ? "Subtotal" : "Subtotal " + g.getPorcentaje() + "%";
+    private void filaLiquidacion(PdfPTable t, String etiqueta, String importe, Colores c, boolean retencion) {
+        t.addCell(celdaCuerpoRejilla(etiqueta, Element.ALIGN_LEFT, c, false, retencion));
+        t.addCell(celdaCuerpoRejilla(importe, Element.ALIGN_RIGHT, c, false, retencion));
     }
 
-    /**
-     * Etiqueta de la fila de base del bloque posterior al descuento: siempre
-     * base imponible por tipo.
-     */
-    private String nombreBaseImponibleGrupo(ResumenFactura.IvaGrupo g, boolean unSoloGrupo) {
-        if (g.isExento()) {
-            return "Base exenta" + (g.getMotivoExencion() != null && !g.getMotivoExencion().isBlank()
-                    ? " (" + g.getMotivoExencion() + ")"
-                    : "");
+    private PdfPCell celdaCabeceraRejilla(String texto, Colores c) {
+        Chunk chunk = new Chunk(texto, fuente(true, 7f, BLANCO));
+        chunk.setCharacterSpacing(0.5f);
+        PdfPCell celula = new PdfPCell(new Phrase(chunk));
+        celula.setBackgroundColor(c.base);
+        celula.setHorizontalAlignment(Element.ALIGN_CENTER);
+        celula.setPadding(4f);
+        celula.setBorderColor(c.bordeTabla);
+        celula.setBorder(Rectangle.TOP | Rectangle.BOTTOM | Rectangle.LEFT | Rectangle.RIGHT);
+        return celula;
+    }
+
+    private PdfPCell celdaCuerpoRejilla(String texto, int alineacion, Colores c, boolean totales, boolean retencion) {
+        Font f = retencion
+                ? new Font(baseCursiva(), 8.5f, Font.NORMAL, ROJO_DESCUENTO)
+                : fuente(totales, 8.5f, TINTA);
+        PdfPCell celula = new PdfPCell(new Phrase(texto, f));
+        celula.setHorizontalAlignment(alineacion);
+        celula.setPadding(3.5f);
+        celula.setBackgroundColor(totales ? c.claro : c.clarisimo);
+        celula.setBorderColor(c.bordeTabla);
+        celula.setBorder(totales ? Rectangle.LEFT | Rectangle.RIGHT | Rectangle.TOP | Rectangle.BOTTOM : Rectangle.LEFT | Rectangle.RIGHT);
+        if (totales) {
+            celula.setBorderWidthTop(0.7f);
         }
-        return unSoloGrupo ? "Base imponible" : "Base imponible " + g.getPorcentaje() + "%";
+        return celula;
     }
 
-    private void filaDescuento(PdfPTable t, String etiqueta, String valor) {
-        Font fuenteRoja = new Font(baseCursiva(), 9f, Font.NORMAL, ROJO_DESCUENTO);
-        PdfPCell celula = new PdfPCell(new Phrase(etiqueta, fuenteRoja));
-        celula.setBorder(Rectangle.NO_BORDER);
-        celula.setPadding(1.5f);
-        t.addCell(celula);
-        PdfPCell valorCelula = new PdfPCell(new Phrase(valor, fuenteRoja));
-        valorCelula.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        valorCelula.setBorder(Rectangle.NO_BORDER);
-        valorCelula.setPadding(1.5f);
-        t.addCell(valorCelula);
+    private String porcentajeRejilla(Integer porcentaje) {
+        if (porcentaje == null) {
+            return "Exento";
+        }
+        return REJILLA_TIPO.format(BigDecimal.valueOf(porcentaje));
     }
 
-    private void filaResumen(PdfPTable t, String etiqueta, String valor) {
-        PdfPCell celula = new PdfPCell(new Phrase(etiqueta, fuente(false, 9f, GRIS)));
-        celula.setBorder(Rectangle.NO_BORDER);
-        celula.setPadding(1.2f);
-        t.addCell(celula);
-        PdfPCell valorCelula = new PdfPCell(new Phrase(valor, fuente(false, 9f, TINTA)));
-        valorCelula.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        valorCelula.setBorder(Rectangle.NO_BORDER);
-        valorCelula.setPadding(1.2f);
-        t.addCell(valorCelula);
+    private String importePdf(BigDecimal importe) {
+        return Formatos.moneda(importe).replace("\u00a0\u20ac", "").trim();
     }
 
     private PdfPTable cajaObservaciones(String observaciones, Colores c) {
