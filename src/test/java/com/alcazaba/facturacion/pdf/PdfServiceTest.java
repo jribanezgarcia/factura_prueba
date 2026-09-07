@@ -22,6 +22,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -81,6 +82,16 @@ class PdfServiceTest {
         return l;
     }
 
+    private static int contarApariciones(String texto, String aguja) {
+        int n = 0;
+        int idx = texto.indexOf(aguja);
+        while (idx >= 0) {
+            n++;
+            idx = texto.indexOf(aguja, idx + aguja.length());
+        }
+        return n;
+    }
+
     private String textoDe(PdfReader reader) throws IOException {
         StringBuilder sb = new StringBuilder();
         PdfTextExtractor extractor = new PdfTextExtractor(reader);
@@ -124,8 +135,16 @@ class PdfServiceTest {
             assertFalse(texto.contains("Forma de pago"));
             assertFalse(texto.contains("Vencimiento"));
             assertTrue(texto.contains("3.785,00"));
+            assertTrue(texto.contains("TIPO"));
+            assertTrue(texto.contains("BASE IMPONIBLE"));
+            assertTrue(texto.contains("CUOTA IVA"));
+            assertTrue(texto.contains("21,00"));
+            assertTrue(texto.contains("Totales"));
+            assertTrue(texto.contains("LIQUIDACIÓN"));
             assertTrue(texto.contains("Base imponible"));
+            assertTrue(texto.contains("Total IVA repercutido"));
             assertFalse(texto.contains("Subtotal"));
+            assertFalse(texto.contains("Base imponible 21%"));
             assertTrue(texto.contains("RGPD"));
         }
     }
@@ -158,21 +177,27 @@ class PdfServiceTest {
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
-            assertTrue(texto.contains("Subtotal"));
-            assertTrue(texto.contains("IVA 21%"));
-            assertTrue(texto.contains("Descuento 10%"));
-            assertTrue(texto.contains("Base imponible"));
-            assertTrue(texto.contains("-312,81"));
+            assertTrue(texto.contains("21,00"));
+            assertTrue(texto.contains("2.815,29"));
+            assertTrue(texto.contains("591,21"));
+            assertTrue(texto.contains("Totales"));
+            assertTrue(texto.contains("descuento comercial del 10 %"));
+            assertTrue(texto.contains("−312,81"));
+            assertTrue(texto.contains("3.128,10"));
             assertTrue(texto.contains("3.406,50"));
+            assertFalse(texto.contains("Subtotal"));
+            assertFalse(texto.contains("Descuento 10%"));
+            assertFalse(texto.contains("Base imponible 21%"));
             assertFalse(texto.contains("Base total"));
             assertFalse(texto.contains("IVA total"));
-            int iBase = texto.indexOf("Subtotal");
-            int iDescuento = texto.indexOf("Descuento 10%");
-            int iImponible = texto.indexOf("Base imponible");
-            int iIva = texto.indexOf("IVA 21%");
+            int iTipo = texto.indexOf("TIPO");
+            int iTotales = texto.indexOf("Totales");
+            int iNota = texto.indexOf("descuento comercial");
+            int iLiquida = texto.indexOf("LIQUIDACIÓN");
+            int iIva = texto.indexOf("Total IVA repercutido");
             int iTotal = texto.lastIndexOf("TOTAL");
-            assertTrue(iBase >= 0 && iBase < iDescuento && iDescuento < iImponible
-                    && iImponible < iIva && iIva < iTotal);
+            assertTrue(iTipo >= 0 && iTipo < iTotales && iTotales < iNota && iNota < iLiquida
+                    && iLiquida < iIva && iIva < iTotal);
         }
     }
 
@@ -188,23 +213,92 @@ class PdfServiceTest {
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
-            assertTrue(texto.contains("Base imponible 21%"));
+            assertTrue(texto.contains("21,00"));
             assertTrue(texto.contains("900,00"));
-            assertTrue(texto.contains("Base imponible 10%"));
+            assertTrue(texto.contains("10,00"));
             assertTrue(texto.contains("450,00"));
             assertTrue(texto.contains("189,00"));
             assertTrue(texto.contains("45,00"));
+            assertTrue(texto.contains("Totales"));
+            assertTrue(texto.contains("1.350,00"));
+            assertTrue(texto.contains("234,00"));
             assertTrue(texto.contains("1.584,00"));
-            int iSub21 = texto.indexOf("Subtotal 21%");
-            int iSub10 = texto.indexOf("Subtotal 10%");
-            int iDto = texto.indexOf("Descuento 10%");
-            int iBase21 = texto.indexOf("Base imponible 21%");
-            int iIva21 = texto.indexOf("IVA 21%");
-            int iBase10 = texto.indexOf("Base imponible 10%");
-            int iIva10 = texto.indexOf("IVA 10%");
+            assertFalse(texto.contains("Subtotal"));
+            assertFalse(texto.contains("Descuento 10%"));
+            assertFalse(texto.contains("Base imponible 21%"));
+            assertFalse(texto.contains("Base imponible 10%"));
+            int i21 = texto.indexOf("21,00");
+            int i10 = texto.indexOf("10,00 450,00");
+            int iTotales = texto.indexOf("Totales 1.350,00");
+            int iIva = texto.indexOf("Total IVA repercutido");
             int iTotal = texto.lastIndexOf("TOTAL");
-            assertTrue(iSub21 >= 0 && iSub21 < iSub10 && iSub10 < iDto && iDto < iBase21
-                    && iBase21 < iIva21 && iIva21 < iBase10 && iBase10 < iIva10 && iIva10 < iTotal);
+            assertTrue(i21 >= 0 && i21 < i10 && i10 < iTotales
+                    && iTotales < iIva && iIva < iTotal);
+        }
+    }
+
+    @Test
+    void elPdfNoUsaRotulosDeLaEscalera() throws Exception {
+        FacturaVersion v = versionMuestra();
+        v.setDescuentoPorcentaje(10);
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), v, List.of(linea("1000.00", 21), linea("500.00", 10),
+                        lineaExenta("ASESORAMIENTO", "200.00")), null);
+
+        Path destino = tempDir.resolve("sin-rotulos-escalera.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("descuento comercial del 10 %"));
+            assertFalse(texto.contains("Subtotal"));
+            assertFalse(texto.contains("Base imponible 21%"));
+            assertFalse(texto.contains("Base imponible 10%"));
+            assertFalse(texto.contains("Base exenta"));
+            assertFalse(texto.contains("Subtotal exento"));
+            assertEquals(1, contarApariciones(texto, "descuento comercial"));
+        }
+    }
+
+    @Test
+    void exentoMuestraGuionYSumaEnTotales() throws Exception {
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), versionMuestra(),
+                List.of(linea("1000.00", 21), lineaExenta("ASESORAMIENTO", "200.00")), null);
+
+        Path destino = tempDir.resolve("exento.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertTrue(texto.contains("Exento"));
+            assertTrue(texto.contains("—"));
+            assertTrue(texto.contains("Totales"));
+            assertTrue(texto.contains("1.200,00"));
+            assertTrue(texto.contains("210,00"));
+            assertFalse(texto.contains("Base exenta"));
+        }
+    }
+
+    @Test
+    void elSimboloDeMonedaApareceUnaSolaVez() throws Exception {
+        FacturaVersion v = versionMuestra();
+        v.setDescuentoPorcentaje(10);
+        v.setTipoRetencionId(1L);
+        v.setTipoRetencionNombre("IRPF profesional");
+        v.setTipoRetencionPorcentaje(15);
+        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+                new Factura(), v,
+                List.of(lineaArmario(), lineaSuplido("TASAS", "250.00")), null);
+
+        Path destino = tempDir.resolve("un-simbolo.pdf");
+        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+
+        try (PdfReader reader = new PdfReader(destino.toString())) {
+            String texto = textoDe(reader);
+            assertEquals(1, contarApariciones(texto, "€"),
+                    "El símbolo € debe aparecer una sola vez, en la banda TOTAL");
+            assertTrue(texto.contains("TOTAL"));
         }
     }
 
@@ -222,8 +316,8 @@ class PdfServiceTest {
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
-            assertTrue(texto.contains("IRPF profesional 15%"));
-            assertTrue(texto.contains("-469,22"));
+            assertTrue(texto.contains("IRPF profesional 15 %"));
+            assertTrue(texto.contains("−469,22"));
         }
     }
 
@@ -249,12 +343,11 @@ class PdfServiceTest {
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
-            assertTrue(texto.contains("Suplidos"));
-            assertTrue(texto.contains("250,00"));
+            assertTrue(texto.contains("Suplidos +250,00"));
             assertTrue(texto.contains("3.565,78"));
             int iBloque = texto.indexOf("SUPLIDOS");
-            int iRetencion = texto.indexOf("IRPF profesional 15%");
-            int iSuplidosTotales = texto.lastIndexOf("Suplidos");
+            int iRetencion = texto.indexOf("IRPF profesional 15 %");
+            int iSuplidosTotales = texto.lastIndexOf("Suplidos +250,00");
             int iTotal = texto.lastIndexOf("TOTAL");
             assertTrue(iBloque >= 0 && iBloque < iRetencion && iRetencion < iSuplidosTotales
                     && iSuplidosTotales < iTotal);
