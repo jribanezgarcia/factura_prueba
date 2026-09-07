@@ -26,6 +26,7 @@ import com.lowagie.text.pdf.PdfGState;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPCellEvent;
 import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfPTableEvent;
 import com.lowagie.text.pdf.PdfPageEventHelper;
 import com.lowagie.text.pdf.PdfTemplate;
 import com.lowagie.text.pdf.PdfCopy;
@@ -84,6 +85,7 @@ public class PdfService {
     static final float ESP_OBS = 6f;
     static final float ESP_PIE = 6f;
     private static final float MARGEN_INFERIOR = 36f;
+    private static final float MARGEN_ETIQUETA = 6f;
 
     public void exportar(FacturaService.VersionCompleta vc, Empresa empresa, Path ruta) throws Exception {
         exportar(vc, empresa, ruta, null);
@@ -120,7 +122,6 @@ public class PdfService {
         Image logo = cargarLogo(empresa);
 
         List<LineaFactura> suplidos = suplidosDe(vc);
-        boolean hayOperaciones = vc.lineas() != null && vc.lineas().size() != suplidos.size();
         boolean haySuplidos = !suplidos.isEmpty();
         String obs = vc.version().getObservaciones();
         boolean hayObs = obs != null && !obs.isBlank();
@@ -143,7 +144,7 @@ public class PdfService {
             tarjetasSinPagoTabla.calculateHeights(true);
         }
 
-        PdfPTable tablaLineasTabla = hayOperaciones ? tablaLineas(vc, colores) : null;
+        PdfPTable tablaLineasTabla = tablaLineas(vc, colores);
 
         PdfPTable bloqueSup = haySuplidos ? bloqueSuplidos(suplidos, colores) : null;
         PdfPTable bloqueTot = bloqueTotales(resumen, vc.version().getDescuentoPorcentaje(), colores);
@@ -182,32 +183,24 @@ public class PdfService {
                     tarjetasTabla, conPago ? tarjetasSinPagoTabla : tarjetasTabla, altoTarjetas, conPago));
             doc.open();
 
-            if (hayOperaciones) {
-                doc.add(tablaLineasTabla);
-            }
+            doc.add(tablaLineasTabla);
             float y = writer.getVerticalPosition(false);
             float hueco = y - doc.bottom() - hCierre;
 
             if (hueco > 0) {
-                if (hayOperaciones) {
-                    doc.add(tablaRelleno(hueco, colores));
-                } else {
-                    doc.add(espaciador(hueco));
-                }
+                doc.add(tablaRelleno(hueco, colores));
             } else {
-                if (hayOperaciones) {
-                    float restante = y - doc.bottom();
-                    if (restante > 0.01f) {
-                        doc.add(tablaRelleno(restante, colores));
-                    }
-                    doc.newPage();
-                } else {
-                    doc.newPage();
+                float restante = y - doc.bottom();
+                if (restante > 0.01f) {
+                    doc.add(tablaRelleno(restante, colores));
                 }
-                y = doc.top();
+                doc.newPage();
+                PdfPTable tablaVacia = tablaLineasVacia(colores);
+                doc.add(tablaVacia);
+                y = writer.getVerticalPosition(false);
                 float hueco2 = y - doc.bottom() - hCierre;
                 if (hueco2 > 0.01f) {
-                    doc.add(espaciador(hueco2));
+                    doc.add(tablaRelleno(hueco2, colores));
                 }
             }
 
@@ -284,11 +277,13 @@ public class PdfService {
     // Tarjetas bicolor
     // ------------------------------------------------------------------
 
-    private PdfPTable tarjetas(FacturaService.VersionCompleta vc, Colores c) {
+    PdfPTable tarjetas(FacturaService.VersionCompleta vc, Colores c) {
         List<String[]> pagoFilas = filasDatosPago(vc);
         PdfPTable exterior = new PdfPTable(new float[]{49f, 2f, 49f});
         exterior.setWidthPercentage(100);
-        exterior.addCell(celdaTarjeta(tarjetaCliente(vc, c), c));
+        PdfPCell cellCliente = celdaTarjeta(tarjetaCliente(vc, c), c);
+        cellCliente.setVerticalAlignment(Element.ALIGN_TOP);
+        exterior.addCell(cellCliente);
         PdfPCell hueco = new PdfPCell(new Phrase(" "));
         hueco.setBorder(Rectangle.NO_BORDER);
         if (pagoFilas.isEmpty()) {
@@ -296,23 +291,26 @@ public class PdfService {
             exterior.addCell(hueco);
         } else {
             exterior.addCell(hueco);
-            exterior.addCell(celdaTarjeta(tarjetaPago(pagoFilas, c), c));
+            PdfPCell cellPago = celdaTarjeta(tarjetaPago(pagoFilas, c), c);
+            cellPago.setVerticalAlignment(Element.ALIGN_TOP);
+            exterior.addCell(cellPago);
         }
         return exterior;
     }
 
     private PdfPCell celdaTarjeta(PdfPTable interior, Colores c) {
-        PdfPCell celula = new PdfPCell(interior);
+        PdfPCell celula = new PdfPCell();
         celula.setBorder(Rectangle.NO_BORDER);
-        celula.setBackgroundColor(BLANCO);
         celula.setPadding(0);
-        celula.setCellEvent(new ContornoRedondeado(RADIO_TARJETA, c.bordeTabla));
+        celula.setVerticalAlignment(Element.ALIGN_TOP);
+        celula.addElement(interior);
         return celula;
     }
 
-    private PdfPTable tarjetaCliente(FacturaService.VersionCompleta vc, Colores c) {
+    PdfPTable tarjetaCliente(FacturaService.VersionCompleta vc, Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
+        t.setTableEvent(new ContornoTabla(RADIO_TARJETA, c.bordeTabla));
         t.addCell(cabeceraTarjeta("FACTURAR A", c, false));
         PdfPCell cuerpo = new PdfPCell();
         cuerpo.setBackgroundColor(BLANCO);
@@ -350,7 +348,17 @@ public class PdfService {
             return t;
         }
 
-        PdfPTable filasTabla = new PdfPTable(new float[]{32f, 68f});
+        float anchoEtiqueta = 0;
+        BaseFont bfEtiq = baseRegular();
+        for (String[] fila : filas) {
+            float w = bfEtiq.getWidthPoint(fila[0], 8.5f);
+            if (w > anchoEtiqueta) anchoEtiqueta = w;
+        }
+        anchoEtiqueta += MARGEN_ETIQUETA;
+        float anchoInterior = anchoContenido() * 0.49f - 16f;
+        float anchoValor = anchoInterior - anchoEtiqueta;
+        if (anchoValor < 40) anchoValor = 40;
+        PdfPTable filasTabla = new PdfPTable(new float[]{anchoEtiqueta, anchoValor});
         filasTabla.setWidthPercentage(100);
         for (String[] fila : filas) {
             PdfPCell etiqueta = new PdfPCell(new Phrase(fila[0], fuente(false, 8.5f, GRIS_CLARO)));
@@ -370,7 +378,7 @@ public class PdfService {
         return t;
     }
 
-    private List<String[]> filasDatosPago(FacturaService.VersionCompleta vc) {
+    List<String[]> filasDatosPago(FacturaService.VersionCompleta vc) {
         FacturaVersion v = vc.version();
         List<String[]> filas = new ArrayList<>();
         if (!nz(v.getFormaPago()).isBlank()) {
@@ -385,9 +393,10 @@ public class PdfService {
         return filas;
     }
 
-    private PdfPTable tarjetaPago(List<String[]> filas, Colores c) {
+    PdfPTable tarjetaPago(List<String[]> filas, Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
+        t.setTableEvent(new ContornoTabla(RADIO_TARJETA, c.bordeTabla));
         t.addCell(cabeceraTarjeta("DATOS DE PAGO", c, true));
         PdfPCell cuerpo = new PdfPCell();
         cuerpo.setBackgroundColor(BLANCO);
@@ -395,7 +404,17 @@ public class PdfService {
         cuerpo.setPadding(8);
         cuerpo.setPaddingTop(6);
 
-        PdfPTable filasTabla = new PdfPTable(new float[]{34f, 66f});
+        float anchoEtiqueta = 0;
+        BaseFont bfEtiq = baseRegular();
+        for (String[] fila : filas) {
+            float w = bfEtiq.getWidthPoint(fila[0], 8.5f);
+            if (w > anchoEtiqueta) anchoEtiqueta = w;
+        }
+        anchoEtiqueta += MARGEN_ETIQUETA;
+        float anchoInterior = anchoContenido() * 0.49f - 16f;
+        float anchoValor = anchoInterior - anchoEtiqueta;
+        if (anchoValor < 40) anchoValor = 40;
+        PdfPTable filasTabla = new PdfPTable(new float[]{anchoEtiqueta, anchoValor});
         filasTabla.setWidthPercentage(100);
         for (String[] fila : filas) {
             PdfPCell etiqueta = new PdfPCell(new Phrase(fila[0], fuente(false, 8.5f, GRIS_CLARO)));
@@ -473,7 +492,7 @@ public class PdfService {
     /**
      * Traza un contorno con esquinas redondeadas sobre la celda ya renderizada.
      */
-    private static final class ContornoRedondeado implements PdfPCellEvent {
+    static final class ContornoRedondeado implements PdfPCellEvent {
 
         private final float radio;
         private final Color borde;
@@ -496,21 +515,48 @@ public class PdfService {
         }
     }
 
+    static final class ContornoTabla implements PdfPTableEvent {
+        private final float radio;
+        private final Color borde;
+        ContornoTabla(float radio, Color borde) {
+            this.radio = radio;
+            this.borde = borde;
+        }
+        @Override
+        public void tableLayout(PdfPTable table, float[][] widths, float[] heights, int headerRows, int rowStart, PdfContentByte[] canvases) {
+            float x1 = widths[0][0];
+            float x2 = widths[0][widths[0].length - 1];
+            float y1 = heights[heights.length - 1];
+            float y2 = heights[0];
+            float w = x2 - x1;
+            float h = y2 - y1;
+            PdfContentByte cb = canvases[PdfPTable.LINECANVAS];
+            cb.saveState();
+            cb.setColorStroke(borde);
+            cb.setLineWidth(0.9f);
+            cb.roundRectangle(x1 - 0.4f, y1 - 0.4f, w + 0.8f, h + 0.8f, radio);
+            cb.stroke();
+            cb.restoreState();
+        }
+    }
+
     // ------------------------------------------------------------------
     // Tabla de lineas estilo hoja de calculo
     // ------------------------------------------------------------------
 
-    private PdfPTable tablaLineas(FacturaService.VersionCompleta vc, Colores c) {
+    private PdfPTable tablaLineasVacia(Colores c) {
         PdfPTable t = new PdfPTable(new float[]{0.7f, 4.3f, 1.4f, 1.0f, 1.9f});
         t.setWidthPercentage(100);
-
         t.addCell(celdaCabeceraColumna("CANT.", c));
         t.addCell(celdaCabeceraColumna("DESCRIPCIÓN", c));
         t.addCell(celdaCabeceraColumna("PRECIO", c));
         t.addCell(celdaCabeceraColumna("IVA %", c));
         t.addCell(celdaCabeceraColumna("TOTAL", c));
-        t.setHeaderRows(1);
+        return t;
+    }
 
+    private PdfPTable tablaLineas(FacturaService.VersionCompleta vc, Colores c) {
+        PdfPTable t = tablaLineasVacia(c);
         int fila = 0;
         for (LineaFactura l : vc.lineas()) {
             if (l.isEsSuplido()) {
@@ -524,6 +570,7 @@ public class PdfService {
             t.addCell(celdaLinea(importePdf(totalConIva(l)), fila, Element.ALIGN_RIGHT, c));
             fila++;
         }
+        if (fila > 0) t.setHeaderRows(1);
         return t;
     }
 
@@ -896,7 +943,7 @@ public class PdfService {
         return t;
     }
 
-    private PdfPTable tarjetasSinPago(FacturaService.VersionCompleta vc, Colores c) {
+    PdfPTable tarjetasSinPago(FacturaService.VersionCompleta vc, Colores c) {
         PdfPTable exterior = new PdfPTable(new float[]{49f, 2f, 49f});
         exterior.setWidthPercentage(100);
         exterior.addCell(celdaTarjeta(tarjetaCliente(vc, c), c));
