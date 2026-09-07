@@ -618,10 +618,10 @@ La aplicación SHALL exportar facturas a PDF en A4 vertical con el diseño aprob
 - Cabecera en todas las páginas: logo a un tamaño fijo que la aplicación no permite alterar (modo logo) o datos de empresa (modo texto), con el NIF de la empresa destacado en línea propia con esquinas redondeadas; a la derecha la palabra FACTURA y debajo, como pares rótulo→valor, `SERIE / Nº` sobre el número completo y `FECHA` sobre la fecha. Los datos de empresa SHALL ocupar una columna propia que SHALL NOT solaparse nunca con el bloque FACTURA: si el nombre o alguna línea excede el ancho disponible, se reduce su tamaño hasta caber. El número completo y la fecha SHALL ser siempre legibles. El rótulo y el valor de `SERIE / Nº` y de `FECHA` SHALL usar el color de acento configurado.
 - Dos tarjetas bajo la cabecera con esquinas redondeadas: «FACTURAR A» con los datos del cliente presentados como pares etiqueta→valor, cada dato en su propia fila — Nombre (destacado en negrita), NIF, Dirección, Código postal, Población (la localidad), Provincia y Email; las filas con campo vacío no aparecen. «DATOS DE PAGO» con forma de pago, vencimiento y realizada por (solo las filas rellenas); cuando los tres campos estén vacíos, la tarjeta «Datos de pago» SHALL NOT aparecer y «Facturar A» SHALL conservar su anchura con el espacio restante en blanco. La cabecera de «FACTURAR A» SHALL ir con fondo del color de acento y texto blanco; la cabecera de «DATOS DE PAGO» SHALL ir en blanco con un borde fino inferior del color de acento y texto en gris neutro. Ambos cuerpos SHALL ir en blanco. Las etiquetas de la tarjeta SHALL ir en gris neutro y los valores de la tarjeta SHALL ir en negro.
 - En las facturas de **más de una página**, la tarjeta «FACTURAR A» SHALL repetirse en la página 2 y siguientes, con los mismos campos, el mismo ancho y el mismo alto que en la primera. La tarjeta «DATOS DE PAGO» SHALL aparecer solo en la primera página, y el hueco que deja SHALL quedar en blanco, de modo que el espacio reservado a las tarjetas sea idéntico en todas las páginas.
-- Tabla de líneas con celdas bordeadas estilo hoja de cálculo: Cant / Descripción / Precio / IVA % / Total. El Total por línea SHALL incluir el IVA (base × (1 + IVA%)); las líneas exentas SHALL mostrar su importe sin IVA. La descripción SHALL mostrarse siempre en un único estilo, aunque ocupe varias líneas. El texto de la tabla SHALL ir en negro.
+- Tabla de líneas con celdas bordeadas estilo hoja de cálculo: Cant / Descripción / Precio / IVA % / Total. El Total por línea SHALL incluir el IVA (base × (1 + IVA%)); las líneas exentas SHALL mostrar su importe sin IVA. La descripción SHALL mostrarse siempre en un único estilo, aunque ocupe varias líneas. El texto de la tabla SHALL ir en negro. La fila de cabecera de columnas SHALL repetirse al principio de cada página que continúe la tabla.
 - Bloque de totales en **dos rejillas hermanas** que arrancan a la misma altura, ambas con cabecera en banda del color de acento y rótulos blancos en mayúsculas. La rejilla izquierda es el desglose de IVA, con columnas `TIPO | BASE IMPONIBLE | CUOTA IVA`, una fila por tipo de IVA de la factura —las exentas incluidas— y una última fila `Totales` que suma las bases y las cuotas. La columna `TIPO` SHALL mostrar el porcentaje como número (`21,00`) y la palabra `Exento` en los grupos sin porcentaje, cuya cuota SHALL imprimirse como `—`. La rejilla derecha es la liquidación, con las filas `Base imponible` y `Total IVA repercutido` siempre presentes, la retención si la hay (en rojo suave y restando) y los suplidos si los hay (sumando), rematada por la banda `TOTAL` con fondo del color de acento y texto blanco. Cuando el descuento global sea mayor que cero, bajo la rejilla izquierda SHALL aparecer una nota en cuerpo menor con el porcentaje, el importe descontado y la base bruta; las bases de la rejilla SHALL ser siempre las netas. Las cifras SHALL cuadrar: base imponible + total IVA − retención + suplidos = TOTAL.
-- **Cierre anclado al pie.** El bloque de totales SHALL situarse al pie de la última página, y las observaciones SHALL ir inmediatamente debajo de él, de modo que el cierre acabe justo encima del pie legal con independencia de cuántas líneas tenga la factura. La tabla de líneas SHALL completarse con **filas vacías del mismo estilo** —mismos anchos de columna, mismo alto de fila y continuando el rayado alterno— hasta alcanzar el cierre. El bloque de suplidos, cuando exista, SHALL situarse entre esas filas vacías y el bloque de totales. Cuando el espacio restante no baste para el cierre, las filas vacías SHALL completar la página en curso hasta su borde inferior y el cierre SHALL pasar íntegro a una página nueva, anclado también a su pie y **sin** filas vacías, por haber terminado ya la tabla de líneas.
-- Observaciones en caja clara con esquinas redondeadas, presentes solo en la última página; pie legal configurable dentro de un recuadro con borde de color, repetido en todas las páginas y compuesto a 6,5 pt; `Página X de Y` en cada página reflejando el número real de páginas, con el dígito total dibujado sin solapar la palabra «de». El alto reservado al pie SHALL calcularse a partir del número de líneas que ocupe el texto legal, de modo que un pie largo reduzca el área útil de la factura y el cierre suba con él.
+- **Cierre anclado al pie.** El bloque de totales SHALL situarse al pie de la última página, y las observaciones SHALL ir inmediatamente debajo de él, de modo que el cierre acabe justo encima del pie legal con independencia de cuántas líneas tenga la factura. El hueco entre la última línea y el cierre SHALL dibujarse como **marco de columnas**: los bordes laterales de la tabla y sus divisiones verticales SHALL prolongarse hasta el cierre, cerrados por abajo, **sin renglones horizontales ni rayado alterno**. El bloque de suplidos, cuando exista, SHALL situarse entre ese marco y el bloque de totales. Cuando el espacio restante no baste para el cierre, el marco SHALL completar la página en curso hasta su borde inferior y el cierre SHALL pasar íntegro a una página nueva, anclado también a su pie y sin marco, por haber terminado ya la tabla de líneas.
+- Observaciones en caja clara con esquinas redondeadas, presentes solo en la última página. El pie legal configurable SHALL imprimirse dentro de un recuadro con borde de color, compuesto a 6,5 pt, **una sola vez y solo en la última página**, como parte del cierre y por debajo de las observaciones. Su alto SHALL contar dentro del alto del cierre, de modo que el conjunto siga acabando al pie de la página. Las páginas anteriores SHALL NOT reservar espacio para el texto legal. `Página X de Y` SHALL seguir apareciendo en todas las páginas, reflejando el número real de páginas y con el dígito total dibujado sin solapar la palabra «de».
 - Tipografía Calibri embebida en el documento cuando esté disponible en el sistema; en caso contrario Helvetica. Los tonos de acento SHALL derivarse del color de acento configurado siguiendo el prototipo. El texto por defecto del documento (datos de empresa, datos del cliente, líneas de la tabla, observaciones, totales y pie) SHALL ir en negro o gris neutro, sin tinte de color, y SHALL NOT verse afectado por el color de acento salvo en los elementos marcados expresamente.
 
 El resto se mantiene como estaba: descripciones largas ajustadas automáticamente, importes en formato español y sin símbolo de moneda, que aparece una sola vez en la banda `TOTAL`, fechas formato español (`11/08/2026`), marca `ANULADA` destacada en facturas anuladas, correspondencia exacta con la versión exportada, uso de la configuración actual de empresa/logo/cabecera/pie legal, documentos independientes, estructura `Facturas/AAAA/SERIE/` y nombre `CODIGO-CORRELATIVO-MES.pdf` sin indicar versión. El logo SHALL dibujarse siempre dentro de una caja fija de 240 × 120 pt respetando su proporción, sin que su tamaño ni su posición sean configurables, de modo que nunca invada el bloque FACTURA ni comprima la columna de datos de empresa. El color de acento SHALL tomarse de la preferencia `color_pdf`, con valor por defecto arena Alcazaba (`#B08D57`) si no está configurada.
@@ -732,17 +732,17 @@ El resto se mantiene como estaba: descripciones largas ajustadas automáticament
 
 #### Scenario: Filas vacías hasta el cierre
 - **WHEN** el usuario exporta una factura de 2 líneas
-- **THEN** la tabla de líneas continúa con filas vacías hasta el bloque de totales
-- **AND** esas filas conservan los anchos de columna, el alto de fila y la alternancia de color de las filas con contenido, sin repetir la cabecera
+- **THEN** el hueco entre la última línea y el bloque de totales SHALL NOT contener ningún renglón vacío
+- **AND** los bordes laterales y las divisiones verticales de las columnas se prolongan hasta el cierre, cerrados por abajo
 
 #### Scenario: Los suplidos quedan entre el relleno y los totales
 - **WHEN** el usuario exporta una factura corta que tiene suplidos
-- **THEN** las filas vacías van detrás de la tabla de líneas
-- **AND** el bloque «SUPLIDOS» con su nota legal aparece después de esas filas y antes del bloque de totales
+- **THEN** el marco de columnas va detrás de la tabla de líneas
+- **AND** el bloque «SUPLIDOS» con su nota legal aparece después del marco y antes del bloque de totales
 
 #### Scenario: Factura de solo suplidos
 - **WHEN** todas las líneas de la factura son suplidos y por tanto no hay tabla de líneas
-- **THEN** no se imprime ninguna fila vacía
+- **THEN** no se imprime ningún marco
 - **AND** el bloque de totales sigue anclado al pie de la página
 
 #### Scenario: Los totales no quedan solos en una página
@@ -766,9 +766,33 @@ El resto se mantiene como estaba: descripciones largas ajustadas automáticament
 - **AND** el pie muestra `Página X de Y` con el número total separado correctamente de la palabra «de»
 
 #### Scenario: Pie legal largo
-- **WHEN** el usuario exporta una factura cuyo pie legal ocupa muchas líneas, como el aviso completo de protección de datos
+- **WHEN** el usuario exporta una factura de una página cuyo pie legal ocupa muchas líneas, como el aviso completo de protección de datos
 - **THEN** el pie se compone a 6,5 pt dentro de su recuadro, sin que el texto se salga
-- **AND** el área útil de la factura se reduce y el cierre sube con el pie, sin solaparse con él
+- **AND** el conjunto de totales, observaciones y pie legal acaba al pie de la página, sin solapes
+
+#### Scenario: El pie legal sale una sola vez
+- **WHEN** el usuario exporta una factura de varias páginas con pie legal configurado
+- **THEN** el texto legal aparece únicamente en la última página, debajo del bloque de totales y de las observaciones
+- **AND** las páginas anteriores no reservan espacio para él, por lo que caben más líneas de factura que antes
+- **AND** `Página X de Y` sigue apareciendo en todas las páginas
+
+#### Scenario: El cierre con pie legal no cabe
+- **WHEN** el pie legal es tan largo que el bloque de totales, las observaciones y el propio pie no caben en el espacio que queda
+- **THEN** el conjunto pasa íntegro a una página nueva, anclado a su pie
+- **AND** no se parte el recuadro del pie legal entre dos páginas
+
+#### Scenario: Cabecera de columnas en todas las páginas
+- **WHEN** el usuario exporta una factura cuya tabla de líneas ocupa más de una página
+- **THEN** cada página que continúa la tabla arranca con la fila de cabecera `CANT. / DESCRIPCIÓN / PRECIO / IVA % / TOTAL`
+
+#### Scenario: Factura con logo
+- **WHEN** el usuario exporta una factura de una empresa configurada en modo logo
+- **THEN** el logo, los datos de empresa, el bloque FACTURA y la tarjeta del cliente no se solapan entre sí ni con la tabla de líneas
+- **AND** el cierre queda anclado al pie de la última página igual que en modo texto
+
+#### Scenario: Factura anulada de varias páginas
+- **WHEN** el usuario exporta una factura anulada que ocupa más de una página
+- **THEN** la marca `ANULADA` aparece en todas las páginas sin ocultar la tarjeta del cliente ni las líneas de la factura
 
 #### Scenario: El símbolo de moneda aparece una sola vez
 - **WHEN** el usuario exporta cualquier factura
