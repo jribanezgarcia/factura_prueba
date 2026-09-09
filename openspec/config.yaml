@@ -25,5 +25,5 @@ schema: spec-driven
 operations:
   archive:
     guidance:
-      - Archivar es mover una carpeta: usa "git add -A" para que el commit registre el borrado del origen y no solo la creación del destino.
-      - Antes de terminar, comprobar que "git status --short" queda vacío y que "git ls-tree -r --name-only HEAD openspec/changes/<id>/" no devuelve nada.
+      - Archivar es mover una carpeta. Usa git add -A para que el commit registre tambien el borrado del origen.
+      - Antes de terminar, git status --short debe quedar vacio y git ls-tree no debe devolver la carpeta origen.
