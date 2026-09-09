@@ -306,6 +306,16 @@ Toda consulta que hoy resuelva la capa de exportación por su cuenta SHALL trasl
 - **THEN** el total con IVA de cada línea llega ya calculado
 - **AND** el PDF resultante es idéntico al que se generaba antes del cambio
 
+#### Scenario: La fachada de exportación no conoce la librería de PDF
+- **WHEN** se inspecciona la clase que expone la exportación
+- **THEN** no contiene ninguna referencia a la librería de PDF
+- **AND** la exportación individual y la agrupada siguen funcionando igual que antes
+
+#### Scenario: Componer y dibujar son piezas distintas
+- **WHEN** se exporta cualquier factura
+- **THEN** el documento se compone primero como datos y se dibuja después
+- **AND** el PDF resultante es idéntico al que se generaba antes del cambio
+
 ### Requirement: Composición del documento verificable sin PDF
 
 La composición del documento de factura SHALL ser verificable sin generar ningún PDF: a partir de los mismos datos de entrada (versión de factura, empresa y color) SHALL poder obtenerse el contenido ya compuesto —textos, rótulos y filas— como datos, antes de dibujarlo.

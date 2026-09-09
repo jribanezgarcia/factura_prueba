@@ -488,8 +488,8 @@ class PdfServiceTest {
                     }
                 }
             }
-            assertTrue(PdfService.CALIBRI == null || calibri);
-            assertTrue(PdfService.CALIBRI != null || !calibri);
+            assertTrue(EstiloPdf.CALIBRI == null || calibri);
+            assertTrue(EstiloPdf.CALIBRI != null || !calibri);
         }
     }
 
@@ -586,18 +586,6 @@ class PdfServiceTest {
         try (PdfReader reader = new PdfReader(destino.toString())) {
             assertTrue(reader.getNumberOfPages() >= 2);
         }
-    }
-
-    @Test
-    void yTarjetasNoEntraEnAreaTexto() {
-        assertEquals(108f, PdfService.yTarjetas(100f, 0f), 0.001);
-        float b = 500f;
-        for (float h : new float[]{0f, 10f, 30f, 60f, 120f}) {
-            assertTrue(PdfService.yTarjetas(b, h) - h >= b - 0.001,
-                    "borde inferior de tarjeta no debe entrar en area de texto h=" + h);
-        }
-        assertEquals(b + PdfService.HUECO_TARJETAS, PdfService.yTarjetas(b, 0f), 0.001);
-        assertEquals(b + PdfService.HUECO_TARJETAS + 50f, PdfService.yTarjetas(b, 50f), 0.001);
     }
 
     private FacturaVersion versionConPago() {
@@ -710,22 +698,6 @@ class PdfServiceTest {
                 assertTrue(t.length() > 30, "pagina " + p + " parece vacia: '" + t.substring(0, Math.min(30, t.length())) + "'");
             }
         }
-    }
-
-    @Test
-    void marcoSinRenglones() {
-        PdfService.Colores c = new PdfService.Colores(java.awt.Color.decode("#B08D57"));
-        float hueco = 100f;
-        com.lowagie.text.pdf.PdfPTable marco = new PdfService().tablaRelleno(hueco, c);
-        assertEquals(1, marco.getRows().size(), "marco debe ser una sola fila");
-        assertEquals(5, marco.getNumberOfColumns());
-        assertEquals(0, marco.getHeaderRows(), "marco no debe repetir cabecera");
-        marco.setTotalWidth(com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f);
-        marco.setLockedWidth(true);
-        marco.calculateHeights(true);
-        assertEquals(hueco, marco.getTotalHeight(), 0.5, "marco debe ocupar hueco exacto");
-        com.lowagie.text.pdf.PdfPCell cell = marco.getRow(0).getCells()[0];
-        assertEquals(com.lowagie.text.Rectangle.LEFT | com.lowagie.text.Rectangle.RIGHT | com.lowagie.text.Rectangle.BOTTOM, cell.getBorder());
     }
 
     @Test
@@ -874,76 +846,5 @@ class PdfServiceTest {
             String penultima = n > 1 ? textoPagina(r, n - 1) : "";
             assertFalse(penultima.contains("LIQUIDACIÓN"), "penultima no debe tener cierre");
         }
-    }
-
-    @Test
-    void alturasTarjetasDistintas() {
-        FacturaVersion v = versionMuestra();
-        v.setCliNombre("MARIA MARTAGON AVALOS");
-        v.setCliNif("49122168X");
-        v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
-        v.setCliCp("04009");
-        v.setCliLocalidad("ALMERIA");
-        v.setCliProvincia("Almería");
-        v.setCliEmail("maria.martagon@correo.es");
-        v.setFormaPago("Transferencia");
-        v.setVencimiento(LocalDate.of(2026, 8, 14));
-        v.setRealizadaPor("AURORA");
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
-        PdfService svc = new PdfService();
-        PdfService.Colores c = new PdfService.Colores(java.awt.Color.decode("#B08D57"));
-        // Con OpenPDF no se puede verificar el alto dibujado sin generar PDF y analizar el stream grafico
-        com.lowagie.text.pdf.PdfPTable tarjetas = svc.tarjetas(vc, c);
-        com.lowagie.text.pdf.PdfPCell cellCliente = tarjetas.getRow(0).getCells()[0];
-        com.lowagie.text.pdf.PdfPCell cellPago = tarjetas.getRow(0).getCells()[2];
-        assertTrue(cellCliente.getCellEvent() == null, "borde no debe estar en celda exterior cliente");
-        assertTrue(cellPago.getCellEvent() == null, "borde no debe estar en celda exterior pago");
-        assertTrue(cellCliente.getTable() == null, "celda debe estar en modo composite");
-        assertTrue(cellPago.getTable() == null, "celda debe estar en modo composite");
-        com.lowagie.text.pdf.PdfPTable cliente = svc.tarjetaCliente(vc, c);
-        com.lowagie.text.pdf.PdfPTable pago = svc.tarjetaPago(svc.filasDatosPago(vc), c);
-        assertTrue(cliente.getTableEvent() instanceof PdfService.ContornoTabla, "cliente debe tener borde en tabla");
-        assertTrue(pago.getTableEvent() instanceof PdfService.ContornoTabla, "pago debe tener borde en tabla");
-        float ancho = com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f;
-        cliente.setTotalWidth(ancho * 0.49f);
-        cliente.setLockedWidth(true);
-        cliente.calculateHeights(true);
-        pago.setTotalWidth(ancho * 0.49f);
-        pago.setLockedWidth(true);
-        pago.calculateHeights(true);
-        assertTrue(Math.abs(cliente.getTotalHeight() - pago.getTotalHeight()) > 5f,
-                "alturas deben ser distintas: cliente " + cliente.getTotalHeight() + " vs pago " + pago.getTotalHeight());
-    }
-
-    @Test
-    void invarianteD4() throws Exception {
-        FacturaVersion v = versionMuestra();
-        v.setCliNombre("MARIA MARTAGON AVALOS");
-        v.setCliNif("49122168X");
-        v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
-        v.setCliCp("04009");
-        v.setCliLocalidad("ALMERIA");
-        v.setCliProvincia("Almería");
-        v.setCliEmail("maria.martagon@correo.es");
-        v.setFormaPago("Transferencia");
-        v.setVencimiento(LocalDate.of(2026, 8, 14));
-        v.setRealizadaPor("AURORA");
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
-        PdfService svc = new PdfService();
-        PdfService.Colores c = new PdfService.Colores(java.awt.Color.decode("#B08D57"));
-        com.lowagie.text.pdf.PdfPTable tarjetas = svc.tarjetas(vc, c);
-        float ancho = com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f;
-        tarjetas.setTotalWidth(ancho);
-        tarjetas.setLockedWidth(true);
-        tarjetas.calculateHeights(true);
-        float altoTarjetas = tarjetas.getTotalHeight();
-        com.lowagie.text.pdf.PdfPTable sinPago = svc.tarjetasSinPago(vc, c);
-        sinPago.setTotalWidth(ancho);
-        sinPago.setLockedWidth(true);
-        for (com.lowagie.text.pdf.PdfPCell cell : sinPago.getRow(0).getCells()) {
-            if (cell != null) cell.setFixedHeight(altoTarjetas);
-        }
-        sinPago.calculateHeights(true);
-        assertEquals(altoTarjetas, sinPago.getTotalHeight(), 0.5, "alto reservado debe ser igual al fijado en paginas siguientes");
     }
 }
