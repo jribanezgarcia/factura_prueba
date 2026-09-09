@@ -270,7 +270,6 @@ class BackupServiceTest {
 
         BackupService.ResumenBackup r = servicio.leerResumen(posterior);
         assertEquals(99, r.userVersion());
-        assertTrue(r.tablasCoinciden());
     }
 
     @Test

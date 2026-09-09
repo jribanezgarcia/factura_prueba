@@ -67,8 +67,7 @@ public class BackupService {
             boolean logoExiste,
             int numFacturas,
             LocalDate ultimaFecha,
-            int userVersion,
-            boolean tablasCoinciden
+            int userVersion
     ) {
     }
 
@@ -131,8 +130,6 @@ public class BackupService {
                 throw new ValidationException("La copia no contiene "
                         + String.join(", ", faltantes) + "." + notaVersion(uv));
             }
-            boolean tablasCoinciden = true;
-
             String nombre = "";
             String nif = "";
             String logoPath = "";
@@ -166,7 +163,7 @@ public class BackupService {
             boolean logoExiste = !logoPath.isBlank() && Files.exists(Path.of(logoPath));
 
             return new ResumenBackup(nombre, nif, logoPath, logoExiste,
-                    numFacturas, ultimaFecha, uv, tablasCoinciden);
+                    numFacturas, ultimaFecha, uv);
         } catch (SQLException e) {
             throw new ValidationException("No se pudo leer la copia: " + e.getMessage());
         }
