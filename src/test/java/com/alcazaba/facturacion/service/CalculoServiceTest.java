@@ -228,4 +228,54 @@ class CalculoServiceTest {
         assertEquals(0, r.getTotalSuplidos().compareTo(BigDecimal.ZERO));
         assertEquals(new BigDecimal("954.00"), r.getTotal());
     }
+
+    @Test
+    void totalConIvaSumaLaCuotaAlTipoNormal() {
+        assertEquals(new BigDecimal("1210.00"),
+                CalculoService.totalConIva(linea(1, "1000.00", 21, "IVA 21%")));
+    }
+
+    @Test
+    void totalConIvaDevuelveLaBaseSiEsExenta() {
+        assertEquals(new BigDecimal("200.00"),
+                CalculoService.totalConIva(linea(1, "200.00", null, "Exento", "Art. 20.1")));
+    }
+
+    @Test
+    void totalConIvaDevuelveLaBaseSiEsSuplido() {
+        assertEquals(new BigDecimal("250.00"), CalculoService.totalConIva(suplido("250.00")));
+    }
+
+    @Test
+    void totalConIvaDevuelveLaBaseSiElTipoEsCero() {
+        LineaFactura l = linea(1, "100.00", 0, "IVA 0%");
+        assertEquals(new BigDecimal("100.00"), CalculoService.totalConIva(l));
+    }
+
+    @Test
+    void suplidosDeSinSuplidosDevuelveVacio() {
+        assertTrue(CalculoService.suplidosDe(
+                List.of(linea(1, "1000.00", 21, "IVA 21%"))).isEmpty());
+    }
+
+    @Test
+    void suplidosDeSoloSuplidosDevuelveTodas() {
+        List<LineaFactura> suplidos = CalculoService.suplidosDe(
+                List.of(suplido("120.00"), suplido("80.00")));
+        assertEquals(2, suplidos.size());
+        assertTrue(suplidos.stream().allMatch(LineaFactura::isEsSuplido));
+    }
+
+    @Test
+    void suplidosDeMezclaDevuelveSoloSuplidos() {
+        List<LineaFactura> suplidos = CalculoService.suplidosDe(List.of(
+                linea(1, "1000.00", 21, "IVA 21%"), suplido("250.00")));
+        assertEquals(1, suplidos.size());
+        assertEquals(new BigDecimal("250.00"), suplidos.get(0).getTotalBase());
+    }
+
+    @Test
+    void suplidosDeListaNulaDevuelveVacio() {
+        assertTrue(CalculoService.suplidosDe(null).isEmpty());
+    }
 }

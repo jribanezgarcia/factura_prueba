@@ -321,6 +321,24 @@ public class FacturaService {
         return v == null ? BigDecimal.ZERO : v;
     }
 
+    /**
+     * Retencion de una version ya resuelta desde su snapshot congelado
+     * (id, nombre y porcentaje guardados al emitir). El snapshot manda
+     * siempre sobre el catalogo actual: una factura antigua muestra el
+     * porcentaje que tenia al emitirse aunque el tipo se haya cambiado
+     * despues. No consulta ningun repositorio.
+     */
+    public static TipoRetencion retencionDeVersion(FacturaVersion v) {
+        if (v.getTipoRetencionId() == null) {
+            return null;
+        }
+        TipoRetencion t = new TipoRetencion();
+        t.setId(v.getTipoRetencionId());
+        t.setNombre(v.getTipoRetencionNombre() == null ? "" : v.getTipoRetencionNombre());
+        t.setPorcentaje(v.getTipoRetencionPorcentaje() != null ? v.getTipoRetencionPorcentaje() : 0);
+        return t;
+    }
+
     public record VersionCompleta(Factura factura, FacturaVersion version, List<LineaFactura> lineas, Cliente cliente) {
     }
 }
