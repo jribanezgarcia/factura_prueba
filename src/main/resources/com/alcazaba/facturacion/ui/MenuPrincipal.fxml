@@ -20,7 +20,7 @@
         </VBox>
     </top>
     <center>
-        <StackPane alignment="TOP_CENTER" styleClass="zona-contenido">
+        <StackPane alignment="CENTER" styleClass="zona-contenido">
             <HBox alignment="TOP_LEFT" spacing="20" maxWidth="-Infinity" maxHeight="-Infinity">
             <VBox alignment="TOP_LEFT" spacing="8" styleClass="card" prefWidth="300.0" maxWidth="300.0">
                 <StackPane fx:id="logoBox" styleClass="menu-logo-box" prefWidth="280.0" prefHeight="100.0" maxWidth="280.0" maxHeight="100.0" minWidth="280.0" minHeight="100.0">
