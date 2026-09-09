@@ -22,11 +22,8 @@ schema: spec-driven
 # Per-operation guidance (optional)
 # Add advisory guidance for how apply and archive work should be conducted.
 # This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+operations:
+  archive:
+    guidance:
+      - Archivar es mover una carpeta: usa "git add -A" para que el commit registre el borrado del origen y no solo la creación del destino.
+      - Antes de terminar, comprobar que "git status --short" queda vacío y que "git ls-tree -r --name-only HEAD openspec/changes/<id>/" no devuelve nada.
