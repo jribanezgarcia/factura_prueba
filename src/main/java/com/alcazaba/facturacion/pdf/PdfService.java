@@ -1,14 +1,7 @@
 package com.alcazaba.facturacion.pdf;
 
 import com.alcazaba.facturacion.model.Empresa;
-import com.alcazaba.facturacion.model.EstadoFactura;
-import com.alcazaba.facturacion.model.FacturaVersion;
-import com.alcazaba.facturacion.model.LineaFactura;
-import com.alcazaba.facturacion.model.ResumenFactura;
-import com.alcazaba.facturacion.model.TipoRetencion;
-import com.alcazaba.facturacion.service.CalculoService;
 import com.alcazaba.facturacion.service.FacturaService;
-import com.alcazaba.facturacion.util.Formatos;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
@@ -37,13 +30,10 @@ import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
+import java.util.Optional;
 
 /**
  * Exportacion a PDF con el diseno aprobado inspirado en la hoja de calculo:
@@ -113,21 +103,17 @@ public class PdfService {
 
     private void exportar(FacturaService.VersionCompleta vc, Empresa empresa, OutputStream out, String colorHex) throws Exception {
         Colores colores = new Colores(colorDe(colorHex));
-        boolean anulada = vc.version().getEstado() == EstadoFactura.ANULADA;
-        boolean rectificativa = vc.version().getReferenciaRectifica() != null
-                && !vc.version().getReferenciaRectifica().isBlank();
-        TipoRetencion retencion = FacturaService.retencionDeVersion(vc.version());
-        ResumenFactura resumen = CalculoService.resumen(vc.lineas(), vc.version().getDescuentoPorcentaje(), retencion);
+        InvoiceDocument invoice = InvoiceDocumentBuilder.build(vc, empresa, colorHex);
 
         Image logo = cargarLogo(empresa);
 
-        List<LineaFactura> suplidos = CalculoService.suplidosDe(vc.lineas());
-        boolean haySuplidos = !suplidos.isEmpty();
-        String obs = vc.version().getObservaciones();
-        boolean hayObs = obs != null && !obs.isBlank();
+        Optional<InvoiceDocument.SuplidosBlock> suplidos = invoice.suplidos();
+        boolean haySuplidos = suplidos.isPresent();
+        Optional<String> obs = invoice.observations();
+        boolean hayObs = obs.isPresent();
 
         PdfPTable tarjetasTabla = tarjetas(vc, colores);
-        boolean conPago = !filasDatosPago(vc).isEmpty();
+        boolean conPago = invoice.paymentCard().isPresent();
         PdfPTable tarjetasSinPagoTabla = null;
         if (conPago) {
             tarjetasSinPagoTabla = tarjetasSinPago(vc, colores);
@@ -144,11 +130,11 @@ public class PdfService {
             tarjetasSinPagoTabla.calculateHeights(true);
         }
 
-        PdfPTable tablaLineasTabla = tablaLineas(vc, colores);
+        PdfPTable tablaLineasTabla = tablaLineas(invoice.linesTable(), colores);
 
-        PdfPTable bloqueSup = haySuplidos ? bloqueSuplidos(suplidos, colores) : null;
-        PdfPTable bloqueTot = bloqueTotales(resumen, vc.version().getDescuentoPorcentaje(), colores);
-        PdfPTable cajaObs = hayObs ? cajaObservaciones(obs, colores) : null;
+        PdfPTable bloqueSup = haySuplidos ? bloqueSuplidos(suplidos.orElseThrow(), colores) : null;
+        PdfPTable bloqueTot = bloqueTotales(invoice.totals(), colores);
+        PdfPTable cajaObs = hayObs ? cajaObservaciones(obs.orElseThrow(), colores) : null;
 
         medir(bloqueTot, ancho);
         float altoSuplidos = 0;
@@ -162,9 +148,9 @@ public class PdfService {
             altoObs = cajaObs.getTotalHeight();
         }
         float altoTotales = bloqueTot.getTotalHeight();
-        String pieLegal = empresa != null ? nz(empresa.getPieLegal()) : "";
-        boolean hayPie = pieLegal != null && !pieLegal.isBlank();
-        PdfPTable cajaPie = hayPie ? cajaPieLegal(pieLegal, colores) : null;
+        Optional<String> pieLegal = invoice.legalFooter();
+        boolean hayPie = pieLegal.isPresent();
+        PdfPTable cajaPie = hayPie ? cajaPieLegal(pieLegal.orElseThrow(), colores) : null;
         float altoPie = 0;
         if (cajaPie != null) {
             medir(cajaPie, ancho);
@@ -179,7 +165,7 @@ public class PdfService {
 
         try (Document doc = new Document(PageSize.A4, MARGEN_LATERAL, MARGEN_LATERAL, margenes[0], margenes[1])) {
             PdfWriter writer = PdfWriter.getInstance(doc, out);
-            writer.setPageEvent(new CabeceraPie(empresa, logo, anulada, rectificativa, vc.version(), colores,
+            writer.setPageEvent(new CabeceraPie(empresa, logo, invoice.header(), colores,
                     tarjetasTabla, conPago ? tarjetasSinPagoTabla : tarjetasTabla, altoTarjetas, conPago));
             doc.open();
 
@@ -308,50 +294,30 @@ public class PdfService {
     }
 
     PdfPTable tarjetaCliente(FacturaService.VersionCompleta vc, Colores c) {
+        return tarjetaCliente(InvoiceDocumentBuilder.clientCard(vc.version()), c);
+    }
+
+    private PdfPTable tarjetaCliente(InvoiceDocument.ClientCard card, Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
         t.setTableEvent(new ContornoTabla(RADIO_TARJETA, c.bordeTabla));
-        t.addCell(cabeceraTarjeta("FACTURAR A", c, false));
+        t.addCell(cabeceraTarjeta(card.title(), c, false));
         PdfPCell cuerpo = new PdfPCell();
         cuerpo.setBackgroundColor(BLANCO);
         cuerpo.setBorder(Rectangle.NO_BORDER);
         cuerpo.setPadding(8);
         cuerpo.setPaddingTop(6);
 
-        FacturaVersion v = vc.version();
-        List<String[]> filas = new ArrayList<>();
-        if (!nz(v.getCliNombre()).isBlank()) {
-            filas.add(new String[]{"Nombre", v.getCliNombre()});
-        }
-        if (!nz(v.getCliNif()).isBlank()) {
-            filas.add(new String[]{"NIF", v.getCliNif()});
-        }
-        if (!nz(v.getCliDireccion()).isBlank()) {
-            filas.add(new String[]{"Dirección", v.getCliDireccion()});
-        }
-        if (!nz(v.getCliCp()).isBlank()) {
-            filas.add(new String[]{"Código postal", v.getCliCp()});
-        }
-        if (!nz(v.getCliLocalidad()).isBlank()) {
-            filas.add(new String[]{"Población", v.getCliLocalidad()});
-        }
-        if (!nz(v.getCliProvincia()).isBlank()) {
-            filas.add(new String[]{"Provincia", v.getCliProvincia()});
-        }
-        if (!nz(v.getCliEmail()).isBlank()) {
-            filas.add(new String[]{"Email", v.getCliEmail()});
-        }
-
-        if (filas.isEmpty()) {
-            cuerpo.setPhrase(new Phrase("—", fuente(false, 9.5f, GRIS_CLARO)));
+        if (card.rows().isEmpty()) {
+            cuerpo.setPhrase(new Phrase(card.emptyMarker(), fuente(false, 9.5f, GRIS_CLARO)));
             t.addCell(cuerpo);
             return t;
         }
 
         float anchoEtiqueta = 0;
         BaseFont bfEtiq = baseRegular();
-        for (String[] fila : filas) {
-            float w = bfEtiq.getWidthPoint(fila[0], 8.5f);
+        for (InvoiceDocument.FieldRow fila : card.rows()) {
+            float w = bfEtiq.getWidthPoint(fila.label(), 8.5f);
             if (w > anchoEtiqueta) anchoEtiqueta = w;
         }
         anchoEtiqueta += MARGEN_ETIQUETA;
@@ -360,15 +326,15 @@ public class PdfService {
         if (anchoValor < 40) anchoValor = 40;
         PdfPTable filasTabla = new PdfPTable(new float[]{anchoEtiqueta, anchoValor});
         filasTabla.setWidthPercentage(100);
-        for (String[] fila : filas) {
-            PdfPCell etiqueta = new PdfPCell(new Phrase(fila[0], fuente(false, 8.5f, GRIS_CLARO)));
+        for (InvoiceDocument.FieldRow fila : card.rows()) {
+            PdfPCell etiqueta = new PdfPCell(new Phrase(fila.label(), fuente(false, 8.5f, GRIS_CLARO)));
             etiqueta.setBorder(Rectangle.NO_BORDER);
             etiqueta.setPadding(1.5f);
             filasTabla.addCell(etiqueta);
-            Font fuenteValor = "Nombre".equals(fila[0])
+            Font fuenteValor = "Nombre".equals(fila.label())
                     ? fuente(true, 10.5f, TINTA)
                     : fuente(false, 9.5f, TINTA);
-            PdfPCell valor = new PdfPCell(new Phrase(fila[1], fuenteValor));
+            PdfPCell valor = new PdfPCell(new Phrase(fila.value(), fuenteValor));
             valor.setBorder(Rectangle.NO_BORDER);
             valor.setPadding(1.5f);
             filasTabla.addCell(valor);
@@ -379,25 +345,26 @@ public class PdfService {
     }
 
     List<String[]> filasDatosPago(FacturaService.VersionCompleta vc) {
-        FacturaVersion v = vc.version();
         List<String[]> filas = new ArrayList<>();
-        if (!nz(v.getFormaPago()).isBlank()) {
-            filas.add(new String[]{"Forma de pago", v.getFormaPago()});
-        }
-        if (v.getVencimiento() != null) {
-            filas.add(new String[]{"Vencimiento", Formatos.fecha(v.getVencimiento())});
-        }
-        if (!nz(v.getRealizadaPor()).isBlank()) {
-            filas.add(new String[]{"Realizada por", v.getRealizadaPor()});
+        for (InvoiceDocument.FieldRow fila : InvoiceDocumentBuilder.paymentRows(vc.version())) {
+            filas.add(new String[]{fila.label(), fila.value()});
         }
         return filas;
     }
 
     PdfPTable tarjetaPago(List<String[]> filas, Colores c) {
+        List<InvoiceDocument.FieldRow> rows = new ArrayList<>();
+        for (String[] fila : filas) {
+            rows.add(new InvoiceDocument.FieldRow(fila[0], fila[1]));
+        }
+        return tarjetaPago(new InvoiceDocument.PaymentCard(InvoiceDocumentBuilder.paymentCardTitle(), rows), c);
+    }
+
+    private PdfPTable tarjetaPago(InvoiceDocument.PaymentCard card, Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
         t.setTableEvent(new ContornoTabla(RADIO_TARJETA, c.bordeTabla));
-        t.addCell(cabeceraTarjeta("DATOS DE PAGO", c, true));
+        t.addCell(cabeceraTarjeta(card.title(), c, true));
         PdfPCell cuerpo = new PdfPCell();
         cuerpo.setBackgroundColor(BLANCO);
         cuerpo.setBorder(Rectangle.NO_BORDER);
@@ -406,8 +373,8 @@ public class PdfService {
 
         float anchoEtiqueta = 0;
         BaseFont bfEtiq = baseRegular();
-        for (String[] fila : filas) {
-            float w = bfEtiq.getWidthPoint(fila[0], 8.5f);
+        for (InvoiceDocument.FieldRow fila : card.rows()) {
+            float w = bfEtiq.getWidthPoint(fila.label(), 8.5f);
             if (w > anchoEtiqueta) anchoEtiqueta = w;
         }
         anchoEtiqueta += MARGEN_ETIQUETA;
@@ -416,12 +383,12 @@ public class PdfService {
         if (anchoValor < 40) anchoValor = 40;
         PdfPTable filasTabla = new PdfPTable(new float[]{anchoEtiqueta, anchoValor});
         filasTabla.setWidthPercentage(100);
-        for (String[] fila : filas) {
-            PdfPCell etiqueta = new PdfPCell(new Phrase(fila[0], fuente(false, 8.5f, GRIS_CLARO)));
+        for (InvoiceDocument.FieldRow fila : card.rows()) {
+            PdfPCell etiqueta = new PdfPCell(new Phrase(fila.label(), fuente(false, 8.5f, GRIS_CLARO)));
             etiqueta.setBorder(Rectangle.NO_BORDER);
             etiqueta.setPadding(1.5f);
             filasTabla.addCell(etiqueta);
-            PdfPCell valor = new PdfPCell(new Phrase(fila[1], fuente(false, 9.5f, VALOR_SUAVE)));
+            PdfPCell valor = new PdfPCell(new Phrase(fila.value(), fuente(false, 9.5f, VALOR_SUAVE)));
             valor.setBorder(Rectangle.NO_BORDER);
             valor.setPadding(1.5f);
             filasTabla.addCell(valor);
@@ -555,43 +522,36 @@ public class PdfService {
         return t;
     }
 
-    private PdfPTable tablaLineas(FacturaService.VersionCompleta vc, Colores c) {
+    private PdfPTable tablaLineas(InvoiceDocument.LinesTable lines, Colores c) {
         PdfPTable t = tablaLineasVacia(c);
         int fila = 0;
-        for (LineaFactura l : vc.lineas()) {
-            if (l.isEsSuplido()) {
-                continue;
-            }
-            t.addCell(celdaLinea(String.valueOf(l.getCantidad()), fila, Element.ALIGN_CENTER, c));
-            t.addCell(celdaLinea(nz(l.getDescripcion()), fila, Element.ALIGN_LEFT, c));
-            t.addCell(celdaLinea(importePdf(l.getPrecioUnitario()), fila, Element.ALIGN_RIGHT, c));
-            t.addCell(celdaLinea(l.isExenta() ? "Exento"
-                    : l.getIvaPorcentaje() + " %", fila, Element.ALIGN_CENTER, c));
-            t.addCell(celdaLinea(importePdf(CalculoService.totalConIva(l)), fila, Element.ALIGN_RIGHT, c));
+        for (InvoiceDocument.LineRow l : lines.rows()) {
+            t.addCell(celdaLinea(l.quantity(), fila, Element.ALIGN_CENTER, c));
+            t.addCell(celdaLinea(l.description(), fila, Element.ALIGN_LEFT, c));
+            t.addCell(celdaLinea(l.price(), fila, Element.ALIGN_RIGHT, c));
+            t.addCell(celdaLinea(l.iva(), fila, Element.ALIGN_CENTER, c));
+            t.addCell(celdaLinea(l.total(), fila, Element.ALIGN_RIGHT, c));
             fila++;
         }
         if (fila > 0) t.setHeaderRows(1);
         return t;
     }
 
-    private PdfPTable bloqueSuplidos(List<LineaFactura> suplidos, Colores c) {
+    private PdfPTable bloqueSuplidos(InvoiceDocument.SuplidosBlock suplidos, Colores c) {
         PdfPTable t = new PdfPTable(new float[]{6.4f, 1.9f});
         t.setWidthPercentage(100);
 
-        t.addCell(celdaCabeceraColumnaCompacta("SUPLIDOS", c));
-        t.addCell(celdaCabeceraColumnaCompacta("IMPORTE", c));
+        t.addCell(celdaCabeceraColumnaCompacta(suplidos.headers().get(0), c));
+        t.addCell(celdaCabeceraColumnaCompacta(suplidos.headers().get(1), c));
 
         int fila = 0;
-        for (LineaFactura l : suplidos) {
-            t.addCell(celdaLineaCompacta(nz(l.getDescripcion()), fila, Element.ALIGN_LEFT, c));
-            BigDecimal importe = l.getTotalBase() == null ? BigDecimal.ZERO : l.getTotalBase();
-            t.addCell(celdaLineaCompacta(importePdf(importe), fila, Element.ALIGN_RIGHT, c));
+        for (InvoiceDocument.SuplidoRow l : suplidos.rows()) {
+            t.addCell(celdaLineaCompacta(l.description(), fila, Element.ALIGN_LEFT, c));
+            t.addCell(celdaLineaCompacta(l.amount(), fila, Element.ALIGN_RIGHT, c));
             fila++;
         }
 
-        PdfPCell nota = new PdfPCell(new Phrase(
-                "Suplidos pagados en nombre y por cuenta del cliente, facturados a su nombre. No sujetos a IVA ni a retención.",
-                fuente(false, 7f, c.oscuro)));
+        PdfPCell nota = new PdfPCell(new Phrase(suplidos.note(), fuente(false, 7f, c.oscuro)));
         nota.setColspan(2);
         nota.setBorder(Rectangle.NO_BORDER);
         nota.setPaddingTop(3f);
@@ -643,10 +603,7 @@ public class PdfService {
     // Totales
     // ------------------------------------------------------------------
 
-    private static final DecimalFormat REJILLA_TIPO = new DecimalFormat("0.00",
-            DecimalFormatSymbols.getInstance(new Locale("es", "ES")));
-
-    private PdfPTable bloqueTotales(ResumenFactura r, int descuento, Colores c) {
+    private PdfPTable bloqueTotales(InvoiceDocument.TotalsBlock totals, Colores c) {
         PdfPTable contenedor = new PdfPTable(new float[]{3.3f, 3.0f});
         contenedor.setWidthPercentage(100);
 
@@ -654,60 +611,42 @@ public class PdfService {
         celdaIzquierda.setBorder(Rectangle.NO_BORDER);
         celdaIzquierda.setVerticalAlignment(Element.ALIGN_TOP);
         celdaIzquierda.setPaddingRight(7f);
-        celdaIzquierda.addElement(rejillaDesgloseIva(r, c));
-        Paragraph nota = notaDescuento(r, descuento, c);
-        if (nota != null) {
-            celdaIzquierda.addElement(nota);
+        celdaIzquierda.addElement(rejillaDesgloseIva(totals, c));
+        if (totals.discountNote().isPresent()) {
+            celdaIzquierda.addElement(notaDescuento(totals.discountNote().orElseThrow(), c));
         }
 
         PdfPCell celdaDerecha = new PdfPCell();
         celdaDerecha.setBorder(Rectangle.NO_BORDER);
         celdaDerecha.setVerticalAlignment(Element.ALIGN_TOP);
         celdaDerecha.setPaddingLeft(7f);
-        celdaDerecha.addElement(rejillaLiquidacion(r, c));
+        celdaDerecha.addElement(rejillaLiquidacion(totals.liquidation(), c));
 
         contenedor.addCell(celdaIzquierda);
         contenedor.addCell(celdaDerecha);
         return contenedor;
     }
 
-    private PdfPTable rejillaDesgloseIva(ResumenFactura r, Colores c) {
+    private PdfPTable rejillaDesgloseIva(InvoiceDocument.TotalsBlock totals, Colores c) {
         PdfPTable t = new PdfPTable(new float[]{1.0f, 2.0f, 1.7f});
         t.setWidthPercentage(100);
-        t.addCell(celdaCabeceraRejilla("TIPO", c));
-        t.addCell(celdaCabeceraRejilla("BASE IMPONIBLE", c));
-        t.addCell(celdaCabeceraRejilla("CUOTA IVA", c));
+        t.addCell(celdaCabeceraRejilla(totals.desgloseHeaders().get(0), c));
+        t.addCell(celdaCabeceraRejilla(totals.desgloseHeaders().get(1), c));
+        t.addCell(celdaCabeceraRejilla(totals.desgloseHeaders().get(2), c));
 
-        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
-            t.addCell(celdaCuerpoRejilla(g.isExento() ? "Exento" : porcentajeRejilla(g.getPorcentaje()),
-                    Element.ALIGN_CENTER, c, false, false));
-            t.addCell(celdaCuerpoRejilla(importePdf(g.getBase()), Element.ALIGN_RIGHT, c, false, false));
-            t.addCell(celdaCuerpoRejilla(g.isExento() ? "—" : importePdf(g.getCuota()),
-                    Element.ALIGN_RIGHT, c, false, false));
+        for (InvoiceDocument.IvaRow g : totals.ivaRows()) {
+            t.addCell(celdaCuerpoRejilla(g.type(), Element.ALIGN_CENTER, c, false, false));
+            t.addCell(celdaCuerpoRejilla(g.base(), Element.ALIGN_RIGHT, c, false, false));
+            t.addCell(celdaCuerpoRejilla(g.quota(), Element.ALIGN_RIGHT, c, false, false));
         }
 
-        t.addCell(celdaCuerpoRejilla("Totales", Element.ALIGN_CENTER, c, true, false));
-        t.addCell(celdaCuerpoRejilla(importePdf(r.getBaseTotal()), Element.ALIGN_RIGHT, c, true, false));
-        t.addCell(celdaCuerpoRejilla(importePdf(r.getIvaTotal()), Element.ALIGN_RIGHT, c, true, false));
+        t.addCell(celdaCuerpoRejilla(totals.totalsRow().type(), Element.ALIGN_CENTER, c, true, false));
+        t.addCell(celdaCuerpoRejilla(totals.totalsRow().base(), Element.ALIGN_RIGHT, c, true, false));
+        t.addCell(celdaCuerpoRejilla(totals.totalsRow().quota(), Element.ALIGN_RIGHT, c, true, false));
         return t;
     }
 
-    private Paragraph notaDescuento(ResumenFactura r, int descuento, Colores c) {
-        if (r.getImporteDescuento() == null || r.getImporteDescuento().compareTo(BigDecimal.ZERO) <= 0) {
-            return null;
-        }
-        String nota = "Bases netas tras el descuento comercial del " + descuento
-                + " % (−" + importePdf(r.getImporteDescuento())
-                + " s/ " + importePdf(r.getBaseBruta()) + ").";
-        String motivo = r.getGrupos().stream()
-                .filter(g -> g.isExento())
-                .map(ResumenFactura.IvaGrupo::getMotivoExencion)
-                .filter(m -> m != null && !m.isBlank())
-                .findFirst()
-                .orElse(null);
-        if (motivo != null) {
-            nota += " Exención " + motivo + ".";
-        }
+    private Paragraph notaDescuento(String nota, Colores c) {
         Paragraph p = new Paragraph();
         p.add(new Chunk(nota, fuente(false, 7f, c.oscuro)));
         p.setLeading(8.5f);
@@ -716,34 +655,33 @@ public class PdfService {
         return p;
     }
 
-    private PdfPTable rejillaLiquidacion(ResumenFactura r, Colores c) {
+    private PdfPTable rejillaLiquidacion(InvoiceDocument.Liquidation liquidation, Colores c) {
         PdfPTable t = new PdfPTable(new float[]{2.2f, 1.4f});
         t.setWidthPercentage(100);
 
-        PdfPCell cabecera = celdaCabeceraRejilla("LIQUIDACIÓN", c);
+        PdfPCell cabecera = celdaCabeceraRejilla(liquidation.title(), c);
         cabecera.setColspan(2);
         t.addCell(cabecera);
 
-        filaLiquidacion(t, "Base imponible", importePdf(r.getBaseTotal()), c, false);
-        filaLiquidacion(t, "Total IVA repercutido", importePdf(r.getIvaTotal()), c, false);
+        filaLiquidacion(t, liquidation.baseLabel(), liquidation.baseAmount(), c, false);
+        filaLiquidacion(t, liquidation.ivaLabel(), liquidation.ivaAmount(), c, false);
 
-        if (r.getImporteRetencion() != null && r.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0) {
-            String etiqueta = r.getNombreRetencion() != null && !r.getNombreRetencion().isBlank()
-                    ? r.getNombreRetencion() + " " + r.getPorcentajeRetencion() + " %"
-                    : "Retención " + r.getPorcentajeRetencion() + " %";
-            filaLiquidacion(t, etiqueta, "−" + importePdf(r.getImporteRetencion()), c, true);
+        if (liquidation.retention().isPresent()) {
+            InvoiceDocument.RetentionRow retention = liquidation.retention().orElseThrow();
+            filaLiquidacion(t, retention.label(), retention.amount(), c, true);
         }
-        if (r.getTotalSuplidos() != null && r.getTotalSuplidos().compareTo(BigDecimal.ZERO) > 0) {
-            filaLiquidacion(t, "Suplidos", "+" + importePdf(r.getTotalSuplidos()), c, false);
+        if (liquidation.suplidos().isPresent()) {
+            InvoiceDocument.SuplidosTotalRow suplidos = liquidation.suplidos().orElseThrow();
+            filaLiquidacion(t, suplidos.label(), suplidos.amount(), c, false);
         }
 
-        PdfPCell etiquetaTotal = new PdfPCell(new Phrase("TOTAL", fuente(true, 11f, BLANCO)));
+        PdfPCell etiquetaTotal = new PdfPCell(new Phrase(liquidation.total().label(), fuente(true, 11f, BLANCO)));
         etiquetaTotal.setBackgroundColor(c.base);
         etiquetaTotal.setPadding(5f);
         etiquetaTotal.setBorderColor(c.oscuro);
         etiquetaTotal.setBorder(Rectangle.LEFT | Rectangle.TOP | Rectangle.BOTTOM);
         etiquetaTotal.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        PdfPCell importeTotal = new PdfPCell(new Phrase(Formatos.moneda(r.getTotal()), fuente(true, 11f, BLANCO)));
+        PdfPCell importeTotal = new PdfPCell(new Phrase(liquidation.total().amount(), fuente(true, 11f, BLANCO)));
         importeTotal.setBackgroundColor(c.base);
         importeTotal.setHorizontalAlignment(Element.ALIGN_RIGHT);
         importeTotal.setPadding(5f);
@@ -786,17 +724,6 @@ public class PdfService {
             celula.setBorderWidthTop(0.7f);
         }
         return celula;
-    }
-
-    private String porcentajeRejilla(Integer porcentaje) {
-        if (porcentaje == null) {
-            return "Exento";
-        }
-        return REJILLA_TIPO.format(BigDecimal.valueOf(porcentaje));
-    }
-
-    private String importePdf(BigDecimal importe) {
-        return Formatos.moneda(importe).replace("\u00a0\u20ac", "").trim();
     }
 
     private PdfPTable cajaObservaciones(String observaciones, Colores c) {
@@ -1032,9 +959,7 @@ public class PdfService {
 
         private final Empresa empresa;
         private final Image logo;
-        private final boolean anulada;
-        private final boolean rectificativa;
-        private final FacturaVersion version;
+        private final InvoiceDocument.Header header;
         private final Colores c;
         private final PdfPTable tarjetas;
         private final PdfPTable tarjetasSinPago;
@@ -1043,14 +968,11 @@ public class PdfService {
         private PdfTemplate totalPaginas;
         private int paginasReales;
 
-        CabeceraPie(Empresa empresa, Image logo, boolean anulada, boolean rectificativa,
-                    FacturaVersion version, Colores colores,
+        CabeceraPie(Empresa empresa, Image logo, InvoiceDocument.Header header, Colores colores,
                     PdfPTable tarjetas, PdfPTable tarjetasSinPago, float altoTarjetas, boolean conPago) {
             this.empresa = empresa;
             this.logo = logo;
-            this.anulada = anulada;
-            this.rectificativa = rectificativa;
-            this.version = version;
+            this.header = header;
             this.c = colores;
             this.tarjetas = tarjetas;
             this.tarjetasSinPago = tarjetasSinPago;
@@ -1087,7 +1009,7 @@ public class PdfService {
             dibujarSeparador(cb, izquierda, derecha, bordeSuperiorContenido, altoTarjetas);
             dibujarTarjetas(cb, izquierda, bordeSuperiorContenido);
             dibujarPaginacion(writer, cb, derecha);
-            if (anulada) {
+            if (header.cancelled()) {
                 dibujarMarcaAnulada(writer, cb, pagina);
             }
         }
@@ -1170,7 +1092,7 @@ public class PdfService {
 
         private void dibujarBloqueFactura(PdfContentByte cb, float derecha, float altoPagina) {
             float y = altoPagina - 38;
-            String titulo = rectificativa ? "RECTIFICATIVA" : "FACTURA";
+            String titulo = header.corrective() ? "RECTIFICATIVA" : "FACTURA";
             cb.beginText();
             cb.setFontAndSize(baseNegrita(), 18);
             cb.setColorFill(c.oscuro);
@@ -1182,7 +1104,7 @@ public class PdfService {
             cb.beginText();
             cb.setFontAndSize(baseNegrita(), 10);
             cb.setColorFill(c.oscuro);
-            cb.showTextAligned(Element.ALIGN_RIGHT, nz(version.getNumero()), derecha, y, 0);
+            cb.showTextAligned(Element.ALIGN_RIGHT, header.number(), derecha, y, 0);
             cb.endText();
             y -= 14;
             dibujarRotulo(cb, "FECHA", derecha, y);
@@ -1190,18 +1112,18 @@ public class PdfService {
             cb.beginText();
             cb.setFontAndSize(baseNegrita(), 10);
             cb.setColorFill(c.oscuro);
-            cb.showTextAligned(Element.ALIGN_RIGHT, Formatos.fecha(version.getFechaFactura()), derecha, y, 0);
+            cb.showTextAligned(Element.ALIGN_RIGHT, header.date(), derecha, y, 0);
             cb.endText();
-            if (rectificativa) {
+            if (header.corrective()) {
                 y -= 12;
                 cb.beginText();
                 cb.setFontAndSize(baseRegular(), 9);
                 cb.setColorFill(GRIS);
-                cb.showTextAligned(Element.ALIGN_RIGHT, "Rectifica a: " + nz(version.getReferenciaRectifica()),
+                cb.showTextAligned(Element.ALIGN_RIGHT, "Rectifica a: " + header.correctsReference().orElse(""),
                         derecha, y, 0);
                 cb.endText();
             }
-            if (anulada) {
+            if (header.cancelled()) {
                 y -= 15;
                 cb.beginText();
                 cb.setFontAndSize(baseNegrita(), 11);

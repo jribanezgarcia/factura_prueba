@@ -59,6 +59,10 @@ Alternativa descartada: modelo con tipos ricos (montos, fechas). Obligaría al d
 - **Granularidad del record.** Demasiado fino y el dibujo es un volcado bobo difícil de revisar; demasiado grueso y vuelve a esconder decisiones. Mitigación: el modelo refleja 1:1 los bloques dibujados (tarjetas, tabla, marco, suplidos, totales, observaciones, pie).
 - **Reparto poco natural durante la transición.** Hasta el change 3, `PdfService` dibuja y además mide y pagina. Es feo pero está acotado y es temporal: el change 3 se lleva las tres cosas al renderer de una vez.
 
+## 8.1. Defectos observados y no tocados
+
+Ninguno: en los PDF renderizados (suplidos, dos-páginas p2-p3) no se vio ningún defecto de maquetación. Nada que proponer aparte.
+
 ## Migration Plan
 
 No hay migración: refactor interno sin cambios de UI, de API ni de formato de fichero. Reversión: revertir el commit.
