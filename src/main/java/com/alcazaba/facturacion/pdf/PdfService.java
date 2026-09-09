@@ -116,12 +116,12 @@ public class PdfService {
         boolean anulada = vc.version().getEstado() == EstadoFactura.ANULADA;
         boolean rectificativa = vc.version().getReferenciaRectifica() != null
                 && !vc.version().getReferenciaRectifica().isBlank();
-        TipoRetencion retencion = retencionDeVersion(vc.version());
+        TipoRetencion retencion = FacturaService.retencionDeVersion(vc.version());
         ResumenFactura resumen = CalculoService.resumen(vc.lineas(), vc.version().getDescuentoPorcentaje(), retencion);
 
         Image logo = cargarLogo(empresa);
 
-        List<LineaFactura> suplidos = suplidosDe(vc);
+        List<LineaFactura> suplidos = CalculoService.suplidosDe(vc.lineas());
         boolean haySuplidos = !suplidos.isEmpty();
         String obs = vc.version().getObservaciones();
         boolean hayObs = obs != null && !obs.isBlank();
@@ -567,18 +567,11 @@ public class PdfService {
             t.addCell(celdaLinea(importePdf(l.getPrecioUnitario()), fila, Element.ALIGN_RIGHT, c));
             t.addCell(celdaLinea(l.isExenta() ? "Exento"
                     : l.getIvaPorcentaje() + " %", fila, Element.ALIGN_CENTER, c));
-            t.addCell(celdaLinea(importePdf(totalConIva(l)), fila, Element.ALIGN_RIGHT, c));
+            t.addCell(celdaLinea(importePdf(CalculoService.totalConIva(l)), fila, Element.ALIGN_RIGHT, c));
             fila++;
         }
         if (fila > 0) t.setHeaderRows(1);
         return t;
-    }
-
-    private static List<LineaFactura> suplidosDe(FacturaService.VersionCompleta vc) {
-        if (vc.lineas() == null) {
-            return List.of();
-        }
-        return vc.lineas().stream().filter(LineaFactura::isEsSuplido).toList();
     }
 
     private PdfPTable bloqueSuplidos(List<LineaFactura> suplidos, Colores c) {
@@ -644,29 +637,6 @@ public class PdfService {
             celula.setBackgroundColor(c.clarisimo);
         }
         return celula;
-    }
-
-    /**
-     * Total de la linea con el IVA incluido (base × (1 + IVA%)); las
-     * exentas se muestran sin IVA.
-     */
-    private TipoRetencion retencionDeVersion(FacturaVersion v) {
-        if (v.getTipoRetencionId() == null) {
-            return null;
-        }
-        TipoRetencion t = new TipoRetencion();
-        t.setId(v.getTipoRetencionId());
-        t.setNombre(nz(v.getTipoRetencionNombre()));
-        t.setPorcentaje(v.getTipoRetencionPorcentaje() != null ? v.getTipoRetencionPorcentaje() : 0);
-        return t;
-    }
-
-    private BigDecimal totalConIva(LineaFactura l) {
-        BigDecimal base = l.getTotalBase() == null ? BigDecimal.ZERO : l.getTotalBase();
-        if (l.isExenta() || l.getIvaPorcentaje() == null || l.getIvaPorcentaje() == 0) {
-            return base;
-        }
-        return base.add(CalculoService.ivaDeBase(base, l.getIvaPorcentaje()));
     }
 
     // ------------------------------------------------------------------

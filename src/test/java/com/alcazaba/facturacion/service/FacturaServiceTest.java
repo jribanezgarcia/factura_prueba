@@ -216,6 +216,23 @@ class FacturaServiceTest {
     }
 
     @Test
+    void retencionDeVersionRespetaElSnapshotAunqueCambieElCatalogo() {
+        FacturaVersion v = new FacturaVersion();
+        v.setTipoRetencionId(7L);
+        v.setTipoRetencionNombre("IRPF profesional");
+        v.setTipoRetencionPorcentaje(15);
+        TipoRetencion t = FacturaService.retencionDeVersion(v);
+        assertEquals(7L, t.getId());
+        assertEquals("IRPF profesional", t.getNombre());
+        assertEquals(15, t.getPorcentaje());
+    }
+
+    @Test
+    void retencionDeVersionSinTipoDevuelveNull() {
+        assertNull(FacturaService.retencionDeVersion(new FacturaVersion()));
+    }
+
+    @Test
     void borrarFacturaEliminaRegistrosYLiberaNumero() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 21);

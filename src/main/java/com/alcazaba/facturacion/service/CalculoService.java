@@ -48,6 +48,32 @@ public final class CalculoService {
         return round2(precio.multiply(BigDecimal.valueOf(cantidad)));
     }
 
+    /**
+     * Total de la linea con el IVA incluido (base × (1 + IVA%)); las
+     * exentas se muestran sin IVA. No es lo mismo que {@link #totalLinea}:
+     * aquel multiplica cantidad por precio sin IVA, este parte de la base ya
+     * calculada y le suma la cuota.
+     */
+    public static BigDecimal totalConIva(LineaFactura l) {
+        BigDecimal base = l.getTotalBase() == null ? BigDecimal.ZERO : l.getTotalBase();
+        if (l.isExenta() || l.getIvaPorcentaje() == null || l.getIvaPorcentaje() == 0) {
+            return base;
+        }
+        return base.add(ivaDeBase(base, l.getIvaPorcentaje()));
+    }
+
+    /**
+     * Lineas marcadas como suplido. Se filtra por el flag congelado de cada
+     * linea, no por el catalogo actual de tipos: una factura antigua sigue
+     * clasificando igual aunque el tipo se haya cambiado despues.
+     */
+    public static List<LineaFactura> suplidosDe(List<LineaFactura> lineas) {
+        if (lineas == null) {
+            return List.of();
+        }
+        return lineas.stream().filter(LineaFactura::isEsSuplido).toList();
+    }
+
     public static BigDecimal precioDesdeTotal(BigDecimal total, int cantidad) {
         if (cantidad <= 0 || total == null) {
             return BigDecimal.ZERO;
