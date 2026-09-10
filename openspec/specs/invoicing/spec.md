@@ -315,14 +315,20 @@ La aplicación SHALL tener un histórico de facturas que muestre cada versión c
 
 ### Requirement: Menú y navegación
 
-La aplicación SHALL tener un menú principal con las opciones Nueva factura, Histórico, Configuración, Copia de seguridad y Salir. Dentro de una factura SHALL existir una barra superior con Guardar, Exportar PDF, Versiones, Rectificativa, Anular o Restaurar según el estado, Nueva y Volver. En todas las pantallas salvo el menú principal SHALL existir una barra de navegación superior que permita acceder a Menú principal, Nueva factura, Histórico, Clientes, Configuración, Copia de seguridad y Salir.
+La aplicación SHALL tener un menú principal con las opciones Nueva factura, Facturar mes, Histórico, Clientes, Configuración, Copia de seguridad y Salir. Cada opción SHALL llamarse igual que el botón que ejecuta esa misma acción en el resto de la aplicación. Dentro de una factura SHALL existir una barra superior con Guardar, Exportar, Versiones, Rectificar, Anular o Restaurar según el estado, Nueva y Volver. En todas las pantallas salvo el menú principal SHALL existir una barra de navegación superior que permita acceder a Menú principal, Nueva factura, Histórico, Clientes, Configuración, Copia de seguridad y Salir.
 
 Cada botón de la barra de navegación SHALL mostrar un icono y, **debajo de él, una etiqueta de texto** con el nombre de su destino, de modo que la función de cada botón se reconozca sin necesidad de posar el puntero. La etiqueta visible SHALL ser breve y el tooltip SHALL conservar el nombre completo del destino. El texto SHALL usar, en cada tema de apariencia, un color legible sobre el fondo propio de la barra de navegación.
 
+La barra de navegación SHALL NOT ocupar más alto del que pide su contenido: el icono, la etiqueta y el indicador de la pantalla activa, con márgenes ajustados. El hueco entre el icono y la etiqueta SHALL bastar para que el dibujo del icono no llegue a tocar el texto.
+
 Solo SHALL tenerse una factura abierta a la vez. No SHALL existir la opción "Nueva rectificativa" en el menú principal. Al cerrar la ventana o al pulsar Salir en la barra de navegación, la aplicación SHALL pedir confirmación antes de salir y SHALL seguir el mismo proceso de cierre (comprobación de cambios sin guardar, preferencias de ventana y lock).
 
+#### Scenario: La barra de navegación no reserva alto de más
+- **WHEN** el usuario abre cualquier pantalla distinta del menú principal
+- **THEN** la barra de navegación ocupa el alto de un icono más una línea de texto con sus márgenes, sin franjas vacías por encima ni por debajo, y el icono no toca la etiqueta
+
 #### Scenario: Crear rectificativa desde la factura
-- **WHEN** el usuario pulsa "Rectificativa" en la barra de una factura abierta
+- **WHEN** el usuario pulsa "Rectificar" en la barra de una factura abierta
 - **THEN** se crea una rectificativa a partir de esa factura
 
 #### Scenario: Navegar desde la barra de navegación
@@ -351,11 +357,15 @@ La barra de acciones del editor de facturas SHALL mostrar todos sus botones visi
 
 Ningún botón de la barra SHALL comprimirse por debajo de su anchura preferida ni salirse del ancho de la ventana. Los separadores entre grupos SHALL NOT contar como botones a efectos de este requisito.
 
-Todos los botones de la barra SHALL tener la misma anchura, y esa anchura SHALL ser independiente de la longitud de la etiqueta: una etiqueta que no quepa en una línea SHALL envolverse a dos en lugar de ensanchar el botón.
+Todos los botones de la barra SHALL tener la misma anchura, y esa anchura SHALL ser independiente de la longitud de la etiqueta. La anchura SHALL bastar para que una etiqueta de una sola palabra se muestre siempre en una única línea, sin partirse. Una etiqueta de varias palabras SHALL envolverse por sus espacios, y el botón SHALL reservar el alto necesario para mostrarla completa, en lugar de ensancharse o recortar el texto.
 
 El botón `Nueva` SHALL ir inmediatamente después de `Guardar`, de modo que las dos acciones de escritura queden juntas.
 
-El título de la factura SHALL conservar su texto completo mientras haya espacio para él. SHALL tener una anchura máxima y recortarse con elipsis únicamente cuando el espacio disponible se reduzca, como ocurre al mostrarse el distintivo de factura anulada, de modo que un número de factura largo nunca desplace a los botones.
+El título de la factura SHALL mostrarse siempre completo. Cuando no quepa en el ancho disponible SHALL envolverse en varias líneas por sus espacios, sin recortarse con puntos suspensivos y sin desplazar a los botones. El alto de la barra lo marcan los botones, de modo que un título de dos o tres líneas SHALL caber sin hacerla crecer.
+
+El título SHALL mostrarse separado del identificador de empresa por un hueco perceptible, de modo que ambos no se lean como un solo bloque.
+
+Los botones SHALL NOT reservar un alto mínimo fijo por encima de lo que pide su contenido: su altura SHALL ser la del icono más la etiqueta con sus márgenes, de modo que la barra no ocupe más espacio vertical del necesario.
 
 Los botones que requieren una factura ya guardada SHALL mostrarse deshabilitados mientras no la haya, en lugar de responder con un aviso al pulsarlos.
 
@@ -369,19 +379,31 @@ Los botones que requieren una factura ya guardada SHALL mostrarse deshabilitados
 
 #### Scenario: Número de factura largo
 - **WHEN** se abre una factura cuyo número hace el título especialmente largo, o se muestra el distintivo de anulada
-- **THEN** el título se recorta con elipsis y los botones de la barra conservan su posición, su visibilidad y su anchura
+- **THEN** el título se envuelve en varias líneas dentro del alto de la barra, sin recortarse, y los botones conservan su posición, su visibilidad y su anchura
 
 #### Scenario: Botones que necesitan una factura guardada
 - **WHEN** el usuario está en una factura nueva todavía sin guardar
-- **THEN** los botones de Versiones y Rectificativa se muestran deshabilitados
+- **THEN** los botones de Versiones y Rectificar se muestran deshabilitados
 
 #### Scenario: Nueva junto a Guardar
 - **WHEN** el usuario mira la barra de acciones del Editor
 - **THEN** el botón `Nueva` aparece inmediatamente después de `Guardar`
 
 #### Scenario: Etiquetas largas no ensanchan el botón
-- **WHEN** el usuario mira los botones `Guardar` y `Rectificativa` en la misma barra
-- **THEN** ambos miden exactamente lo mismo de ancho, y el texto de `Rectificativa` se ha envuelto a dos líneas
+- **WHEN** el usuario mira los botones `Guardar` y `Rectificar` en la misma barra
+- **THEN** ambos miden exactamente lo mismo de ancho, y `Rectificar` se lee en una sola línea, sin partirse
+
+#### Scenario: Una etiqueta de dos palabras se envuelve por su espacio
+- **WHEN** el usuario mira el botón `Facturar mes` en el Histórico
+- **THEN** muestra su etiqueta en dos líneas, partida por el espacio entre palabras, sin que ninguna palabra quede cortada
+
+#### Scenario: La barra no reserva alto de más
+- **WHEN** el usuario abre el Editor, donde todas las etiquetas caben en una línea
+- **THEN** la barra de acciones ocupa el alto de un icono más una línea de texto, sin espacio sobrante por encima ni por debajo de los botones
+
+#### Scenario: El título no se pega al identificador de empresa
+- **WHEN** el usuario abre cualquier factura
+- **THEN** entre el identificador de empresa y el título hay un hueco perceptible, y no se leen como un bloque continuo
 
 ### Requirement: Distribución estable al redimensionar en Editor e Histórico
 
@@ -478,7 +500,7 @@ La pantalla de generación de facturas mensuales SHALL presentar la misma estét
 
 ### Requirement: Atajos de teclado
 
-La aplicación SHALL proporcionar los atajos Ctrl+N para Nueva factura, Ctrl+S para Guardar, Ctrl+F para Buscar, Ctrl+P para Exportar PDF y Esc para volver/cancelar cuando corresponda.
+La aplicación SHALL proporcionar los atajos Ctrl+N para Nueva factura, Ctrl+S para Guardar, Ctrl+F para Buscar, Ctrl+P para Exportar y Esc para volver/cancelar cuando corresponda.
 
 #### Scenario: Guardar con atajo
 - **WHEN** el usuario pulsa Ctrl+S en una factura abierta
@@ -809,9 +831,9 @@ En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL
 
 Los botones de la barra de acciones del Editor y del Histórico SHALL NOT mostrarse con fondo blanco: SHALL ser planos y adoptar el color del contenedor en el que están, según el requisito «Botones de acción con icono identificativo». Guardar SHALL mantener su condición de acción principal mediante el color de acento en su icono y su etiqueta, en lugar de mediante un fondo de acento. Anular SHALL mantener su color de peligro, de modo que un Anular habilitado SHALL NOT confundirse con un botón deshabilitado.
 
-Los botones de tabla del Editor (Añadir línea y Eliminar línea) SHALL conservar su fondo blanco y su texto negro, porque no forman parte de la barra de acciones.
+Los botones de tabla del Editor (Añadir línea y Eliminar línea) SHALL mostrarse sobre el sombreado suave de los botones de solo texto, según el requisito «Sombreado uniforme de los botones de solo texto». Que no formen parte de la barra de acciones SHALL NOT hacer que conserven un fondo blanco con recuadro.
 
-Este estilo SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto de temas no cambian.
+Este estilo de tarjetas SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto de temas no cambian.
 
 #### Scenario: Tarjeta del Histórico con fondo gris claro
 - **WHEN** el usuario abre el Histórico con el tema por defecto
@@ -827,11 +849,11 @@ Este estilo SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto 
 
 #### Scenario: Botones del Editor en blanco y negro
 - **WHEN** el usuario abre el Editor con el tema por defecto
-- **THEN** los botones de tabla Añadir línea y Eliminar línea siguen mostrándose con fondo blanco y texto negro
+- **THEN** los botones de tabla Añadir línea y Eliminar línea ya no se muestran con fondo blanco y texto negro: se ven sobre el sombreado suave, sin recuadro y con el texto en negrita
 
 #### Scenario: La barra de acciones pierde el fondo blanco de sus botones
 - **WHEN** el usuario abre el Editor con el tema por defecto
-- **THEN** los botones Guardar, Nueva, Exportar PDF, Versiones, Rectificativa, Anular, Restaurar y Volver se ven sin recuadro blanco, con el color de la barra de fondo
+- **THEN** los botones Guardar, Nueva, Exportar, Versiones, Rectificar, Anular, Restaurar y Volver se ven sin recuadro blanco, con el color de la barra de fondo
 
 #### Scenario: Botones del Editor que conservan su estilo
 - **WHEN** el usuario abre el Editor con el tema por defecto
@@ -850,11 +872,11 @@ Este estilo SHALL aplicarse solo en el tema por defecto (Biblioteca8); el resto 
 La aplicación SHALL permitir generar múltiples facturas mensuales para un único cliente desde un diálogo específico. El usuario SHALL seleccionar el cliente, el año, el rango de meses, la serie de numeración y el día del mes que se usará como fecha de cada factura, pudiendo elegir entre un día fijo editable, el primer día del mes o el último día del mes. El usuario SHALL poder configurar las líneas de concepto que se replicarán en cada factura, con la opción de añadir automáticamente el nombre del mes a la descripción de cada línea. El usuario SHALL seleccionar el tipo de IVA y, opcionalmente, el tipo de retención IRPF que se aplicarán a todas las facturas generadas. El sistema SHALL crear una factura por cada mes del rango, asignando a cada una el siguiente número de la serie seleccionado y la fecha correspondiente. Si para un mes ya existe una factura para ese cliente y año, el sistema SHALL mostrar una advertencia con los meses afectados y SHALL permitir al usuario decidir si genera las facturas de todos modos o cancela la operación. Las facturas generadas SHALL aparecer en el histórico y SHALL poder exportarse a PDF.
 
 #### Scenario: Acceso desde el menú principal
-- **WHEN** el usuario pulsa la opción "Generar facturas mensuales" en el menú principal
+- **WHEN** el usuario pulsa la opción "Facturar mes" en el menú principal
 - **THEN** se abre el diálogo de facturación mensual
 
 #### Scenario: Acceso desde el histórico
-- **WHEN** el usuario pulsa el botón "Generar mensual" en la pantalla de histórico
+- **WHEN** el usuario pulsa el botón "Facturar mes" en la pantalla de histórico
 - **THEN** se abre el diálogo de facturación mensual
 
 #### Scenario: Configuración de la generación
@@ -1284,6 +1306,50 @@ La demostración SHALL cubrir los casos que cuestan de montar a mano: varias ser
 - **WHEN** alguien revisa la empresa de demostración
 - **THEN** ningún cliente, NIF ni dirección corresponde a una persona o empresa real
 
+
+### Requirement: Sombreado uniforme de los botones de solo texto
+
+Los botones que muestran únicamente texto, sin icono, SHALL presentarse sobre un sombreado suave y uniforme, sin borde y sin fondo blanco. El sombreado SHALL ser el mismo en todos los botones de una misma pantalla, salvo el de la acción principal.
+
+El sombreado SHALL ser un gris neutro teñido levemente con el color de acento del tema activo, de modo que se lea como gris y acompañe al tema sin competir con él. Cada tema de apariencia SHALL declarar su propio valor, tanto el sombreado normal como el de la acción principal.
+
+Estos botones SHALL mostrar su texto en negrita.
+
+El botón de acción principal de cada pantalla SHALL distinguirse del resto por dos señales a la vez: un sombreado más intenso y su texto en el color de acento del tema. Los botones de peligro SHALL conservar su color de texto rojo sobre el sombreado normal.
+
+El botón SHALL reaccionar a la interacción: al situar el puntero encima su sombreado SHALL oscurecerse, al mantenerlo pulsado SHALL oscurecerse más, y al recibir el foco de teclado SHALL mostrar un borde con el color de acento del tema activo.
+
+Este requisito SHALL aplicarse a los botones de solo texto de Clientes, Configuración, Copia de seguridad, Versiones, el Editor y la generación de facturas mensuales, incluidos los botones de línea de esta última, que hasta ahora mostraban el gris por defecto de la plataforma. SHALL NOT aplicarse a los botones de la pantalla de arranque ni a los de los diálogos de aviso y confirmación, que la plataforma construye por su cuenta. La maquetación, el comportamiento y las acciones de todos ellos SHALL permanecer sin cambios: la modificación es exclusivamente de apariencia.
+
+#### Scenario: Los botones de una pantalla comparten sombreado
+- **WHEN** el usuario abre Clientes, Configuración, Copia de seguridad o Versiones con cualquier tema
+- **THEN** todos los botones de esa pantalla se ven sobre el mismo sombreado suave, sin borde ni fondo blanco, y con el texto en negrita
+
+#### Scenario: El sombreado se lee como gris en cada tema
+- **WHEN** el usuario cambia entre los temas de apariencia disponibles
+- **THEN** el sombreado de los botones cambia con el tema pero sigue leyéndose como un gris neutro, no como un color saturado
+
+#### Scenario: La acción principal se distingue por dos señales
+- **WHEN** el usuario mira los botones Nuevo, Guardar, Crear copia, Restaurar o Generar junto a los demás botones de su pantalla
+- **THEN** el botón principal muestra un sombreado más intenso y su texto en el color de acento del tema
+
+#### Scenario: Los botones de peligro conservan su rojo
+- **WHEN** el usuario mira el botón Eliminar de Clientes o de Configuración
+- **THEN** su texto sigue siendo rojo, sobre el mismo sombreado que los demás botones de la pantalla
+
+#### Scenario: El botón reacciona al puntero y al foco
+- **WHEN** el usuario sitúa el puntero sobre uno de esos botones, lo mantiene pulsado y después recorre la pantalla con el tabulador
+- **THEN** el sombreado se oscurece al pasar por encima, se oscurece más mientras está pulsado, y el botón que recibe el foco muestra un borde con el color de acento
+
+#### Scenario: Los botones de línea de la generación mensual dejan de desentonar
+- **WHEN** el usuario abre la pantalla de generación de facturas mensuales
+- **THEN** los botones Añadir línea y Eliminar línea se ven igual que Cancelar y Generar, sin el gris por defecto de la plataforma
+
+#### Scenario: Arranque y los diálogos no cambian
+- **WHEN** el usuario abre la pantalla de arranque o un diálogo de aviso o de confirmación
+- **THEN** sus botones conservan el aspecto que tenían y el flujo de confirmación y cancelación no cambia
+
+
 ### Requirement: Composición centrada del menú principal
 
 El bloque de tarjetas del menú principal, formado por la tarjeta de información de la empresa activa y la tarjeta de opciones del programa, SHALL mostrarse centrado horizontal y verticalmente dentro del espacio disponible de la ventana.
@@ -1309,3 +1375,52 @@ La fila de la fecha de trabajo SHALL permanecer en la parte superior de la panta
 #### Scenario: La fecha de trabajo no se mueve
 - **WHEN** el usuario abre el menú principal a cualquier tamaño de ventana
 - **THEN** la fila de la fecha de trabajo sigue mostrándose en la parte superior de la pantalla
+
+### Requirement: Marca en la pantalla de arranque
+
+La pantalla de selección de empresa SHALL identificarse con la marca de la aplicación, «CaboFactu®», en lugar de con una descripción genérica de su función.
+
+Junto a ese rótulo SHALL mostrarse el icono de la aplicación, el mismo que aparece en la barra de título y en la barra de tareas, situado a su izquierda y en la misma línea. El icono y el rótulo SHALL presentarse centrados como un único conjunto en la parte superior de la pantalla.
+
+El conjunto de marca SHALL caber dentro del tamaño fijo de la pantalla de arranque sin desplazar ni recortar la tarjeta de selección de empresa, ejercicio y fecha de trabajo, ni el mensaje de error.
+
+Los controles de la pantalla, su disposición y el flujo de selección SHALL permanecer sin cambios: la modificación es exclusivamente de identidad visual.
+
+#### Scenario: La portada muestra la marca
+- **WHEN** el usuario abre la aplicación y aparece la pantalla de selección de empresa
+- **THEN** la pantalla muestra «CaboFactu®» como rótulo, no una descripción genérica de la función del programa
+
+#### Scenario: El icono acompaña al rótulo
+- **WHEN** el usuario mira la parte superior de la pantalla de arranque
+- **THEN** el icono de la aplicación aparece a la izquierda del rótulo, en la misma línea, y ambos quedan centrados como conjunto
+
+#### Scenario: El contenido sigue cabiendo
+- **WHEN** el usuario abre la pantalla de arranque, que es de tamaño fijo y no redimensionable
+- **THEN** la tarjeta de selección de empresa, ejercicio y fecha de trabajo se muestra completa, sin desplazarse ni recortarse, igual que antes del cambio
+
+#### Scenario: El flujo no cambia
+- **WHEN** el usuario selecciona empresa, ejercicio y fecha de trabajo y pulsa Entrar
+- **THEN** la aplicación se comporta igual que antes del cambio
+
+
+### Requirement: Consonancia tipográfica de la interfaz
+
+Los elementos de navegación y de acción de la aplicación SHALL presentar un peso tipográfico acorde entre sí, de modo que los controles más usados no se lean con menos presencia que los secundarios.
+
+El texto de los botones que muestran icono y etiqueta —los de la barra de navegación y los de las barras de acciones del Editor y del Histórico— SHALL mostrarse en negrita y a un tamaño que no quede por debajo del de las etiquetas de los botones de solo texto en más de un punto.
+
+Las entradas seleccionables de la lista de secciones de la pantalla de Configuración SHALL mostrarse en negrita. La entrada seleccionada SHALL seguir distinguiéndose de las demás por su fondo y por su color de texto.
+
+Ningún control, etiqueta, acción ni disposición SHALL cambiar por este motivo: la modificación es exclusivamente tipográfica.
+
+#### Scenario: Los botones con icono pesan como los de solo texto
+- **WHEN** el usuario mira la barra de navegación o la barra de acciones del Editor junto a un botón de solo texto
+- **THEN** las etiquetas de los botones con icono se leen en negrita, sin quedar visiblemente más ligeras que las de los botones de solo texto
+
+#### Scenario: Las etiquetas de navegación no se recortan
+- **WHEN** el usuario abre cualquier pantalla con la ventana en su tamaño mínimo de 1024x768
+- **THEN** las siete etiquetas de la barra de navegación se muestran completas, sin recortarse, y la barra cabe en el ancho de la ventana
+
+#### Scenario: La lista de secciones se lee en negrita
+- **WHEN** el usuario abre la pantalla de Configuración
+- **THEN** las entradas de la lista de secciones se muestran en negrita, y la que está seleccionada se distingue por su fondo y su color de texto

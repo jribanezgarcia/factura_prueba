@@ -58,7 +58,7 @@
                             </VBox>
                             <Label text="Logo" GridPane.rowIndex="1"/>
                             <TextField fx:id="txtLogoPath" editable="false" prefWidth="300" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                            <Button onAction="#seleccionarLogo" styleClass="default-button" text="Elegir imagen..." GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                            <Button onAction="#seleccionarLogo" styleClass="default-button, btn-suave" text="Elegir imagen..." GridPane.columnIndex="2" GridPane.rowIndex="1"/>
                             <Label text="Texto legal del pie" GridPane.rowIndex="2"/>
                             <TextArea fx:id="txtPieLegal" prefRowCount="3" wrapText="true"
                                       GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2"/>
@@ -75,7 +75,7 @@
                     <GridPane hgap="8" vgap="6">
                         <Label text="Carpeta automática de almacenamiento"/>
                         <TextField fx:id="txtCarpetaAuto" editable="false" prefWidth="420" GridPane.columnIndex="1"/>
-                        <Button onAction="#seleccionarCarpetaAuto" styleClass="default-button" text="Elegir carpeta..." GridPane.columnIndex="2"/>
+                        <Button onAction="#seleccionarCarpetaAuto" styleClass="default-button, btn-suave" text="Elegir carpeta..." GridPane.columnIndex="2"/>
                         <Label text="Última carpeta de exportación" GridPane.rowIndex="1"/>
                         <TextField fx:id="txtUltimaCarpeta" editable="false" prefWidth="420" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                         <Label text="Color del PDF" GridPane.rowIndex="2"/>
@@ -117,9 +117,9 @@
                             <TextField fx:id="txtIvaMotivo" prefWidth="200"/>
                         </HBox>
                         <HBox spacing="8" alignment="CENTER_LEFT">
-                            <Button onAction="#nuevoIva" styleClass="default-button" text="Nuevo"/>
-                            <Button onAction="#guardarIva" styleClass="primary-button" text="Guardar"/>
-                            <Button onAction="#inactivarIva" styleClass="default-button" text="Inactivar/Activar"/>
+                            <Button onAction="#nuevoIva" styleClass="default-button, btn-suave" text="Nuevo"/>
+                            <Button onAction="#guardarIva" styleClass="primary-button, btn-suave" text="Guardar"/>
+                            <Button onAction="#inactivarIva" styleClass="default-button, btn-suave" text="Inactivar/Activar"/>
                         </HBox>
                     </FlowPane>
                     <Label fx:id="lblIvaAviso" styleClass="muted"
@@ -147,9 +147,9 @@
                             <TextField fx:id="txtRetencionPorcentaje" prefWidth="80" promptText="19"/>
                         </HBox>
                         <HBox spacing="8" alignment="CENTER_LEFT">
-                            <Button onAction="#nuevoRetencion" styleClass="default-button" text="Nuevo"/>
-                            <Button onAction="#guardarRetencion" styleClass="primary-button" text="Guardar"/>
-                            <Button onAction="#inactivarRetencion" styleClass="default-button" text="Inactivar/Activar"/>
+                            <Button onAction="#nuevoRetencion" styleClass="default-button, btn-suave" text="Nuevo"/>
+                            <Button onAction="#guardarRetencion" styleClass="primary-button, btn-suave" text="Guardar"/>
+                            <Button onAction="#inactivarRetencion" styleClass="default-button, btn-suave" text="Inactivar/Activar"/>
                         </HBox>
                     </FlowPane>
                     <Label fx:id="lblRetencionAviso" styleClass="muted"
@@ -190,9 +190,9 @@
                         </HBox>
                         <Label fx:id="lblSerieEjemplo" styleClass="muted" text="Ejemplo: C-56/7"/>
                         <HBox spacing="8" alignment="CENTER_LEFT">
-                            <Button onAction="#nuevoSerie" styleClass="default-button" text="Nuevo"/>
-                            <Button onAction="#guardarSerie" styleClass="primary-button" text="Guardar"/>
-                            <Button onAction="#eliminarSerie" styleClass="default-button" text="Eliminar"/>
+                            <Button onAction="#nuevoSerie" styleClass="default-button, btn-suave" text="Nuevo"/>
+                            <Button onAction="#guardarSerie" styleClass="primary-button, btn-suave" text="Guardar"/>
+                            <Button onAction="#eliminarSerie" styleClass="default-button, btn-suave" text="Eliminar"/>
                         </HBox>
                     </FlowPane>
                 </VBox>
@@ -210,9 +210,9 @@
                     <Label fx:id="lblEmpresasAviso" styleClass="muted"
                            text="Al eliminar una empresa se borra físicamente su carpeta de datos. Realiza antes una copia de seguridad."/>
                     <FlowPane hgap="8" vgap="8" styleClass="alta-rapida">
-                        <Button onAction="#nuevaEmpresa" styleClass="default-button" text="Nueva empresa"/>
-                        <Button onAction="#cambiarEmpresa" styleClass="primary-button" text="Cambiar a esta"/>
-                        <Button onAction="#eliminarEmpresa" styleClass="default-button" text="Eliminar"/>
+                        <Button onAction="#nuevaEmpresa" styleClass="default-button, btn-suave" text="Nueva empresa"/>
+                        <Button onAction="#cambiarEmpresa" styleClass="primary-button, btn-suave" text="Cambiar a esta"/>
+                        <Button onAction="#eliminarEmpresa" styleClass="default-button, btn-suave" text="Eliminar"/>
                     </FlowPane>
                 </VBox>
             </StackPane>
@@ -220,8 +220,8 @@
     </center>
     <bottom>
         <HBox fx:id="barraGuardar" spacing="8" alignment="CENTER_RIGHT" styleClass="card, zona-contenido">
-            <Button onAction="#guardar" styleClass="primary-button" text="Guardar configuración"/>
-            <Button onAction="#volver" styleClass="default-button" text="Volver"/>
+            <Button onAction="#guardar" styleClass="primary-button, btn-suave" text="Guardar configuración"/>
+            <Button onAction="#volver" styleClass="default-button, btn-suave" text="Volver"/>
         </HBox>
     </bottom>
 </BorderPane>

@@ -17,7 +17,7 @@
                 <HBox spacing="8" alignment="CENTER_LEFT">
                     <Label text="Doble clic en una versión para abrirla." styleClass="muted"/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#volver" styleClass="default-button" text="Volver"/>
+                    <Button onAction="#volver" styleClass="default-button, btn-suave" text="Volver"/>
                 </HBox>
             </VBox>
         </VBox>

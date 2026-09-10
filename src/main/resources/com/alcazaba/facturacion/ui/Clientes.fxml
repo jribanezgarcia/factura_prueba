@@ -17,10 +17,10 @@
                     <TextField fx:id="txtBusqueda" prefWidth="280" promptText="Buscar por nombre o NIF..."/>
                     <Label fx:id="lblConteo" text=""/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#nuevo" styleClass="primary-button" text="Nuevo"/>
-                    <Button onAction="#editar" styleClass="default-button" text="Editar"/>
-                    <Button onAction="#eliminar" styleClass="danger-button" text="Eliminar"/>
-                    <Button onAction="#volver" styleClass="default-button" text="Volver"/>
+                    <Button onAction="#nuevo" styleClass="primary-button, btn-suave" text="Nuevo"/>
+                    <Button onAction="#editar" styleClass="default-button, btn-suave" text="Editar"/>
+                    <Button onAction="#eliminar" styleClass="danger-button, btn-suave" text="Eliminar"/>
+                    <Button onAction="#volver" styleClass="default-button, btn-suave" text="Volver"/>
                 </HBox>
             </VBox>
         </VBox>
