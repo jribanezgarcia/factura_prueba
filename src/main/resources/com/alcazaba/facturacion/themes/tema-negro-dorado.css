@@ -4,6 +4,8 @@
     -fx-accent: #D4AF37;
     -fx-focus-color: #D4AF37;
     -fx-faint-focus-color: rgba(212, 175, 55, 0.22);
+    -fx-boton-lavado: rgba(151, 141, 108, 0.10);
+    -fx-boton-lavado-fuerte: rgba(182, 158, 81, 0.15);
     -fx-control-inner-background: #121214;
     -fx-text-background-color: #EFE7D0;
 }

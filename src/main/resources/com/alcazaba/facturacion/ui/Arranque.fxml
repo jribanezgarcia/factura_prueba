@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.geometry.*?>
 <BorderPane prefHeight="520.0" prefWidth="760.0"
@@ -11,7 +12,14 @@
     </padding>
     <center>
         <VBox alignment="CENTER" spacing="24" styleClass="zona-contenido" maxWidth="-Infinity">
-            <Label styleClass="empresa-nombre" text="Facturación"/>
+            <HBox alignment="CENTER" spacing="12">
+                <ImageView fitHeight="40.0" preserveRatio="true">
+                    <image>
+                        <Image url="@../images/icono-aplicacion.png"/>
+                    </image>
+                </ImageView>
+                <Label styleClass="empresa-nombre" text="CaboFactu®"/>
+            </HBox>
             <VBox spacing="12" styleClass="card" maxWidth="440.0">
                 <Label text="Empresa"/>
                 <HBox spacing="8" maxWidth="Infinity">

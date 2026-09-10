@@ -19,7 +19,7 @@
                     <StackPane fx:id="logoBox" styleClass="menu-logo-box" prefWidth="110.0" prefHeight="40.0" maxWidth="110.0" maxHeight="40.0" minWidth="110.0" minHeight="40.0">
                         <ImageView fx:id="logo" preserveRatio="true"/>
                     </StackPane>
-                    <Label fx:id="lblTitulo" styleClass="titulo, titulo-compacto" text="Nueva factura" maxWidth="130.0" minWidth="0.0"/>
+                    <Label fx:id="lblTitulo" styleClass="titulo, titulo-compacto" text="Nueva factura" wrapText="true" maxWidth="147.0" minWidth="0.0"/>
                     <Label fx:id="lblEstado" visible="false" managed="false" styleClass="chip-anulada" text="ANULADA" maxWidth="80.0"/>
                     <Region HBox.hgrow="ALWAYS"/>
                     <Button fx:id="btnGuardar" onAction="#guardar" styleClass="primary-button, btn-ribbon" text="Guardar">
@@ -33,7 +33,7 @@
                         </graphic>
                     </Button>
                     <Separator orientation="VERTICAL" styleClass="ribbon-sep"/>
-                    <Button fx:id="btnExportar" onAction="#exportarPdf" styleClass="action-button, btn-ribbon" text="Exportar PDF">
+                    <Button fx:id="btnExportar" onAction="#exportarPdf" styleClass="action-button, btn-ribbon" text="Exportar">
                         <graphic>
                             <SVGPath styleClass="icono-boton" content="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5zM9 9.5h1v-1H9v1zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm10 5.5h1v-3h-1v3z"/>
                         </graphic>
@@ -43,7 +43,7 @@
                             <SVGPath styleClass="icono-boton" content="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/>
                         </graphic>
                     </Button>
-                    <Button fx:id="btnRectificativa" onAction="#crearRectificativa" styleClass="action-button, btn-ribbon" text="Rectificativa">
+                    <Button fx:id="btnRectificativa" onAction="#crearRectificativa" styleClass="action-button, btn-ribbon" text="Rectificar">
                         <graphic>
                             <SVGPath styleClass="icono-boton" content="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm5 12h-3v3l-5-5 5-5v3h3v4z"/>
                         </graphic>
@@ -128,8 +128,8 @@
     <center>
         <VBox spacing="6" styleClass="zona-editor">
             <HBox spacing="8" alignment="CENTER_LEFT">
-                <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" styleClass="action-button" text="Añadir línea"/>
-                <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" styleClass="action-button" text="Eliminar línea">
+                <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" styleClass="action-button, btn-suave" text="Añadir línea"/>
+                <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" styleClass="action-button, btn-suave" text="Eliminar línea">
                     <tooltip><Tooltip text="Eliminar línea (Supr)"/></tooltip>
                 </Button>
                 <CheckBox fx:id="chkTotalConIva" text="Total de línea con IVA incluido"/>

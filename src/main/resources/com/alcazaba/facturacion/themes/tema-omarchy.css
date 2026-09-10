@@ -4,6 +4,8 @@
     -fx-accent: #7D82D9;
     -fx-focus-color: #7D82D9;
     -fx-faint-focus-color: rgba(125, 130, 217, 0.25);
+    -fx-boton-lavado: rgba(127, 129, 152, 0.10);
+    -fx-boton-lavado-fuerte: rgba(126, 129, 185, 0.15);
     -fx-control-inner-background: #131A3A;
     -fx-text-background-color: #FFCEAD;
     -fx-font-family: 'Cascadia Mono', 'Consolas', monospace;

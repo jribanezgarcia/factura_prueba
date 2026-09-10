@@ -19,17 +19,17 @@
                     <Label styleClass="titulo" text="Copia de seguridad"/>
                     <Label text="La copia guarda una fotografía completa de la base de datos (facturas_AAAAMMDD_HHMMSS.db)."/>
                     <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Button onAction="#seleccionarDestino" styleClass="default-button" text="Seleccionar carpeta de destino..."/>
+                        <Button onAction="#seleccionarDestino" styleClass="default-button, btn-suave" text="Seleccionar carpeta de destino..."/>
                         <Label fx:id="lblDestino" text="(ninguna carpeta seleccionada)" styleClass="muted"/>
                     </HBox>
-                    <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button" text="Crear copia"/>
+                    <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button, btn-suave" text="Crear copia"/>
                     <Label fx:id="lblResultado" wrapText="true"/>
                 </VBox>
                 <VBox spacing="8" styleClass="card, zona-contenido">
                     <Label styleClass="titulo" text="Restaurar una copia"/>
                     <Label styleClass="muted" wrapText="true" text="Restaurar reemplaza los datos de la empresa activa. Antes se guarda una copia de rescate automática."/>
                     <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Button onAction="#seleccionarOrigen" styleClass="default-button" text="Seleccionar copia a restaurar..."/>
+                        <Button onAction="#seleccionarOrigen" styleClass="default-button, btn-suave" text="Seleccionar copia a restaurar..."/>
                         <Label fx:id="lblOrigen" text="(ninguna copia seleccionada)" styleClass="muted"/>
                     </HBox>
                     <VBox fx:id="cajaResumen" visible="false" managed="false" spacing="4" styleClass="card, zona-contenido">
@@ -46,7 +46,7 @@
                         <Label text="Nombre de la nueva empresa:"/>
                         <TextField fx:id="txtNombreEmpresa" prefWidth="300"/>
                     </HBox>
-                    <Button fx:id="btnRestaurar" disable="true" onAction="#restaurar" styleClass="primary-button" text="Restaurar"/>
+                    <Button fx:id="btnRestaurar" disable="true" onAction="#restaurar" styleClass="primary-button, btn-suave" text="Restaurar"/>
                     <Label fx:id="lblResultadoRestauracion" wrapText="true"/>
                 </VBox>
             </VBox>
@@ -54,7 +54,7 @@
     </center>
     <bottom>
         <HBox alignment="CENTER_RIGHT" styleClass="card, zona-contenido">
-            <Button onAction="#volver" styleClass="default-button" text="Volver"/>
+            <Button onAction="#volver" styleClass="default-button, btn-suave" text="Volver"/>
         </HBox>
     </bottom>
 </BorderPane>

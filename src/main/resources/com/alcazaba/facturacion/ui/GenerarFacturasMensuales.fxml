@@ -69,8 +69,8 @@
                     </columnResizePolicy>
                 </TableView>
                 <HBox spacing="8">
-                    <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" text="Añadir línea"/>
-                    <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" text="Eliminar línea"/>
+                    <Button fx:id="btnAnadirLinea" onAction="#anadirLinea" text="Añadir línea" styleClass="action-button, btn-suave"/>
+                    <Button fx:id="btnEliminarLinea" onAction="#eliminarLinea" text="Eliminar línea" styleClass="action-button, btn-suave"/>
                 </HBox>
             </VBox>
         </ScrollPane>
@@ -79,8 +79,8 @@
         <HBox spacing="12" alignment="CENTER_RIGHT">
             <Label fx:id="lblInfo" styleClass="muted"/>
             <Region HBox.hgrow="ALWAYS"/>
-            <Button onAction="#cancelar" text="Cancelar" styleClass="default-button"/>
-            <Button fx:id="btnGenerar" onAction="#generar" text="Generar" styleClass="primary-button"/>
+            <Button onAction="#cancelar" text="Cancelar" styleClass="default-button, btn-suave"/>
+            <Button fx:id="btnGenerar" onAction="#generar" text="Generar" styleClass="primary-button, btn-suave"/>
         </HBox>
     </bottom>
 </BorderPane>
