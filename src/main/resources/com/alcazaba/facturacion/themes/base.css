@@ -40,7 +40,6 @@
 
 .section-title {
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
     -fx-opacity: 0.75;
     -fx-padding: 0 0 8px 0;
 }
@@ -71,7 +70,6 @@
 
 .titulo {
     -fx-font-size: 20px;
-    -fx-font-weight: bold;
 }
 
 .muted {
@@ -80,7 +78,6 @@
 
 .chip-anulada {
     -fx-font-size: 14px;
-    -fx-font-weight: bold;
 }
 
 /* Navegación */
@@ -101,7 +98,6 @@
     -fx-content-display: top;
     -fx-graphic-text-gap: 6px;
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
     -fx-alignment: CENTER;
     -fx-min-width: 100;
     -fx-pref-width: 100;
@@ -146,7 +142,6 @@
     -fx-content-display: top;
     -fx-graphic-text-gap: 4px;
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
     -fx-alignment: CENTER;
     -fx-text-alignment: center;
     -fx-wrap-text: true;
@@ -178,9 +173,10 @@
     -fx-border-color: transparent;
 }
 
-.primary-button.btn-ribbon {
+.primary-button.btn-ribbon,
+.default-button.btn-ribbon,
+.action-button.btn-ribbon {
     -fx-text-fill: -fx-accent;
-    -fx-font-weight: bold;
 }
 
 .primary-button.btn-ribbon .icono-boton {
@@ -221,12 +217,10 @@
     -fx-background-color: -fx-boton-lavado;
     -fx-background-insets: 0;
     -fx-border-color: transparent;
-    -fx-font-weight: bold;
 }
 
 .primary-button.btn-suave {
-    -fx-background-color: -fx-boton-lavado-fuerte;
-    -fx-text-fill: -fx-accent;
+    -fx-text-fill: -fx-text-background-color;
 }
 
 .primary-button.btn-suave:hover,
@@ -238,10 +232,6 @@
     -fx-border-color: transparent;
 }
 
-.primary-button.btn-suave:hover {
-    -fx-background-color: -fx-boton-lavado-fuerte, rgba(128, 128, 128, 0.12);
-}
-
 .primary-button.btn-suave:pressed,
 .default-button.btn-suave:pressed,
 .danger-button.btn-suave:pressed,
@@ -249,10 +239,6 @@
 .action-danger-button.btn-suave:pressed {
     -fx-background-color: -fx-boton-lavado, rgba(128, 128, 128, 0.20);
     -fx-border-color: transparent;
-}
-
-.primary-button.btn-suave:pressed {
-    -fx-background-color: -fx-boton-lavado-fuerte, rgba(128, 128, 128, 0.20);
 }
 
 .primary-button.btn-suave:focused,
@@ -278,7 +264,6 @@
 
 .table-view .column-header .label {
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
 }
 
 .table-view .table-row-cell {
@@ -315,7 +300,6 @@
 
 .bloque-titulo {
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
     -fx-opacity: 0.65;
 }
 
@@ -382,7 +366,6 @@
 
 .empresa-nombre {
     -fx-font-size: 19px;
-    -fx-font-weight: bold;
 }
 
 .empresa-info {
@@ -404,7 +387,6 @@
 
 .menu-item .nombre {
     -fx-font-size: 15px;
-    -fx-font-weight: bold;
 }
 
 .menu-item .descripcion {
@@ -441,7 +423,6 @@
 .dialog-card > .header-panel .label {
     -fx-text-fill: -fx-accent;
     -fx-font-size: 15px;
-    -fx-font-weight: bold;
 }
 
 /* Icono de aviso de los dialogos, coloreado con el acento del tema */
@@ -467,7 +448,6 @@
     -fx-border-width: 0;
     -fx-padding: 8px 10px;
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
     -fx-text-fill: -fx-text-background-color;
 }
 
@@ -480,14 +460,12 @@
     -fx-background-color: derive(-fx-accent, 84%);
     -fx-background-radius: 8px;
     -fx-text-fill: derive(-fx-accent, -35%);
-    -fx-font-weight: bold;
 }
 
 .lista-secciones .list-cell .grupo-secciones {
-    -fx-font-size: 11px;
-    -fx-font-weight: bold;
+    -fx-font-size: 12px;
     -fx-padding: 12px 4px 2px 4px;
-    -fx-opacity: 0.55;
+    -fx-opacity: 0.70;
 }
 
 .seccion-config {

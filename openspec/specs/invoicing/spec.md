@@ -480,11 +480,11 @@ Cada diálogo de aviso de la aplicación SHALL mostrar el icono correspondiente 
 
 ### Requirement: Pantalla de generación mensual con estética alineada
 
-La pantalla de generación de facturas mensuales SHALL presentar la misma estética visual que el resto de la aplicación. El título de la pantalla SHALL distinguirse con el mismo estilo de título del resto de ventanas, mostrándose en negrita y con el color de texto del tema de apariencia activo. Las etiquetas del formulario (cliente, serie, año, mes de inicio, mes de fin, día del mes, tipo de IVA y retención de IRPF) SHALL mostrarse con una separación clara respecto a los campos y a los bordes del panel, sin quedar pegadas, y SHALL usar el mismo estilo de etiqueta de formulario que el resto de pantallas. El panel que contiene el formulario SHALL usar un fondo neutro acorde con la ventana (no un fondo blanco plano contrastado) y coherente con el resto de pantallas de la aplicación. La pantalla SHALL conservar los mismos campos, controles, botones y flujo de generación actuales; la modificación es exclusivamente de apariencia.
+La pantalla de generación de facturas mensuales SHALL presentar la misma estética visual que el resto de la aplicación. El título de la pantalla SHALL distinguirse con el mismo estilo de título del resto de ventanas, mostrándose con el tamaño de título y el color de texto del tema de apariencia activo. Las etiquetas del formulario (cliente, serie, año, mes de inicio, mes de fin, día del mes, tipo de IVA y retención de IRPF) SHALL mostrarse con una separación clara respecto a los campos y a los bordes del panel, sin quedar pegadas, y SHALL usar el mismo estilo de etiqueta de formulario que el resto de pantallas. El panel que contiene el formulario SHALL usar un fondo neutro acorde con la ventana (no un fondo blanco plano contrastado) y coherente con el resto de pantallas de la aplicación. La pantalla SHALL conservar los mismos campos, controles, botones y flujo de generación actuales; la modificación es exclusivamente de apariencia.
 
 #### Scenario: Título destacado con el color del tema
 - **WHEN** la aplicación muestra la pantalla de generación de facturas mensuales
-- **THEN** el título «Generar facturas mensuales» se muestra con el mismo estilo destacado (negrita y color de texto del tema) que los títulos del resto de pantallas
+- **THEN** el título «Generar facturas mensuales» se muestra con el mismo estilo destacado (tamaño de título y color de texto del tema) que los títulos del resto de pantallas
 
 #### Scenario: Etiquetas separadas de los campos y del borde
 - **WHEN** la aplicación muestra el formulario de la pantalla de generación mensual
@@ -849,7 +849,7 @@ Este estilo de tarjetas SHALL aplicarse solo en el tema por defecto (Biblioteca8
 
 #### Scenario: Botones del Editor en blanco y negro
 - **WHEN** el usuario abre el Editor con el tema por defecto
-- **THEN** los botones de tabla Añadir línea y Eliminar línea ya no se muestran con fondo blanco y texto negro: se ven sobre el sombreado suave, sin recuadro y con el texto en negrita
+- **THEN** los botones de tabla Añadir línea y Eliminar línea ya no se muestran con fondo blanco y texto negro: se ven sobre el sombreado suave, sin recuadro y con el texto en peso normal
 
 #### Scenario: La barra de acciones pierde el fondo blanco de sus botones
 - **WHEN** el usuario abre el Editor con el tema por defecto
@@ -857,7 +857,7 @@ Este estilo de tarjetas SHALL aplicarse solo en el tema por defecto (Biblioteca8
 
 #### Scenario: Botones del Editor que conservan su estilo
 - **WHEN** el usuario abre el Editor con el tema por defecto
-- **THEN** el botón Guardar se lee como acción principal por su color de acento y su negrita, y el botón Anular conserva su texto rojo de peligro
+- **THEN** el botón Guardar se ve igual que los demás botones de la barra, sin negrita ni distintivo propio, y el botón Anular conserva su texto rojo de peligro
 
 #### Scenario: Anular habilitado no parece deshabilitado
 - **WHEN** el usuario mira el botón Anular habilitado junto a un botón deshabilitado con el tema por defecto
@@ -950,7 +950,7 @@ La aplicación SHALL permitir anular y borrar facturas directamente desde la pan
 
 ### Requirement: Sistema de diseño visual Apple
 
-La aplicación SHALL aplicar un sistema de diseño visual inspirado en Ajustes de Apple: jerarquía clara, espaciado generoso, agrupación de controles en secciones con fondo de tarjeta, esquinas redondeadas, tipografía con pesos diferenciados y una paleta de acentos coherente. Todos los controles interactivos (botones, campos, tablas, listas) SHALL mostrar un estado visual de `:hover` y `:focused` inmediato y sutil. Los formularios SHALL alinear etiquetas y campos con una cuadrícula coherente. Las tablas y listas SHALL usar filas de altura uniforme, separación clara y estado seleccionado visible pero no agresivo. Además, los paneles de contenido SHALL mantener un margen claro respecto al borde de la ventana y respecto a la barra de menú superior, de modo que los campos y tarjetas no queden pegados al borde ni se perciban solapados con la navegación. En cada pantalla principal, los paneles de contenido SHALL aplicarse como tarjetas con fondo, borde, esquinas redondeadas y espaciado interior; ningún panel SHALL quedarse sin ese estilo por una clase de estilo mal declarada.
+La aplicación SHALL aplicar un sistema de diseño visual inspirado en Ajustes de Apple: jerarquía clara, espaciado generoso, agrupación de controles en secciones con fondo de tarjeta, esquinas redondeadas, tipografía con tamaños diferenciados y una paleta de acentos coherente. Todos los controles interactivos (botones, campos, tablas, listas) SHALL mostrar un estado visual de `:hover` y `:focused` inmediato y sutil. Los formularios SHALL alinear etiquetas y campos con una cuadrícula coherente. Las tablas y listas SHALL usar filas de altura uniforme, separación clara y estado seleccionado visible pero no agresivo. Además, los paneles de contenido SHALL mantener un margen claro respecto al borde de la ventana y respecto a la barra de menú superior, de modo que los campos y tarjetas no queden pegados al borde ni se perciban solapados con la navegación. En cada pantalla principal, los paneles de contenido SHALL aplicarse como tarjetas con fondo, borde, esquinas redondeadas y espaciado interior; ningún panel SHALL quedarse sin ese estilo por una clase de estilo mal declarada.
 
 #### Scenario: Pantallas con tarjetas de sección
 - **WHEN** el usuario abre Configuración, el Editor, el Histórico, Clientes, Versiones o Backup
@@ -962,7 +962,7 @@ La aplicación SHALL aplicar un sistema de diseño visual inspirado en Ajustes d
 
 #### Scenario: Tipografía jerárquica
 - **WHEN** el usuario abre cualquier pantalla principal
-- **THEN** los títulos son más grandes y en negrita, los subtítulos usan un peso intermedio y los datos secundarios aparecen en un tono más tenue
+- **THEN** los títulos son más grandes, los subtítulos algo menores y los datos secundarios aparecen en un tono más tenue, sin que la jerarquía dependa del peso de la letra
 
 #### Scenario: Tablas limpias
 - **WHEN** el usuario abre el Histórico
@@ -1172,7 +1172,9 @@ Al pasar el puntero por encima, el botón SHALL insinuar su superficie con un ve
 
 Los iconos SHALL ser monocromo de un solo color, dibujados como trazado vectorial, de modo que el tema activo pueda recolorearlos. SHALL NOT usarse imágenes de mapa de bits ni iconos multicolor de color fijo.
 
-El color del icono SHALL provenir del tema activo y SHALL mantener contraste legible sobre el fondo de la barra en los siete temas, incluidos los oscuros. En un botón de acción principal el icono y la etiqueta SHALL ir en el color de acento del tema, y la etiqueta SHALL ir en negrita, de modo que la acción principal se distinga de las secundarias sin recurrir a un fondo de color. En un botón secundario el icono SHALL ir en el color de acento del tema; en un botón destructivo, en el color de peligro del tema.
+El color del icono y el de la etiqueta SHALL provenir del tema activo y SHALL mantener contraste legible sobre el fondo de la barra en los siete temas, incluidos los oscuros. Tanto el icono como la etiqueta SHALL ir en el color de acento del tema; en un botón destructivo, ambos SHALL ir en el color de peligro.
+
+Ningún botón SHALL destacarse como acción principal: todos los de una misma barra SHALL presentarse con el mismo peso, el mismo color y el mismo tratamiento, y el orden de los botones SHALL ser la única jerarquía. Ninguna etiqueta SHALL mostrarse en negrita.
 
 Una misma acción SHALL llevar el mismo icono en todas las pantallas donde aparezca, y dos acciones distintas SHALL NOT compartir icono.
 
@@ -1194,7 +1196,7 @@ Este requisito alcanza únicamente a las barras de acciones del Editor y del His
 
 #### Scenario: La acción principal se distingue sin fondo de color
 - **WHEN** el usuario mira el botón Guardar junto a Nueva y a Exportar PDF
-- **THEN** Guardar muestra su icono y su etiqueta en el color de acento del tema y con la etiqueta en negrita, mientras que los otros dos usan el color de texto normal
+- **THEN** los tres muestran su icono y su etiqueta en el color de acento del tema, con el mismo peso, y ninguno se destaca sobre los demás
 
 #### Scenario: El icono cambia de color con el tema
 - **WHEN** el usuario cambia el tema desde Configuración
@@ -1313,9 +1315,9 @@ Los botones que muestran únicamente texto, sin icono, SHALL presentarse sobre u
 
 El sombreado SHALL ser un gris neutro teñido levemente con el color de acento del tema activo, de modo que se lea como gris y acompañe al tema sin competir con él. Cada tema de apariencia SHALL declarar su propio valor, tanto el sombreado normal como el de la acción principal.
 
-Estos botones SHALL mostrar su texto en negrita.
+Estos botones SHALL mostrar su texto en peso normal, sin negrita.
 
-El botón de acción principal de cada pantalla SHALL distinguirse del resto por dos señales a la vez: un sombreado más intenso y su texto en el color de acento del tema. Los botones de peligro SHALL conservar su color de texto rojo sobre el sombreado normal.
+Ningún botón SHALL destacarse como acción principal: todos los de una misma pantalla SHALL compartir el mismo sombreado y el mismo color de texto. Los botones de peligro SHALL conservar su color de texto rojo sobre el sombreado normal.
 
 El botón SHALL reaccionar a la interacción: al situar el puntero encima su sombreado SHALL oscurecerse, al mantenerlo pulsado SHALL oscurecerse más, y al recibir el foco de teclado SHALL mostrar un borde con el color de acento del tema activo.
 
@@ -1323,7 +1325,7 @@ Este requisito SHALL aplicarse a los botones de solo texto de Clientes, Configur
 
 #### Scenario: Los botones de una pantalla comparten sombreado
 - **WHEN** el usuario abre Clientes, Configuración, Copia de seguridad o Versiones con cualquier tema
-- **THEN** todos los botones de esa pantalla se ven sobre el mismo sombreado suave, sin borde ni fondo blanco, y con el texto en negrita
+- **THEN** todos los botones de esa pantalla se ven sobre el mismo sombreado suave, sin borde ni fondo blanco, y con el texto en peso normal
 
 #### Scenario: El sombreado se lee como gris en cada tema
 - **WHEN** el usuario cambia entre los temas de apariencia disponibles
@@ -1331,7 +1333,7 @@ Este requisito SHALL aplicarse a los botones de solo texto de Clientes, Configur
 
 #### Scenario: La acción principal se distingue por dos señales
 - **WHEN** el usuario mira los botones Nuevo, Guardar, Crear copia, Restaurar o Generar junto a los demás botones de su pantalla
-- **THEN** el botón principal muestra un sombreado más intenso y su texto en el color de acento del tema
+- **THEN** todos ellos se ven con el mismo sombreado y el mismo color de texto que los demás botones de su pantalla, sin distintivo propio
 
 #### Scenario: Los botones de peligro conservan su rojo
 - **WHEN** el usuario mira el botón Eliminar de Clientes o de Configuración
@@ -1407,15 +1409,15 @@ Los controles de la pantalla, su disposición y el flujo de selección SHALL per
 
 Los elementos de navegación y de acción de la aplicación SHALL presentar un peso tipográfico acorde entre sí, de modo que los controles más usados no se lean con menos presencia que los secundarios.
 
-El texto de los botones que muestran icono y etiqueta —los de la barra de navegación y los de las barras de acciones del Editor y del Histórico— SHALL mostrarse en negrita y a un tamaño que no quede por debajo del de las etiquetas de los botones de solo texto en más de un punto.
+El texto de los botones que muestran icono y etiqueta —los de la barra de navegación y los de las barras de acciones del Editor y del Histórico— SHALL mostrarse en peso normal y a un tamaño que no quede por debajo del de las etiquetas de los botones de solo texto en más de un punto.
 
-Las entradas seleccionables de la lista de secciones de la pantalla de Configuración SHALL mostrarse en negrita. La entrada seleccionada SHALL seguir distinguiéndose de las demás por su fondo y por su color de texto.
+Las entradas seleccionables de la lista de secciones de la pantalla de Configuración SHALL mostrarse en peso normal. La entrada seleccionada SHALL seguir distinguiéndose de las demás por su fondo y por su color de texto.
 
 Ningún control, etiqueta, acción ni disposición SHALL cambiar por este motivo: la modificación es exclusivamente tipográfica.
 
 #### Scenario: Los botones con icono pesan como los de solo texto
 - **WHEN** el usuario mira la barra de navegación o la barra de acciones del Editor junto a un botón de solo texto
-- **THEN** las etiquetas de los botones con icono se leen en negrita, sin quedar visiblemente más ligeras que las de los botones de solo texto
+- **THEN** las etiquetas de los botones con icono se leen con el mismo peso que las de los botones de solo texto, sin quedar unas visiblemente más pesadas que otras
 
 #### Scenario: Las etiquetas de navegación no se recortan
 - **WHEN** el usuario abre cualquier pantalla con la ventana en su tamaño mínimo de 1024x768
@@ -1423,4 +1425,24 @@ Ningún control, etiqueta, acción ni disposición SHALL cambiar por este motivo
 
 #### Scenario: La lista de secciones se lee en negrita
 - **WHEN** el usuario abre la pantalla de Configuración
-- **THEN** las entradas de la lista de secciones se muestran en negrita, y la que está seleccionada se distingue por su fondo y su color de texto
+- **THEN** las entradas de la lista de secciones se muestran en peso normal, y la que está seleccionada se distingue por su fondo y su color de texto
+
+### Requirement: La negrita queda reservada a los importes
+
+La aplicación SHALL NOT usar la negrita como recurso de jerarquía en su interfaz. Los títulos de pantalla, los rótulos de sección, las etiquetas de los botones, las cabeceras de tabla, las entradas de lista y los nombres del menú principal SHALL mostrarse en peso normal, y SHALL distinguirse entre sí por su tamaño y por su color.
+
+La negrita SHALL reservarse a los importes: el valor de las filas de totales y el total destacado de cada tema de apariencia. Fuera de esos dos casos, ningún texto de la interfaz SHALL mostrarse en negrita.
+
+Esta regla SHALL alcanzar a los siete temas de apariencia por igual.
+
+#### Scenario: Ningún control se muestra en negrita
+- **WHEN** el usuario recorre el menú principal, el Editor, el Histórico, Clientes y Configuración
+- **THEN** ninguna etiqueta de botón, cabecera de tabla, entrada de lista ni título de pantalla se muestra en negrita
+
+#### Scenario: Los importes conservan la negrita
+- **WHEN** el usuario mira el bloque de totales de una factura
+- **THEN** el importe del total se sigue mostrando en negrita, de modo que se localiza de un vistazo
+
+#### Scenario: La jerarquía se mantiene sin peso
+- **WHEN** el usuario compara el título de una pantalla con el texto normal que la rodea
+- **THEN** el título se distingue por ser mayor y por su color, no por su peso

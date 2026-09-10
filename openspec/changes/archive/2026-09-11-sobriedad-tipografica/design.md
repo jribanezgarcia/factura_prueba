@@ -47,7 +47,7 @@ Los destructivos quedan fuera de ese selector a propósito: el tema ya les pone 
 
 Se retira la negrita y el texto de acento de `.primary-button.btn-ribbon`, que pasa a ser idéntico a `.action-button.btn-ribbon`, y se elimina entera la regla `.primary-button.btn-suave` junto con sus variantes de puntero encima y pulsado.
 
-`primary-button` sigue existiendo como clase en los FXML y no se toca ninguno: simplemente deja de pintar distinto. Eso conserva la intención declarada en el marcado por si algún día se quiere recuperar.
+`primary-button` sigue existiendo como clase en los FXML y no se toca ninguno: simplemente deja de pintar distinto. Eso conserva la intención declarada en el marcado por si algún día se quiere recuperar. Retirar la regla dejaba al descubierto el `-fx-text-fill` blanco que el tema da a `.primary-button` —pensado para cuando el botón tenía fondo de acento—, por lo que hace falta fijar explícitamente el color de texto normal en `.primary-button.btn-suave` con `-fx-text-fill: -fx-text-background-color`, variable que coincide con el texto de `.default-button` en los siete temas.
 
 Con eso `-fx-boton-lavado-fuerte` se queda sin ninguna referencia y se retira de los siete temas. Es la variable que se afinó hasta 0.15. Su gemela `-fx-boton-lavado`, la del sombreado normal, se queda intacta.
 
@@ -61,7 +61,7 @@ Es la trampa de este change. Se conserva.
 
 ## Riesgos
 
-`.grupo-secciones`, los rótulos CONFIGURACIÓN GENERAL y CATÁLOGOS de la lista lateral, van a 11px con opacidad 0.55. Al quitarles la negrita pueden quedar demasiado tenues. Si no se leen, la salida es subir la opacidad, nunca devolverles el peso.
+`.grupo-secciones`, los rótulos CONFIGURACIÓN GENERAL y CATÁLOGOS de la lista lateral, van a 11px con opacidad 0.55. Al quitarles la negrita pueden quedar demasiado tenues. Si no se leen, la salida es subir la opacidad, nunca devolverles el peso. El riesgo se materializó y se resolvió en la verificación 4.6: `-fx-font-size` se subió a 12px y `-fx-opacity` a 0.70, con lo que el contraste pasa de 3.43:1 a 5.29:1 sobre 4.5:1.
 
 Lo mismo con `.chip-anulada`: pierde la negrita y conserva solo el rojo. Hay un requisito vigente que exige que una factura anulada se identifique de un vistazo.
 
