@@ -111,11 +111,6 @@
     -fx-border-color: transparent transparent -fx-accent transparent;
 }
 
-.nav-button .nav-icon {
-    -fx-scale-x: 1.25;
-    -fx-scale-y: 1.25;
-}
-
 /* Barra de acciones del editor */
 .action-bar {
     -fx-background-color: transparent;
