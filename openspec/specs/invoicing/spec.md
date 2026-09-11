@@ -1324,7 +1324,9 @@ Ningún botón SHALL destacarse como acción principal: todos los de una misma p
 
 El botón SHALL reaccionar a la interacción: al situar el puntero encima su sombreado SHALL oscurecerse, al mantenerlo pulsado SHALL oscurecerse más, y al recibir el foco de teclado SHALL mostrar un borde con el color de acento del tema activo.
 
-Este requisito SHALL aplicarse a los botones de solo texto de Configuración, Copia de seguridad, Versiones, el Editor y la generación de facturas mensuales, incluidos los botones de línea de esta última, que hasta ahora mostraban el gris por defecto de la plataforma. SHALL NOT aplicarse a los botones de la barra de acciones de Clientes, que muestran icono, ni a los de la pantalla de arranque ni a los de los diálogos de aviso y confirmación, que la plataforma construye por su cuenta. La maquetación, el comportamiento y las acciones de todos ellos SHALL permanecer sin cambios: la modificación es exclusivamente de apariencia.
+Estos botones SHALL tener la misma forma que los botones de los diálogos de aviso y confirmación: esquinas apenas redondeadas, relleno ajustado al texto y un ancho mínimo común. Los botones de solo texto que compartan fila SHALL medir todos lo mismo, el ancho del más ancho de ellos, sin que ninguna etiqueta se corte. Un botón solo en su fila SHALL conservar su ancho natural, sin bajar del mínimo.
+
+Este requisito SHALL aplicarse a los botones de solo texto de Configuración, Copia de seguridad, Versiones, el Editor y la generación de facturas mensuales, incluidos los botones de línea de esta última, que hasta ahora mostraban el gris por defecto de la plataforma. SHALL NOT aplicarse a los botones que muestran icono, ni a los de la barra de navegación, el menú principal, la pantalla de arranque o los diálogos de aviso y confirmación, que la plataforma construye por su cuenta. El comportamiento y las acciones de todos ellos SHALL permanecer sin cambios, y la maquetación de cada pantalla SHALL seguir cabiendo en el tamaño mínimo de ventana.
 
 #### Scenario: Los botones de una pantalla comparten sombreado
 - **WHEN** el usuario abre Configuración, Copia de seguridad o Versiones con cualquier tema
@@ -1353,6 +1355,18 @@ Este requisito SHALL aplicarse a los botones de solo texto de Configuración, Co
 #### Scenario: Arranque y los diálogos no cambian
 - **WHEN** el usuario abre la pantalla de arranque o un diálogo de aviso o de confirmación
 - **THEN** sus botones conservan el aspecto que tenían y el flujo de confirmación y cancelación no cambia
+
+#### Scenario: Los botones tienen forma de diálogo
+- **WHEN** el usuario compara un botón de solo texto de Configuración con los botones de un diálogo de confirmación
+- **THEN** los dos tienen las mismas esquinas apenas redondeadas y un relleno igual de ajustado
+
+#### Scenario: Los botones de una fila miden lo mismo
+- **WHEN** el usuario mira los botones Nuevo, Guardar e Inactivar/Activar de la sección de tipos de IVA de Configuración
+- **THEN** los tres miden lo mismo, el ancho de Inactivar/Activar, y ninguna etiqueta aparece cortada
+
+#### Scenario: El número de facturas a generar se indica fuera del botón
+- **WHEN** el usuario cambia el mes de inicio o el de fin en la pantalla de generación de facturas mensuales
+- **THEN** el botón sigue diciendo «Generar» y mide lo mismo que Cancelar, y una etiqueta junto a ellos indica al momento cuántas facturas se van a generar
 
 ### Requirement: Composición centrada del menú principal
 

@@ -66,6 +66,8 @@ public class Navegador {
                 }
                 vista.alIniciar();
             }
+            root.applyCss();
+            Botones.igualarGrupos(root);
             root.lookupAll(".primary-button, .menu-item").forEach(n ->
                     Microinteracciones.escalaSuave((javafx.scene.Node) n));
             return vista;
