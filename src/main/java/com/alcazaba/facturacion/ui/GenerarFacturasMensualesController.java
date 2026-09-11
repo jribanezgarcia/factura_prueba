@@ -144,8 +144,10 @@ public class GenerarFacturasMensualesController {
         configurarDiaDelMes();
         comboMesInicio.setValue(1);
         comboMesFin.setValue(12);
+        comboMesInicio.valueProperty().addListener((o, anterior, nuevo) -> actualizarInfo());
+        comboMesFin.valueProperty().addListener((o, anterior, nuevo) -> actualizarInfo());
         lineas.add(new LineaDialogo(1, "", BigDecimal.ZERO, true));
-        actualizarInfoBoton();
+        actualizarInfo();
     }
 
     private void cargarClientes() {
@@ -306,7 +308,7 @@ public class GenerarFacturasMensualesController {
         colCantidad.setOnEditCommit(e -> {
             int v = e.getNewValue() == null ? 1 : Math.max(1, e.getNewValue().intValue());
             e.getRowValue().setCantidad(v);
-            actualizarInfoBoton();
+            actualizarInfo();
         });
 
         colDescripcion.setCellValueFactory(c -> c.getValue().descripcionProperty());
@@ -329,7 +331,7 @@ public class GenerarFacturasMensualesController {
         colPrecio.setOnEditCommit(e -> {
             BigDecimal v = e.getNewValue() == null ? BigDecimal.ZERO : e.getNewValue();
             e.getRowValue().setPrecioUnitario(v);
-            actualizarInfoBoton();
+            actualizarInfo();
         });
 
         colAnadirMes.setCellValueFactory(c -> c.getValue().anadirMesProperty());
@@ -339,7 +341,7 @@ public class GenerarFacturasMensualesController {
     @FXML
     private void anadirLinea() {
         lineas.add(new LineaDialogo(1, "", BigDecimal.ZERO, true));
-        actualizarInfoBoton();
+        actualizarInfo();
     }
 
     @FXML
@@ -352,7 +354,7 @@ public class GenerarFacturasMensualesController {
         if (lineas.isEmpty()) {
             lineas.add(new LineaDialogo(1, "", BigDecimal.ZERO, true));
         }
-        actualizarInfoBoton();
+        actualizarInfo();
     }
 
     @FXML
@@ -481,11 +483,15 @@ public class GenerarFacturasMensualesController {
         }
     }
 
-    private void actualizarInfoBoton() {
+    private void actualizarInfo() {
         int mesInicio = comboMesInicio.getValue() == null ? 1 : comboMesInicio.getValue();
         int mesFin = comboMesFin.getValue() == null ? 12 : comboMesFin.getValue();
-        int meses = Math.max(0, mesFin - mesInicio + 1);
-        btnGenerar.setText("Generar " + meses + " factura" + (meses == 1 ? "" : "s"));
+        if (mesFin < mesInicio) {
+            lblInfo.setText("No se generará ninguna factura");
+            return;
+        }
+        int meses = mesFin - mesInicio + 1;
+        lblInfo.setText(meses == 1 ? "Se generará 1 factura" : "Se generarán " + meses + " facturas");
     }
 
     public static class LineaDialogo {
