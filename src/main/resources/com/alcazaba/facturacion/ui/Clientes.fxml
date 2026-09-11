@@ -2,6 +2,7 @@
 
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.*?>
 <?import javafx.geometry.*?>
 <BorderPane prefHeight="768.0" prefWidth="1024.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
@@ -17,10 +18,36 @@
                     <TextField fx:id="txtBusqueda" prefWidth="280" promptText="Buscar por nombre o NIF..."/>
                     <Label fx:id="lblConteo" text=""/>
                     <Region HBox.hgrow="ALWAYS"/>
-                    <Button onAction="#nuevo" styleClass="primary-button, btn-suave" text="Nuevo"/>
-                    <Button onAction="#editar" styleClass="default-button, btn-suave" text="Editar"/>
-                    <Button onAction="#eliminar" styleClass="danger-button, btn-suave" text="Eliminar"/>
-                    <Button onAction="#volver" styleClass="default-button, btn-suave" text="Volver"/>
+                    <Button onAction="#nuevo" styleClass="primary-button, btn-ribbon" text="Nuevo">
+                        <graphic>
+                            <StackPane styleClass="caja-icono">
+                                <SVGPath styleClass="icono-boton" content="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </StackPane>
+                        </graphic>
+                    </Button>
+                    <Button onAction="#editar" styleClass="default-button, btn-ribbon" text="Editar">
+                        <graphic>
+                            <StackPane styleClass="caja-icono">
+                                <SVGPath styleClass="icono-boton" content="M 8.2 8.6 c 1.77 0 3.2 -1.43 3.2 -3.2 s -1.43 -3.2 -3.2 -3.2 -3.2 1.43 -3.2 3.2 1.43 3.2 3.2 3.2 Z m 0 1.6 c -2.14 0 -6.4 1.07 -6.4 3.2 v 1.6 h 12.8 v -1.6 c 0 -2.13 -4.26 -3.2 -6.4 -3.2 Z M 14.64 20.28 V 22.08 h 1.8 L 21.75 16.77 l -1.8 -1.8 L 14.64 20.28 Z M 23.14 15.38 c 0.19 -0.19 0.19 -0.49 0 -0.68 l -1.12 -1.12 c -0.19 -0.19 -0.49 -0.19 -0.68 0 l -0.88 0.88 1.8 1.8 0.88 -0.88 Z"/>
+                            </StackPane>
+                        </graphic>
+                    </Button>
+                    <Separator orientation="VERTICAL" styleClass="ribbon-sep"/>
+                    <Button onAction="#eliminar" styleClass="default-button, btn-ribbon" text="Eliminar">
+                        <graphic>
+                            <StackPane styleClass="caja-icono">
+                                <SVGPath styleClass="icono-boton" content="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </StackPane>
+                        </graphic>
+                    </Button>
+                    <Separator orientation="VERTICAL" styleClass="ribbon-sep"/>
+                    <Button onAction="#volver" styleClass="default-button, btn-ribbon" text="Volver">
+                        <graphic>
+                            <StackPane styleClass="caja-icono">
+                                <SVGPath styleClass="icono-boton" content="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                            </StackPane>
+                        </graphic>
+                    </Button>
                 </HBox>
             </VBox>
         </VBox>
