@@ -316,7 +316,7 @@ final class OpenPdfRenderer {
     // ------------------------------------------------------------------
 
     private PdfPTable tablaLineasVacia(EstiloPdf.Colores c) {
-        PdfPTable t = new PdfPTable(new float[]{0.7f, 4.3f, 1.4f, 1.0f, 1.9f});
+        PdfPTable t = new PdfPTable(new float[]{0.7f, 5.15f, 1.25f, 0.75f, 1.45f});
         t.setWidthPercentage(100);
         t.addCell(celdaCabeceraColumna("CANT.", c));
         t.addCell(celdaCabeceraColumna("DESCRIPCIÓN", c));
@@ -332,9 +332,9 @@ final class OpenPdfRenderer {
         for (InvoiceDocument.LineRow l : lines.rows()) {
             t.addCell(celdaLinea(l.quantity(), fila, Element.ALIGN_CENTER, c));
             t.addCell(celdaLinea(l.description(), fila, Element.ALIGN_LEFT, c));
-            t.addCell(celdaLinea(l.price(), fila, Element.ALIGN_RIGHT, c));
+            t.addCell(celdaLinea(l.price(), fila, Element.ALIGN_CENTER, c));
             t.addCell(celdaLinea(l.iva(), fila, Element.ALIGN_CENTER, c));
-            t.addCell(celdaLinea(l.total(), fila, Element.ALIGN_RIGHT, c));
+            t.addCell(celdaLinea(l.total(), fila, Element.ALIGN_CENTER, c));
             fila++;
         }
         if (fila > 0) t.setHeaderRows(1);
@@ -342,7 +342,7 @@ final class OpenPdfRenderer {
     }
 
     private PdfPTable bloqueSuplidos(InvoiceDocument.SuplidosBlock suplidos, EstiloPdf.Colores c) {
-        PdfPTable t = new PdfPTable(new float[]{6.4f, 1.9f});
+        PdfPTable t = new PdfPTable(new float[]{7.85f, 1.45f});
         t.setWidthPercentage(100);
 
         t.addCell(celdaCabeceraColumnaCompacta(suplidos.headers().get(0), c));
@@ -408,13 +408,14 @@ final class OpenPdfRenderer {
     // ------------------------------------------------------------------
 
     private PdfPTable bloqueTotales(InvoiceDocument.TotalsBlock totals, EstiloPdf.Colores c) {
-        PdfPTable contenedor = new PdfPTable(new float[]{3.3f, 3.0f});
+        PdfPTable contenedor = new PdfPTable(new float[]{5.85f, 3.45f});
         contenedor.setWidthPercentage(100);
 
         PdfPCell celdaIzquierda = new PdfPCell();
         celdaIzquierda.setBorder(Rectangle.NO_BORDER);
         celdaIzquierda.setVerticalAlignment(Element.ALIGN_TOP);
-        celdaIzquierda.setPaddingRight(7f);
+        celdaIzquierda.setPaddingLeft(0f);
+        celdaIzquierda.setPaddingRight(4f);
         celdaIzquierda.addElement(rejillaDesgloseIva(totals, c));
         if (totals.discountNote().isPresent()) {
             celdaIzquierda.addElement(notaDescuento(totals.discountNote().orElseThrow(), c));
@@ -423,7 +424,8 @@ final class OpenPdfRenderer {
         PdfPCell celdaDerecha = new PdfPCell();
         celdaDerecha.setBorder(Rectangle.NO_BORDER);
         celdaDerecha.setVerticalAlignment(Element.ALIGN_TOP);
-        celdaDerecha.setPaddingLeft(7f);
+        celdaDerecha.setPaddingLeft(0f);
+        celdaDerecha.setPaddingRight(0f);
         celdaDerecha.addElement(rejillaLiquidacion(totals.liquidation(), c));
 
         contenedor.addCell(celdaIzquierda);
@@ -432,7 +434,7 @@ final class OpenPdfRenderer {
     }
 
     private PdfPTable rejillaDesgloseIva(InvoiceDocument.TotalsBlock totals, EstiloPdf.Colores c) {
-        PdfPTable t = new PdfPTable(new float[]{1.0f, 2.0f, 1.7f});
+        PdfPTable t = new PdfPTable(new float[]{38.78f, 152.08f, 129.26f});
         t.setWidthPercentage(100);
         t.addCell(celdaCabeceraRejilla(totals.desgloseHeaders().get(0), c));
         t.addCell(celdaCabeceraRejilla(totals.desgloseHeaders().get(1), c));
@@ -460,7 +462,7 @@ final class OpenPdfRenderer {
     }
 
     private PdfPTable rejillaLiquidacion(InvoiceDocument.Liquidation liquidation, EstiloPdf.Colores c) {
-        PdfPTable t = new PdfPTable(new float[]{2.2f, 1.4f});
+        PdfPTable t = new PdfPTable(new float[]{2.0f, 1.45f});
         t.setWidthPercentage(100);
 
         PdfPCell cabecera = celdaCabeceraRejilla(liquidation.title(), c);
@@ -593,7 +595,7 @@ final class OpenPdfRenderer {
     }
 
     PdfPTable tablaRelleno(float hueco, EstiloPdf.Colores c) {
-        PdfPTable t = new PdfPTable(new float[]{0.7f, 4.3f, 1.4f, 1.0f, 1.9f});
+        PdfPTable t = new PdfPTable(new float[]{0.7f, 5.15f, 1.25f, 0.75f, 1.45f});
         t.setWidthPercentage(100);
         for (int col = 0; col < 5; col++) {
             PdfPCell cell = new PdfPCell(new Phrase(" "));
