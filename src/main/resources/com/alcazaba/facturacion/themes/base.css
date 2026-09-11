@@ -158,6 +158,16 @@
     -fx-scale-y: 1.05;
 }
 
+.caja-icono {
+    -fx-min-width: 22;
+    -fx-pref-width: 22;
+    -fx-max-width: 22;
+    -fx-min-height: 22;
+    -fx-pref-height: 22;
+    -fx-max-height: 22;
+    -fx-alignment: center;
+}
+
 .ribbon-sep {
     -fx-padding: 0 2px;
 }
