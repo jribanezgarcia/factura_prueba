@@ -25,11 +25,8 @@
 .primary-button:hover { -fx-background-color: #1A55A8; }
 .default-button { -fx-background-color: #FFFFFF; -fx-text-fill: #1F2937; -fx-border-color: #D8DBDF; }
 .default-button:hover { -fx-border-color: #296796; -fx-text-fill: #296796; }
-.danger-button { -fx-background-color: #FFFFFF; -fx-text-fill: #C0392B; -fx-border-color: #E9B7AE; }
 .action-button { -fx-background-color: #FFFFFF; -fx-text-fill: #1F2937; -fx-border-color: #D8DBDF; }
 .action-button:hover { -fx-border-color: #296796; -fx-text-fill: #296796; }
-.action-danger-button { -fx-background-color: #FFFFFF; -fx-text-fill: #C0392B; -fx-border-color: #E9B7AE; }
-.action-danger-button:hover { -fx-background-color: #F9E7E4; -fx-text-fill: #C0392B; }
 
 .table-view { -fx-background-color: #FFFFFF; -fx-border-color: #D8DBDF; }
 .table-view .column-header-background { -fx-background-color: #E8EEF3; }
@@ -58,7 +55,6 @@
 .menu-item .icono { -fx-fill: #296796; }
 .default-button .icono-boton, .action-button .icono-boton { -fx-fill: #296796; }
 .primary-button .icono-boton { -fx-fill: #FFFFFF; }
-.danger-button .icono-boton, .action-danger-button .icono-boton { -fx-fill: #C0392B; }
 .menu-item .nombre { -fx-text-fill: #296796; }
 .menu-item .descripcion { -fx-text-fill: #6B7280; }
 

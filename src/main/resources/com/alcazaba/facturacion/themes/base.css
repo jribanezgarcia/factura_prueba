@@ -119,11 +119,13 @@
     -fx-border-radius: 10px;
     -fx-padding: 8px;
     -fx-spacing: 8px;
+    -fx-min-height: 69px;
+    -fx-pref-height: 69px;
 }
 
 /* Botones base */
-.primary-button, .default-button, .danger-button,
-.action-button, .action-danger-button {
+.primary-button, .default-button,
+.action-button {
     -fx-background-radius: 3px;
     -fx-border-radius: 3px;
     -fx-border-width: 1;
@@ -171,9 +173,7 @@
 /* Variante plana: el boton no pinta caja, solo icono y texto sobre el fondo de la barra */
 .primary-button.btn-ribbon,
 .default-button.btn-ribbon,
-.danger-button.btn-ribbon,
-.action-button.btn-ribbon,
-.action-danger-button.btn-ribbon {
+.action-button.btn-ribbon {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-border-color: transparent;
@@ -191,35 +191,27 @@
 
 .primary-button.btn-ribbon:hover,
 .default-button.btn-ribbon:hover,
-.danger-button.btn-ribbon:hover,
-.action-button.btn-ribbon:hover,
-.action-danger-button.btn-ribbon:hover {
+.action-button.btn-ribbon:hover {
     -fx-background-color: rgba(128, 128, 128, 0.18);
     -fx-border-color: transparent;
 }
 
 .primary-button.btn-ribbon:pressed,
 .default-button.btn-ribbon:pressed,
-.danger-button.btn-ribbon:pressed,
-.action-button.btn-ribbon:pressed,
-.action-danger-button.btn-ribbon:pressed {
+.action-button.btn-ribbon:pressed {
     -fx-background-color: rgba(128, 128, 128, 0.28);
 }
 
 .primary-button.btn-ribbon:focused,
 .default-button.btn-ribbon:focused,
-.danger-button.btn-ribbon:focused,
-.action-button.btn-ribbon:focused,
-.action-danger-button.btn-ribbon:focused {
+.action-button.btn-ribbon:focused {
     -fx-border-color: -fx-accent;
 }
 
 /* Variante con sombreado para botones de solo texto: mismo mecanismo que btn-ribbon */
 .primary-button.btn-suave,
 .default-button.btn-suave,
-.danger-button.btn-suave,
-.action-button.btn-suave,
-.action-danger-button.btn-suave {
+.action-button.btn-suave {
     -fx-background-color: -fx-boton-lavado;
     -fx-background-insets: 0;
     -fx-border-color: transparent;
@@ -231,27 +223,21 @@
 
 .primary-button.btn-suave:hover,
 .default-button.btn-suave:hover,
-.danger-button.btn-suave:hover,
-.action-button.btn-suave:hover,
-.action-danger-button.btn-suave:hover {
+.action-button.btn-suave:hover {
     -fx-background-color: -fx-boton-lavado, rgba(128, 128, 128, 0.12);
     -fx-border-color: transparent;
 }
 
 .primary-button.btn-suave:pressed,
 .default-button.btn-suave:pressed,
-.danger-button.btn-suave:pressed,
-.action-button.btn-suave:pressed,
-.action-danger-button.btn-suave:pressed {
+.action-button.btn-suave:pressed {
     -fx-background-color: -fx-boton-lavado, rgba(128, 128, 128, 0.20);
     -fx-border-color: transparent;
 }
 
 .primary-button.btn-suave:focused,
 .default-button.btn-suave:focused,
-.danger-button.btn-suave:focused,
-.action-button.btn-suave:focused,
-.action-danger-button.btn-suave:focused {
+.action-button.btn-suave:focused {
     -fx-border-color: -fx-accent;
 }
 
