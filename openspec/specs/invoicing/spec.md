@@ -827,7 +827,7 @@ La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus v
 
 ### Requirement: Estilo de zona de acciones en tema por defecto
 
-En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL distinguirse visualmente sin que resalte: las tarjetas superiores del Histórico, de Clientes y del Editor (Nueva factura), que contienen los campos de búsqueda o de factura y los botones de acción, SHALL tener un fondo gris claro `#F6F6F6`.
+En el tema por defecto (Biblioteca8), la zona de acciones de las pantallas SHALL distinguirse visualmente sin que resalte: las tarjetas superiores del Histórico, de Clientes y del Editor (Nueva factura), que contienen los campos de búsqueda o de factura y la franja de acciones, SHALL tener un fondo gris claro `#F6F6F6`. La franja de acciones que va dentro de esas tarjetas SHALL mostrarse en el gris algo más oscuro que ya usa el Editor, según el requisito «Barra de acciones sobre franja propia en Editor, Clientes e Histórico».
 
 Los botones de la barra de acciones del Editor y del Histórico SHALL NOT mostrarse con fondo blanco: SHALL ser planos y adoptar el color del contenedor en el que están, según el requisito «Botones de acción con icono identificativo». Guardar SHALL mantener su condición de acción principal mediante el color de acento en su icono y su etiqueta, en lugar de mediante un fondo de acento. Anular SHALL mostrarse a plena intensidad en el color del tema, igual que los demás botones, de modo que un Anular habilitado SHALL NOT confundirse con un botón deshabilitado, que aparece atenuado.
 
@@ -837,11 +837,11 @@ Este estilo de tarjetas SHALL aplicarse solo en el tema por defecto (Biblioteca8
 
 #### Scenario: Tarjeta del Histórico con fondo gris claro
 - **WHEN** el usuario abre el Histórico con el tema por defecto
-- **THEN** la tarjeta que contiene los campos de búsqueda y la fila de botones muestra un fondo gris claro `#F6F6F6`
+- **THEN** la tarjeta que contiene los filtros muestra un fondo gris claro `#F6F6F6`, y la franja con la fila de botones se ve sobre ella en un gris algo más oscuro
 
 #### Scenario: Tarjeta de Clientes con fondo gris claro
 - **WHEN** el usuario abre Clientes con el tema por defecto
-- **THEN** la tarjeta que contiene el campo de búsqueda y la fila de botones muestra el mismo fondo gris claro `#F6F6F6`
+- **THEN** la tarjeta que contiene el campo de búsqueda muestra el mismo fondo gris claro `#F6F6F6`, y la franja con la fila de botones se ve sobre ella en un gris algo más oscuro
 
 #### Scenario: Tarjeta del Editor con fondo gris claro
 - **WHEN** el usuario abre el Editor (Nueva factura) con el tema por defecto
@@ -1495,3 +1495,27 @@ SHALL aplicarse igualmente a la barra de navegación, con su propia caja. En ell
 #### Scenario: Los iconos de navegación se ven de un tamaño parecido
 - **WHEN** el usuario mira la barra de navegación en cualquier pantalla
 - **THEN** los siete iconos se ven de un tamaño parecido, cada uno centrado sobre su etiqueta y sin desplazamientos a un lado
+
+### Requirement: Barra de acciones sobre franja propia en Editor, Clientes e Histórico
+
+En el Editor, en Clientes y en el Histórico, los botones de acción SHALL ocupar una fila propia sobre una franja de fondo que se distinga del resto de la tarjeta que la contiene, y esa fila SHALL ser la primera de la tarjeta. Las tres pantallas SHALL usar la misma franja, de modo que su color lo fije cada tema una sola vez.
+
+Los campos de la pantalla —el buscador de Clientes y los filtros del Histórico— SHALL quedar debajo de esa franja, dentro de la misma tarjeta, alineados a la izquierda. Ningún campo SHALL compartir fila con los botones de acción.
+
+Los botones SHALL arrancar por la izquierda de la franja, en el mismo orden en que están hoy, y SHALL conservar su icono, su etiqueta y su acción.
+
+#### Scenario: Los botones de Clientes van en su propia fila
+- **WHEN** el usuario abre Clientes
+- **THEN** los botones Nuevo, Editar, Eliminar y Volver aparecen en la primera fila de la tarjeta, sobre la franja de acciones, y el campo de búsqueda queda debajo de ellos
+
+#### Scenario: Los botones del Histórico van encima de los filtros
+- **WHEN** el usuario abre el Histórico
+- **THEN** los botones de acción aparecen en la primera fila de la tarjeta, sobre la franja de acciones, y los filtros de serie, cliente, fechas, importes y estado quedan debajo
+
+#### Scenario: Las tres pantallas se ven iguales
+- **WHEN** el usuario pasa del Editor a Clientes y al Histórico con cualquier tema
+- **THEN** en las tres la fila de iconos se ve sobre una franja del mismo color, distinta del fondo de la tarjeta
+
+#### Scenario: Los filtros arrancan a la izquierda
+- **WHEN** el usuario abre el Histórico en el tamaño mínimo de ventana
+- **THEN** los filtros arrancan pegados al borde izquierdo de la tarjeta, en sus dos filas de siempre, sin quedar centrados ni empujados a la derecha

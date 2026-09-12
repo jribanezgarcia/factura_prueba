@@ -14,33 +14,7 @@
         <VBox spacing="12">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
             <VBox spacing="8" styleClass="card, zona-contenido, panel-busqueda">
-                <GridPane styleClass="grid-filtros" maxWidth="-Infinity">
-                    <columnConstraints>
-                        <ColumnConstraints hgrow="NEVER" minWidth="-Infinity"/>
-                        <ColumnConstraints hgrow="NEVER"/>
-                        <ColumnConstraints hgrow="NEVER" minWidth="-Infinity"/>
-                        <ColumnConstraints hgrow="NEVER"/>
-                        <ColumnConstraints hgrow="NEVER" minWidth="-Infinity"/>
-                        <ColumnConstraints hgrow="NEVER"/>
-                        <ColumnConstraints hgrow="NEVER" minWidth="-Infinity"/>
-                        <ColumnConstraints hgrow="NEVER"/>
-                    </columnConstraints>
-                    <Label text="Serie"/>
-                    <ComboBox fx:id="comboSerie" prefWidth="120" GridPane.columnIndex="1"/>
-                    <Label text="Cliente/NIF" GridPane.columnIndex="2"/>
-                    <TextField fx:id="txtCliente" prefWidth="200" promptText="Nombre o NIF" GridPane.columnIndex="3"/>
-                    <Label text="Desde" GridPane.columnIndex="4"/>
-                    <DatePicker fx:id="fechaDesde" GridPane.columnIndex="5"/>
-                    <Label text="Hasta" GridPane.columnIndex="6"/>
-                    <DatePicker fx:id="fechaHasta" GridPane.columnIndex="7"/>
-                    <Label text="Importe desde" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtImporteDesde" prefWidth="100" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                    <Label text="Hasta" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
-                    <TextField fx:id="txtImporteHasta" prefWidth="100" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
-                    <Label text="Estado" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
-                    <ComboBox fx:id="comboEstado" prefWidth="120" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
-                </GridPane>
-                <HBox spacing="8" alignment="CENTER_RIGHT">
+                <HBox styleClass="action-bar" alignment="CENTER_LEFT">
                     <Button onAction="#buscar" styleClass="primary-button, btn-ribbon" text="Buscar">
                         <graphic>
                             <StackPane styleClass="caja-icono">
@@ -86,6 +60,32 @@
                         </graphic>
                     </Button>
                 </HBox>
+                <GridPane styleClass="grid-filtros" maxWidth="-Infinity">
+                    <columnConstraints>
+                        <ColumnConstraints hgrow="NEVER" minWidth="-Infinity"/>
+                        <ColumnConstraints hgrow="NEVER"/>
+                        <ColumnConstraints hgrow="NEVER" minWidth="-Infinity"/>
+                        <ColumnConstraints hgrow="NEVER"/>
+                        <ColumnConstraints hgrow="NEVER" minWidth="-Infinity"/>
+                        <ColumnConstraints hgrow="NEVER"/>
+                        <ColumnConstraints hgrow="NEVER" minWidth="-Infinity"/>
+                        <ColumnConstraints hgrow="NEVER"/>
+                    </columnConstraints>
+                    <Label text="Serie"/>
+                    <ComboBox fx:id="comboSerie" prefWidth="120" GridPane.columnIndex="1"/>
+                    <Label text="Cliente/NIF" GridPane.columnIndex="2"/>
+                    <TextField fx:id="txtCliente" prefWidth="200" promptText="Nombre o NIF" GridPane.columnIndex="3"/>
+                    <Label text="Desde" GridPane.columnIndex="4"/>
+                    <DatePicker fx:id="fechaDesde" GridPane.columnIndex="5"/>
+                    <Label text="Hasta" GridPane.columnIndex="6"/>
+                    <DatePicker fx:id="fechaHasta" GridPane.columnIndex="7"/>
+                    <Label text="Importe desde" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtImporteDesde" prefWidth="100" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+                    <Label text="Hasta" GridPane.columnIndex="2" GridPane.rowIndex="1"/>
+                    <TextField fx:id="txtImporteHasta" prefWidth="100" GridPane.columnIndex="3" GridPane.rowIndex="1"/>
+                    <Label text="Estado" GridPane.columnIndex="4" GridPane.rowIndex="1"/>
+                    <ComboBox fx:id="comboEstado" prefWidth="120" GridPane.columnIndex="5" GridPane.rowIndex="1"/>
+                </GridPane>
             </VBox>
         </VBox>
     </top>
