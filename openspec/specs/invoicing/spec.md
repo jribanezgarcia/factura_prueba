@@ -315,7 +315,7 @@ La aplicación SHALL tener un histórico de facturas que muestre cada versión c
 
 ### Requirement: Menú y navegación
 
-La aplicación SHALL tener un menú principal con las opciones Nueva factura, Facturar mes, Histórico, Clientes, Configuración, Copia de seguridad y Salir. Cada opción SHALL llamarse igual que el botón que ejecuta esa misma acción en el resto de la aplicación. Dentro de una factura SHALL existir una barra superior con Guardar, Exportar, Versiones, Rectificar, Anular o Restaurar según el estado, Nueva y Volver. En todas las pantallas salvo el menú principal SHALL existir una barra de navegación superior que permita acceder a Menú principal, Nueva factura, Histórico, Clientes, Configuración, Copia de seguridad y Salir.
+La aplicación SHALL tener un menú principal con las opciones Nueva factura, Facturar mes, Histórico, Clientes, Configuración, Copia de seguridad y Salir. Cada opción SHALL nombrar la misma acción que el botón que la ejecuta en el resto de la aplicación. Cuando el ancho de una barra de iconos no permita mostrar el nombre completo, el botón SHALL poder usar una forma breve de ese nombre y SHALL llevar el nombre completo en su tooltip; SHALL NOT usar un nombre distinto. Dentro de una factura SHALL existir una barra superior con Guardar, Exportar, Versiones, Rectificar, Anular o Restaurar según el estado, Nueva y Volver. En todas las pantallas salvo el menú principal SHALL existir una barra de navegación superior que permita acceder a Menú principal, Nueva factura, Histórico, Clientes, Configuración, Copia de seguridad y Salir.
 
 Cada botón de la barra de navegación SHALL mostrar un icono y, **debajo de él, una etiqueta de texto** con el nombre de su destino, de modo que la función de cada botón se reconozca sin necesidad de posar el puntero. La etiqueta visible SHALL ser breve y el tooltip SHALL conservar el nombre completo del destino. El texto SHALL usar, en cada tema de apariencia, un color legible sobre el fondo propio de la barra de navegación.
 
@@ -394,8 +394,14 @@ Los botones que requieren una factura ya guardada SHALL mostrarse deshabilitados
 - **THEN** ambos miden exactamente lo mismo de ancho, y `Rectificar` se lee en una sola línea, sin partirse
 
 #### Scenario: Una etiqueta de dos palabras se envuelve por su espacio
-- **WHEN** el usuario mira el botón `Facturar mes` en el Histórico
-- **THEN** muestra su etiqueta en dos líneas, partida por el espacio entre palabras, sin que ninguna palabra quede cortada
+- **WHEN** un botón de la barra lleva una etiqueta de dos palabras que no cabe en una sola línea
+- **THEN** se envuelve partida por el espacio entre palabras, sin que ninguna palabra quede cortada y sin ensanchar el botón
+- **AND** si la barra no da alto para esas dos líneas, la etiqueta SHALL abreviarse en vez de recortarse, según el requisito «Criterio de etiquetado de botones»
+
+#### Scenario: La etiqueta del botón mensual se lee entera
+- **WHEN** el usuario mira el botón de generación mensual en el Histórico
+- **THEN** su etiqueta se lee completa en una sola línea, sin recortarse con puntos suspensivos
+- **AND** al posar el puntero sobre él aparece el nombre completo de la acción
 
 #### Scenario: La barra no reserva alto de más
 - **WHEN** el usuario abre el Editor, donde todas las etiquetas caben en una línea
@@ -1133,7 +1139,7 @@ El criterio SHALL alcanzar también al **texto de los diálogos** que abre cada 
 
 Los atajos de teclado SHALL indicarse en el tooltip del botón y SHALL NOT formar parte del texto de la etiqueta.
 
-Una misma función SHALL tener el mismo nombre desde cualquier punto de entrada.
+Una misma función SHALL tener el mismo nombre desde cualquier punto de entrada. Un botón de una barra de iconos, cuyo ancho es fijo, SHALL poder mostrar una forma abreviada de ese nombre cuando el completo no quepa en una línea, y en ese caso SHALL llevar el nombre completo en su tooltip. La forma abreviada SHALL ser reconocible como la misma acción: SHALL NOT cambiar de verbo ni de concepto.
 
 Las etiquetas SHALL ser lo bastante cortas como para que las barras de acciones no necesiten menú de desbordamiento en el tamaño mínimo de ventana.
 
@@ -1160,7 +1166,12 @@ Las etiquetas SHALL ser lo bastante cortas como para que las barras de acciones 
 
 #### Scenario: Una función, un nombre
 - **WHEN** el usuario abre la generación de facturas mensuales desde el Menú principal y desde el Histórico
-- **THEN** el botón se llama igual en los dos sitios
+- **THEN** el menú muestra «Facturar mes» y el botón del Histórico muestra «Mensual», que es la misma acción abreviada
+- **AND** el tooltip del botón del Histórico dice «Generar facturas mensuales»
+
+#### Scenario: La abreviatura no rebautiza la acción
+- **WHEN** un botón de una barra de iconos no puede mostrar el nombre completo de su acción
+- **THEN** muestra una forma abreviada de ese mismo nombre, con el nombre completo en su tooltip, y no un verbo ni un concepto distintos
 
 ### Requirement: Botones de acción con icono identificativo
 
@@ -1502,7 +1513,13 @@ En el Editor, en Clientes y en el Histórico, los botones de acción SHALL ocupa
 
 Los campos de la pantalla —el buscador de Clientes y los filtros del Histórico— SHALL quedar debajo de esa franja, dentro de la misma tarjeta, alineados a la izquierda. Ningún campo SHALL compartir fila con los botones de acción.
 
-Los botones SHALL arrancar por la izquierda de la franja, en el mismo orden en que están hoy, y SHALL conservar su icono, su etiqueta y su acción.
+Los botones SHALL ir pegados al borde derecho de la franja en las tres pantallas, en el mismo orden en que están hoy, y SHALL conservar su icono, su etiqueta y su acción. El hueco libre de la franja SHALL quedar a su izquierda.
+
+La franja SHALL verse igual en las tres pantallas, de modo que al cambiar de una a otra los iconos no se desplacen: SHALL tener el mismo alto, SHALL arrancar a la misma distancia de la barra de navegación y SHALL medir lo mismo de ancho. Su alto SHALL estar fijado por el estilo y SHALL NOT depender de lo que contenga cada pantalla, aunque SHALL poder crecer si una etiqueta necesita más de una línea.
+
+Las tres tarjetas SHALL declarar el mismo espaciado respecto a la barra de navegación y el mismo relleno interior, de modo que la franja no pueda divergir entre pantallas al cambiar cualquiera de ellas.
+
+Los iconos de las tres barras SHALL ocupar la misma caja y llevar la misma escala, según el requisito «Iconos de tamaño uniforme dentro de una barra».
 
 #### Scenario: Los botones de Clientes van en su propia fila
 - **WHEN** el usuario abre Clientes
@@ -1519,3 +1536,23 @@ Los botones SHALL arrancar por la izquierda de la franja, en el mismo orden en q
 #### Scenario: Los filtros arrancan a la izquierda
 - **WHEN** el usuario abre el Histórico en el tamaño mínimo de ventana
 - **THEN** los filtros arrancan pegados al borde izquierdo de la tarjeta, en sus dos filas de siempre, sin quedar centrados ni empujados a la derecha
+
+#### Scenario: Los iconos no se mueven al cambiar de pantalla
+- **WHEN** el usuario pasa del Editor a Clientes y de Clientes al Histórico
+- **THEN** el último botón de la barra queda en el mismo punto de la pantalla en las tres, y la franja arranca y termina a la misma altura
+
+#### Scenario: Los botones pegados a la derecha en Clientes
+- **WHEN** el usuario abre Clientes
+- **THEN** los cuatro botones quedan pegados al borde derecho de la franja, con el hueco libre a su izquierda, igual que en el Editor
+
+#### Scenario: Los botones pegados a la derecha en el Histórico
+- **WHEN** el usuario abre el Histórico
+- **THEN** los botones de acción quedan pegados al borde derecho de la franja, con el hueco libre a su izquierda
+
+#### Scenario: El alto de la franja no lo marca el contenido
+- **WHEN** el usuario compara la franja del Editor, que lleva el logo y el título, con la de Clientes, que solo lleva botones
+- **THEN** las dos miden exactamente lo mismo de alto
+
+#### Scenario: Los iconos se ven del mismo tamaño en las tres barras
+- **WHEN** el usuario mira los iconos del Editor, de Clientes y del Histórico
+- **THEN** todos ocupan el mismo espacio y se ven del mismo tamaño, sin que ninguno destaque por ser mayor o menor

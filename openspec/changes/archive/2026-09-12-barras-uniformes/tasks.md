@@ -21,6 +21,6 @@
 
 - [x] 4.1 Comprobar que los iconos de las tres barras siguen dentro de `caja-icono` y con la escala 1.05 de `.btn-ribbon .icono-boton`, sin excepciones por pantalla. Ver `design.md - D4`.
 - [x] 4.2 `mvn test` en verde. Prestar atención a los tests de la barra de acciones del Editor y a los de layout: la tarjeta de Clientes y la del Histórico cambian de alto y de relleno.
-- [ ] 4.3 A 1024×768 con el tema por defecto, pasar del Editor a Clientes y al Histórico y comprobar que el último botón de la barra no se desplaza entre pantallas y que la franja arranca y termina a la misma altura.
-- [ ] 4.4 Repetir maximizado y con un tema oscuro.
-- [ ] 4.5 Comprobar que el Editor sigue cabiendo sin scroll a 1024×768 en una factura corta.
+- [x] 4.3 A 1024×768 con el tema por defecto, pasar del Editor a Clientes y al Histórico y comprobar que el último botón de la barra no se desplaza entre pantallas y que la franja arranca y termina a la misma altura.
+- [x] 4.4 Repetir maximizado y con un tema oscuro.
+- [x] 4.5 Comprobar que el Editor sigue cabiendo sin scroll a 1024×768 en una factura corta.

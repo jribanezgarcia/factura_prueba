@@ -10,6 +10,6 @@
 ## 2. Verificación
 
 - [x] 2.1 `mvn test` en verde. Buscar antes en `src/test` si algún test localiza el botón por el texto «Facturar mes»; si lo hace, actualizarlo.
-- [ ] 2.2 Abrir el Histórico a 1024×768 y comprobar que la etiqueta se lee «Mensual» entera, en una línea, sin puntos suspensivos, y a la misma altura que las de los demás botones.
-- [ ] 2.3 Posar el puntero sobre el botón y comprobar que aparece «Generar facturas mensuales».
+- [x] 2.2 Abrir el Histórico a 1024×768 y comprobar que la etiqueta se lee «Mensual» entera, en una línea, sin puntos suspensivos, y a la misma altura que las de los demás botones.
+- [x] 2.3 Posar el puntero sobre el botón y comprobar que aparece «Generar facturas mensuales».
 - [x] 2.4 Comprobar que el botón sigue midiendo lo mismo que los demás de la barra y que la barra no ha cambiado de alto.
