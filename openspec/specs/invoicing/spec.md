@@ -771,7 +771,7 @@ El menú principal SHALL mostrar el nombre, el NIF y el logo de la empresa confi
 
 ### Requirement: Ventana
 
-La aplicación SHALL abrir su ventana con las siguientes medidas: en la primera ejecución (sin preferencias de ventana guardadas) SHALL medir 1024x768 y SHALL quedar centrada en la pantalla principal; en ejecuciones posteriores SHALL restaurar la posición y, como máximo, el tamaño guardados de la última sesión, sin bajar nunca de 1024x768 en las vistas principales. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo. Ningún tamaño de ventana guardado inferior a 1024x768 SHALL hacer que una vista principal se muestre recortada: la aplicación SHALL corregirlo al entrar en el menú. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y las filas de alta rápida de IVA y Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) es una pantalla fija pequeña de 760x520; al pasar de ella a una vista principal con tamaño mínimo 1024x768 con la ventana ya visible, la aplicación SHALL hacer crecer la ventana hasta ese mínimo.
+La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantalla principal, en la primera ejecución y en todas las siguientes. La posición y el tamaño de la ventana SHALL seguir guardándose al cerrar la aplicación, pero SHALL NOT usarse al abrirla: la aplicación SHALL ignorar cualquier posición o tamaño guardados. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo y maximizar la ventana durante la sesión. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y las filas de alta rápida de IVA y Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) es una pantalla fija pequeña de 760x520, también centrada; al pasar de ella a una vista principal con tamaño mínimo 1024x768, la aplicación SHALL mostrar la ventana a 1024x768 y centrada.
 
 #### Scenario: Primera ejecución abre a 1024x768 centrada
 - **WHEN** el usuario inicia la aplicación sin preferencias de ventana guardadas
@@ -779,11 +779,11 @@ La aplicación SHALL abrir su ventana con las siguientes medidas: en la primera 
 
 #### Scenario: Siguientes ejecuciones restauran la última sesión
 - **WHEN** el usuario cierra la aplicación tras moverla o redimensionarla y vuelve a abrirla
-- **THEN** la ventana recupera la posición y el tamaño (nunca inferior a 1024x768 en las vistas principales) de la sesión anterior
+- **THEN** la ventana vuelve a abrirse a 1024x768 y centrada en la pantalla principal, sin recuperar la posición ni el tamaño de la sesión anterior, aunque estos sigan guardados
 
 #### Scenario: Tamaño guardado inferior al mínimo
 - **WHEN** la aplicación encuentra un tamaño de ventana guardado inferior a 1024x768
-- **THEN** al entrar en el menú la ventana se corrige a 1024x768 y no se muestra recortada
+- **THEN** lo ignora y la ventana se abre a 1024x768, sin mostrarse recortada
 
 #### Scenario: Mínimo de redimensionado
 - **WHEN** el usuario arrastra el borde de la ventana para hacerla más pequeña

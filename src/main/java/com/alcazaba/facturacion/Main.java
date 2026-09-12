@@ -29,17 +29,12 @@ import java.util.Locale;
  */
 public class Main extends Application {
 
-    private static final double ANCHO_INICIAL = 1024;
-    private static final double ALTO_INICIAL = 768;
-
     private FileChannel lockChannel;
     private FileLock lock;
     private Vista actual;
     private Servicios servicios;
     private Navegador nav;
     private Stage stage;
-    private Double anchoGuardado;
-    private Double altoGuardado;
 
     public static void main(String[] args) {
         Locale.setDefault(new Locale("es", "ES"));
@@ -93,7 +88,6 @@ public class Main extends Application {
     private void configurarVentana() {
         stage.setTitle(Ventanas.PREFIJO + "Seleccion de empresa");
         Ventanas.aplicarIcono(stage);
-        aplicarPreferenciasVentana(stage);
         stage.setOnCloseRequest(e -> {
             if (!cerrarAplicacion()) {
                 e.consume();
@@ -118,22 +112,7 @@ public class Main extends Application {
         nav = new Navegador(stage, servicios);
         nav.setOnVistaCambio(v -> this.actual = v);
         nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
-        restaurarTamanoGuardado();
         stage.show();
-    }
-
-    /**
-     * El tamano de la vista lo fija VentanaConfig al cargarla; si la sesion
-     * anterior dejo una ventana mas grande que el minimo, se recupera aqui.
-     * Se llama con la ventana oculta, antes de volver a mostrarla.
-     */
-    private void restaurarTamanoGuardado() {
-        if (anchoGuardado != null && anchoGuardado > stage.getMinWidth()) {
-            stage.setWidth(anchoGuardado);
-        }
-        if (altoGuardado != null && altoGuardado > stage.getMinHeight()) {
-            stage.setHeight(altoGuardado);
-        }
     }
 
     /**
@@ -179,30 +158,6 @@ public class Main extends Application {
                 lockChannel.close();
             }
         } catch (IOException ignored) {
-        }
-    }
-
-    private void aplicarPreferenciasVentana(Stage stage) {
-        try {
-            Double x = PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_X);
-            Double y = PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_Y);
-            Double w = PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_W);
-            Double h = PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_H);
-            anchoGuardado = w;
-            altoGuardado = h;
-            if (w != null && h != null) {
-                stage.setWidth(w);
-                stage.setHeight(h);
-            } else {
-                stage.setWidth(ANCHO_INICIAL);
-                stage.setHeight(ALTO_INICIAL);
-                stage.centerOnScreen();
-            }
-            if (x != null && y != null) {
-                stage.setX(x);
-                stage.setY(y);
-            }
-        } catch (Exception ignored) {
         }
     }
 
