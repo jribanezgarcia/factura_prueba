@@ -27,3 +27,4 @@ operations:
     guidance:
       - Archivar es mover una carpeta. Usa git add -A para que el commit registre tambien el borrado del origen.
       - Antes de terminar, git status --short debe quedar vacio y git ls-tree no debe devolver la carpeta origen.
+      - Tras archivar, haz commit automaticamente. Despues pregunta al usuario si hace push; no hagas push sin su confirmacion.

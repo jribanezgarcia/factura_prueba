@@ -11,10 +11,11 @@
         <Insets top="12" right="16" bottom="12" left="16"/>
     </padding>
     <top>
-        <VBox spacing="12">
+        <VBox spacing="8">
             <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
-            <VBox spacing="8" styleClass="card, zona-contenido, panel-busqueda">
+            <VBox spacing="8" styleClass="card, card-editor, panel-busqueda">
                 <HBox styleClass="action-bar" alignment="CENTER_LEFT">
+                    <Region HBox.hgrow="ALWAYS"/>
                     <Button onAction="#nuevo" styleClass="primary-button, btn-ribbon" text="Nuevo">
                         <graphic>
                             <StackPane styleClass="caja-icono">

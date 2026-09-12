@@ -143,9 +143,7 @@ class BotonesTest {
             }
             if (!b.getStyleClass().contains("primary-button")
                     && !b.getStyleClass().contains("default-button")
-                    && !b.getStyleClass().contains("danger-button")
-                    && !b.getStyleClass().contains("action-button")
-                    && !b.getStyleClass().contains("action-danger-button")) {
+                    && !b.getStyleClass().contains("action-button")) {
                 continue;
             }
             botones.add(b);
