@@ -1,5 +1,6 @@
 package com.alcazaba.facturacion.ui;
 
+import com.alcazaba.facturacion.db.CargarDemo;
 import com.alcazaba.facturacion.service.EmpresaManager;
 import com.alcazaba.facturacion.service.PreferenciasGlobales;
 import javafx.fxml.FXML;
@@ -38,6 +39,8 @@ public class ArranqueController implements Vista {
     private Button btnEntrar;
     @FXML
     private Label lblError;
+    @FXML
+    private Label lblAyudaEmpresa;
 
     @Override
     public void alIniciar() {
@@ -48,6 +51,20 @@ public class ArranqueController implements Vista {
 
     public void setOnEntrar(Consumer<EmpresaManager.EmpresaInfo> c) {
         this.onEntrar = c;
+    }
+
+    public void mostrarAvisoInicial(boolean demoRecienCargada) {
+        if (demoRecienCargada) {
+            Dialogos.info("Bienvenido", "Se ha cargado una empresa de demostración con datos ficticios "
+                    + "para que puedas probar el programa.\n\nCuando quieras trabajar con tu empresa, "
+                    + "créala con «Nueva…». Al entrar en ella tendrás que completar sus datos fiscales "
+                    + "y de contacto en Configuración. La empresa de demostración se puede eliminar "
+                    + "después desde Configuración > Empresas.");
+        } else if (cmbEmpresa.getItems().isEmpty()) {
+            Dialogos.info("Bienvenido", "Para iniciar el programa crea tu empresa con «Nueva…».\n\n"
+                    + "Al entrar en ella tendrás que completar sus datos fiscales y de contacto "
+                    + "en Configuración.");
+        }
     }
 
     public LocalDate fechaTrabajo() {
@@ -130,6 +147,19 @@ public class ArranqueController implements Vista {
             }
             if (cmbEmpresa.getValue() == null && !cmbEmpresa.getItems().isEmpty()) {
                 cmbEmpresa.setValue(cmbEmpresa.getItems().get(0));
+            }
+            if (cmbEmpresa.getItems().isEmpty()) {
+                lblAyudaEmpresa.setText("Crea tu empresa con «Nueva…» para empezar.");
+                lblAyudaEmpresa.setVisible(true);
+                lblAyudaEmpresa.setManaged(true);
+            } else if (cmbEmpresa.getItems().size() == 1
+                    && cmbEmpresa.getItems().get(0).slug().equals(CargarDemo.SLUG)) {
+                lblAyudaEmpresa.setText("Empresa de demostración con datos ficticios. Crea la tuya con «Nueva…».");
+                lblAyudaEmpresa.setVisible(true);
+                lblAyudaEmpresa.setManaged(true);
+            } else {
+                lblAyudaEmpresa.setVisible(false);
+                lblAyudaEmpresa.setManaged(false);
             }
             actualizarBoton();
         } catch (Exception e) {

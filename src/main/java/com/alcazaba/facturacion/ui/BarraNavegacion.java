@@ -47,6 +47,14 @@ public final class BarraNavegacion {
         return barra;
     }
 
+    public static void bloquearSalvoSalir(HBox barra) {
+        for (javafx.scene.Node n : barra.getChildren()) {
+            if (n instanceof Button b && !"Salir".equals(b.getText())) {
+                b.setDisable(true);
+            }
+        }
+    }
+
     private static Button boton(String etiqueta, String tooltip, String svg, double escala, Runnable accion, boolean activo) {
         Button b = new Button();
         b.getStyleClass().add("nav-button");

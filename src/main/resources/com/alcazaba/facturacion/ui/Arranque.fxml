@@ -21,6 +21,7 @@
                 <Label styleClass="empresa-nombre" text="CaboFactu®"/>
             </HBox>
             <VBox spacing="12" styleClass="card" maxWidth="440.0">
+                <Label fx:id="lblAyudaEmpresa" wrapText="true" maxWidth="400.0" minHeight="-Infinity" visible="false" managed="false"/>
                 <Label text="Empresa"/>
                 <HBox spacing="8" maxWidth="Infinity">
                     <ComboBox fx:id="cmbEmpresa" promptText="Selecciona una empresa" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>

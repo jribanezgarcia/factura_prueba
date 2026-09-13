@@ -18,7 +18,6 @@ import java.util.stream.Stream;
  */
 public final class Database {
 
-    public static final String SLUG_EMPRESA_INICIAL = "comercial_alcazaba";
     private static final String DB_FILE = "facturas.db";
     private static Connection connection;
     private static Path baseDataDir = defaultDataDir();
@@ -78,27 +77,6 @@ public final class Database {
         } catch (IOException ignored) {
         }
         return lista;
-    }
-
-    /**
-     * Migracion de instalacion de un solo archivo a carpetas por empresa: si
-     * existe BASE_DATA_DIR/facturas.db y todavia no hay ninguna empresa, mueve
-     * la base (y su lock) a la carpeta de la empresa inicial. Devuelve el slug
-     * creado o null si no ha lugar.
-     */
-    public static String migrarInstalacionUnArchivo() throws IOException {
-        Path legacy = baseDataDir.resolve(DB_FILE);
-        if (!Files.exists(legacy) || !getEmpresasDisponibles().isEmpty()) {
-            return null;
-        }
-        Path destino = baseDataDir.resolve(SLUG_EMPRESA_INICIAL);
-        Files.createDirectories(destino);
-        Files.move(legacy, destino.resolve(DB_FILE));
-        Path lock = baseDataDir.resolve("facturas.lock");
-        if (Files.exists(lock)) {
-            Files.move(lock, destino.resolve("facturas.lock"));
-        }
-        return SLUG_EMPRESA_INICIAL;
     }
 
     /** Lock de instancia unica global, independiente de la empresa activa. */

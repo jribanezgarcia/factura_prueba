@@ -279,7 +279,7 @@ public class BackupController implements Vista {
                 lblResultadoRestauracion.setText("");
                 Dialogos.info("Restaurar copia",
                         "Copia restaurada. Copia de rescate guardada en:\n" + rescate);
-                nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+                nav.mostrarInicio();
             } else {
                 EmpresaManager.EmpresaInfo nueva = (EmpresaManager.EmpresaInfo) resultado[1];
                 lblResultadoRestauracion.setText("");
@@ -292,7 +292,7 @@ public class BackupController implements Vista {
                         Dialogos.error("Restaurar copia", "No se pudo conectar: " + ex.getMessage());
                         return;
                     }
-                    nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+                    nav.mostrarInicio();
                 } else {
                     nav.mostrar("/com/alcazaba/facturacion/ui/Backup.fxml");
                 }

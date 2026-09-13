@@ -1,5 +1,5 @@
-UPDATE empresa SET nombre = 'Empresa Demo S.L.', nif = 'B99999999', direccion = 'Calle Ficticia 123',
-  cp = '99999', localidad = 'Ciudad Demo', provincia = 'Demo', actividad = 'Demostración',
+UPDATE empresa SET nombre = 'Empresa Demo S.L.', nif = 'B99999997', direccion = 'Calle Ficticia 123',
+  cp = '52999', localidad = 'Ciudad Demo', provincia = 'Demo', actividad = 'Demostración',
   email = 'demo@irreal.es', telefono = '900000000', pie_legal = 'Datos ficticios de demostración.' WHERE id = 1;
 
 INSERT INTO cliente (nombre, nif, direccion, cp, localidad, provincia, activo, email) VALUES

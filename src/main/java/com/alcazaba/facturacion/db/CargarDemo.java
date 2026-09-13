@@ -19,7 +19,7 @@ import java.util.List;
  */
 public final class CargarDemo {
 
-    private static final String SLUG = "demo";
+    public static final String SLUG = "demo";
 
     private CargarDemo() {
     }
@@ -56,19 +56,8 @@ public final class CargarDemo {
         return partes;
     }
 
-    public static void main(String[] args) throws Exception {
-        Path carpeta = Database.baseDataDir().resolve(SLUG);
-        if (Files.exists(carpeta)) {
-            EmpresaManager.eliminarEmpresa(SLUG);
-            if (Files.exists(carpeta)) {
-                System.out.println("No se ha podido eliminar la empresa de demostración: "
-                        + "cierra la aplicación antes de cargarla.");
-                return;
-            }
-            System.out.println("Empresa demo anterior eliminada.");
-        }
-
-        EmpresaManager.crearEmpresa("Demo");
+    public static EmpresaManager.EmpresaInfo cargar() throws Exception {
+        EmpresaManager.EmpresaInfo info = EmpresaManager.crearEmpresa("Demo");
         EmpresaManager.registrarNombre(SLUG, "Empresa Demo S.L.");
 
         String sql;
@@ -96,6 +85,23 @@ public final class CargarDemo {
         } finally {
             Database.resetConnection();
         }
+        System.out.println("Demostración cargada: " + sentencias + " sentencias.");
+        return info;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Path carpeta = Database.baseDataDir().resolve(SLUG);
+        if (Files.exists(carpeta)) {
+            EmpresaManager.eliminarEmpresa(SLUG);
+            if (Files.exists(carpeta)) {
+                System.out.println("No se ha podido eliminar la empresa de demostración: "
+                        + "cierra la aplicación antes de cargarla.");
+                return;
+            }
+            System.out.println("Empresa demo anterior eliminada.");
+        }
+
+        cargar();
 
         int facturas = 0;
         Database.setEmpresaActiva(SLUG);
@@ -110,6 +116,6 @@ public final class CargarDemo {
             Database.resetConnection();
         }
         System.out.println("Demostración cargada: " + facturas + " facturas en "
-                + Database.dbPathDe(SLUG) + " (" + sentencias + " sentencias).");
+                + Database.dbPathDe(SLUG) + ".");
     }
 }

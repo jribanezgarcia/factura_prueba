@@ -1,5 +1,6 @@
 package com.alcazaba.facturacion;
 
+import com.alcazaba.facturacion.db.CargarDemo;
 import com.alcazaba.facturacion.db.Database;
 import com.alcazaba.facturacion.service.EmpresaManager;
 import com.alcazaba.facturacion.service.PreferenciasGlobales;
@@ -35,6 +36,8 @@ public class Main extends Application {
     private Servicios servicios;
     private Navegador nav;
     private Stage stage;
+    private ArranqueController arranque;
+    private boolean demoCargada;
 
     public static void main(String[] args) {
         Locale.setDefault(new Locale("es", "ES"));
@@ -54,25 +57,26 @@ public class Main extends Application {
         }
         Platform.setImplicitExit(false);
         configurarVentana();
+        try {
+            if (cmbEmpresaVacia()) {
+                CargarDemo.cargar();
+                PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, CargarDemo.SLUG);
+                demoCargada = true;
+            }
+        } catch (Exception e) {
+            Dialogos.error("Facturación", "No se pudo cargar la empresa de demostración:\n" + e.getMessage());
+        }
         mostrarArranque();
         stage.show();
+        Platform.runLater(() -> arranque.mostrarAvisoInicial(demoCargada));
     }
 
     /**
-     * Crea la raiz de datos, hace la migracion de instalacion (un archivo a
-     * carpetas por empresa) y, si no queda ninguna empresa, crea la inicial.
+     * Crea la raiz de datos.
      */
     private boolean prepararDatos() {
         try {
             Files.createDirectories(Database.baseDataDir());
-            String migrada = Database.migrarInstalacionUnArchivo();
-            if (migrada != null) {
-                EmpresaManager.registrarNombre(migrada, "Comercial Alcazaba");
-                PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, migrada);
-            }
-            if (cmbEmpresaVacia()) {
-                EmpresaManager.crearEmpresa("Comercial Alcazaba");
-            }
             return true;
         } catch (Exception e) {
             Dialogos.error("Facturación", "No se pudo preparar la carpeta de datos:\n" + e.getMessage());
@@ -97,7 +101,7 @@ public class Main extends Application {
 
     private void mostrarArranque() {
         Navegador navArranque = new Navegador(stage, servicios);
-        ArranqueController arranque = navArranque.mostrar("/com/alcazaba/facturacion/ui/Arranque.fxml");
+        arranque = navArranque.mostrar("/com/alcazaba/facturacion/ui/Arranque.fxml");
         arranque.setOnEntrar(e -> entrarEnMenu());
     }
 
@@ -111,7 +115,7 @@ public class Main extends Application {
         stage.hide();
         nav = new Navegador(stage, servicios);
         nav.setOnVistaCambio(v -> this.actual = v);
-        nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+        nav.mostrarInicio();
         stage.show();
     }
 

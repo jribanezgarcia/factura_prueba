@@ -36,6 +36,14 @@ public class Navegador {
         return stage;
     }
 
+    public void mostrarInicio() {
+        if (servicios.config.empresaCompleta()) {
+            mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+        } else {
+            mostrar("/com/alcazaba/facturacion/ui/Configuracion.fxml");
+        }
+    }
+
     /**
      * Carga la vista y la muestra en la ventana, previa confirmacion de la
      * vista actual. Si la vista actual cancela la salida

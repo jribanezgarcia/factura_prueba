@@ -14,6 +14,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
@@ -117,6 +118,12 @@ public class ConfiguracionController implements Vista {
     @FXML
     private HBox barraNavegacion;
     @FXML
+    private Label lblDatosPendientes;
+    @FXML
+    private Button btnVolver;
+    private HBox barraSuperior;
+    private boolean datosPendientes;
+    @FXML
     private ComboBox<String> comboTema;
     @FXML
     private ColorPicker colorPdf;
@@ -207,7 +214,8 @@ public class ConfiguracionController implements Vista {
 
     @Override
     public void alIniciar() {
-        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "configuracion"));
+        barraSuperior = BarraNavegacion.crear(nav, "configuracion");
+        barraNavegacion.getChildren().add(barraSuperior);
         cargarTema();
         try {
             empresa = servicios.config.getEmpresa();
@@ -215,6 +223,16 @@ public class ConfiguracionController implements Vista {
             empresa = new Empresa();
         }
         cargarEmpresa();
+        datosPendientes = !servicios.config.datosPendientes(empresa).isEmpty();
+        if (datosPendientes) {
+            if (txtNombre.getText() == null || txtNombre.getText().isBlank()) {
+                txtNombre.setText(nombreVisibleEmpresaActiva());
+            }
+            lblDatosPendientes.setVisible(true);
+            lblDatosPendientes.setManaged(true);
+            BarraNavegacion.bloquearSalvoSalir(barraSuperior);
+            btnVolver.setDisable(true);
+        }
         cargarIvas();
         cargarRetenciones();
         cargarSeries();
@@ -295,6 +313,18 @@ public class ConfiguracionController implements Vista {
         }
     }
 
+    private String nombreVisibleEmpresaActiva() {
+        try {
+            for (EmpresaManager.EmpresaInfo e : EmpresaManager.listarEmpresas()) {
+                if (e.slug().equals(Sesion.empresaSlug())) {
+                    return e.nombre();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return "";
+    }
+
     private void cargarPdfs() {
         try {
             String auto = servicios.config.getPreferencia(PREV_CARPETA);
@@ -331,6 +361,12 @@ public class ConfiguracionController implements Vista {
     private void guardar() {
         try {
             recogerEmpresa();
+            List<String> faltan = servicios.config.datosPendientes(empresa);
+            if (!faltan.isEmpty()) {
+                Dialogos.error("Configuración",
+                        "Faltan datos obligatorios o no son válidos:\n" + String.join(", ", faltan));
+                return;
+            }
             servicios.config.saveEmpresa(empresa);
             servicios.config.setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
             javafx.scene.paint.Color c = colorPdf.getValue();
@@ -340,7 +376,12 @@ public class ConfiguracionController implements Vista {
                     (int) Math.round(c.getBlue() * 255));
             servicios.config.setPreferencia(PdfService.PREF_COLOR, hex);
             ThemeManager.guardar(servicios);
-            Dialogos.info("Configuración", "Configuración guardada.");
+            if (datosPendientes) {
+                Dialogos.info("Configuración", "Datos de la empresa completados.");
+                nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+            } else {
+                Dialogos.info("Configuración", "Configuración guardada.");
+            }
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudo guardar: " + e.getMessage());
         }
@@ -935,7 +976,7 @@ public class ConfiguracionController implements Vista {
         try {
             EmpresaManager.conectar(elegida.slug(), Sesion.fechaTrabajo());
             Dialogos.info("Empresas", "Cambiando a \"" + elegida.nombre() + "\"...");
-            nav.mostrar("/com/alcazaba/facturacion/ui/MenuPrincipal.fxml");
+            nav.mostrarInicio();
         } catch (Exception e) {
             Dialogos.error("Empresas", "No se pudo cambiar de empresa: " + e.getMessage());
         }
