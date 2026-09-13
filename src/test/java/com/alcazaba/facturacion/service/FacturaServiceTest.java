@@ -22,7 +22,11 @@ import org.junit.jupiter.api.io.TempDir;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -50,10 +54,10 @@ class FacturaServiceTest {
         VersionRepository versionRepository = new VersionRepository();
         lineaRepository = new LineaRepository();
         NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
-        NumeroService numeroService = new NumeroService(serieRepository, numeroDisponibleRepository);
-        versionadoService = new VersionadoService(versionRepository, lineaRepository);
+        NumeroService numeroService = new NumeroService(serieRepository, numeroDisponibleRepository, Clock.systemDefaultZone());
+        versionadoService = new VersionadoService(versionRepository, lineaRepository, Clock.systemDefaultZone());
         facturaService = new FacturaService(facturaRepository, serieRepository, clienteRepository,
-                versionRepository, lineaRepository, versionadoService, numeroService, numeroDisponibleRepository);
+                versionRepository, lineaRepository, versionadoService, numeroService, numeroDisponibleRepository, Clock.systemDefaultZone());
     }
 
     @AfterEach
@@ -69,7 +73,7 @@ class FacturaServiceTest {
         s.setSiguienteCorrelativo(1);
         s.setReutilizarAnulados(false);
         s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieRepository.insertar(s));
+        s.setId(serieRepository.insertar(s, LocalDate.now().getYear()));
         return s;
     }
 
@@ -205,7 +209,7 @@ class FacturaServiceTest {
         NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
         EstadoService estadoService = new EstadoService(new FacturaRepository(), serieRepository,
                 new VersionRepository(), lineaRepository, versionadoService,
-                new NumeroService(serieRepository, numeroDisponibleRepository), facturaService);
+                new NumeroService(serieRepository, numeroDisponibleRepository, Clock.systemDefaultZone()), facturaService);
         estadoService.anular(facturaId);
 
         FacturaVersion v = versionadoService.ultimaVersion(facturaId);
@@ -247,7 +251,20 @@ class FacturaServiceTest {
         facturaService.borrarFactura(facturaId);
 
         assertNull(facturaService.factura(facturaId));
-        NumeroService ns = new NumeroService(serieRepository, new NumeroDisponibleRepository());
+        NumeroService ns = new NumeroService(serieRepository, new NumeroDisponibleRepository(), Clock.systemDefaultZone());
         assertTrue(ns.huecosDisponibles(c, fecha).contains(correlativo));
+    }
+
+    @Test
+    void crearVersionSellaFechaGuardadoConElReloj() throws Exception {
+        Clock fijo = Clock.fixed(Instant.parse("2031-06-15T10:00:00Z"), ZoneId.of("Europe/Madrid"));
+        VersionadoService conReloj = new VersionadoService(new VersionRepository(), lineaRepository, fijo);
+        Serie c = serieC();
+        LocalDate fecha = LocalDate.of(2031, 6, 15);
+        long facturaId = facturaService.crearFactura(c, fecha, null, List.of(linea("100.00")), 0, null, null);
+        FacturaVersion v = conReloj.crearVersion(facturaId, fecha, "C-2/6", EstadoFactura.EMITIDA,
+                0, null, null, null, List.of(linea("100.00")));
+
+        assertEquals(LocalDateTime.of(2031, 6, 15, 12, 0), v.getFechaGuardado());
     }
 }

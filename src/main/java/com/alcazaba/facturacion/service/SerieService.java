@@ -5,16 +5,20 @@ import com.alcazaba.facturacion.repository.FacturaRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 
 import java.sql.SQLException;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 
 public class SerieService {
 
     private final SerieRepository serieRepository;
     private final FacturaRepository facturaRepository;
+    private final Clock clock;
 
-    public SerieService(SerieRepository serieRepository, FacturaRepository facturaRepository) {
+    public SerieService(SerieRepository serieRepository, FacturaRepository facturaRepository, Clock clock) {
         this.serieRepository = serieRepository;
         this.facturaRepository = facturaRepository;
+        this.clock = clock;
     }
 
     public List<Serie> listar() throws SQLException {
@@ -26,7 +30,7 @@ public class SerieService {
     }
 
     public long insertar(Serie s) throws SQLException {
-        return serieRepository.insertar(s);
+        return serieRepository.insertar(s, LocalDate.now(clock).getYear());
     }
 
     public void actualizar(Serie s) throws SQLException {

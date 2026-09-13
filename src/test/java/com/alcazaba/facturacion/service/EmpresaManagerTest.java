@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -74,7 +75,7 @@ class EmpresaManagerTest {
         s.setSiguienteCorrelativo(1);
         s.setEsRectificativa(false);
         s.setReutilizarAnulados(false);
-        long idPrimera = repo.insertar(s);
+        long idPrimera = repo.insertar(s, LocalDate.now().getYear());
 
         EmpresaManager.crearEmpresa("Segunda");
         EmpresaManager.conectar("segunda", LocalDate.now());
@@ -130,7 +131,7 @@ class EmpresaManagerTest {
         s.setSiguienteCorrelativo(1);
         s.setEsRectificativa(false);
         s.setReutilizarAnulados(false);
-        long id = repo.insertar(s);
+        long id = repo.insertar(s, LocalDate.now().getYear());
 
         EmpresaManager.crearEmpresa("Empresa B");
 

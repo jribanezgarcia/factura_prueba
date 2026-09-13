@@ -17,8 +17,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -45,7 +48,7 @@ class NumeroServiceTest {
         facturaRepository = new FacturaRepository();
         versionRepository = new VersionRepository();
         numeroDisponibleRepository = new NumeroDisponibleRepository();
-        numeroService = new NumeroService(serieRepository, numeroDisponibleRepository);
+        numeroService = new NumeroService(serieRepository, numeroDisponibleRepository, Clock.systemDefaultZone());
     }
 
     @AfterEach
@@ -66,7 +69,7 @@ class NumeroServiceTest {
         s.setSiguienteCorrelativo(siguiente);
         s.setReutilizarAnulados(reutilizar);
         s.setSufijoFecha(sufijo);
-        s.setId(serieRepository.insertar(s));
+        s.setId(serieRepository.insertar(s, LocalDate.now().getYear()));
         return s;
     }
 
@@ -251,5 +254,20 @@ class NumeroServiceTest {
         numeroDisponibleRepository.insertar(c.getId(), 2026, 3);
 
         assertEquals(3, numeroService.siguienteCorrelativo(c));
+    }
+
+    @Test
+    void siguienteCorrelativoSinFechaUsaElAnioDelReloj() throws SQLException {
+        Clock fijo = Clock.fixed(Instant.parse("2031-06-15T10:00:00Z"), ZoneId.of("Europe/Madrid"));
+        Serie s = new Serie();
+        s.setCodigo("F");
+        s.setEsRectificativa(false);
+        s.setSiguienteCorrelativo(7);
+        s.setReutilizarAnulados(false);
+        s.setSufijoFecha(Serie.SufijoFecha.MES);
+        s.setId(serieRepository.insertar(s, 2031));
+        NumeroService conReloj = new NumeroService(serieRepository, numeroDisponibleRepository, fijo);
+
+        assertEquals(7, conReloj.siguienteCorrelativo(s));
     }
 }

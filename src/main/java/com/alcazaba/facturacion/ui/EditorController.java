@@ -15,7 +15,6 @@ import com.alcazaba.facturacion.pdf.PdfService;
 import com.alcazaba.facturacion.service.CalculoService;
 import com.alcazaba.facturacion.service.FacturaService;
 import com.alcazaba.facturacion.service.Servicios;
-import com.alcazaba.facturacion.service.Sesion;
 import com.alcazaba.facturacion.service.ValidationException;
 import com.alcazaba.facturacion.util.DocumentoFiscalValidator;
 import com.alcazaba.facturacion.util.Formatos;
@@ -398,7 +397,7 @@ public class EditorController implements Vista {
     }
 
     private void cargarFechaInicial() {
-        LocalDate fechaInicial = Sesion.fechaTrabajo() != null ? Sesion.fechaTrabajo() : LocalDate.now();
+        LocalDate fechaInicial = servicios.reloj.fechaTrabajo();
         fecha.setValue(fechaInicial);
     }
 
@@ -1190,7 +1189,7 @@ public class EditorController implements Vista {
         }
         try {
             long nueva = servicios.rectificativas.crearRectificativa(versionAbiertaId,
-                    Sesion.fechaTrabajo() != null ? Sesion.fechaTrabajo() : LocalDate.now(), null);
+                    servicios.reloj.fechaTrabajo(), null);
             cargarFactura(nueva);
             Dialogos.info("Rectificativa", "Rectificativa creada. Puede editar la referencia antes de guardar.");
         } catch (ValidationException e) {

@@ -35,7 +35,6 @@ import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
 import java.io.File;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -743,8 +742,7 @@ public class ConfiguracionController implements Vista {
     }
 
     private int anioTrabajo() {
-        LocalDate f = Sesion.fechaTrabajo();
-        return f != null ? f.getYear() : LocalDate.now().getYear();
+        return servicios.reloj.fechaTrabajo().getYear();
     }
 
     private void seleccionarSerie(Serie s) {

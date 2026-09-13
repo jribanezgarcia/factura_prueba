@@ -11,6 +11,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -26,6 +27,12 @@ import java.util.Set;
  * (facturas_AAAAMMDD_HHMMSS.db).
  */
 public class BackupService {
+
+    private final Clock clock;
+
+    public BackupService(Clock clock) {
+        this.clock = clock;
+    }
 
     private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
 
@@ -76,7 +83,7 @@ public class BackupService {
      */
     public Path crearBackup(Path carpetaDestino) throws SQLException, IOException {
         Files.createDirectories(carpetaDestino);
-        String nombre = "facturas_" + LocalDateTime.now().format(STAMP);
+        String nombre = "facturas_" + LocalDateTime.now(clock).format(STAMP);
         Path archivo = rutaLibre(carpetaDestino, nombre);
 
         String ruta = archivo.toString().replace("'", "''");

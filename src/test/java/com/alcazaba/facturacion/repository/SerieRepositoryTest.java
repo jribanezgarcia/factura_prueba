@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,7 +50,7 @@ class SerieRepositoryTest {
         s.setEsRectificativa(false);
         s.setReutilizarAnulados(false);
         s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieRepository.insertar(s));
+        s.setId(serieRepository.insertar(s, LocalDate.now().getYear()));
         return s;
     }
 

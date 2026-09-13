@@ -2,7 +2,6 @@ package com.alcazaba.facturacion.ui;
 
 import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.service.Servicios;
-import com.alcazaba.facturacion.service.Sesion;
 import com.alcazaba.facturacion.util.Formatos;
 import com.alcazaba.facturacion.util.LogoMarco;
 import javafx.fxml.FXML;
@@ -52,7 +51,7 @@ public class MenuController implements Vista {
 
     @Override
     public void alIniciar() {
-        LocalDate f = Sesion.fechaTrabajo() != null ? Sesion.fechaTrabajo() : LocalDate.now();
+        LocalDate f = servicios.reloj.fechaTrabajo();
         fechaTrabajo.setText(Formatos.fecha(f));
         cargarEmpresa();
         atajos();

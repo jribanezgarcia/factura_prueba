@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.Clock;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +35,7 @@ class BackupServiceTest {
         Sesion.reiniciar();
         EmpresaManager.crearEmpresa("Pruebas Backup");
         EmpresaManager.conectar("pruebas_backup", LocalDate.now());
-        servicio = new BackupService();
+        servicio = new BackupService(Clock.systemDefaultZone());
     }
 
     @AfterEach

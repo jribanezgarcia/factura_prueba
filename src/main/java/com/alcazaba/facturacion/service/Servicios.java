@@ -13,6 +13,7 @@ import com.alcazaba.facturacion.repository.TipoRetencionRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
 import java.sql.SQLException;
+import java.time.Clock;
 
 /**
  * Contenedor de dependencias construido una sola vez en el arranque.
@@ -20,6 +21,7 @@ import java.sql.SQLException;
  */
 public class Servicios {
 
+    public final Reloj reloj;
     public final ClienteService clientes;
     public final SerieService series;
     public final IvaService ivas;
@@ -36,6 +38,10 @@ public class Servicios {
     public final BackupService backup;
 
     public Servicios() throws SQLException {
+        this(Clock.systemDefaultZone());
+    }
+
+    public Servicios(Clock clock) throws SQLException {
         Database.getConnection();
         ClienteRepository clienteRepository = new ClienteRepository();
         SerieRepository serieRepository = new SerieRepository();
@@ -48,19 +54,20 @@ public class Servicios {
         HistorialRepository historialRepository = new HistorialRepository();
         NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
 
+        reloj = new Reloj(clock);
         clientes = new ClienteService(clienteRepository);
-        series = new SerieService(serieRepository, facturaRepository);
+        series = new SerieService(serieRepository, facturaRepository, clock);
         ivas = new IvaService(ivaRepository);
         retenciones = new RetencionService(tipoRetencionRepository);
         config = new ConfigService(configRepository);
 
-        numeros = new NumeroService(serieRepository, numeroDisponibleRepository);
-        versionado = new VersionadoService(versionRepository, lineaRepository);
-        factura = new FacturaService(facturaRepository, serieRepository, clienteRepository, versionRepository, lineaRepository, versionado, numeros, numeroDisponibleRepository);
+        numeros = new NumeroService(serieRepository, numeroDisponibleRepository, clock);
+        versionado = new VersionadoService(versionRepository, lineaRepository, clock);
+        factura = new FacturaService(facturaRepository, serieRepository, clienteRepository, versionRepository, lineaRepository, versionado, numeros, numeroDisponibleRepository, clock);
         estado = new EstadoService(facturaRepository, serieRepository, versionRepository, lineaRepository, versionado, numeros, factura);
         rectificativas = new RectificativaService(factura, serieRepository, tipoRetencionRepository);
         facturacionMensual = new FacturacionMensualService(factura, facturaRepository, numeros);
         historialService = new HistorialService(historialRepository);
-        backup = new BackupService();
+        backup = new BackupService(clock);
     }
 }

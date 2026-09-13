@@ -7,7 +7,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -44,7 +43,7 @@ public class SerieRepository {
         }
     }
 
-    public long insertar(Serie s) throws SQLException {
+    public long insertar(Serie s, int anioContador) throws SQLException {
         String sql = "INSERT INTO serie (codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados, sufijo_fecha) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement ps = Database.getConnection().prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -58,21 +57,21 @@ public class SerieRepository {
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 rs.next();
                 long id = rs.getLong(1);
-                inicializarSiguiente(id, s.getSiguienteCorrelativo());
+                inicializarSiguiente(id, s.getSiguienteCorrelativo(), anioContador);
                 return id;
             }
         }
     }
 
     /**
-     * Siembra el contador del anio en curso con el valor configurado de la
+     * Siembra el contador del anio indicado con el valor configurado de la
      * serie. El resto de anios arrancan en 1.
      */
-    private void inicializarSiguiente(long serieId, int siguiente) throws SQLException {
+    private void inicializarSiguiente(long serieId, int siguiente, int anioContador) throws SQLException {
         try (PreparedStatement ps = Database.getConnection().prepareStatement(
                 "INSERT OR IGNORE INTO serie_siguiente (serie_id, anio, siguiente) VALUES (?, ?, ?)")) {
             ps.setLong(1, serieId);
-            ps.setInt(2, LocalDate.now().getYear());
+            ps.setInt(2, anioContador);
             ps.setInt(3, siguiente);
             ps.executeUpdate();
         }

@@ -19,6 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -46,10 +47,10 @@ class EstadoServiceTest {
         versionRepository = new VersionRepository();
         lineaRepository = new LineaRepository();
         NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
-        NumeroService numeroService = new NumeroService(serieRepository, numeroDisponibleRepository);
-        VersionadoService versionadoService = new VersionadoService(versionRepository, lineaRepository);
+        NumeroService numeroService = new NumeroService(serieRepository, numeroDisponibleRepository, Clock.systemDefaultZone());
+        VersionadoService versionadoService = new VersionadoService(versionRepository, lineaRepository, Clock.systemDefaultZone());
         facturaService = new FacturaService(facturaRepository, serieRepository, clienteRepository,
-                versionRepository, lineaRepository, versionadoService, numeroService, numeroDisponibleRepository);
+                versionRepository, lineaRepository, versionadoService, numeroService, numeroDisponibleRepository, Clock.systemDefaultZone());
         estadoService = new EstadoService(facturaRepository, serieRepository, versionRepository,
                 lineaRepository, versionadoService, numeroService, facturaService);
     }
@@ -67,7 +68,7 @@ class EstadoServiceTest {
         s.setSiguienteCorrelativo(1);
         s.setReutilizarAnulados(false);
         s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieRepository.insertar(s));
+        s.setId(serieRepository.insertar(s, LocalDate.now().getYear()));
         return s;
     }
 

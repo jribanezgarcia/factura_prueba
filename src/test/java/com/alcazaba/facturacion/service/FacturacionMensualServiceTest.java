@@ -21,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -53,10 +54,10 @@ class FacturacionMensualServiceTest {
         versionRepository = new VersionRepository();
         lineaRepository = new LineaRepository();
         NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
-        this.numeroService = new NumeroService(serieRepository, numeroDisponibleRepository);
-        VersionadoService versionadoService = new VersionadoService(versionRepository, lineaRepository);
+        this.numeroService = new NumeroService(serieRepository, numeroDisponibleRepository, Clock.systemDefaultZone());
+        VersionadoService versionadoService = new VersionadoService(versionRepository, lineaRepository, Clock.systemDefaultZone());
         facturaService = new FacturaService(facturaRepository, serieRepository, clienteRepository,
-                versionRepository, lineaRepository, versionadoService, this.numeroService, numeroDisponibleRepository);
+                versionRepository, lineaRepository, versionadoService, this.numeroService, numeroDisponibleRepository, Clock.systemDefaultZone());
         service = new FacturacionMensualService(facturaService, facturaRepository, this.numeroService);
     }
 
@@ -73,7 +74,7 @@ class FacturacionMensualServiceTest {
         s.setSiguienteCorrelativo(1);
         s.setReutilizarAnulados(false);
         s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieRepository.insertar(s));
+        s.setId(serieRepository.insertar(s, LocalDate.now().getYear()));
         return s;
     }
 
@@ -250,8 +251,8 @@ class FacturacionMensualServiceTest {
 
         NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
         FacturaService serviceQueFalla = new FacturaService(facturaRepository, serieRepository, clienteRepository,
-                versionRepository, lineaRepository, new VersionadoService(versionRepository, lineaRepository),
-                new NumeroService(serieRepository, numeroDisponibleRepository), numeroDisponibleRepository) {
+                versionRepository, lineaRepository, new VersionadoService(versionRepository, lineaRepository, Clock.systemDefaultZone()),
+                new NumeroService(serieRepository, numeroDisponibleRepository, Clock.systemDefaultZone()), numeroDisponibleRepository, Clock.systemDefaultZone()) {
             private int llamadas = 0;
 
             @Override
@@ -268,7 +269,7 @@ class FacturacionMensualServiceTest {
             }
         };
         FacturacionMensualService servicioConFallo = new FacturacionMensualService(
-                serviceQueFalla, facturaRepository, new NumeroService(serieRepository, numeroDisponibleRepository));
+                serviceQueFalla, facturaRepository, new NumeroService(serieRepository, numeroDisponibleRepository, Clock.systemDefaultZone()));
 
         assertThrows(ValidationException.class, () -> servicioConFallo.generar(cliente, 2026, 1, 3, serie, 15,
                 iva, null, List.of(plantilla("servicios", "60.00", false))));

@@ -18,6 +18,7 @@ import com.alcazaba.facturacion.repository.VersionRepository;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -35,11 +36,13 @@ public class FacturaService {
     private final VersionadoService versionadoService;
     private final NumeroService numeroService;
     private final NumeroDisponibleRepository numeroDisponibleRepository;
+    private final Clock clock;
 
     public FacturaService(FacturaRepository facturaRepository, SerieRepository serieRepository,
                           ClienteRepository clienteRepository, VersionRepository versionRepository,
                           LineaRepository lineaRepository, VersionadoService versionadoService,
-                          NumeroService numeroService, NumeroDisponibleRepository numeroDisponibleRepository) {
+                          NumeroService numeroService, NumeroDisponibleRepository numeroDisponibleRepository,
+                          Clock clock) {
         this.facturaRepository = facturaRepository;
         this.serieRepository = serieRepository;
         this.clienteRepository = clienteRepository;
@@ -48,6 +51,7 @@ public class FacturaService {
         this.versionadoService = versionadoService;
         this.numeroService = numeroService;
         this.numeroDisponibleRepository = numeroDisponibleRepository;
+        this.clock = clock;
     }
 
     /**
@@ -245,7 +249,7 @@ public class FacturaService {
         FacturaVersion ultima = versionRepository.ultimaVersion(facturaId);
         int anio = ultima != null && ultima.getFechaFactura() != null
                 ? ultima.getFechaFactura().getYear()
-                : LocalDate.now().getYear();
+                : LocalDate.now(clock).getYear();
 
         Database.beginTransaction();
         try {

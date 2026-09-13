@@ -11,6 +11,7 @@ import com.alcazaba.facturacion.repository.LineaRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
 import java.sql.SQLException;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,10 +26,12 @@ public class VersionadoService {
 
     private final VersionRepository versionRepository;
     private final LineaRepository lineaRepository;
+    private final Clock clock;
 
-    public VersionadoService(VersionRepository versionRepository, LineaRepository lineaRepository) {
+    public VersionadoService(VersionRepository versionRepository, LineaRepository lineaRepository, Clock clock) {
         this.versionRepository = versionRepository;
         this.lineaRepository = lineaRepository;
+        this.clock = clock;
     }
 
     public FacturaVersion crearVersion(long facturaId, LocalDate fecha, String numero, EstadoFactura estado,
@@ -57,7 +60,7 @@ public class VersionadoService {
         v.setVersionNum(versionNum);
         v.setNumero(numero);
         v.setFechaFactura(fecha);
-        v.setFechaGuardado(LocalDateTime.now());
+        v.setFechaGuardado(LocalDateTime.now(clock));
         v.setEstado(estado);
         v.setDescuentoPorcentaje(descuento);
         v.setObservaciones(observaciones);
@@ -111,7 +114,7 @@ public class VersionadoService {
 
         v.setNumero(numero);
         v.setFechaFactura(fecha);
-        v.setFechaGuardado(LocalDateTime.now());
+        v.setFechaGuardado(LocalDateTime.now(clock));
         v.setEstado(estado);
         v.setDescuentoPorcentaje(descuento);
         v.setObservaciones(observaciones);
