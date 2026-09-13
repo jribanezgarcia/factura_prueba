@@ -21,11 +21,14 @@ import com.alcazaba.facturacion.util.DocumentoFiscalValidator;
 import com.alcazaba.facturacion.util.Formatos;
 import com.alcazaba.facturacion.util.LogoMarco;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceDialog;
@@ -39,12 +42,14 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
@@ -872,10 +877,13 @@ public class EditorController implements Vista {
                 tablaLineas.requestFocus();
                 return;
             }
-            Object editor = tablaLineas.lookup(".text-field");
-            if (editor instanceof TextField tf) {
-                tf.requestFocus();
-                trazarFoco("editarCeldaSegura: editor enfocado", tf);
+            Node editor = tablaLineas.lookup(".text-field");
+            if (editor == null) {
+                editor = tablaLineas.lookup(".text-area");
+            }
+            if (editor instanceof TextInputControl tic) {
+                tic.requestFocus();
+                trazarFoco("editarCeldaSegura: editor enfocado", tic);
             } else {
                 trazarFoco("editarCeldaSegura: editor no encontrado", null);
                 tablaLineas.requestFocus();
@@ -1440,8 +1448,12 @@ public class EditorController implements Vista {
     // ------------------------------------------------------------------
 
     private abstract class CeldaEditable extends TableCell<LineaFactura, String> {
-        protected final TextField editor = new TextField();
+        protected final TextInputControl editor = crearEditor();
         private boolean committing;
+
+        protected TextInputControl crearEditor() {
+            return new TextField();
+        }
 
         CeldaEditable() {
             editor.setOnKeyPressed(e -> {
@@ -1546,6 +1558,113 @@ public class EditorController implements Vista {
     }
 
     private final class CeldaDescripcion extends CeldaEditable {
+        private final Label etiqueta = new Label();
+
+        CeldaDescripcion() {
+            etiqueta.setWrapText(true);
+            etiqueta.prefWidthProperty().bind(colDescripcion.widthProperty().subtract(8));
+            colDescripcion.widthProperty().addListener((o, anterior, ancho) -> {
+                ajustarAltoEtiqueta();
+                tablaLineas.requestLayout();
+            });
+            etiqueta.layoutBoundsProperty().addListener((o, anterior, bounds) -> ajustarAltoEtiqueta());
+        }
+
+        private void ajustarAltoEtiqueta() {
+            double w = etiqueta.getPrefWidth();
+            String t = etiqueta.getText();
+            if (t == null || t.isEmpty() || Double.isNaN(w) || w <= 0) {
+                if (etiqueta.getMinHeight() != Region.USE_PREF_SIZE) {
+                    etiqueta.setMinHeight(Region.USE_PREF_SIZE);
+                    etiqueta.setMaxHeight(Region.USE_PREF_SIZE);
+                }
+                return;
+            }
+            double necesidad = etiqueta.prefHeight(w);
+            if (necesidad > 0 && etiqueta.getMinHeight() != necesidad) {
+                etiqueta.setMinHeight(necesidad);
+                etiqueta.setMaxHeight(necesidad);
+            }
+        }
+
+        @Override
+        protected TextInputControl crearEditor() {
+            TextArea area = new TextArea();
+            area.setWrapText(true);
+            area.setPrefRowCount(1);
+            area.setMinHeight(Region.USE_PREF_SIZE);
+            area.skinProperty().addListener((o, anterior, skin) -> atarAltoEditor(area));
+            area.layoutBoundsProperty().addListener((o, anterior, bounds) -> atarAltoEditor(area));
+            area.textProperty().addListener((o, anterior, texto) -> {
+                TableRow<?> fila = getTableRow();
+                if (fila != null) {
+                    fila.requestLayout();
+                }
+            });
+            return area;
+        }
+
+        private void atarAltoEditor(TextArea area) {
+            if (area.prefHeightProperty().isBound()) {
+                return;
+            }
+            Node texto = area.lookup(".text");
+            Node contenido = area.lookup(".content");
+            Node scroll = area.lookup(".scroll-pane");
+            if (texto == null || !(contenido instanceof Region) || !(scroll instanceof Region)) {
+                return;
+            }
+            // +1 px contra el redondeo de fracciones de píxel: sin él, la igualdad
+            // exacta entre contenido y ventana hace parpadear la barra vertical.
+            double extra = vertical((Region) contenido) + vertical((Region) scroll)
+                    + vertical(area) + 1;
+            area.prefHeightProperty().bind(Bindings.createDoubleBinding(
+                    () -> texto.getBoundsInParent().getHeight() + extra,
+                    texto.boundsInParentProperty()));
+        }
+
+        private static double vertical(Region nodo) {
+            double total = nodo.getPadding().getTop() + nodo.getPadding().getBottom();
+            if (nodo.getBorder() != null) {
+                total += nodo.getBorder().getInsets().getTop() + nodo.getBorder().getInsets().getBottom();
+            }
+            return total;
+        }
+
+        @Override
+        protected void updateItem(String item, boolean empty) {
+            if (isEditing()) {
+                return;
+            }
+            super.updateItem(item, empty);
+            if (empty) {
+                setText(null);
+                setGraphic(null);
+            } else {
+                LineaFactura l = lineaDeCelda(this);
+                etiqueta.setText(l == null ? "" : mostrar(l));
+                ajustarAltoEtiqueta();
+                setText(null);
+                setGraphic(etiqueta);
+            }
+        }
+
+        @Override
+        protected double computePrefHeight(double width) {
+            if (isEditing() && getGraphic() == editor) {
+                double altoEditor = editor.getPrefHeight();
+                if (altoEditor > 0) {
+                    return altoEditor + getPadding().getTop() + getPadding().getBottom();
+                }
+            }
+            double w = etiqueta.getPrefWidth();
+            if (Double.isNaN(w) || w <= 0) {
+                return super.computePrefHeight(width);
+            }
+            double r = etiqueta.prefHeight(w) + getPadding().getTop() + getPadding().getBottom();
+            return r;
+        }
+
         @Override
         String mostrar(LineaFactura l) {
             return nz(l.getDescripcion());

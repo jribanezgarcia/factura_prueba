@@ -401,6 +401,10 @@
     -fx-border-radius: 8px;
 }
 
+.text-field, .text-area, .combo-box {
+    -fx-prompt-text-fill: derive(-fx-text-background-color, -40%);
+}
+
 /* Diálogos y tarjetas de confirmación */
 .dialog-card {
     -fx-background-color: -fx-base;
@@ -464,10 +468,12 @@
     -fx-text-fill: derive(-fx-accent, -35%);
 }
 
-.lista-secciones .list-cell .grupo-secciones {
+.lista-secciones .list-cell.grupo-secciones {
     -fx-font-size: 12px;
-    -fx-padding: 12px 4px 2px 4px;
+    -fx-padding: 12px 4px 4px 4px;
     -fx-opacity: 0.70;
+    -fx-border-color: transparent transparent -fx-text-background-color transparent;
+    -fx-border-width: 0 0 1 0;
 }
 
 .seccion-config {

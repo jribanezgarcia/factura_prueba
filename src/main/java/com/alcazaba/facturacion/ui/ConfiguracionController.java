@@ -387,10 +387,9 @@ public class ConfiguracionController implements Vista {
                     setGraphic(null);
                     setDisable(false);
                 } else if (item.grupo) {
-                    Label encabezado = new Label(item.texto);
-                    encabezado.getStyleClass().add("grupo-secciones");
-                    setGraphic(encabezado);
-                    setText(null);
+                    setText(item.texto);
+                    setGraphic(null);
+                    getStyleClass().add("grupo-secciones");
                     setDisable(true);
                 } else {
                     setText(item.texto);

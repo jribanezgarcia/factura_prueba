@@ -21,6 +21,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TablePosition;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
@@ -115,7 +116,10 @@ class EditorFlujoTecladoTest {
         });
 
         enFx(err, () -> {
-            TextField editor = (TextField) tabla.lookup(".text-field");
+            TextInputControl editor = (TextInputControl) tabla.lookup(".text-field");
+            if (editor == null) {
+                editor = (TextInputControl) tabla.lookup(".text-area");
+            }
             assertNotNull(editor, "No se encontro el editor de la celda de descripcion");
             editor.setText("Puerta de roble");
             editor.requestFocus();
@@ -124,7 +128,10 @@ class EditorFlujoTecladoTest {
         });
 
         enFx(err, () -> {
-            TextField editor = (TextField) tabla.lookup(".text-field");
+            TextInputControl editor = (TextInputControl) tabla.lookup(".text-field");
+            if (editor == null) {
+                editor = (TextInputControl) tabla.lookup(".text-area");
+            }
             assertNotNull(editor, "No se encontro el editor antes de Enter");
             editor.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "",
                     KeyCode.ENTER, false, false, false, false));
