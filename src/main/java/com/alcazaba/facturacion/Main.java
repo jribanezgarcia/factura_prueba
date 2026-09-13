@@ -1,9 +1,5 @@
 package com.alcazaba.facturacion;
 
-import com.alcazaba.facturacion.db.CargarDemo;
-import com.alcazaba.facturacion.db.Database;
-import com.alcazaba.facturacion.service.EmpresaManager;
-import com.alcazaba.facturacion.service.PreferenciasGlobales;
 import com.alcazaba.facturacion.service.Servicios;
 import com.alcazaba.facturacion.ui.ArranqueController;
 import com.alcazaba.facturacion.ui.Dialogos;
@@ -15,80 +11,65 @@ import javafx.application.Platform;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 
 /**
- * Punto de entrada. Prepara la carpeta de datos, garantiza la instancia unica
- * global (FileChannel.tryLock sobre el lock de BASE_DATA_DIR), aplica la
- * configuracion regional espanola, muestra la pantalla de arranque (empresa +
- * fecha de trabajo) y solo despues de confirmar conecta la empresa, construye
- * los servicios y abre el menu principal.
+ * Punto de entrada de la aplicación. Fija el idioma español, prepara la carpeta
+ * de datos, asegura que solo haya una ventana abierta, muestra la pantalla de
+ * arranque (empresa y fecha de trabajo) y, al entrar, construye los servicios y
+ * abre la primera pantalla. Cada paso delega en su pieza: PreparacionDatos,
+ * InstanciaUnica, ArranqueController y Navegador.
  */
 public class Main extends Application {
 
-    private FileChannel lockChannel;
-    private FileLock lock;
     private Vista actual;
     private Servicios servicios;
     private Navegador nav;
     private Stage stage;
     private ArranqueController arranque;
-    private boolean demoCargada;
 
     public static void main(String[] args) {
         Locale.setDefault(new Locale("es", "ES"));
         launch(args);
     }
 
+    /** Arranca en orden: carpeta, instancia única, ventana, demostración y arranque. */
     @Override
     public void start(Stage stage) {
         this.stage = stage;
-        if (!prepararDatos()) {
+        try {
+            PreparacionDatos.crearCarpeta();
+        } catch (IOException e) {
+            Dialogos.error("Facturación", "No se pudo preparar la carpeta de datos:\n" + e.getMessage());
+            Platform.exit();
             return;
         }
-        if (!adquirirLock()) {
-            Dialogos.error("Facturación", "La aplicación ya está en ejecución.\nSolo puede abrirse una instancia.");
+        try {
+            if (!InstanciaUnica.adquirir()) {
+                Dialogos.error("Facturación", "La aplicación ya está en ejecución.\nSolo puede abrirse una instancia.");
+                Platform.exit();
+                return;
+            }
+        } catch (IOException e) {
+            Dialogos.error("Facturación", "No se pudo comprobar si la aplicación ya está abierta:\n" + e.getMessage());
             Platform.exit();
             return;
         }
         Platform.setImplicitExit(false);
         configurarVentana();
+        boolean demoCargada = false;
         try {
-            if (cmbEmpresaVacia()) {
-                CargarDemo.cargar();
-                PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, CargarDemo.SLUG);
-                demoCargada = true;
-            }
+            demoCargada = PreparacionDatos.cargarDemoSiNoHayEmpresas();
         } catch (Exception e) {
             Dialogos.error("Facturación", "No se pudo cargar la empresa de demostración:\n" + e.getMessage());
         }
         mostrarArranque();
         stage.show();
-        Platform.runLater(() -> arranque.mostrarAvisoInicial(demoCargada));
+        boolean demo = demoCargada;
+        Platform.runLater(() -> arranque.mostrarAvisoInicial(demo));
     }
 
-    /**
-     * Crea la raiz de datos.
-     */
-    private boolean prepararDatos() {
-        try {
-            Files.createDirectories(Database.baseDataDir());
-            return true;
-        } catch (Exception e) {
-            Dialogos.error("Facturación", "No se pudo preparar la carpeta de datos:\n" + e.getMessage());
-            Platform.exit();
-            return false;
-        }
-    }
-
-    private boolean cmbEmpresaVacia() throws IOException {
-        return EmpresaManager.listarEmpresas().isEmpty();
-    }
-
+    /** Pone título, icono y confirmación de cierre a la ventana. */
     private void configurarVentana() {
         stage.setTitle(Ventanas.PREFIJO + "Seleccion de empresa");
         Ventanas.aplicarIcono(stage);
@@ -99,12 +80,14 @@ public class Main extends Application {
         });
     }
 
+    /** Muestra la pantalla de arranque y deriva la entrada a entrarEnMenu. */
     private void mostrarArranque() {
         Navegador navArranque = new Navegador(stage, servicios);
         arranque = navArranque.mostrar("/com/alcazaba/facturacion/ui/Arranque.fxml");
         arranque.setOnEntrar(e -> entrarEnMenu());
     }
 
+    /** Construye los servicios tras conectar la empresa y abre la primera pantalla. */
     private void entrarEnMenu() {
         try {
             servicios = new Servicios();
@@ -133,42 +116,8 @@ public class Main extends Application {
         if (actual != null) {
             actual.alCerrar();
         }
-        guardarPreferenciasVentana(stage);
-        liberarLock();
+        InstanciaUnica.liberar();
         Platform.exit();
         return true;
-    }
-
-    private boolean adquirirLock() {
-        try {
-            lockChannel = FileChannel.open(Database.lockPathGlobal(),
-                    StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-            lock = lockChannel.tryLock();
-            return lock != null;
-        } catch (IOException e) {
-            return false;
-        }
-    }
-
-    private void liberarLock() {
-        try {
-            if (lock != null && lock.isValid()) {
-                lock.release();
-            }
-        } catch (IOException ignored) {
-        }
-        try {
-            if (lockChannel != null) {
-                lockChannel.close();
-            }
-        } catch (IOException ignored) {
-        }
-    }
-
-    private void guardarPreferenciasVentana(Stage stage) {
-        PreferenciasGlobales.set(PreferenciasGlobales.VENTANA_X, String.valueOf(stage.getX()));
-        PreferenciasGlobales.set(PreferenciasGlobales.VENTANA_Y, String.valueOf(stage.getY()));
-        PreferenciasGlobales.set(PreferenciasGlobales.VENTANA_W, String.valueOf(stage.getWidth()));
-        PreferenciasGlobales.set(PreferenciasGlobales.VENTANA_H, String.valueOf(stage.getHeight()));
     }
 }

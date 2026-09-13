@@ -15,7 +15,7 @@
 - [x] 2.2 En `ui/ArranqueController.java`, en `cargarEmpresas`, mostrar `lblAyudaEmpresa` con el texto que corresponda (lista vacía o solo la demostración) y ocultarlo en otro caso.
 - [x] 2.3 Corrección tras la prueba manual: el texto de ayuda sale cortado con «…». En `ArranqueController` sustituir los dos textos por los cortos de `design.md - D2`, y en `Arranque.fxml` añadir `minHeight="-Infinity"` a `lblAyudaEmpresa`.
 - [x] 2.4 Añadir `ArranqueController.mostrarAvisoInicial(boolean demoRecienCargada)` con los textos de `design.md - D2b`, y llamarlo desde `Main.start` con `Platform.runLater` después de `stage.show()`, pasando si en este arranque se cargó la demostración.
-- [ ] 2.5 Comprobar con la carpeta de datos vacía: sale el aviso de bienvenida encima de la ventana, al aceptarlo el texto fijo se lee entero y la tarjeta (Entrar incluido) no se recorta. Cerrar y volver a abrir: ya no sale el aviso, pero sí el texto fijo. Crear otra empresa: desaparece el texto fijo.
+- [x] 2.5 Comprobar con la carpeta de datos vacía: sale el aviso de bienvenida encima de la ventana, al aceptarlo el texto fijo se lee entero y la tarjeta (Entrar incluido) no se recorta. Cerrar y volver a abrir: ya no sale el aviso, pero sí el texto fijo. Crear otra empresa: desaparece el texto fijo.
 
 ## 3. Regla de datos obligatorios
 
@@ -44,11 +44,11 @@
 ## 7. Tests y verificación
 
 - [x] 7.1 `mvn test` en verde. Si `ConfiguracionLayoutTest` u otro test de interfaz falla por el modo pendiente, rellenar la empresa en su preparación sin cambiar lo que mide. Ver `design.md - Risks`.
-- [ ] 7.2 Con la carpeta de datos vacía (renombrar temporalmente la real), arrancar: aparece «Empresa Demo S.L.» preseleccionada con el texto de demostración. Entrar: se abre el Menú directamente y hay facturas de ejemplo. Cerrar y volver a abrir: la demostración no se recarga ni se duplica.
-- [ ] 7.2b Desde el arranque, crear una empresa con «Nueva…»: el texto de ayuda desaparece. Entrar en ella.
-- [ ] 7.3 Comprobar que se abre Configuración > Empresa con el texto, el nombre propuesto, asteriscos, barra bloqueada salvo Salir y Volver desactivado; que Salir funciona; y que se puede ir a IVA o Series.
-- [ ] 7.4 Pulsar Guardar con datos incompletos y ver la lista de lo que falta. Completar con datos válidos, guardar y comprobar que se pasa al Menú.
-- [ ] 7.5 Cerrar y volver a entrar en esa empresa: debe abrir el Menú directamente.
-- [ ] 7.6 En una empresa completa, borrar el NIF en Configuración y guardar: no se guarda y avisa.
-- [ ] 7.7 Con la ventana a 1024×768, comprobar que la sección Empresa en modo pendiente se ve entera sin desplazarse.
-- [ ] 7.8 Restaurar la carpeta de datos real.
+- [x] 7.2 Con la carpeta de datos vacía (renombrar temporalmente la real), arrancar: aparece «Empresa Demo S.L.» preseleccionada con el texto de demostración. Entrar: se abre el Menú directamente y hay facturas de ejemplo. Cerrar y volver a abrir: la demostración no se recarga ni se duplica.
+- [x] 7.2b Desde el arranque, crear una empresa con «Nueva…»: el texto de ayuda desaparece. Entrar en ella.
+- [x] 7.3 Comprobar que se abre Configuración > Empresa con el texto, el nombre propuesto, asteriscos, barra bloqueada salvo Salir y Volver desactivado; que Salir funciona; y que se puede ir a IVA o Series.
+- [x] 7.4 Pulsar Guardar con datos incompletos y ver la lista de lo que falta. Completar con datos válidos, guardar y comprobar que se pasa al Menú.
+- [x] 7.5 Cerrar y volver a entrar en esa empresa: debe abrir el Menú directamente.
+- [x] 7.6 En una empresa completa, borrar el NIF en Configuración y guardar: no se guarda y avisa.
+- [x] 7.7 Con la ventana a 1024×768, comprobar que la sección Empresa en modo pendiente se ve entera sin desplazarse.
+- [x] 7.8 Restaurar la carpeta de datos real.

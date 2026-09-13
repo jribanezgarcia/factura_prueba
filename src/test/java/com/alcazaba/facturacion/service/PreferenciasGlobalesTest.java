@@ -36,13 +36,13 @@ class PreferenciasGlobalesTest {
     @Test
     void lecturaEscrituraEsIdempotente() {
         PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, "comercial");
-        PreferenciasGlobales.set(PreferenciasGlobales.VENTANA_X, "120.5");
-        PreferenciasGlobales.set(PreferenciasGlobales.VENTANA_W, "900");
+        PreferenciasGlobales.set("clave_decimal", "120.5");
+        PreferenciasGlobales.set("clave_entera", "900");
         PreferenciasGlobales.set(PreferenciasGlobales.TEMA, "omarchy");
 
         assertEquals("comercial", PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA));
-        assertEquals(120.5, PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_X));
-        assertEquals(900.0, PreferenciasGlobales.getDouble(PreferenciasGlobales.VENTANA_W));
+        assertEquals(120.5, PreferenciasGlobales.getDouble("clave_decimal"));
+        assertEquals(900.0, PreferenciasGlobales.getDouble("clave_entera"));
         assertEquals("omarchy", PreferenciasGlobales.get(PreferenciasGlobales.TEMA));
 
         PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, "comercial");

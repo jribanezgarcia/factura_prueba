@@ -10,16 +10,12 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 /**
- * Preferencias compartidas entre empresas (ventana, tema, ultima empresa).
+ * Preferencias compartidas entre empresas (tema, ultima empresa).
  * Se guardan en BASE_DATA_DIR/preferencias.properties, fuera de la BD.
  */
 public final class PreferenciasGlobales {
 
     public static final String ULTIMA_EMPRESA = "ultima_empresa";
-    public static final String VENTANA_X = "ventana_x";
-    public static final String VENTANA_Y = "ventana_y";
-    public static final String VENTANA_W = "ventana_w";
-    public static final String VENTANA_H = "ventana_h";
     public static final String TEMA = "tema";
 
     private PreferenciasGlobales() {
