@@ -9,7 +9,6 @@ import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.SerieRepository;
 import com.alcazaba.facturacion.repository.TipoRetencionRepository;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +36,7 @@ public class RectificativaService {
      * Serie configurada como rectificativa. Si hubiera varias, se usa la
      * primera; si no existe ninguna, error.
      */
-    public Serie serieRectificativa() throws SQLException, ValidationException {
+    public Serie serieRectificativa() throws ValidationException {
         for (Serie s : serieRepository.listar()) {
             if (s.isEsRectificativa()) {
                 return s;
@@ -52,7 +51,7 @@ public class RectificativaService {
      * blanco se genera automaticamente con el numero de la factura original.
      */
     public long crearRectificativa(long versionOrigenId, LocalDate fecha, String referencia)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         FacturaService.VersionCompleta origen = facturaService.abrirVersion(versionOrigenId);
         if (origen == null) {
             throw new ValidationException("La factura de origen no existe");
@@ -76,7 +75,7 @@ public class RectificativaService {
                 null, null, retencion);
     }
 
-    private TipoRetencion retencionDeVersion(FacturaVersion v) throws SQLException {
+    private TipoRetencion retencionDeVersion(FacturaVersion v) {
         Long trId = v.getTipoRetencionId();
         if (trId == null) {
             return null;

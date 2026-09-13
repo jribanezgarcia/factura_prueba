@@ -4,7 +4,6 @@ import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.repository.NumeroDisponibleRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 
-import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -50,7 +49,7 @@ public class NumeroService {
     /**
      * Propone el siguiente correlativo libre de la serie para el anio en curso.
      */
-    public int siguienteCorrelativo(Serie serie) throws SQLException {
+    public int siguienteCorrelativo(Serie serie) {
         return siguienteCorrelativo(serie, LocalDate.now(clock));
     }
 
@@ -61,7 +60,7 @@ public class NumeroService {
      * en caso contrario, el siguiente guardado para ese anio. Nunca propone un
      * correlativo ocupado por una factura activa del anio.
      */
-    public int siguienteCorrelativo(Serie serie, LocalDate fecha) throws SQLException {
+    public int siguienteCorrelativo(Serie serie, LocalDate fecha) {
         int anio = fecha != null ? fecha.getYear() : LocalDate.now(clock).getYear();
         List<Integer> huecos = huecosDisponibles(serie, fecha);
         if (!huecos.isEmpty()) {
@@ -91,7 +90,7 @@ public class NumeroService {
      * Correlativos liberados por borrado de facturas para la serie y anio
      * indicados, excluyendo los que esten ocupados por facturas activas.
      */
-    public List<Integer> huecosDisponibles(Serie serie, LocalDate fecha) throws SQLException {
+    public List<Integer> huecosDisponibles(Serie serie, LocalDate fecha) {
         int anio = fecha != null ? fecha.getYear() : LocalDate.now(clock).getYear();
         Set<Integer> activos = serieRepository.correlativosActivos(serie.getId(), anio);
         List<Integer> todos = numeroDisponibleRepository.listar(serie.getId(), anio);
@@ -111,7 +110,7 @@ public class NumeroService {
      * siguientes números que no esten ocupados por facturas activas.
      */
     public List<Integer> proponerNumeros(Serie serie, int anio, int cantidad, boolean usarHuecos)
-            throws SQLException {
+            {
         if (cantidad <= 0) {
             return List.of();
         }
@@ -131,11 +130,11 @@ public class NumeroService {
         return new ArrayList<>(disponibles).subList(0, cantidad);
     }
 
-    public boolean correlativoOcupadoPorActiva(Serie serie, int correlativo) throws SQLException {
+    public boolean correlativoOcupadoPorActiva(Serie serie, int correlativo) {
         return correlativoOcupadoPorActiva(serie, correlativo, LocalDate.now(clock));
     }
 
-    public boolean correlativoOcupadoPorActiva(Serie serie, int correlativo, LocalDate fecha) throws SQLException {
+    public boolean correlativoOcupadoPorActiva(Serie serie, int correlativo, LocalDate fecha) {
         int anio = fecha != null ? fecha.getYear() : LocalDate.now(clock).getYear();
         return serieRepository.correlativosActivos(serie.getId(), anio).contains(correlativo);
     }

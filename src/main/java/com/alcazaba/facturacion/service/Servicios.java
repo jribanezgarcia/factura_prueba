@@ -1,6 +1,7 @@
 package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.db.Database;
+import com.alcazaba.facturacion.db.DatosException;
 import com.alcazaba.facturacion.repository.ClienteRepository;
 import com.alcazaba.facturacion.repository.ConfigRepository;
 import com.alcazaba.facturacion.repository.FacturaRepository;
@@ -37,12 +38,16 @@ public class Servicios {
     public final HistorialService historialService;
     public final BackupService backup;
 
-    public Servicios() throws SQLException {
+    public Servicios() {
         this(Clock.systemDefaultZone());
     }
 
-    public Servicios(Clock clock) throws SQLException {
-        Database.getConnection();
+    public Servicios(Clock clock) {
+        try {
+            Database.getConnection();
+        } catch (SQLException e) {
+            throw new DatosException(e);
+        }
         ClienteRepository clienteRepository = new ClienteRepository();
         SerieRepository serieRepository = new SerieRepository();
         IvaRepository ivaRepository = new IvaRepository();

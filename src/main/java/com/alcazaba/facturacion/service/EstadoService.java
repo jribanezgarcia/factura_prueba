@@ -13,7 +13,6 @@ import com.alcazaba.facturacion.repository.LineaRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +44,7 @@ public class EstadoService {
         this.facturaService = facturaService;
     }
 
-    public void anular(long facturaId) throws SQLException, ValidationException {
+    public void anular(long facturaId) throws ValidationException {
         cambiarEstado(facturaId, null, EstadoFactura.ANULADA);
     }
 
@@ -74,16 +73,16 @@ public class EstadoService {
         return new AnulacionResultado(anuladas, yaAnuladas, fallos, errores);
     }
 
-    public void restaurar(long facturaId) throws SQLException, ValidationException {
+    public void restaurar(long facturaId) throws ValidationException {
         cambiarEstado(facturaId, null, EstadoFactura.EMITIDA);
     }
 
-    public void restaurarVersion(long versionId) throws SQLException, ValidationException {
+    public void restaurarVersion(long versionId) throws ValidationException {
         cambiarEstado(0, versionId, EstadoFactura.EMITIDA);
     }
 
     private void cambiarEstado(long facturaId, Long versionId, EstadoFactura nuevo)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         FacturaVersion base;
         long fId;
         if (versionId != null) {
@@ -123,7 +122,7 @@ public class EstadoService {
                     cliente, lineas,
                     new DatosPago(base.getFormaPago(), base.getVencimiento(), base.getRealizadaPor()));
             Database.commit();
-        } catch (SQLException | ValidationException | RuntimeException e) {
+        } catch (ValidationException | RuntimeException e) {
             Database.rollback();
             throw e;
         } finally {
@@ -131,13 +130,13 @@ public class EstadoService {
         }
     }
 
-    private boolean numeroOcupado(long facturaId, FacturaVersion base) throws SQLException {
+    private boolean numeroOcupado(long facturaId, FacturaVersion base) {
         Factura f = facturaRepository.getById(facturaId);
         Serie serie = serieRepository.getById(f.getSerieId());
         return numeroService.correlativoOcupadoPorActiva(serie, f.getCorrelativo(), base.getFechaFactura());
     }
 
-    private Cliente snapshotCliente(long facturaId, FacturaVersion base) throws SQLException {
+    private Cliente snapshotCliente(long facturaId, FacturaVersion base) {
         Factura f = facturaRepository.getById(facturaId);
         Cliente c = new Cliente();
         c.setId(f.getClienteId());

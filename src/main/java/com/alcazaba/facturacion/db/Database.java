@@ -154,7 +154,7 @@ public final class Database {
                 c.commit();
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al confirmar la transaccion", e);
+            throw new DatosException("Error al confirmar la transaccion", e);
         }
     }
 
@@ -165,7 +165,7 @@ public final class Database {
                 c.rollback();
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al revertir la transaccion", e);
+            throw new DatosException("Error al revertir la transaccion", e);
         }
     }
 
@@ -176,7 +176,7 @@ public final class Database {
                 c.setAutoCommit(false);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al iniciar la transaccion", e);
+            throw new DatosException("Error al iniciar la transaccion", e);
         }
     }
 
@@ -187,7 +187,7 @@ public final class Database {
                 c.setAutoCommit(true);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("Error al finalizar la transaccion", e);
+            throw new DatosException("Error al finalizar la transaccion", e);
         }
     }
 }

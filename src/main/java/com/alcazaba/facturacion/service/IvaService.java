@@ -3,7 +3,6 @@ package com.alcazaba.facturacion.service;
 import com.alcazaba.facturacion.model.TipoIva;
 import com.alcazaba.facturacion.repository.IvaRepository;
 
-import java.sql.SQLException;
 import java.util.List;
 
 public class IvaService {
@@ -14,27 +13,27 @@ public class IvaService {
         this.ivaRepository = ivaRepository;
     }
 
-    public List<TipoIva> listar(boolean soloActivos) throws SQLException {
+    public List<TipoIva> listar(boolean soloActivos) {
         return ivaRepository.listar(soloActivos);
     }
 
-    public TipoIva getById(long id) throws SQLException {
+    public TipoIva getById(long id) {
         return ivaRepository.getById(id);
     }
 
-    public long insertar(TipoIva t) throws SQLException {
+    public long insertar(TipoIva t) {
         return ivaRepository.insertar(t);
     }
 
-    public void actualizar(TipoIva t) throws SQLException {
+    public void actualizar(TipoIva t) {
         ivaRepository.actualizar(t);
     }
 
-    public void setActivo(long id, boolean activo) throws SQLException {
+    public void setActivo(long id, boolean activo) {
         ivaRepository.setActivo(id, activo);
     }
 
-    public boolean enUso(long id) throws SQLException {
+    public boolean enUso(long id) {
         return ivaRepository.enUso(id);
     }
 }

@@ -4,7 +4,6 @@ import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.repository.FacturaRepository;
 import com.alcazaba.facturacion.repository.SerieRepository;
 
-import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -21,35 +20,35 @@ public class SerieService {
         this.clock = clock;
     }
 
-    public List<Serie> listar() throws SQLException {
+    public List<Serie> listar() {
         return serieRepository.listar();
     }
 
-    public Serie getById(long id) throws SQLException {
+    public Serie getById(long id) {
         return serieRepository.getById(id);
     }
 
-    public long insertar(Serie s) throws SQLException {
+    public long insertar(Serie s) {
         return serieRepository.insertar(s, LocalDate.now(clock).getYear());
     }
 
-    public void actualizar(Serie s) throws SQLException {
+    public void actualizar(Serie s) {
         serieRepository.actualizar(s);
     }
 
-    public int getSiguiente(long serieId, int anio) throws SQLException {
+    public int getSiguiente(long serieId, int anio) {
         return serieRepository.getSiguiente(serieId, anio);
     }
 
-    public void actualizarSiguiente(long serieId, int anio, int siguiente) throws SQLException {
+    public void actualizarSiguiente(long serieId, int anio, int siguiente) {
         serieRepository.actualizarSiguiente(serieId, anio, siguiente);
     }
 
-    public boolean tieneFacturas(long serieId) throws SQLException {
+    public boolean tieneFacturas(long serieId) {
         return facturaRepository.serieTieneFacturas(serieId);
     }
 
-    public void eliminar(long serieId) throws SQLException {
+    public void eliminar(long serieId) {
         serieRepository.eliminar(serieId);
     }
 }

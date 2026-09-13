@@ -1261,7 +1261,7 @@ public class EditorController implements Vista {
         }
     }
 
-    private Path proponerDestinoPdf(FacturaService.VersionCompleta vc) throws java.sql.SQLException {
+    private Path proponerDestinoPdf(FacturaService.VersionCompleta vc) {
         String carpeta = "Facturas";
         try {
             String pref = servicios.config.getPreferencia(PREV_CARPETA);

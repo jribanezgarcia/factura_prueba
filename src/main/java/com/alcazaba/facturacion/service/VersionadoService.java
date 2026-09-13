@@ -1,5 +1,6 @@
 package com.alcazaba.facturacion.service;
 
+import com.alcazaba.facturacion.db.DatosException;
 import com.alcazaba.facturacion.model.Cliente;
 import com.alcazaba.facturacion.model.DatosPago;
 import com.alcazaba.facturacion.model.EstadoFactura;
@@ -10,7 +11,6 @@ import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.LineaRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
-import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -36,14 +36,14 @@ public class VersionadoService {
 
     public FacturaVersion crearVersion(long facturaId, LocalDate fecha, String numero, EstadoFactura estado,
                                        int descuento, String observaciones, String referencia,
-                                       Cliente cliente, List<LineaFactura> lineas) throws SQLException {
+                                       Cliente cliente, List<LineaFactura> lineas) {
         return crearVersion(facturaId, fecha, numero, estado, descuento, observaciones, referencia,
                 cliente, lineas, null, null);
     }
 
     public FacturaVersion crearVersion(long facturaId, LocalDate fecha, String numero, EstadoFactura estado,
                                        int descuento, String observaciones, String referencia,
-                                       Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago) throws SQLException {
+                                       Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago) {
         return crearVersion(facturaId, fecha, numero, estado, descuento, observaciones, referencia,
                 cliente, lineas, datosPago, null);
     }
@@ -51,7 +51,7 @@ public class VersionadoService {
     public FacturaVersion crearVersion(long facturaId, LocalDate fecha, String numero, EstadoFactura estado,
                                        int descuento, String observaciones, String referencia,
                                        Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago,
-                                       TipoRetencion retencion) throws SQLException {
+                                       TipoRetencion retencion) {
         int versionNum = versionRepository.maxVersion(facturaId) + 1;
         ResumenFactura resumen = CalculoService.resumen(lineas, descuento, retencion);
 
@@ -86,7 +86,7 @@ public class VersionadoService {
         return v;
     }
 
-    public List<FacturaVersion> versionesDeFactura(long facturaId) throws SQLException {
+    public List<FacturaVersion> versionesDeFactura(long facturaId) {
         return versionRepository.getVersiones(facturaId);
     }
 
@@ -97,7 +97,7 @@ public class VersionadoService {
      */
     public FacturaVersion sobrescribirVersion(long versionId, LocalDate fecha, String numero, EstadoFactura estado,
                                               int descuento, String observaciones, String referencia,
-                                              Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago) throws SQLException {
+                                              Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago) {
         return sobrescribirVersion(versionId, fecha, numero, estado, descuento, observaciones, referencia,
                 cliente, lineas, datosPago, null);
     }
@@ -105,10 +105,10 @@ public class VersionadoService {
     public FacturaVersion sobrescribirVersion(long versionId, LocalDate fecha, String numero, EstadoFactura estado,
                                               int descuento, String observaciones, String referencia,
                                               Cliente cliente, List<LineaFactura> lineas, DatosPago datosPago,
-                                              TipoRetencion retencion) throws SQLException {
+                                              TipoRetencion retencion) {
         FacturaVersion v = versionRepository.getById(versionId);
         if (v == null) {
-            throw new java.sql.SQLException("La version " + versionId + " no existe");
+            throw new DatosException("La version " + versionId + " no existe");
         }
         ResumenFactura resumen = CalculoService.resumen(lineas, descuento, retencion);
 
@@ -161,7 +161,7 @@ public class VersionadoService {
         return s == null ? "" : s;
     }
 
-    public FacturaVersion ultimaVersion(long facturaId) throws SQLException {
+    public FacturaVersion ultimaVersion(long facturaId) {
         return versionRepository.ultimaVersion(facturaId);
     }
 }

@@ -12,7 +12,6 @@ import com.alcazaba.facturacion.model.Cliente;
 import com.alcazaba.facturacion.service.Servicios;
 
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -194,7 +193,7 @@ class ClientesNifValidationTest {
     private static int totalClientes() {
         try {
             return servicios.clientes.listar(false).size();
-        } catch (SQLException e) {
+        } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
     }
@@ -202,7 +201,7 @@ class ClientesNifValidationTest {
     private static void insertar(Cliente c) {
         try {
             servicios.clientes.insertar(c);
-        } catch (SQLException e) {
+        } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
     }

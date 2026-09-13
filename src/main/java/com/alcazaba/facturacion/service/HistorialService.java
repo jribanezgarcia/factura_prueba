@@ -4,7 +4,6 @@ import com.alcazaba.facturacion.model.FiltrosHistorial;
 import com.alcazaba.facturacion.model.HistorialFila;
 import com.alcazaba.facturacion.repository.HistorialRepository;
 
-import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -19,7 +18,7 @@ public class HistorialService {
         this.historialRepository = historialRepository;
     }
 
-    public List<HistorialFila> buscar(FiltrosHistorial filtros) throws SQLException {
+    public List<HistorialFila> buscar(FiltrosHistorial filtros) {
         return historialRepository.buscar(filtros);
     }
 }

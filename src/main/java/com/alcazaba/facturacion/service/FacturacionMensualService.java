@@ -9,7 +9,6 @@ import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.repository.FacturaRepository;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
@@ -39,7 +38,7 @@ public class FacturacionMensualService {
 
     public Resultado generar(Cliente cliente, int anio, int mesInicio, int mesFin, Serie serie, int diaMes,
                              TipoIva iva, TipoRetencion retencion, List<LineaPlantilla> plantillas)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         return generar(cliente, anio, mesInicio, mesFin, serie, DiaMode.FIJO, diaMes,
                 iva, retencion, plantillas, false, false);
     }
@@ -47,7 +46,7 @@ public class FacturacionMensualService {
     public Resultado generar(Cliente cliente, int anio, int mesInicio, int mesFin, Serie serie,
                              DiaMode diaMode, int diaFijo, TipoIva iva, TipoRetencion retencion,
                              List<LineaPlantilla> plantillas, boolean generarDuplicados, boolean usarHuecos)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         validar(cliente, serie, iva, plantillas);
 
         List<Integer> mesesAGenerar = new ArrayList<>();
@@ -75,7 +74,7 @@ public class FacturacionMensualService {
             }
             Database.commit();
             return new Resultado(generadas, omitidos);
-        } catch (SQLException | ValidationException | RuntimeException e) {
+        } catch (ValidationException | RuntimeException e) {
             Database.rollback();
             throw e;
         } finally {
@@ -84,7 +83,7 @@ public class FacturacionMensualService {
     }
 
     public List<String> detectarDuplicados(Cliente cliente, int anio, int mesInicio, int mesFin)
-            throws SQLException {
+            {
         List<String> duplicados = new ArrayList<>();
         for (int mes = mesInicio; mes <= mesFin; mes++) {
             if (facturaRepository.clienteTieneFacturaEnMes(cliente.getId(), anio, mes)) {

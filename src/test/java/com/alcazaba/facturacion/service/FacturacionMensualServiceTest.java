@@ -259,7 +259,7 @@ class FacturacionMensualServiceTest {
             long crearFacturaSinTransaccion(Serie s, LocalDate fecha, Cliente c, List<LineaFactura> lineas,
                                             int descuento, String observaciones, String referencia,
                                             Integer correlativoPedido, com.alcazaba.facturacion.model.DatosPago datosPago,
-                                            TipoRetencion retencion) throws SQLException, ValidationException {
+                                            TipoRetencion retencion) throws ValidationException {
                 llamadas++;
                 if (llamadas == 2) {
                     throw new ValidationException("Fallo simulado en la segunda factura");

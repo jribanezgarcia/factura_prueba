@@ -17,7 +17,6 @@ import com.alcazaba.facturacion.repository.SerieRepository;
 import com.alcazaba.facturacion.repository.VersionRepository;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -60,7 +59,7 @@ public class FacturaService {
      */
     public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                              int descuento, String observaciones, String referencia)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         return crearFactura(serie, fecha, cliente, lineas, descuento, observaciones, referencia, null, null);
     }
 
@@ -71,7 +70,7 @@ public class FacturaService {
      */
     public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                              int descuento, String observaciones, String referencia, Integer correlativoPedido)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         return crearFactura(serie, fecha, cliente, lineas, descuento, observaciones, referencia,
                 correlativoPedido, null);
     }
@@ -79,7 +78,7 @@ public class FacturaService {
     public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                              int descuento, String observaciones, String referencia,
                              Integer correlativoPedido, DatosPago datosPago)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         return crearFactura(serie, fecha, cliente, lineas, descuento, observaciones, referencia,
                 correlativoPedido, datosPago, null);
     }
@@ -87,14 +86,14 @@ public class FacturaService {
     public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                              int descuento, String observaciones, String referencia,
                              Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         Database.beginTransaction();
         try {
             long facturaId = crearFacturaSinTransaccion(serie, fecha, cliente, lineas, descuento,
                     observaciones, referencia, correlativoPedido, datosPago, retencion);
             Database.commit();
             return facturaId;
-        } catch (SQLException | ValidationException | RuntimeException e) {
+        } catch (ValidationException | RuntimeException e) {
             Database.rollback();
             throw e;
         } finally {
@@ -110,7 +109,7 @@ public class FacturaService {
     long crearFacturaSinTransaccion(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                                     int descuento, String observaciones, String referencia,
                                     Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         validar(lineas, descuento);
         if (correlativoPedido != null && correlativoPedido < 1) {
             throw new ValidationException("El correlativo debe ser al menos 1");
@@ -146,7 +145,7 @@ public class FacturaService {
     public FacturaVersion guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
                                          List<LineaFactura> lineas, int descuento,
                                          String observaciones, String referencia, DatosPago datosPago)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         return guardarEditada(facturaId, versionAbiertaId, fecha, cliente, lineas, descuento,
                 observaciones, referencia, datosPago, false);
     }
@@ -162,7 +161,7 @@ public class FacturaService {
                                          List<LineaFactura> lineas, int descuento,
                                          String observaciones, String referencia, DatosPago datosPago,
                                          boolean comoNuevaVersion)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         return guardarEditada(facturaId, versionAbiertaId, fecha, cliente, lineas, descuento,
                 observaciones, referencia, datosPago, comoNuevaVersion, null);
     }
@@ -171,7 +170,7 @@ public class FacturaService {
                                          List<LineaFactura> lineas, int descuento,
                                          String observaciones, String referencia, DatosPago datosPago,
                                          boolean comoNuevaVersion, TipoRetencion retencion)
-            throws SQLException, ValidationException {
+            throws ValidationException {
         validar(lineas, descuento);
 
         Database.beginTransaction();
@@ -208,7 +207,7 @@ public class FacturaService {
             }
             Database.commit();
             return guardada;
-        } catch (SQLException | ValidationException | RuntimeException e) {
+        } catch (ValidationException | RuntimeException e) {
             Database.rollback();
             throw e;
         } finally {
@@ -216,21 +215,21 @@ public class FacturaService {
         }
     }
 
-    public EstadoFactura estadoActual(long facturaId) throws SQLException {
+    public EstadoFactura estadoActual(long facturaId) {
         FacturaVersion v = versionRepository.ultimaVersion(facturaId);
         return v == null ? null : v.getEstado();
     }
 
-    public Serie serieDeFactura(long facturaId) throws SQLException {
+    public Serie serieDeFactura(long facturaId) {
         Factura f = facturaRepository.getById(facturaId);
         return f == null ? null : serieRepository.getById(f.getSerieId());
     }
 
-    public Factura factura(long facturaId) throws SQLException {
+    public Factura factura(long facturaId) {
         return facturaRepository.getById(facturaId);
     }
 
-    public ResumenBorrado resumenBorrado(long facturaId) throws SQLException {
+    public ResumenBorrado resumenBorrado(long facturaId) {
         int versiones = 0;
         int lineas = 0;
         for (FacturaVersion v : versionRepository.getVersiones(facturaId)) {
@@ -240,7 +239,7 @@ public class FacturaService {
         return new ResumenBorrado(versiones, lineas);
     }
 
-    public void borrarFactura(long facturaId) throws SQLException, ValidationException {
+    public void borrarFactura(long facturaId) throws ValidationException {
         Factura f = facturaRepository.getById(facturaId);
         if (f == null) {
             throw new ValidationException("La factura no existe");
@@ -260,7 +259,7 @@ public class FacturaService {
             facturaRepository.eliminar(facturaId);
             numeroDisponibleRepository.insertar(serie.getId(), anio, f.getCorrelativo());
             Database.commit();
-        } catch (SQLException | RuntimeException e) {
+        } catch (RuntimeException e) {
             Database.rollback();
             throw e;
         } finally {
@@ -271,14 +270,14 @@ public class FacturaService {
     public record ResumenBorrado(int versiones, int lineas) {
     }
 
-    public Cliente cliente(long clienteId) throws SQLException {
+    public Cliente cliente(long clienteId) {
         return clienteId == 0 ? null : clienteRepository.getById(clienteId);
     }
 
     /**
      * Abre una version concreta con sus lineas y el cliente maestro (si existe).
      */
-    public VersionCompleta abrirVersion(long versionId) throws SQLException {
+    public VersionCompleta abrirVersion(long versionId) {
         FacturaVersion v = versionRepository.getById(versionId);
         if (v == null) {
             return null;
@@ -289,7 +288,7 @@ public class FacturaService {
         return new VersionCompleta(f, v, lineas, cliente);
     }
 
-    public int maxVersion(long facturaId) throws SQLException {
+    public int maxVersion(long facturaId) {
         return versionRepository.maxVersion(facturaId);
     }
 
