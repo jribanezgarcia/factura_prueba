@@ -1,6 +1,5 @@
 package com.alcazaba.facturacion.ui;
 
-import com.alcazaba.facturacion.db.Database;
 import com.alcazaba.facturacion.model.Empresa;
 import com.alcazaba.facturacion.service.BackupService;
 import com.alcazaba.facturacion.service.EmpresaManager;
@@ -21,8 +20,6 @@ import javafx.stage.FileChooser;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.sql.ResultSet;
-import java.sql.Statement;
 
 public class BackupController implements Vista {
 
@@ -165,7 +162,7 @@ public class BackupController implements Vista {
         sb.append("Facturas: ").append(r.numFacturas()).append("\n");
         sb.append("Última fecha: ").append(r.ultimaFecha() == null ? "(ninguna)" : r.ultimaFecha()).append("\n");
         sb.append("Versión de esquema: ").append(r.userVersion());
-        int app = com.alcazaba.facturacion.db.Migrations.ultimaVersion();
+        int app = servicios.backup.versionEsquemaAplicacion();
         if (r.userVersion() < app) {
             sb.append(" (anterior a la de la aplicación)");
         } else if (r.userVersion() > app) {
@@ -213,9 +210,8 @@ public class BackupController implements Vista {
     }
 
     private int contarFacturasActivas() {
-        try (Statement st = Database.getConnection().createStatement();
-             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM factura")) {
-            return rs.next() ? rs.getInt(1) : 0;
+        try {
+            return servicios.backup.facturasEmpresaActiva();
         } catch (Exception e) {
             return 0;
         }

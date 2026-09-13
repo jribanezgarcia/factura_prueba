@@ -1,16 +1,12 @@
 package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.db.Database;
-import com.alcazaba.facturacion.db.Migrations;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.Statement;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -55,13 +51,7 @@ public final class EmpresaManager {
             throw new IllegalArgumentException("Ya existe una empresa con esa carpeta de datos: " + slug);
         }
         Path destino = Database.dbPathDe(slug);
-        Files.createDirectories(destino.getParent());
-        try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + destino)) {
-            try (Statement st = c.createStatement()) {
-                st.execute("PRAGMA foreign_keys = ON");
-            }
-            Migrations.migrate(c);
-        }
+        Database.crearBase(destino);
 
         Properties catalogo = cargarCatalogo();
         catalogo.setProperty(claveNombre(slug), nombre.trim());

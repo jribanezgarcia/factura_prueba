@@ -52,6 +52,14 @@ public final class InstanciaUnica {
             canal = null;
             bloqueo = null;
             return false;
+        } catch (IOException e) {
+            try {
+                abierto.close();
+            } catch (IOException ignored) {
+            }
+            canal = null;
+            bloqueo = null;
+            throw e;
         }
     }
 

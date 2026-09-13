@@ -2,6 +2,8 @@ package com.alcazaba.facturacion.service;
 
 import com.alcazaba.facturacion.db.Database;
 import com.alcazaba.facturacion.db.Migrations;
+import com.alcazaba.facturacion.repository.CopiaRepository;
+import com.alcazaba.facturacion.repository.FacturaRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +37,7 @@ class BackupServiceTest {
         Sesion.reiniciar();
         EmpresaManager.crearEmpresa("Pruebas Backup");
         EmpresaManager.conectar("pruebas_backup", LocalDate.now());
-        servicio = new BackupService(Clock.systemDefaultZone());
+        servicio = new BackupService(new CopiaRepository(), new FacturaRepository(), Clock.systemDefaultZone());
     }
 
     @AfterEach

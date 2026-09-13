@@ -116,13 +116,41 @@ public final class Database {
             } catch (IOException e) {
                 throw new SQLException("No se pudo crear la carpeta de datos", e);
             }
-            connection = DriverManager.getConnection("jdbc:sqlite:" + dbPath());
-            try (Statement st = connection.createStatement()) {
-                st.execute("PRAGMA foreign_keys = ON");
-            }
+            connection = abrir(dbPath());
             Migrations.migrate(connection);
         }
         return connection;
+    }
+
+    private static Connection abrir(Path db) throws SQLException {
+        Connection c = DriverManager.getConnection("jdbc:sqlite:" + db);
+        try (Statement st = c.createStatement()) {
+            st.execute("PRAGMA foreign_keys = ON");
+        }
+        return c;
+    }
+
+    /** Crea una base nueva en la ruta indicada, con la carpeta padre y el esquema. */
+    public static void crearBase(Path destinoDb) {
+        try {
+            Files.createDirectories(destinoDb.getParent());
+        } catch (IOException e) {
+            throw new DatosException("No se pudo crear la carpeta de datos", e);
+        }
+        try (Connection c = abrir(destinoDb)) {
+            Migrations.migrate(c);
+        } catch (SQLException e) {
+            throw new DatosException(e);
+        }
+    }
+
+    /** Aplica las migraciones pendientes a una base existente. */
+    public static void migrarBase(Path destinoDb) {
+        try (Connection c = abrir(destinoDb)) {
+            Migrations.migrate(c);
+        } catch (SQLException e) {
+            throw new DatosException(e);
+        }
     }
 
     public static void commit() {

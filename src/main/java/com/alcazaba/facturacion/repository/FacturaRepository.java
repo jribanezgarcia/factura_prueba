@@ -115,6 +115,18 @@ public class FacturaRepository {
         }
     }
 
+    /** Número de facturas de la empresa activa. */
+    public int contar() {
+        try {
+            try (PreparedStatement ps = Database.getConnection().prepareStatement("SELECT COUNT(*) FROM factura");
+                 ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        } catch (SQLException e) {
+            throw new DatosException(e);
+        }
+    }
+
     private Factura map(ResultSet rs) throws SQLException {
         Factura f = new Factura();
         f.setId(rs.getLong("id"));

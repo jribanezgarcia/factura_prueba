@@ -4,6 +4,7 @@ import com.alcazaba.facturacion.db.Database;
 import com.alcazaba.facturacion.db.DatosException;
 import com.alcazaba.facturacion.repository.ClienteRepository;
 import com.alcazaba.facturacion.repository.ConfigRepository;
+import com.alcazaba.facturacion.repository.CopiaRepository;
 import com.alcazaba.facturacion.repository.FacturaRepository;
 import com.alcazaba.facturacion.repository.HistorialRepository;
 import com.alcazaba.facturacion.repository.IvaRepository;
@@ -56,6 +57,7 @@ public class Servicios {
         VersionRepository versionRepository = new VersionRepository();
         LineaRepository lineaRepository = new LineaRepository();
         ConfigRepository configRepository = new ConfigRepository();
+        CopiaRepository copiaRepository = new CopiaRepository();
         HistorialRepository historialRepository = new HistorialRepository();
         NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
 
@@ -73,6 +75,6 @@ public class Servicios {
         rectificativas = new RectificativaService(factura, serieRepository, tipoRetencionRepository);
         facturacionMensual = new FacturacionMensualService(factura, facturaRepository, numeros);
         historialService = new HistorialService(historialRepository);
-        backup = new BackupService(clock);
+        backup = new BackupService(copiaRepository, facturaRepository, clock);
     }
 }
