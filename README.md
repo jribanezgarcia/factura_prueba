@@ -55,12 +55,15 @@ Además de programar, con este proyecto estoy aprendiendo a trabajar **como en u
 
 <table>
   <tr>
+    <td align="center"><b>🚪 Pantalla de arranque</b><br/><img src="docs/capturas/arranque.png" alt="Pantalla de arranque" width="400"/></td>
     <td align="center"><b>🏠 Menú principal</b><br/><img src="docs/capturas/menu.png" alt="Menú principal" width="400"/></td>
-    <td align="center"><b>🧾 Editor de facturas</b><br/><img src="docs/capturas/editor.png" alt="Editor de facturas" width="400"/></td>
   </tr>
   <tr>
+    <td align="center"><b>🧾 Editor de facturas</b><br/><img src="docs/capturas/editor.png" alt="Editor de facturas" width="400"/></td>
     <td align="center"><b>🔎 Histórico</b><br/><img src="docs/capturas/historico.png" alt="Histórico" width="400"/></td>
-    <td align="center"><b>📄 PDF generado</b><br/><img src="docs/capturas/pdf.png" alt="PDF generado" width="400"/></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><b>👥 Clientes</b><br/><img src="docs/capturas/clientes.png" alt="Clientes" width="400"/></td>
   </tr>
 </table>
 
