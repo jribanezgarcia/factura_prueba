@@ -853,7 +853,7 @@ public class ConfiguracionController implements Vista {
             return;
         }
         try {
-            if (servicios.facturas.serieTieneFacturas(s.getId())) {
+            if (servicios.series.tieneFacturas(s.getId())) {
                 Dialogos.error("Series", "La serie \"" + codigoOBlanco(s)
                         + "\" no puede eliminarse: tiene facturas (activas o históricas). El histórico no se elimina.");
                 return;

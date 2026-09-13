@@ -20,16 +20,11 @@ import java.sql.SQLException;
  */
 public class Servicios {
 
-    public final ClienteRepository clientes;
-    public final SerieRepository series;
-    public final IvaRepository ivas;
-    public final TipoRetencionRepository retenciones;
-    public final FacturaRepository facturas;
-    public final VersionRepository versiones;
-    public final LineaRepository lineas;
-    public final ConfigRepository config;
-    public final HistorialRepository historial;
-    public final NumeroDisponibleRepository numerosDisponibles;
+    public final ClienteService clientes;
+    public final SerieService series;
+    public final IvaService ivas;
+    public final RetencionService retenciones;
+    public final ConfigService config;
 
     public final NumeroService numeros;
     public final VersionadoService versionado;
@@ -42,24 +37,30 @@ public class Servicios {
 
     public Servicios() throws SQLException {
         Database.getConnection();
-        clientes = new ClienteRepository();
-        series = new SerieRepository();
-        ivas = new IvaRepository();
-        retenciones = new TipoRetencionRepository();
-        facturas = new FacturaRepository();
-        versiones = new VersionRepository();
-        lineas = new LineaRepository();
-        config = new ConfigRepository();
-        historial = new HistorialRepository();
-        numerosDisponibles = new NumeroDisponibleRepository();
+        ClienteRepository clienteRepository = new ClienteRepository();
+        SerieRepository serieRepository = new SerieRepository();
+        IvaRepository ivaRepository = new IvaRepository();
+        TipoRetencionRepository tipoRetencionRepository = new TipoRetencionRepository();
+        FacturaRepository facturaRepository = new FacturaRepository();
+        VersionRepository versionRepository = new VersionRepository();
+        LineaRepository lineaRepository = new LineaRepository();
+        ConfigRepository configRepository = new ConfigRepository();
+        HistorialRepository historialRepository = new HistorialRepository();
+        NumeroDisponibleRepository numeroDisponibleRepository = new NumeroDisponibleRepository();
 
-        numeros = new NumeroService(series, numerosDisponibles);
-        versionado = new VersionadoService(versiones, lineas);
-        factura = new FacturaService(facturas, series, clientes, versiones, lineas, versionado, numeros, numerosDisponibles);
-        estado = new EstadoService(facturas, series, versiones, lineas, versionado, numeros, factura);
-        rectificativas = new RectificativaService(factura, series, retenciones);
-        facturacionMensual = new FacturacionMensualService(factura, facturas, numeros);
-        historialService = new HistorialService(historial);
+        clientes = new ClienteService(clienteRepository);
+        series = new SerieService(serieRepository, facturaRepository);
+        ivas = new IvaService(ivaRepository);
+        retenciones = new RetencionService(tipoRetencionRepository);
+        config = new ConfigService(configRepository);
+
+        numeros = new NumeroService(serieRepository, numeroDisponibleRepository);
+        versionado = new VersionadoService(versionRepository, lineaRepository);
+        factura = new FacturaService(facturaRepository, serieRepository, clienteRepository, versionRepository, lineaRepository, versionado, numeros, numeroDisponibleRepository);
+        estado = new EstadoService(facturaRepository, serieRepository, versionRepository, lineaRepository, versionado, numeros, factura);
+        rectificativas = new RectificativaService(factura, serieRepository, tipoRetencionRepository);
+        facturacionMensual = new FacturacionMensualService(factura, facturaRepository, numeros);
+        historialService = new HistorialService(historialRepository);
         backup = new BackupService();
     }
 }
