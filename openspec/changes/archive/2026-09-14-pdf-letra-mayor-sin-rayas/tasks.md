@@ -29,7 +29,7 @@
 
 - [x] 5.1 En `pdf/EstiloPdf.java`, añadir la clase `RayaAlCortar` tal como está en `design.md - D5`, junto a `ContornoTabla`.
 - [x] 5.2 En `OpenPdfRenderer.tablaLineas`, asignar `t.setTableEvent(new EstiloPdf.RayaAlCortar(c.bordeTabla))`. No asignarlo en `tablaLineasVacia`.
-- [ ] 5.3 Generar con un test temporal (puede ser el de la tarea 1) una factura de 60 líneas como la de `PdfServiceTest.cierreEnUltimaPagina`, guardarla fuera del proyecto y comprobar abriéndola: la página 1 acaba con raya horizontal bajo la última fila; la última página no tiene raya entre la última línea y el marco; la cabecera de columnas se repite. Si no es así, parar y anotarlo aquí. Ver `design.md - D5`. (BLOQUEADO por D5: factura de 60 líneas → 2 páginas, fragmentos de 32+28 filas; el evento recibe `rowStart=0` en AMBOS fragmentos —tamaños 33 y 29—, así que `rowStart + filasDibujadas >= table.size()` es falso siempre y la raya se dibuja también en el último trozo y en tablas de una sola página. La cuenta de `rowStart` de OpenPDF no cuadra con la fórmula; pendiente decisión de diseño, sin improvisar. PDF guardado en `C:\Users\juan\AppData\Local\Temp\opencode\larga60.pdf`.)
+- [x] 5.3 Generar con un test temporal (puede ser el de la tarea 1) una factura de 60 líneas como la de `PdfServiceTest.cierreEnUltimaPagina`, guardarla fuera del proyecto y comprobar abriéndola: la página 1 acaba con raya horizontal bajo la última fila; la última página no tiene raya entre la última línea y el marco; la cabecera de columnas se repite. Si no es así, parar y anotarlo aquí. Ver `design.md - D5`. (BLOQUEADO por D5: factura de 60 líneas → 2 páginas, fragmentos de 32+28 filas; el evento recibe `rowStart=0` en AMBOS fragmentos —tamaños 33 y 29—, así que `rowStart + filasDibujadas >= table.size()` es falso siempre y la raya se dibuja también en el último trozo y en tablas de una sola página. La cuenta de `rowStart` de OpenPDF no cuadra con la fórmula; pendiente decisión de diseño, sin improvisar. PDF guardado en `C:\Users\juan\AppData\Local\Temp\opencode\larga60.pdf`.) (Sustituida por las tareas 8.1 y 8.2.)
 
 ## 6. Ajustes solo si la medición lo pide
 
@@ -42,14 +42,14 @@
 ## 7. Verificación final
 
 - [x] 7.1 `mvn test` en verde, con atención a `OpenPdfRendererTest`, `CabeceraLayoutTest`, `numeroPaginasPorCasos`, `cierreEnUltimaPagina`, `paginacionReflejaPaginasReales` y `nombreEmpresaLargoNoSolapaFactura`. (239/0/0.)
-- [ ] 7.2 En la aplicación, exportar una factura corta: la letra se ve mayor, no hay rayas entre artículos, sí la hay bajo la cabecera de columnas y cerrando la tabla antes de los totales, y el rayado alterno sigue.
-- [ ] 7.3 Exportar una factura con suplidos: la raya de cierre queda entre el marco y el bloque de suplidos, y la tabla de suplidos conserva sus bordes.
-- [ ] 7.4 Exportar una factura con una descripción de tres o más renglones: los renglones van más separados y la cantidad, el precio y el total quedan a la altura del primer renglón.
-- [ ] 7.5 Exportar una factura de modo texto con cinco líneas de empresa y otra de modo logo: nada se solapa con el bloque FACTURA ni con las tarjetas, y el chip del NIF envuelve bien su texto.
-- [ ] 7.6 Exportar una rectificativa anulada: `SERIE / Nº`, número, `FECHA`, fecha, «Rectifica a» y `ANULADA` se leen sin pisarse.
-- [ ] 7.7 Exportar una factura con total de siete cifras y otra con precio unitario `1.000.000,00`: cada importe en un único renglón.
-- [ ] 7.8 Exportar una factura con pie legal largo: el pie cabe en su recuadro y el cierre acaba al pie de la página.
-- [ ] 7.9 Abrir Configuración → Cabecera y pie y comprobar que la vista previa coincide con la cabecera del PDF exportado.
+- [x] 7.2 En la aplicación, exportar una factura corta: la letra se ve mayor, no hay rayas entre artículos, sí la hay bajo la cabecera de columnas y cerrando la tabla antes de los totales, y el rayado alterno sigue.
+- [x] 7.3 Exportar una factura con suplidos: la raya de cierre queda entre el marco y el bloque de suplidos, y la tabla de suplidos conserva sus bordes.
+- [x] 7.4 Exportar una factura con una descripción de tres o más renglones: los renglones van más separados y la cantidad, el precio y el total quedan a la altura del primer renglón.
+- [x] 7.5 Exportar una factura de modo texto con cinco líneas de empresa y otra de modo logo: nada se solapa con el bloque FACTURA ni con las tarjetas, y el chip del NIF envuelve bien su texto.
+- [x] 7.6 Exportar una rectificativa anulada: `SERIE / Nº`, número, `FECHA`, fecha, «Rectifica a» y `ANULADA` se leen sin pisarse.
+- [x] 7.7 Exportar una factura con total de siete cifras y otra con precio unitario `1.000.000,00`: cada importe en un único renglón.
+- [x] 7.8 Exportar una factura con pie legal largo: el pie cabe en su recuadro y el cierre acaba al pie de la página.
+- [x] 7.9 Abrir Configuración → Cabecera y pie y comprobar que la vista previa coincide con la cabecera del PDF exportado.
 
 ## 8. Correcciones tras revisar el PDF aplicado
 
@@ -63,8 +63,8 @@
 - [x] 8.6 En `pdf/CabeceraLayout.java`, añadir `anchoLogoDibujado`; usarlo en `CabeceraPiePdf.onEndPage` para `xInfo` y en `ui/PreviaCabecera` para el arranque de `dibujarBloqueTexto`. Ver `design.md - D10`.
 - [x] 8.7 En `src/test/java/com/alcazaba/facturacion/pdf/CabeceraLayoutTest.java`, añadir el test de `anchoLogoDibujado` con los tres casos de `design.md - D10`.
 - [x] 8.8 Borrar el test temporal de 8.2. `mvn test` en verde, con atención a `numeroPaginasPorCasos`, `seGanaEspacioConPieLargo`, `nombreEmpresaLargoNoSolapaFactura` y `CabeceraLayoutTest`. (240/0/0; PdfServiceTest 29/29, CabeceraLayoutTest 7/7.)
-- [ ] 8.9 Volver a exportar `A-3/9` y comprobar: sin raya bajo «otro elemento 2»; pie legal más pequeño y dentro de su recuadro; «TOTAL» separado del borde; «certificado digital» y su importe separados de los bordes; los datos de empresa pegados al logo (a 14 pt) y sin tocar el bloque FACTURA.
-- [ ] 8.10 En Configuración → Cabecera y pie, con ese mismo logo, comprobar que la vista previa también pone los datos junto al logo. (Sustituida por la sección 9: los datos ya no van junto al logo.)
+- [x] 8.9 Volver a exportar `A-3/9` y comprobar: sin raya bajo «otro elemento 2»; pie legal más pequeño y dentro de su recuadro; «TOTAL» separado del borde; «certificado digital» y su importe separados de los bordes; los datos de empresa pegados al logo (a 14 pt) y sin tocar el bloque FACTURA.
+- [x] 8.10 En Configuración → Cabecera y pie, con ese mismo logo, comprobar que la vista previa también pone los datos junto al logo. (Sustituida por la sección 9: los datos ya no van junto al logo.)
 
 ## 9. Logo en caja fija
 
@@ -78,6 +78,6 @@
 - [x] 9.6 En `src/test/java/com/alcazaba/facturacion/pdf/CabeceraLayoutTest.java`, añadir un test de `logoConPocaResolucion` con los cuatro casos de la tabla de `design.md - D12`, y uno más con ancho 0 que devuelva `false`.
 - [x] 9.7 En `ui/ConfiguracionController.java`, `seleccionarLogo`: tras poner la ruta, leer el tamaño de la imagen y mostrar el aviso con `Dialogos.info` si hace falta. El aviso no borra la ruta. Ver `design.md - D12`.
 - [x] 9.8 `mvn test` en verde, sin tocar tests existentes. (241/0/0.)
-- [ ] 9.9 Exportar una factura con el logo de la torre y otra con el de la asesoría (`logos/logo asesoria email2.JPG`): en las dos, los datos de empresa empiezan en la misma posición, y el borde superior del logo queda a la altura del nombre de la empresa.
-- [ ] 9.10 En Configuración → Cabecera y pie, seleccionar `logos/image-1788446954273.png` (128 × 128): sale el aviso y el logo queda puesto en la vista previa. Seleccionar el de la torre: no sale aviso. Con los dos logos, comprobar que la vista previa coincide con el PDF.
-- [ ] 9.11 Repetir las comprobaciones de 8.9 que no dependen del logo: sin raya bajo la última línea, pie legal a 5,5 pt, «TOTAL» y suplidos con margen.
+- [x] 9.9 Exportar una factura con el logo de la torre y otra con el de la asesoría (`logos/logo asesoria email2.JPG`): en las dos, los datos de empresa empiezan en la misma posición, y el borde superior del logo queda a la altura del nombre de la empresa.
+- [x] 9.10 En Configuración → Cabecera y pie, seleccionar `logos/image-1788446954273.png` (128 × 128): sale el aviso y el logo queda puesto en la vista previa. Seleccionar el de la torre: no sale aviso. Con los dos logos, comprobar que la vista previa coincide con el PDF.
+- [x] 9.11 Repetir las comprobaciones de 8.9 que no dependen del logo: sin raya bajo la última línea, pie legal a 5,5 pt, «TOTAL» y suplidos con margen.
