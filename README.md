@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="src/main/resources/com/alcazaba/facturacion/images/icono-aplicacion.png" alt="CaboFactu" width="96"/>
+<img src="src/main/resources/cabofactu/vista/recursos/imagenes/icono-aplicacion.png" alt="CaboFactu" width="96"/>
 
 # CaboFactu®
 

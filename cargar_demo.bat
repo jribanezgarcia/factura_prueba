@@ -14,7 +14,7 @@ if not exist "%MAVEN%" (
     set "MAVEN=mvn"
 )
 
-call "%MAVEN%" -q compile exec:java "-Dexec.mainClass=com.alcazaba.facturacion.db.CargarDemo"
+call "%MAVEN%" -q compile exec:java "-Dexec.mainClass=cabofactu.modelo.negocio.sqlite.CargarDemo"
 if errorlevel 1 (
     echo.
     echo La carga de la demostracion termino con errores.
