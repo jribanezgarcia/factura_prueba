@@ -68,10 +68,10 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
         if (logo != null) {
             dibujarLogo(cb, izquierda, bordeSuperiorContenido);
             float xInfo = izquierda + CabeceraLayout.ANCHO_LOGO_FIJO + 14f;
-            dibujarDatosEmpresa(cb, xInfo, pagina.getHeight() - 34, 13f,
+            dibujarDatosEmpresa(cb, xInfo, pagina.getHeight() - 34, 14f,
                     Math.max(derecha - EstiloPdf.RESERVA_FACTURA - xInfo, 80f));
         } else {
-            dibujarDatosEmpresa(cb, izquierda, pagina.getHeight() - 34, 15f,
+            dibujarDatosEmpresa(cb, izquierda, pagina.getHeight() - 34, 16f,
                     Math.max(derecha - EstiloPdf.RESERVA_FACTURA - izquierda, 80f));
         }
         dibujarSeparador(cb, izquierda, derecha, bordeSuperiorContenido, altoTarjetas);
@@ -92,7 +92,9 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
 
     private void dibujarLogo(PdfContentByte cb, float izquierda, float bordeSuperiorContenido) {
         logo.scaleToFit(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.ALTO_LOGO_FIJO);
-        logo.setAbsolutePosition(izquierda, bordeSuperiorContenido + CabeceraLayout.HUECO_LOGO_INFERIOR + altoTarjetas + EstiloPdf.HUECO_TARJETAS);
+        float bordeInferiorCaja = bordeSuperiorContenido + CabeceraLayout.HUECO_LOGO_INFERIOR + altoTarjetas + EstiloPdf.HUECO_TARJETAS;
+        float sobraAlto = CabeceraLayout.ALTO_LOGO_FIJO - logo.getScaledHeight();
+        logo.setAbsolutePosition(izquierda, bordeInferiorCaja + sobraAlto);
         try {
             cb.addImage(logo);
         } catch (Exception ignored) {
@@ -116,40 +118,40 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
                 dibujarChipNif(cb, x, y, anchoDisponible);
             } else {
                 BaseFont bf = EstiloPdf.baseRegular();
-                float t = ajustarTamano(linea.texto, bf, 9f, anchoDisponible);
+                float t = ajustarTamano(linea.texto, bf, 10f, anchoDisponible);
                 cb.beginText();
                 cb.setFontAndSize(bf, t);
                 cb.setColorFill(EstiloPdf.GRIS);
                 cb.showTextAligned(Element.ALIGN_LEFT, linea.texto, x, y, 0);
                 cb.endText();
             }
-            y -= 13;
+            y -= 14;
         }
     }
 
     /**
      * Reduce el tamaño de la fuente por pasos hasta que el texto cabe en el
-     * ancho disponible (minimo 9pt para seguir siendo legible).
+     * ancho disponible (minimo 10pt para seguir siendo legible).
      */
     private float ajustarTamano(String texto, BaseFont bf, float tamanoInicial, float anchoMaximo) {
         float t = tamanoInicial;
-        while (t > 9f && bf.getWidthPoint(texto, t) > anchoMaximo) {
+        while (t > 10f && bf.getWidthPoint(texto, t) > anchoMaximo) {
             t -= 0.5f;
         }
-        return Math.max(t, 9f);
+        return Math.max(t, 10f);
     }
 
     private void dibujarChipNif(PdfContentByte cb, float x, float yBase, float anchoDisponible) {
         String texto = "NIF: " + nz(empresa.getNif());
         BaseFont bf = EstiloPdf.baseNegrita();
-        float t = ajustarTamano(texto, bf, 9f, Math.max(anchoDisponible - 10f, 40f));
+        float t = ajustarTamano(texto, bf, 10f, Math.max(anchoDisponible - 10f, 40f));
         float ancho = bf.getWidthPoint(texto, t);
         cb.setColorFill(c.claro);
-        cb.roundRectangle(x - 4, yBase - 3.5f, ancho + 10, 12.5f, EstiloPdf.RADIO_CHIP);
+        cb.roundRectangle(x - 4, yBase - 4f, ancho + 10, 13.5f, EstiloPdf.RADIO_CHIP);
         cb.fill();
         cb.setColorStroke(c.bordeTabla);
         cb.setLineWidth(0.6f);
-        cb.roundRectangle(x - 4, yBase - 3.5f, ancho + 10, 12.5f, EstiloPdf.RADIO_CHIP);
+        cb.roundRectangle(x - 4, yBase - 4f, ancho + 10, 13.5f, EstiloPdf.RADIO_CHIP);
         cb.stroke();
         cb.beginText();
         cb.setFontAndSize(bf, t);
@@ -162,30 +164,30 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
         float y = altoPagina - 38;
         String titulo = header.corrective() ? "RECTIFICATIVA" : "FACTURA";
         cb.beginText();
-        cb.setFontAndSize(EstiloPdf.baseNegrita(), 18);
+        cb.setFontAndSize(EstiloPdf.baseNegrita(), 19);
         cb.setColorFill(c.oscuro);
         cb.showTextAligned(Element.ALIGN_RIGHT, titulo, derecha, y, 0);
         cb.endText();
         y -= 22;
         dibujarRotulo(cb, "SERIE / Nº", derecha, y);
-        y -= 9;
+        y -= 10;
         cb.beginText();
-        cb.setFontAndSize(EstiloPdf.baseNegrita(), 10);
+        cb.setFontAndSize(EstiloPdf.baseNegrita(), 11);
         cb.setColorFill(c.oscuro);
         cb.showTextAligned(Element.ALIGN_RIGHT, header.number(), derecha, y, 0);
         cb.endText();
-        y -= 14;
+        y -= 15;
         dibujarRotulo(cb, "FECHA", derecha, y);
-        y -= 9;
+        y -= 10;
         cb.beginText();
-        cb.setFontAndSize(EstiloPdf.baseNegrita(), 10);
+        cb.setFontAndSize(EstiloPdf.baseNegrita(), 11);
         cb.setColorFill(c.oscuro);
         cb.showTextAligned(Element.ALIGN_RIGHT, header.date(), derecha, y, 0);
         cb.endText();
         if (header.corrective()) {
             y -= 12;
             cb.beginText();
-            cb.setFontAndSize(EstiloPdf.baseRegular(), 9);
+            cb.setFontAndSize(EstiloPdf.baseRegular(), 10);
             cb.setColorFill(EstiloPdf.GRIS);
             cb.showTextAligned(Element.ALIGN_RIGHT, "Rectifica a: " + header.correctsReference().orElse(""),
                     derecha, y, 0);
@@ -194,7 +196,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
         if (header.cancelled()) {
             y -= 15;
             cb.beginText();
-            cb.setFontAndSize(EstiloPdf.baseNegrita(), 11);
+            cb.setFontAndSize(EstiloPdf.baseNegrita(), 12);
             cb.setColorFill(EstiloPdf.ROJO_ANULADA);
             cb.showTextAligned(Element.ALIGN_RIGHT, "ANULADA", derecha, y, 0);
             cb.endText();
@@ -203,7 +205,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
 
     private void dibujarRotulo(PdfContentByte cb, String texto, float derecha, float y) {
         cb.beginText();
-        cb.setFontAndSize(EstiloPdf.baseNegrita(), 6.5f);
+        cb.setFontAndSize(EstiloPdf.baseNegrita(), 7.5f);
         cb.setColorFill(c.oscuro);
         cb.showTextAligned(Element.ALIGN_RIGHT, texto, derecha, y, 0);
         cb.endText();
@@ -220,10 +222,10 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
 
     private void dibujarPaginacion(PdfWriter writer, PdfContentByte cb, float derecha) {
         BaseFont bfPie = EstiloPdf.baseRegular();
-        float wHueco = bfPie.getWidthPoint("00", 8);
+        float wHueco = bfPie.getWidthPoint("00", 9);
         float xTotal = derecha - wHueco;
         cb.beginText();
-        cb.setFontAndSize(bfPie, 8);
+        cb.setFontAndSize(bfPie, 9);
         cb.setColorFill(EstiloPdf.GRIS);
         cb.showTextAligned(Element.ALIGN_RIGHT, "Página " + writer.getPageNumber() + " de ",
                 xTotal - 2, 18, 0);
@@ -237,7 +239,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
         gs.setFillOpacity(0.18f);
         cb.setGState(gs);
         cb.beginText();
-        cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA_BOLD, 64).getBaseFont(), 64);
+        cb.setFontAndSize(FontFactory.getFont(FontFactory.HELVETICA_BOLD, 65).getBaseFont(), 65);
         cb.setColorFill(EstiloPdf.ROJO_ANULADA);
         cb.showTextAligned(Element.ALIGN_CENTER, "ANULADA",
                 (pagina.getLeft() + pagina.getRight()) / 2,
@@ -249,7 +251,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
     @Override
     public void onCloseDocument(PdfWriter writer, Document document) {
         ColumnText.showTextAligned(totalPaginas, Element.ALIGN_LEFT,
-                new Phrase(String.valueOf(paginasReales), new Font(EstiloPdf.baseRegular(), 8)), 0, 0, 0);
+                new Phrase(String.valueOf(paginasReales), new Font(EstiloPdf.baseRegular(), 9)), 0, 0, 0);
     }
 
     private static String nz(String s) {

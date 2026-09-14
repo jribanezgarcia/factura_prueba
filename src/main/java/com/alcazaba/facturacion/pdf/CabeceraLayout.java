@@ -34,12 +34,27 @@ public final class CabeceraLayout {
         return ALTO_LOGO_FIJO;
     }
 
+    public static float anchoLogoDibujado(float anchoImagen, float altoImagen) {
+        if (anchoImagen <= 0 || altoImagen <= 0) {
+            return ANCHO_LOGO_FIJO;
+        }
+        float escala = Math.min(ANCHO_LOGO_FIJO / anchoImagen, ALTO_LOGO_FIJO / altoImagen);
+        return anchoImagen * escala;
+    }
+
+    public static boolean logoConPocaResolucion(double anchoPx, double altoPx) {
+        if (anchoPx <= 0 || altoPx <= 0) {
+            return false;
+        }
+        return anchoPx < anchoLogoDibujado((float) anchoPx, (float) altoPx) * 1.5;
+    }
+
     /**
-     * Alto de la cabecera en modo texto: 42 pt de arranque mas 13 pt por
+     * Alto de la cabecera en modo texto: 42 pt de arranque mas 14 pt por
      * linea de empresa, con un minimo de 108 pt.
      */
     public static float altoCabeceraTexto(int lineas) {
-        return Math.max(42f + lineas * 13f + 18f, ALTO_CABECERA_MINIMO);
+        return Math.max(42f + lineas * 14f + 18f, ALTO_CABECERA_MINIMO);
     }
 
     /**
@@ -48,7 +63,7 @@ public final class CabeceraLayout {
      */
     public static float altoCabeceraLogo(Empresa empresa, int lineas) {
         float superior = HUECO_LOGO_SUPERIOR + ALTO_LOGO_FIJO + HUECO_LOGO_INFERIOR;
-        float altoInfo = 17f + lineas * 13f;
+        float altoInfo = 18f + lineas * 14f;
         superior = Math.max(superior, 34f + altoInfo + 8f);
         return Math.max(superior, ALTO_CABECERA_MINIMO);
     }

@@ -35,7 +35,7 @@ class EstiloPdf {
     static final float RADIO_CAJA = 6f;
     static final float RADIO_CHIP = 2f;
 
-    static final float PIE_LEGAL_TAM = 6.5f;
+    static final float PIE_LEGAL_TAM = 5.5f;
     static final float PIE_LEGAL_INTERLINEADO = PIE_LEGAL_TAM + 1.5f;
     static final float HUECO_TARJETAS = 8f;
     static final float ESP_SUPLIDOS = 4f;
@@ -149,9 +149,9 @@ class EstiloPdf {
 
             BaseFont bf = baseNegrita();
             cb.beginText();
-            cb.setFontAndSize(bf, 8.5f);
+            cb.setFontAndSize(bf, 9.5f);
             cb.setColorFill(clara ? c.oscuro : BLANCO);
-            cb.showTextAligned(Element.ALIGN_LEFT, titulo, x + 8, y + (h - 8.5f) / 2 - 1f, 0);
+            cb.showTextAligned(Element.ALIGN_LEFT, titulo, x + 8, y + (h - 9.5f) / 2 - 1f, 0);
             cb.endText();
         }
     }
@@ -202,6 +202,32 @@ class EstiloPdf {
             cb.setColorStroke(borde);
             cb.setLineWidth(0.9f);
             cb.roundRectangle(x1 - 0.4f, y1 - 0.4f, w + 0.8f, h + 0.8f, radio);
+            cb.stroke();
+            cb.restoreState();
+        }
+    }
+
+    static final class RayaAlCortar implements PdfPTableEvent {
+        private final Color borde;
+        private int filasYaDibujadas = 0;
+        RayaAlCortar(Color borde) {
+            this.borde = borde;
+        }
+        @Override
+        public void tableLayout(PdfPTable table, float[][] widths, float[] heights, int headerRows, int rowStart, PdfContentByte[] canvases) {
+            filasYaDibujadas += heights.length - 1 - headerRows;
+            if (filasYaDibujadas + headerRows >= table.size()) {
+                return;
+            }
+            float x1 = widths[0][0];
+            float x2 = widths[0][widths[0].length - 1];
+            float y = heights[heights.length - 1];
+            PdfContentByte cb = canvases[PdfPTable.LINECANVAS];
+            cb.saveState();
+            cb.setColorStroke(borde);
+            cb.setLineWidth(0.5f);
+            cb.moveTo(x1, y);
+            cb.lineTo(x2, y);
             cb.stroke();
             cb.restoreState();
         }

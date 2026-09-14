@@ -5,6 +5,7 @@ import com.alcazaba.facturacion.model.Serie;
 import com.alcazaba.facturacion.model.TipoIva;
 import com.alcazaba.facturacion.model.TipoRetencion;
 import com.alcazaba.facturacion.pdf.PdfService;
+import com.alcazaba.facturacion.pdf.CabeceraLayout;
 import com.alcazaba.facturacion.service.EmpresaManager;
 import com.alcazaba.facturacion.service.Servicios;
 import com.alcazaba.facturacion.service.Sesion;
@@ -26,6 +27,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.image.Image;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
@@ -310,6 +312,15 @@ public class ConfiguracionController implements Vista {
         File f = chooser.showOpenDialog(nav.stage());
         if (f != null) {
             txtLogoPath.setText(f.getAbsolutePath());
+            Image imagen = new Image(f.toURI().toString());
+            if (CabeceraLayout.logoConPocaResolucion(imagen.getWidth(), imagen.getHeight())) {
+                int ancho = (int) imagen.getWidth();
+                int alto = (int) imagen.getHeight();
+                long minimo = Math.round(CabeceraLayout.anchoLogoDibujado((float) imagen.getWidth(), (float) imagen.getHeight()) * 1.5);
+                Dialogos.info("Logo", "La imagen es pequeña (" + ancho + " × " + alto
+                        + " píxeles) y puede verse borrosa al imprimir la factura. "
+                        + "Para un buen resultado, usa una imagen de al menos " + minimo + " píxeles de ancho.");
+            }
         }
     }
 

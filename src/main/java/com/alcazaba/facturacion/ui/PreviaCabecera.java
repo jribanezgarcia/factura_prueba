@@ -82,11 +82,11 @@ public class PreviaCabecera extends Pane {
             img.setY(Math.max(CabeceraLayout.HUECO_LOGO_SUPERIOR * s, 6));
             getChildren().add(img);
 
-            dibujarBloqueTexto(izquierda + CabeceraLayout.ANCHO_LOGO_FIJO * s + 14 * s, 13 * s, s);
+            dibujarBloqueTexto(izquierda + CabeceraLayout.ANCHO_LOGO_FIJO * s + 14 * s, 14 * s, s);
         } else {
             int lineas = CabeceraLayout.lineasEmpresa(empresa).size();
             margenSuperior = CabeceraLayout.altoCabeceraTexto(lineas) * s;
-            dibujarBloqueTexto(izquierda, 15 * s, s);
+            dibujarBloqueTexto(izquierda, 16 * s, s);
         }
 
         Line separador = new Line(izquierda, margenSuperior, derecha, margenSuperior);
@@ -114,27 +114,27 @@ public class PreviaCabecera extends Pane {
             if (linea.chipNif) {
                 dibujarChipNif(x, y / s, s);
             } else {
-                getChildren().add(texto(linea.texto, x, y, 9 * s, gris, false));
+                getChildren().add(texto(linea.texto, x, y, 10 * s, gris, false));
             }
-            y += 13 * s;
+            y += 14 * s;
         }
     }
 
     private void dibujarChipNif(double x, double yPt, double s) {
         String txt = "NIF: " + nz(empresa.getNif());
-        Text medida = texto(txt, 0, 0, 9 * s, Color.BLACK, true);
+        Text medida = texto(txt, 0, 0, 10 * s, Color.BLACK, true);
         double ancho = medida.getBoundsInLocal().getWidth();
         double lx = x - 4 * s;
-        double ly = yPt * s - 3.5 * s;
+        double ly = yPt * s - 4 * s;
         double lw = ancho + 10 * s;
-        double lh = 12.5 * s;
+        double lh = 13.5 * s;
         Rectangle fondo = new Rectangle(lx, ly, lw, lh);
         fondo.setArcWidth(4 * s);
         fondo.setArcHeight(4 * s);
         fondo.setFill(claro());
         fondo.setStroke(colorBorde());
         getChildren().add(fondo);
-        getChildren().add(texto(txt, x + s, yPt * s, 9 * s, oscuro(), true));
+        getChildren().add(texto(txt, x + s, yPt * s, 10 * s, oscuro(), true));
     }
 
     private Text texto(String contenido, double x, double y, double tamano, Color color, boolean negrita) {

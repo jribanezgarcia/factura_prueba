@@ -54,8 +54,8 @@ class CabeceraLayoutTest {
         assertEquals(108f, CabeceraLayout.altoCabeceraTexto(0), 0.01,
                 "Con pocas lineas se aplica el minimo de 108");
         assertEquals(108f, CabeceraLayout.altoCabeceraTexto(3), 0.01);
-        assertEquals(112f, CabeceraLayout.altoCabeceraTexto(4), 0.01);
-        assertEquals(125f, CabeceraLayout.altoCabeceraTexto(5), 0.01);
+        assertEquals(116f, CabeceraLayout.altoCabeceraTexto(4), 0.01);
+        assertEquals(130f, CabeceraLayout.altoCabeceraTexto(5), 0.01);
     }
 
     @Test
@@ -83,5 +83,21 @@ class CabeceraLayoutTest {
         assertEquals(1, nifs, "Debe haber una unica linea de NIF destacada");
         assertTrue(lineas.stream().anyMatch(l -> l.chipNif && l.texto.contains("B04444444")));
         assertTrue(lineas.stream().anyMatch(l -> l.texto.equals("Cocinas y armarios")));
+    }
+
+    @Test
+    void anchoLogoDibujadoRespetaLaCajaFija() {
+        assertEquals(120f, CabeceraLayout.anchoLogoDibujado(500, 500), 0.01);
+        assertEquals(240f, CabeceraLayout.anchoLogoDibujado(1000, 250), 0.01);
+        assertEquals(30f, CabeceraLayout.anchoLogoDibujado(100, 400), 0.01);
+    }
+
+    @Test
+    void logoConPocaResolucionAvisaSoloSiAmpliaMucho() {
+        assertTrue(CabeceraLayout.logoConPocaResolucion(128, 128));
+        assertFalse(CabeceraLayout.logoConPocaResolucion(256, 256));
+        assertFalse(CabeceraLayout.logoConPocaResolucion(472, 194));
+        assertFalse(CabeceraLayout.logoConPocaResolucion(1254, 1254));
+        assertFalse(CabeceraLayout.logoConPocaResolucion(0, 128));
     }
 }

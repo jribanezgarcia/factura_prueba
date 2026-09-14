@@ -218,7 +218,7 @@ final class OpenPdfRenderer {
         cuerpo.setPaddingTop(6);
 
         if (card.rows().isEmpty()) {
-            cuerpo.setPhrase(new Phrase(card.emptyMarker(), EstiloPdf.fuente(false, 9.5f, EstiloPdf.GRIS_CLARO)));
+            cuerpo.setPhrase(new Phrase(card.emptyMarker(), EstiloPdf.fuente(false, 10.5f, EstiloPdf.GRIS_CLARO)));
             t.addCell(cuerpo);
             return t;
         }
@@ -226,7 +226,7 @@ final class OpenPdfRenderer {
         float anchoEtiqueta = 0;
         BaseFont bfEtiq = EstiloPdf.baseRegular();
         for (InvoiceDocument.FieldRow fila : card.rows()) {
-            float w = bfEtiq.getWidthPoint(fila.label(), 8.5f);
+            float w = bfEtiq.getWidthPoint(fila.label(), 9.5f);
             if (w > anchoEtiqueta) anchoEtiqueta = w;
         }
         anchoEtiqueta += EstiloPdf.MARGEN_ETIQUETA;
@@ -236,13 +236,13 @@ final class OpenPdfRenderer {
         PdfPTable filasTabla = new PdfPTable(new float[]{anchoEtiqueta, anchoValor});
         filasTabla.setWidthPercentage(100);
         for (InvoiceDocument.FieldRow fila : card.rows()) {
-            PdfPCell etiqueta = new PdfPCell(new Phrase(fila.label(), EstiloPdf.fuente(false, 8.5f, EstiloPdf.GRIS_CLARO)));
+            PdfPCell etiqueta = new PdfPCell(new Phrase(fila.label(), EstiloPdf.fuente(false, 9.5f, EstiloPdf.GRIS_CLARO)));
             etiqueta.setBorder(Rectangle.NO_BORDER);
             etiqueta.setPadding(1.5f);
             filasTabla.addCell(etiqueta);
             Font fuenteValor = "Nombre".equals(fila.label())
-                    ? EstiloPdf.fuente(true, 10.5f, EstiloPdf.TINTA)
-                    : EstiloPdf.fuente(false, 9.5f, EstiloPdf.TINTA);
+                    ? EstiloPdf.fuente(true, 11.5f, EstiloPdf.TINTA)
+                    : EstiloPdf.fuente(false, 10.5f, EstiloPdf.TINTA);
             PdfPCell valor = new PdfPCell(new Phrase(fila.value(), fuenteValor));
             valor.setBorder(Rectangle.NO_BORDER);
             valor.setPadding(1.5f);
@@ -275,7 +275,7 @@ final class OpenPdfRenderer {
         float anchoEtiqueta = 0;
         BaseFont bfEtiq = EstiloPdf.baseRegular();
         for (InvoiceDocument.FieldRow fila : card.rows()) {
-            float w = bfEtiq.getWidthPoint(fila.label(), 8.5f);
+            float w = bfEtiq.getWidthPoint(fila.label(), 9.5f);
             if (w > anchoEtiqueta) anchoEtiqueta = w;
         }
         anchoEtiqueta += EstiloPdf.MARGEN_ETIQUETA;
@@ -285,11 +285,11 @@ final class OpenPdfRenderer {
         PdfPTable filasTabla = new PdfPTable(new float[]{anchoEtiqueta, anchoValor});
         filasTabla.setWidthPercentage(100);
         for (InvoiceDocument.FieldRow fila : card.rows()) {
-            PdfPCell etiqueta = new PdfPCell(new Phrase(fila.label(), EstiloPdf.fuente(false, 8.5f, EstiloPdf.GRIS_CLARO)));
+            PdfPCell etiqueta = new PdfPCell(new Phrase(fila.label(), EstiloPdf.fuente(false, 9.5f, EstiloPdf.GRIS_CLARO)));
             etiqueta.setBorder(Rectangle.NO_BORDER);
             etiqueta.setPadding(1.5f);
             filasTabla.addCell(etiqueta);
-            PdfPCell valor = new PdfPCell(new Phrase(fila.value(), EstiloPdf.fuente(false, 9.5f, EstiloPdf.GRIS)));
+            PdfPCell valor = new PdfPCell(new Phrase(fila.value(), EstiloPdf.fuente(false, 10.5f, EstiloPdf.GRIS)));
             valor.setBorder(Rectangle.NO_BORDER);
             valor.setPadding(1.5f);
             filasTabla.addCell(valor);
@@ -328,6 +328,7 @@ final class OpenPdfRenderer {
 
     private PdfPTable tablaLineas(InvoiceDocument.LinesTable lines, EstiloPdf.Colores c) {
         PdfPTable t = tablaLineasVacia(c);
+        t.setTableEvent(new EstiloPdf.RayaAlCortar(c.bordeTabla));
         int fila = 0;
         for (InvoiceDocument.LineRow l : lines.rows()) {
             t.addCell(celdaLinea(l.quantity(), fila, Element.ALIGN_CENTER, c));
@@ -355,7 +356,7 @@ final class OpenPdfRenderer {
             fila++;
         }
 
-        PdfPCell nota = new PdfPCell(new Phrase(suplidos.note(), EstiloPdf.fuente(false, 7f, c.oscuro)));
+        PdfPCell nota = new PdfPCell(new Phrase(suplidos.note(), EstiloPdf.fuente(false, 8f, c.oscuro)));
         nota.setColspan(2);
         nota.setBorder(Rectangle.NO_BORDER);
         nota.setPaddingTop(3f);
@@ -364,7 +365,7 @@ final class OpenPdfRenderer {
     }
 
     private PdfPCell celdaCabeceraColumnaCompacta(String texto, EstiloPdf.Colores c) {
-        PdfPCell celula = new PdfPCell(new Phrase(texto, EstiloPdf.fuente(true, 7f, c.oscuro)));
+        PdfPCell celula = new PdfPCell(new Phrase(texto, EstiloPdf.fuente(true, 8f, c.oscuro)));
         celula.setBackgroundColor(c.claro);
         celula.setHorizontalAlignment(Element.ALIGN_CENTER);
         celula.setPadding(3);
@@ -373,9 +374,12 @@ final class OpenPdfRenderer {
     }
 
     private PdfPCell celdaLineaCompacta(String texto, int fila, int alineacion, EstiloPdf.Colores c) {
-        PdfPCell celula = new PdfPCell(new Phrase(texto, EstiloPdf.fuente(false, 8f, EstiloPdf.TINTA)));
+        PdfPCell celula = new PdfPCell(new Phrase(texto, EstiloPdf.fuente(false, 9f, EstiloPdf.TINTA)));
         celula.setHorizontalAlignment(alineacion);
-        celula.setPadding(2.5f);
+        celula.setPaddingTop(2.5f);
+        celula.setPaddingBottom(2.5f);
+        celula.setPaddingLeft(4f);
+        celula.setPaddingRight(4f);
         celula.setBorderColor(c.bordeTabla);
         if (fila % 2 == 1) {
             celula.setBackgroundColor(c.clarisimo);
@@ -384,7 +388,7 @@ final class OpenPdfRenderer {
     }
 
     private PdfPCell celdaCabeceraColumna(String texto, EstiloPdf.Colores c) {
-        PdfPCell celula = new PdfPCell(new Phrase(texto, EstiloPdf.fuente(true, 8f, c.oscuro)));
+        PdfPCell celula = new PdfPCell(new Phrase(texto, EstiloPdf.fuente(true, 9f, c.oscuro)));
         celula.setBackgroundColor(c.claro);
         celula.setHorizontalAlignment(Element.ALIGN_CENTER);
         celula.setPadding(4);
@@ -393,9 +397,14 @@ final class OpenPdfRenderer {
     }
 
     private PdfPCell celdaLinea(String texto, int fila, int alineacion, EstiloPdf.Colores c) {
-        PdfPCell celula = new PdfPCell(new Phrase(texto, EstiloPdf.fuente(false, 9f, EstiloPdf.TINTA)));
+        PdfPCell celula = new PdfPCell(new Phrase(texto, EstiloPdf.fuente(false, 10f, EstiloPdf.TINTA)));
         celula.setHorizontalAlignment(alineacion);
-        celula.setPadding(4);
+        celula.setPaddingTop(3f);
+        celula.setPaddingBottom(3f);
+        celula.setPaddingLeft(4f);
+        celula.setPaddingRight(4f);
+        celula.setLeading(1f, 1f);
+        celula.setBorder(Rectangle.LEFT | Rectangle.RIGHT);
         celula.setBorderColor(c.bordeTabla);
         if (fila % 2 == 1) {
             celula.setBackgroundColor(c.clarisimo);
@@ -454,8 +463,8 @@ final class OpenPdfRenderer {
 
     private Paragraph notaDescuento(String nota, EstiloPdf.Colores c) {
         Paragraph p = new Paragraph();
-        p.add(new Chunk(nota, EstiloPdf.fuente(false, 7f, c.oscuro)));
-        p.setLeading(8.5f);
+        p.add(new Chunk(nota, EstiloPdf.fuente(false, 8f, c.oscuro)));
+        p.setLeading(9.5f);
         p.setSpacingBefore(3f);
         p.setAlignment(Element.ALIGN_LEFT);
         return p;
@@ -481,16 +490,22 @@ final class OpenPdfRenderer {
             filaLiquidacion(t, suplidos.label(), suplidos.amount(), c, false);
         }
 
-        PdfPCell etiquetaTotal = new PdfPCell(new Phrase(liquidation.total().label(), EstiloPdf.fuente(true, 11f, EstiloPdf.BLANCO)));
+        PdfPCell etiquetaTotal = new PdfPCell(new Phrase(liquidation.total().label(), EstiloPdf.fuente(true, 12f, EstiloPdf.BLANCO)));
         etiquetaTotal.setBackgroundColor(c.base);
-        etiquetaTotal.setPadding(5f);
+        etiquetaTotal.setPaddingTop(5f);
+        etiquetaTotal.setPaddingBottom(5f);
+        etiquetaTotal.setPaddingLeft(5f);
+        etiquetaTotal.setPaddingRight(5f);
         etiquetaTotal.setBorderColor(c.oscuro);
         etiquetaTotal.setBorder(Rectangle.LEFT | Rectangle.TOP | Rectangle.BOTTOM);
         etiquetaTotal.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        PdfPCell importeTotal = new PdfPCell(new Phrase(liquidation.total().amount(), EstiloPdf.fuente(true, 11f, EstiloPdf.BLANCO)));
+        PdfPCell importeTotal = new PdfPCell(new Phrase(liquidation.total().amount(), EstiloPdf.fuente(true, 12f, EstiloPdf.BLANCO)));
         importeTotal.setBackgroundColor(c.base);
         importeTotal.setHorizontalAlignment(Element.ALIGN_RIGHT);
-        importeTotal.setPadding(5f);
+        importeTotal.setPaddingTop(5f);
+        importeTotal.setPaddingBottom(5f);
+        importeTotal.setPaddingLeft(3f);
+        importeTotal.setPaddingRight(3f);
         importeTotal.setBorderColor(c.oscuro);
         importeTotal.setBorder(Rectangle.RIGHT | Rectangle.TOP | Rectangle.BOTTOM);
         importeTotal.setVerticalAlignment(Element.ALIGN_MIDDLE);
@@ -505,7 +520,7 @@ final class OpenPdfRenderer {
     }
 
     private PdfPCell celdaCabeceraRejilla(String texto, EstiloPdf.Colores c) {
-        Chunk chunk = new Chunk(texto, EstiloPdf.fuente(true, 7f, EstiloPdf.BLANCO));
+        Chunk chunk = new Chunk(texto, EstiloPdf.fuente(true, 8f, EstiloPdf.BLANCO));
         chunk.setCharacterSpacing(0.5f);
         PdfPCell celula = new PdfPCell(new Phrase(chunk));
         celula.setBackgroundColor(c.base);
@@ -518,8 +533,8 @@ final class OpenPdfRenderer {
 
     private PdfPCell celdaCuerpoRejilla(String texto, int alineacion, EstiloPdf.Colores c, boolean totales, boolean retencion) {
         Font f = retencion
-                ? new Font(EstiloPdf.baseCursiva(), 8.5f, Font.NORMAL, EstiloPdf.ROJO_DESCUENTO)
-                : EstiloPdf.fuente(totales, 8.5f, EstiloPdf.TINTA);
+                ? new Font(EstiloPdf.baseCursiva(), 9.5f, Font.NORMAL, EstiloPdf.ROJO_DESCUENTO)
+                : EstiloPdf.fuente(totales, 9.5f, EstiloPdf.TINTA);
         PdfPCell celula = new PdfPCell(new Phrase(texto, f));
         celula.setHorizontalAlignment(alineacion);
         celula.setPadding(3.5f);
@@ -540,8 +555,8 @@ final class OpenPdfRenderer {
         celula.setBorder(Rectangle.NO_BORDER);
         celula.setPadding(8);
         celula.setCellEvent(new EstiloPdf.ContornoRedondeado(EstiloPdf.RADIO_CAJA, c.bordeTabla));
-        Paragraph p = new Paragraph("Observaciones", EstiloPdf.fuente(true, 8.5f, c.oscuro));
-        p.add(new Phrase("\n" + observaciones, EstiloPdf.fuente(false, 9f, EstiloPdf.TINTA)));
+        Paragraph p = new Paragraph("Observaciones", EstiloPdf.fuente(true, 9.5f, c.oscuro));
+        p.add(new Phrase("\n" + observaciones, EstiloPdf.fuente(false, 10f, EstiloPdf.TINTA)));
         celula.setPhrase(p);
         t.addCell(celula);
         return t;
