@@ -16,9 +16,8 @@
 ## 3. PDF
 
 - [ ] 3.1 Renombrar `PdfService` → `ExportadorPdf`, `InvoiceDocumentBuilder` → `ConstructorDocumentoFactura`, `OpenPdfRenderer` → `GeneradorPdf` y `CabeceraLayout` → `DisposicionCabecera` (clase, fichero y usos, incluido `PreviaCabecera`).
-- [ ] 3.2 Renombrar `InvoiceDocument` → `DocumentoFactura` y sus 15 records y componentes según `design.md - D3`, actualizando todos los accesos en `GeneradorPdf`, `CabeceraPiePdf`, `ConstructorDocumentoFactura` y los tests.
-- [ ] 3.3 Renombrar los métodos de `ConstructorDocumentoFactura` según `design.md - D3`.
-- [ ] 3.4 `mvn -q compile` sin errores.
+- [ ] 3.2 Renombrar solo la clase `InvoiceDocument` → `DocumentoFactura` (fichero y usos). **No** renombrar sus records internos, sus componentes ni los métodos de `ConstructorDocumentoFactura`. Ver `design.md - D3` y Non-Goals.
+- [ ] 3.3 `mvn -q compile` sin errores.
 
 ## 4. Utilidades
 
@@ -38,7 +37,7 @@
 ## 7. Comprobaciones
 
 - [ ] 7.1 `git grep -nE "\b(Launcher|Main|MenuController|BackupController|ThemeManager|VentanaConfig|PdfService|InvoiceDocument\w*|OpenPdfRenderer|CabeceraLayout|EmailValidator|CodigoPostalValidator|DocumentoFiscalValidator|UiSmokeTest|StyleClassSeparadorTest|JavaFxTestSupport)\b" -- src pom.xml` no devuelve nada.
-- [ ] 7.2 `git grep -nE "\b(Header|FieldRow|ClientCard|PaymentCard|LineRow|LinesTable|SuplidoRow|SuplidosBlock|IvaRow|RetentionRow|SuplidosTotalRow|TotalBand|Liquidation|TotalsBlock)\b" -- src` no devuelve nada.
+- [ ] 7.2 `git grep -nE "\b(Header|FieldRow|ClientCard|PaymentCard|LineRow|LinesTable|SuplidoRow|SuplidosBlock|IvaRow|RetentionRow|SuplidosTotalRow|TotalBand|Liquidation|TotalsBlock)\b" -- src` sigue devolviendo los mismos usos que antes del change (no se han traducido).
 - [ ] 7.3 `git grep -n "Backup.fxml\|\"backup\"\|#backup\|\bBACKUP\b" -- src` no devuelve nada.
 - [ ] 7.4 `git grep -nE "\b(Service|Repository|Database|Migrations|Servicios)\b|\w+(Service|Repository)\b|com/alcazaba|\bui/|\bservice/|\brepository/" -- README.md docs` solo devuelve nombres de changes archivados (por ejemplo `sql-fuera-de-ui-y-service`).
 - [ ] 7.5 `git grep -n "\"biblioteca8\"\|\"tema\"\|\"color_pdf\"" -- src/main` sigue devolviendo los mismos valores que antes.

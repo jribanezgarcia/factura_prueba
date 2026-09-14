@@ -9,15 +9,16 @@ Parte del estado que deja `nombres-modelo-y-datos`: paquetes en español, `Model
 - `Launcher` solo hace `Application.launch(Main.class, args)`. Nadie más usa `Main`.
 - `Main` usa `InstanciaUnica` y `PreparacionDatos`, que son clases `public` con métodos `public static`: puede pasar a `vista` sin tocar visibilidades.
 - Claves de la pantalla de copias: `VentanaConfig.BACKUP` (`VentanaConfig.java:20`), `BarraNavegacion.RUTA_BACKUP` (`:22`), `ICONO_BACKUP` y la clave `"backup"` (`BarraNavegacion.java:45`, `BackupController.java:74`), `MenuController.backup()` (`:141`) con `onAction="#backup"` en `MenuPrincipal.fxml:98`, y `UiSmokeTest.java:92` con `cargar("Backup.fxml")`.
-- `InvoiceDocument` tiene 15 records anidados con componentes en inglés, que usan `InvoiceDocumentBuilder` (28 llamadas a sus métodos), `OpenPdfRenderer` y `CabeceraPiePdf`.
+- `InvoiceDocument` tiene 15 records anidados con componentes en inglés, que usan `InvoiceDocumentBuilder` (28 llamadas a sus métodos), `OpenPdfRenderer` y `CabeceraPiePdf`. Está decidido sustituirlos más adelante por 4 clases normales (`DocumentoFactura`, `FilaTexto`, `FilaLinea`, `FilaIva`) en un change propio del PDF, así que aquí **no se traducen**.
 - `ThemeManager.DEFAULT = "biblioteca8"` es el nombre de un tema guardado en preferencias: **el valor no cambia**, solo el nombre de la constante.
 - En Biblioteca8 el sufijo `Controller` se mantiene: no se traduce.
 
 ## Goals / Non-Goals
 
-**Goals:** ningún nombre de clase, record, constante pública o método público en inglés en `vista`, `pdf` y `utilidades`; arranque igual que Biblioteca8; documentación coherente con el código.
+**Goals:** ningún nombre de clase de primer nivel, constante pública o método público en inglés en `vista`, `pdf` y `utilidades`, salvo lo que queda fuera en Non-Goals; arranque igual que Biblioteca8; documentación coherente con el código.
 
 **Non-Goals:**
+- Traducir los records anidados de `DocumentoFactura` (`Header`, `FieldRow`, `ClientCard`, `PaymentCard`, `LineRow`, `LinesTable`, `SuplidoRow`, `SuplidosBlock`, `IvaRow`, `RetentionRow`, `SuplidosTotalRow`, `TotalBand`, `Liquidation`, `TotalsBlock`), sus componentes o los métodos de `ConstructorDocumentoFactura` (`build`, `header`, `clientCard`…). Se sustituyen en un change posterior del PDF.
 - Cambiar textos visibles, incluido el «El logo del backup no se encontrará…» de `BackupController.java:172`.
 - Cambiar valores guardados (`"biblioteca8"`, `"tema"`, `"color_pdf"`).
 - Renombrar los demás FXML o los CSS.
@@ -80,45 +81,7 @@ Clases:
 
 `ExportadorPdf.PREF_COLOR` y `COLOR_DEFECTO` conservan nombre y valor.
 
-Records de `DocumentoFactura` (tipo → nuevo tipo, componentes en orden):
-
-| Hoy | Nuevo |
-|---|---|
-| `InvoiceDocument(header, clientCard, paymentCard, linesTable, suplidos, totals, observations, legalFooter)` | `DocumentoFactura(cabecera, tarjetaCliente, tarjetaPago, tablaLineas, suplidos, totales, observaciones, pieLegal)` |
-| `Header(number, date, corrective, correctsReference, cancelled)` | `Cabecera(numero, fecha, rectificativa, referenciaRectificada, anulada)` |
-| `FieldRow(label, value)` | `FilaCampo(etiqueta, valor)` |
-| `ClientCard(title, rows, emptyMarker)` | `TarjetaCliente(titulo, filas, marcaVacio)` |
-| `PaymentCard(title, rows)` | `TarjetaPago(titulo, filas)` |
-| `LineRow(quantity, description, price, iva, total)` | `FilaLinea(cantidad, descripcion, precio, iva, total)` |
-| `LinesTable(headers, rows)` | `TablaLineas(cabeceras, filas)` |
-| `SuplidoRow(description, amount)` | `FilaSuplido(descripcion, importe)` |
-| `SuplidosBlock(headers, rows, note)` | `BloqueSuplidos(cabeceras, filas, nota)` |
-| `IvaRow(type, base, quota)` | `FilaIva(tipo, base, cuota)` |
-| `RetentionRow(label, amount)` | `FilaRetencion(etiqueta, importe)` |
-| `SuplidosTotalRow(label, amount)` | `FilaTotalSuplidos(etiqueta, importe)` |
-| `TotalBand(label, amount)` | `BandaTotal(etiqueta, importe)` |
-| `Liquidation(title, baseLabel, baseAmount, ivaLabel, ivaAmount, retention, suplidos, total)` | `Liquidacion(titulo, etiquetaBase, importeBase, etiquetaIva, importeIva, retencion, suplidos, total)` |
-| `TotalsBlock(desgloseHeaders, ivaRows, totalsRow, discountNote, liquidation)` | `BloqueTotales(cabecerasDesglose, filasIva, filaTotales, notaDescuento, liquidacion)` |
-
-Al renombrar un componente de record cambia también su método de acceso (`header()` → `cabecera()`), y hay que actualizarlo en `GeneradorPdf`, `CabeceraPiePdf`, `ConstructorDocumentoFactura` y los tests.
-
-Métodos de `ConstructorDocumentoFactura`:
-
-| Hoy | Nuevo |
-|---|---|
-| `build(vc, empresa, colorHex)` | `construir(vc, empresa, colorHex)` |
-| `header(v)` | `cabecera(v)` |
-| `clientCard(v)` | `tarjetaCliente(v)` |
-| `paymentCardTitle()` | `tituloTarjetaPago()` |
-| `paymentCard(v)` | `tarjetaPago(v)` |
-| `paymentRows(v)` | `filasPago(v)` |
-| `linesTable(lineas)` | `tablaLineas(lineas)` |
-| `suplidosBlock(suplidos)` | `bloqueSuplidos(suplidos)` |
-| `totalsBlock(r, descuento)` | `bloqueTotales(r, descuento)` |
-| `discountNote(r, descuento)` | `notaDescuento(r, descuento)` |
-| `observations(v)` | `observaciones(v)` |
-| `legalFooter(empresa)` | `pieLegal(empresa)` |
-| `importePdf`, `porcentajeRejilla` | *(igual)* |
+Solo cambia el nombre de las clases de primer nivel. Los records anidados siguen con su nombre (`DocumentoFactura.Header`, `DocumentoFactura.ClientCard`…), igual que sus componentes y los métodos de `ConstructorDocumentoFactura` (`build`, `header`, `clientCard`…). Ver Non-Goals.
 
 Los textos que acaban en el PDF no cambian.
 
@@ -153,6 +116,7 @@ Se actualiza para que describa **el código tal como queda**. Los nombres de cha
 ## Risks / Trade-offs
 
 - **Riesgo medio: claves de texto de la pantalla de copias.** `"backup"` se usa como identificador en dos sitios y `#backup` en el FXML. Si se cambia solo uno, el botón de la barra deja de marcarse como activo o el menú no abre la pantalla. `CargaPantallasTest` y la verificación manual lo cubren.
-- **Riesgo bajo: records del PDF.** El compilador detecta cada acceso. Los tests del PDF comparan contenido y deben pasar sin cambios de lógica.
+- **Riesgo bajo: clases del PDF.** El compilador detecta cada uso del nombre viejo. Los tests del PDF comparan contenido y deben pasar sin cambios de lógica.
+- **Trade-off aceptado:** entre este change y el del PDF conviven `DocumentoFactura` con records internos en inglés (`Header`, `TotalsBlock`…).
 - **Riesgo bajo: `javafx:run`.** Si `mainClass` apunta mal, la aplicación no arranca desde Maven. Tarea 8.1.
 - **Trade-off aceptado:** el sufijo `Controller` se queda en inglés, como en Biblioteca8 y como lo espera Scene Builder por convención.

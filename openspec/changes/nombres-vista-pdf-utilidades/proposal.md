@@ -14,7 +14,7 @@ Además, `README.md` y `docs/` describen los paquetes y clases antiguos (`ui/`, 
   - Los controladores conservan el sufijo `Controller`, igual que en Biblioteca8.
 - **PDF:**
   - `PdfService` → `ExportadorPdf`, `InvoiceDocument` → `DocumentoFactura`, `InvoiceDocumentBuilder` → `ConstructorDocumentoFactura`, `OpenPdfRenderer` → `GeneradorPdf` y `CabeceraLayout` → `DisposicionCabecera`.
-  - Los records internos, sus componentes y los métodos del constructor pasan a español (`Header(number, date…)` → `Cabecera(numero, fecha…)`, `build` → `construir`…).
+  - Los records internos de `DocumentoFactura` (`Header`, `ClientCard`, `TotalsBlock`…), sus componentes y los métodos del constructor **no se tocan aquí**: se sustituirán por clases normales en un change posterior del PDF, y traducirlos ahora sería trabajo perdido.
 - **Utilidades:** `EmailValidator` → `ValidadorEmail`, `CodigoPostalValidator` → `ValidadorCodigoPostal`, `DocumentoFiscalValidator` → `ValidadorDocumentoFiscal`.
 - **Tests:** siguen a su clase. También se renombran los que tienen nombre en inglés sin clase detrás (`UiSmokeTest`, `StyleClassSeparadorTest`, `JavaFxTestSupport`).
 - **Documentación:** `README.md`, `docs/tecnico.md` y `docs/metodologia.md` pasan a la estructura y los nombres nuevos.
