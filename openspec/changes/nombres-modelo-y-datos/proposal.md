@@ -9,7 +9,7 @@ Este es el segundo de los tres changes de renombrado: **capa de modelo, datos y 
 - **Reglas** (`cabofactu.modelo.negocio`): en plural, como `Libros`. `FacturaService` → `Facturas`, `ClienteService` → `Clientes`, `EmpresaManager` → `Empresas`, `NumeroService` → `Numeracion`, `CalculoService` → `Calculos`, etc. `ValidationException` → `ValidacionException`.
 - **Datos** (`cabofactu.modelo.negocio.sqlite`): sufijo `DAO`. `FacturaRepository` → `FacturaDAO`, `LineaRepository` → `LineaFacturaDAO`, `VersionRepository` → `VersionFacturaDAO`, `IvaRepository` → `TipoIvaDAO`, `ConfigRepository` → `ConfiguracionDAO`, `CopiaRepository` → `CopiaSeguridadDAO`, etc.
 - `Database` → `Conexion` y `Migrations` → `Migraciones`, con sus métodos públicos en español (`getConnection` → `establecerConexion`, `resetConnection` → `cerrarConexion`, `beginTransaction` → `iniciarTransaccion`, `migrate` → `migrar`…).
-- `Servicios` → `Modelo`. Sus campos se llaman como la clase que guardan (`factura` → `facturas`, `ivas` → `tiposIva`, `backup` → `copiaSeguridad`…). En las pantallas, la variable `servicios` pasa a `modelo`, `Vista.setServicios` pasa a `setModelo` y `Navegador.servicios()` pasa a `modelo()`.
+- `Servicios` → `Modelo`. Sus campos pasan a `private` con getter y se llaman como la clase que guardan (`factura` → `getFacturas()`, `ivas` → `getTiposIva()`, `backup` → `getCopiaSeguridad()`…). En las pantallas, la variable `servicios` pasa a `modelo`, `Vista.setServicios` pasa a `setModelo` y `Navegador.servicios()` pasa a `modelo()`.
 - `BackupService` → `fichero.CopiaSeguridad` y su `ResumenBackup` → `ResumenCopia`.
 - `FacturacionMensualService.DiaMode` → `FacturacionMensual.ModoDia`.
 - `model.FacturaVersion` → `VersionFactura` y `HistorialFila` → `FilaHistorial`.

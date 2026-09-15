@@ -114,26 +114,26 @@ Si el IDE lo permite, usar *Refactor > Rename* para que cambien a la vez la decl
 
 ### D5. `Modelo` (antes `Servicios`), en `cabofactu.modelo`
 
-Campos públicos:
+Los campos dejan de ser `public final` y pasan a **`private final` con getter**, como pide `AGENTS.md` («campos de las clases de datos siempre `private`, con getters») y como será el `Modelo` definitivo:
 
-| Hoy | Nuevo | Tipo nuevo |
-|---|---|---|
-| `reloj` | `reloj` | `Reloj` |
-| `clientes` | `clientes` | `Clientes` |
-| `series` | `series` | `Series` |
-| `ivas` | `tiposIva` | `TiposIva` |
-| `retenciones` | `tiposRetencion` | `TiposRetencion` |
-| `config` | `configuracion` | `Configuracion` |
-| `numeros` | `numeracion` | `Numeracion` |
-| `versionado` | `versiones` | `Versiones` |
-| `factura` | `facturas` | `Facturas` |
-| `estado` | `estados` | `Estados` |
-| `rectificativas` | `rectificativas` | `Rectificativas` |
-| `facturacionMensual` | `facturacionMensual` | `FacturacionMensual` |
-| `historialService` | `historial` | `Historial` |
-| `backup` | `copiaSeguridad` | `CopiaSeguridad` |
+| Campo hoy (`public final`) | Campo nuevo (`private final`) | Tipo nuevo | Getter |
+|---|---|---|---|
+| `reloj` | `reloj` | `Reloj` | `getReloj()` |
+| `clientes` | `clientes` | `Clientes` | `getClientes()` |
+| `series` | `series` | `Series` | `getSeries()` |
+| `ivas` | `tiposIva` | `TiposIva` | `getTiposIva()` |
+| `retenciones` | `tiposRetencion` | `TiposRetencion` | `getTiposRetencion()` |
+| `config` | `configuracion` | `Configuracion` | `getConfiguracion()` |
+| `numeros` | `numeracion` | `Numeracion` | `getNumeracion()` |
+| `versionado` | `versiones` | `Versiones` | `getVersiones()` |
+| `factura` | `facturas` | `Facturas` | `getFacturas()` |
+| `estado` | `estados` | `Estados` | `getEstados()` |
+| `rectificativas` | `rectificativas` | `Rectificativas` | `getRectificativas()` |
+| `facturacionMensual` | `facturacionMensual` | `FacturacionMensual` | `getFacturacionMensual()` |
+| `historialService` | `historial` | `Historial` | `getHistorial()` |
+| `backup` | `copiaSeguridad` | `CopiaSeguridad` | `getCopiaSeguridad()` |
 
-Constructores `Modelo()` y `Modelo(Clock)`. Las variables locales del constructor pasan de `xRepository` a `xDAO` (`facturaDAO`, `lineaFacturaDAO`, `versionFacturaDAO`, `tipoIvaDAO`, `configuracionDAO`, `copiaSeguridadDAO`…).
+Getters sin Javadoc (se explican solos). Constructores `Modelo()` y `Modelo(Clock)`. Las variables locales del constructor pasan de `xRepository` a `xDAO` (`facturaDAO`, `lineaFacturaDAO`, `versionFacturaDAO`, `tipoIvaDAO`, `configuracionDAO`, `copiaSeguridadDAO`…).
 
 **Uso desde las pantallas:**
 
@@ -145,9 +145,23 @@ Constructores `Modelo()` y `Modelo(Clock)`. Las variables locales del constructo
 | `GenerarFacturasMensualesController.setServicios(...)` | `setModelo(...)` |
 | `ThemeManager.aplicar(Scene, Servicios)` / `guardar(Servicios)` | `aplicar(Scene, Modelo)` / `guardar(Modelo)` |
 | campo o variable `servicios` en controladores, `Main` y tests | `modelo` |
-| `servicios.factura.crearFactura(...)` | `modelo.facturas.crearFactura(...)` |
+| `servicios.factura.crearFactura(...)` | `modelo.getFacturas().crearFactura(...)` (lo mismo con cada campo de la tabla de arriba) |
 
 Descartado: dejar `Servicios`. El usuario eligió `Modelo`, como en Biblioteca8.
+
+Descartado: mantener los campos públicos (`modelo.facturas`). Choca con `AGENTS.md` y habría que volver a cambiar las ~110 llamadas en el change de la arquitectura MVC.
+
+**Temporal:** `Vista.setModelo`, `Navegador` y la variable `modelo` en las pantallas son un paso intermedio. Más adelante, el change de la arquitectura MVC sustituye esto por `Vista.getInstancia().getControlador().getModelo()`. Aquí **no** se hace esa parte.
+
+### D5b. Relación con `AGENTS.md` durante este change
+
+Este change solo renombra. Según el apartado «Transición» de `AGENTS.md`, lo que ya existe y todavía incumple las normas **se queda como está** y lo arreglan changes posteriores:
+
+- tipos anidados (`Facturas.VersionCompleta`, `Facturas.ResumenBorrado`, `Estados.AnulacionResultado`, `Empresas.EmpresaInfo`, `Calculos.ResultadoConIva`, `Calculos.ClaveIva`, `FacturacionMensual.ModoDia`, `FacturacionMensual.LineaPlantilla`, `FacturacionMensual.Resultado`, `CopiaSeguridad.ResumenCopia`, `Serie.SufijoFecha`, `ResumenFactura.IvaGrupo`);
+- `record`, streams, `::`, ternarios, `var` y lambdas que ya estén en las líneas que se tocan: solo se cambia el nombre, no la construcción;
+- clases con todo `static` (`Empresas`, `Calculos`, `Sesion`, `PreferenciasGlobales`, `Conexion`).
+
+Lo que **sí** se exige: ningún nombre completo de clase en las líneas tocadas (usar `import`) y los campos de `Modelo` como indica D5.
 
 ### D6. `CopiaSeguridad` (antes `BackupService`), en `cabofactu.fichero`
 

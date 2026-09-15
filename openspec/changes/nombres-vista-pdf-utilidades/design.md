@@ -96,6 +96,14 @@ Los textos que acaban en el PDF no cambian.
 
 `ClientesNifValidationTest` y `EditorNifValidationTest` pasan a `ClientesValidacionNifTest` y `EditorValidacionNifTest`.
 
+### D4b. Relación con `AGENTS.md` durante este change
+
+Este change solo renombra. Según el apartado «Transición» de `AGENTS.md`, lo que ya existe y todavía incumple las normas **se queda como está** y lo arreglan changes posteriores: `Navegador`, la interfaz `Vista` con `setModelo` y `alIniciar`, los tipos anidados (records de `DocumentoFactura`, clases de `EstiloPdf`, enums y clases de `Dialogos`, `LogoMarco` y `ConfiguracionController`), clases anónimas, `Task`, streams, `::`, ternarios, `var` y `Optional` que ya estén en las líneas tocadas. Solo se cambia el nombre, no la construcción.
+
+Lo que **sí** se exige en las líneas tocadas: `import` en vez de nombres completos de clase.
+
+`LanzadorVentanaPrincipal` conserva el contenido de `Main` tal cual; convertir `Vista` en singleton con `Controlador` es trabajo del change de la arquitectura MVC.
+
 ### D5. Documentación
 
 Se actualiza para que describa **el código tal como queda**. Los nombres de changes archivados (`sql-fuera-de-ui-y-service`, `capa-servicios-catalogos`…) **se dejan tal cual**, porque son identificadores del historial.

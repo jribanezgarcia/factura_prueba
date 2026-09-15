@@ -23,8 +23,9 @@
 
 ## 5. Modelo
 
-- [ ] 5.1 Renombrar `Servicios` → `Modelo` y sus campos públicos según la tabla de `design.md - D5`; variables locales del constructor a `xDAO`.
-- [ ] 5.2 Aplicar en `vista` y en `Main` la tabla «Uso desde las pantallas» de `design.md - D5`: `Vista.setModelo`, `Navegador.modelo()`, constructor de `Navegador`, `GenerarFacturasMensualesController.setModelo`, parámetros de `ThemeManager` y variable `servicios` → `modelo`.
+- [ ] 5.1 Renombrar `Servicios` → `Modelo`. Sus campos pasan de `public final` a `private final` con los nombres nuevos y se añade un getter por campo, según la tabla de `design.md - D5`. Variables locales del constructor a `xDAO`.
+- [ ] 5.2 Aplicar en `vista`, en `Main` y en los tests la tabla «Uso desde las pantallas» de `design.md - D5`: `Vista.setModelo`, `Navegador.modelo()`, constructor de `Navegador`, `GenerarFacturasMensualesController.setModelo`, parámetros de `ThemeManager`, variable `servicios` → `modelo` y acceso a campos → getters (`servicios.factura.x(...)` → `modelo.getFacturas().x(...)`).
+- [ ] 5.3 No sacar tipos anidados ni cambiar construcciones existentes (streams, ternarios, `var`…): ver `design.md - D5b`.
 
 ## 6. Tests
 
@@ -37,6 +38,8 @@
 - [ ] 7.2 `git grep -nE "\w+(Service|Repository)\b" -- src/main/java src/test/java` no devuelve nada (salvo, si aparece, `PdfService`, que se renombra en el tercer change).
 - [ ] 7.3 `git grep -nE "getConnection\(\)|resetConnection|beginTransaction|endTransaction|setDataDir|dbPath|dataDir\(\)|lockPath|\.migrate\(|userVersion\(" -- src` no devuelve nada.
 - [ ] 7.4 `git grep -nE "\bservicios(\.|\(|\)|,|;| =)" -- src` solo devuelve líneas de comentario (ninguna de código).
+- [ ] 7.4b `git grep -nE "\bmodelo\.(reloj|clientes|series|tiposIva|tiposRetencion|configuracion|numeracion|versiones|facturas|estados|rectificativas|facturacionMensual|historial|copiaSeguridad)\b" -- src` no devuelve nada (todo va por getters) y `git grep -n "public final" -- src/main/java/cabofactu/modelo/Modelo.java` tampoco.
+- [ ] 7.4c `git grep -nE "cabofactu\.[a-z]+(\.[a-z]+)*\.[A-Z]" -- src` solo devuelve líneas `import`, `package` o de FXML.
 - [ ] 7.5 `git status` muestra los ficheros renombrados como `renamed`.
 - [ ] 7.6 Repasar en `git diff -M HEAD -- src` que ninguna cadena de texto entre comillas ha cambiado, salvo búsquedas por reflexión (`"servicios"` → `"modelo"`).
 
