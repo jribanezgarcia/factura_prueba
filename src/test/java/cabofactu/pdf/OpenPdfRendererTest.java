@@ -2,9 +2,9 @@ package cabofactu.pdf;
 
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.modelo.dominio.FacturaVersion;
+import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
-import cabofactu.modelo.negocio.FacturaService;
+import cabofactu.modelo.negocio.Facturas;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -29,8 +29,8 @@ class OpenPdfRendererTest {
         return l;
     }
 
-    private FacturaVersion versionMuestra() {
-        FacturaVersion v = new FacturaVersion();
+    private VersionFactura versionMuestra() {
+        VersionFactura v = new VersionFactura();
         v.setNumero("C-59/7");
         v.setFechaFactura(LocalDate.of(2026, 7, 14));
         v.setFechaGuardado(LocalDateTime.of(2026, 7, 14, 12, 0));
@@ -77,7 +77,7 @@ class OpenPdfRendererTest {
 
     @Test
     void alturasTarjetasDistintas() {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setCliNombre("MARIA MARTAGON AVALOS");
         v.setCliNif("49122168X");
         v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
@@ -88,7 +88,7 @@ class OpenPdfRendererTest {
         v.setFormaPago("Transferencia");
         v.setVencimiento(LocalDate.of(2026, 8, 14));
         v.setRealizadaPor("AURORA");
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
         OpenPdfRenderer renderer = new OpenPdfRenderer();
         EstiloPdf.Colores c = new EstiloPdf.Colores(java.awt.Color.decode("#B08D57"));
         // Con OpenPDF no se puede verificar el alto dibujado sin generar PDF y analizar el stream grafico
@@ -116,7 +116,7 @@ class OpenPdfRendererTest {
 
     @Test
     void invarianteD4() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setCliNombre("MARIA MARTAGON AVALOS");
         v.setCliNif("49122168X");
         v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
@@ -127,7 +127,7 @@ class OpenPdfRendererTest {
         v.setFormaPago("Transferencia");
         v.setVencimiento(LocalDate.of(2026, 8, 14));
         v.setRealizadaPor("AURORA");
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
         OpenPdfRenderer renderer = new OpenPdfRenderer();
         EstiloPdf.Colores c = new EstiloPdf.Colores(java.awt.Color.decode("#B08D57"));
         com.lowagie.text.pdf.PdfPTable tarjetas = renderer.tarjetas(vc, c);

@@ -1,6 +1,6 @@
 package cabofactu.modelo.negocio;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,12 +18,12 @@ class PreferenciasGlobalesTest {
 
     @BeforeEach
     void setUp() {
-        Database.setDataDir(tempDir);
+        Conexion.setCarpetaRaiz(tempDir);
     }
 
     @AfterEach
     void tearDown() {
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test

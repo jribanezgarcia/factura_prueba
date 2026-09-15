@@ -4,9 +4,9 @@ import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.FacturacionMensualService;
-import cabofactu.modelo.Servicios;
-import cabofactu.modelo.negocio.ValidationException;
+import cabofactu.modelo.negocio.FacturacionMensual;
+import cabofactu.modelo.Modelo;
+import cabofactu.modelo.negocio.ValidacionException;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.BooleanProperty;
 import javafx.fxml.FXMLLoader;
@@ -54,7 +54,7 @@ import cabofactu.vista.utilidades.ThemeManager;
 
 public class GenerarFacturasMensualesController {
 
-    private Servicios servicios;
+    private Modelo modelo;
     private Stage stage;
 
     private final ObservableList<LineaDialogo> lineas = FXCollections.observableArrayList();
@@ -100,8 +100,8 @@ public class GenerarFacturasMensualesController {
     @FXML
     private Label lblInfo;
 
-    public void setServicios(Servicios servicios) {
-        this.servicios = servicios;
+    public void setModelo(Modelo modelo) {
+        this.modelo = modelo;
     }
 
     public void setStage(Stage stage) {
@@ -114,14 +114,14 @@ public class GenerarFacturasMensualesController {
                     "/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml"));
             Parent root = loader.load();
             GenerarFacturasMensualesController c = loader.getController();
-            c.setServicios(nav.servicios());
+            c.setModelo(nav.modelo());
             Stage dialog = new Stage();
             dialog.initOwner(nav.stage());
             dialog.initModality(Modality.APPLICATION_MODAL);
             dialog.setTitle(Ventanas.PREFIJO + "Generar facturas mensuales");
             Ventanas.aplicarIcono(dialog);
             Scene scene = new Scene(root);
-            ThemeManager.aplicar(scene, nav.servicios());
+            ThemeManager.aplicar(scene, nav.modelo());
             dialog.setScene(scene);
             VentanaConfig.para("/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml")
                     .ifPresent(cfg -> cfg.aplicar(dialog));
@@ -156,7 +156,7 @@ public class GenerarFacturasMensualesController {
 
     private void cargarClientes() {
         try {
-            List<Cliente> activos = servicios.clientes.listar(true);
+            List<Cliente> activos = modelo.getClientes().listar(true);
             comboCliente.getItems().setAll(activos);
             comboCliente.setConverter(new StringConverter<>() {
                 @Override
@@ -177,7 +177,7 @@ public class GenerarFacturasMensualesController {
     private void cargarSeries() {
         try {
             List<Serie> series = new ArrayList<>();
-            for (Serie s : servicios.series.listar()) {
+            for (Serie s : modelo.getSeries().listar()) {
                 if (!s.isEsRectificativa()) {
                     series.add(s);
                 }
@@ -223,7 +223,7 @@ public class GenerarFacturasMensualesController {
 
     private void cargarIvas() {
         try {
-            comboIva.getItems().setAll(servicios.ivas.listar(true));
+            comboIva.getItems().setAll(modelo.getTiposIva().listar(true));
             comboIva.setConverter(new StringConverter<>() {
                 @Override
                 public String toString(TipoIva t) {
@@ -248,7 +248,7 @@ public class GenerarFacturasMensualesController {
             sin.setPorcentaje(0);
             List<TipoRetencion> items = new ArrayList<>();
             items.add(sin);
-            items.addAll(servicios.retenciones.listar(true));
+            items.addAll(modelo.getTiposRetencion().listar(true));
             comboRetencion.getItems().setAll(items);
             comboRetencion.setConverter(new StringConverter<>() {
                 @Override
@@ -268,7 +268,7 @@ public class GenerarFacturasMensualesController {
     }
 
     private void configurarSpinners() {
-        int anioActual = servicios.reloj.hoy().getYear();
+        int anioActual = modelo.getReloj().hoy().getYear();
         spinnerAnio.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(anioActual - 5, anioActual + 10, anioActual));
         spinnerDia.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 31, 15));
         spinnerDia.setEditable(true);
@@ -384,12 +384,12 @@ public class GenerarFacturasMensualesController {
             Dialogos.error("Generar", "El mes de inicio debe ser anterior o igual al mes de fin.");
             return;
         }
-        List<FacturacionMensualService.LineaPlantilla> plantillas = new ArrayList<>();
+        List<FacturacionMensual.LineaPlantilla> plantillas = new ArrayList<>();
         for (LineaDialogo l : lineas) {
             if (l.getDescripcion() == null || l.getDescripcion().isBlank()) {
                 continue;
             }
-            plantillas.add(new FacturacionMensualService.LineaPlantilla(
+            plantillas.add(new FacturacionMensual.LineaPlantilla(
                     l.getCantidad(), l.getDescripcion().trim(), l.getPrecioUnitario(), l.isAnadirMes()));
         }
         if (plantillas.isEmpty()) {
@@ -404,7 +404,7 @@ public class GenerarFacturasMensualesController {
         boolean generarDuplicados = false;
         List<String> duplicados = List.of();
         try {
-            duplicados = servicios.facturacionMensual.detectarDuplicados(
+            duplicados = modelo.getFacturacionMensual().detectarDuplicados(
                     cliente, spinnerAnio.getValue(), mesInicio, mesFin);
             if (!duplicados.isEmpty()) {
                 String mensaje = "Ya existen facturas para este cliente en:\n\n"
@@ -420,14 +420,14 @@ public class GenerarFacturasMensualesController {
             return;
         }
 
-        FacturacionMensualService.DiaMode diaMode;
+        FacturacionMensual.ModoDia diaMode;
         int diaFijo = 15;
         if (radioPrimerDia.isSelected()) {
-            diaMode = FacturacionMensualService.DiaMode.PRIMER_DIA;
+            diaMode = FacturacionMensual.ModoDia.PRIMER_DIA;
         } else if (radioUltimoDia.isSelected()) {
-            diaMode = FacturacionMensualService.DiaMode.ULTIMO_DIA;
+            diaMode = FacturacionMensual.ModoDia.ULTIMO_DIA;
         } else {
-            diaMode = FacturacionMensualService.DiaMode.FIJO;
+            diaMode = FacturacionMensual.ModoDia.FIJO;
             Integer v = spinnerDia.getValue();
             diaFijo = v == null ? 15 : Math.max(1, Math.min(31, v));
         }
@@ -441,9 +441,9 @@ public class GenerarFacturasMensualesController {
         boolean usarHuecos = false;
         try {
             if (mesesAGenerar > 0) {
-                List<Integer> conHuecos = servicios.numeros.proponerNumeros(
+                List<Integer> conHuecos = modelo.getNumeracion().proponerNumeros(
                         serie, spinnerAnio.getValue(), mesesAGenerar, true);
-                List<Integer> sinHuecos = servicios.numeros.proponerNumeros(
+                List<Integer> sinHuecos = modelo.getNumeracion().proponerNumeros(
                         serie, spinnerAnio.getValue(), mesesAGenerar, false);
                 if (!conHuecos.equals(sinHuecos)) {
                     String numeros = conHuecos.stream()
@@ -460,7 +460,7 @@ public class GenerarFacturasMensualesController {
         }
 
         try {
-            FacturacionMensualService.Resultado r = servicios.facturacionMensual.generar(
+            FacturacionMensual.Resultado r = modelo.getFacturacionMensual().generar(
                     cliente, spinnerAnio.getValue(), mesInicio, mesFin, serie,
                     diaMode, diaFijo, iva, retencion, plantillas, generarDuplicados, usarHuecos);
             StringBuilder msg = new StringBuilder();
@@ -473,7 +473,7 @@ public class GenerarFacturasMensualesController {
             if (stage != null) {
                 stage.close();
             }
-        } catch (ValidationException e) {
+        } catch (ValidacionException e) {
             Dialogos.error("Generar", e.getMessage());
         } catch (Exception e) {
             Dialogos.error("Generar", "Error al generar las facturas: " + e.getMessage());

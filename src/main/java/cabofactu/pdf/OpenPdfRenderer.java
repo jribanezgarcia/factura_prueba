@@ -1,7 +1,7 @@
 package cabofactu.pdf;
 
 import cabofactu.modelo.dominio.Empresa;
-import cabofactu.modelo.negocio.FacturaService;
+import cabofactu.modelo.negocio.Facturas;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
@@ -41,7 +41,7 @@ import cabofactu.modelo.dominio.Serie;
 final class OpenPdfRenderer {
 
 
-    void exportar(FacturaService.VersionCompleta vc, Empresa empresa, OutputStream out, String colorHex) throws Exception {
+    void exportar(Facturas.VersionCompleta vc, Empresa empresa, OutputStream out, String colorHex) throws Exception {
         EstiloPdf.Colores colores = new EstiloPdf.Colores(colorDe(colorHex));
         InvoiceDocument invoice = InvoiceDocumentBuilder.build(vc, empresa, colorHex);
 
@@ -170,7 +170,7 @@ final class OpenPdfRenderer {
     // Tarjetas bicolor
     // ------------------------------------------------------------------
 
-    PdfPTable tarjetas(FacturaService.VersionCompleta vc, EstiloPdf.Colores c) {
+    PdfPTable tarjetas(Facturas.VersionCompleta vc, EstiloPdf.Colores c) {
         List<String[]> pagoFilas = new ArrayList<>();
     for (InvoiceDocument.FieldRow fila : InvoiceDocumentBuilder.paymentRows(vc.version())) {
         pagoFilas.add(new String[]{fila.label(), fila.value()});
@@ -203,7 +203,7 @@ final class OpenPdfRenderer {
         return celula;
     }
 
-    PdfPTable tarjetaCliente(FacturaService.VersionCompleta vc, EstiloPdf.Colores c) {
+    PdfPTable tarjetaCliente(Facturas.VersionCompleta vc, EstiloPdf.Colores c) {
         return tarjetaCliente(InvoiceDocumentBuilder.clientCard(vc.version()), c);
     }
 
@@ -635,7 +635,7 @@ final class OpenPdfRenderer {
         return t;
     }
 
-    PdfPTable tarjetasSinPago(FacturaService.VersionCompleta vc, EstiloPdf.Colores c) {
+    PdfPTable tarjetasSinPago(Facturas.VersionCompleta vc, EstiloPdf.Colores c) {
         PdfPTable exterior = new PdfPTable(new float[]{49f, 2f, 49f});
         exterior.setWidthPercentage(100);
         exterior.addCell(celdaTarjeta(tarjetaCliente(vc, c), c));
@@ -675,9 +675,9 @@ final class OpenPdfRenderer {
         }
     }
 
-    void exportarAgrupado(List<FacturaService.VersionCompleta> versiones, Empresa empresa, Path ruta, String colorHex) throws Exception {
+    void exportarAgrupado(List<Facturas.VersionCompleta> versiones, Empresa empresa, Path ruta, String colorHex) throws Exception {
         List<byte[]> pdfs = new ArrayList<>();
-        for (FacturaService.VersionCompleta vc : versiones) {
+        for (Facturas.VersionCompleta vc : versiones) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             exportar(vc, empresa, baos, colorHex);
             pdfs.add(baos.toByteArray());

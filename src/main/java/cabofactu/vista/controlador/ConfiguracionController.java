@@ -6,8 +6,8 @@ import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.PdfService;
 import cabofactu.pdf.CabeceraLayout;
-import cabofactu.modelo.negocio.EmpresaManager;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.negocio.Empresas;
+import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.Sesion;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -57,7 +57,7 @@ public class ConfiguracionController implements Vista {
     private static final String PREV_CARPETA = "carpeta_facturas";
     private static final String PREV_EXPORT = "ultima_carpeta_export";
 
-    private Servicios servicios;
+    private Modelo modelo;
     private Navegador nav;
     private Empresa empresa = new Empresa();
     private TipoIva ivaSeleccionado;
@@ -67,7 +67,7 @@ public class ConfiguracionController implements Vista {
     private final ObservableList<TipoIva> ivas = FXCollections.observableArrayList();
     private final ObservableList<TipoRetencion> retenciones = FXCollections.observableArrayList();
     private final ObservableList<Serie> series = FXCollections.observableArrayList();
-    private final ObservableList<EmpresaManager.EmpresaInfo> empresas = FXCollections.observableArrayList();
+    private final ObservableList<Empresas.EmpresaInfo> empresas = FXCollections.observableArrayList();
 
     @FXML
     private ListView<ItemSeccion> listaSecciones;
@@ -202,17 +202,17 @@ public class ConfiguracionController implements Vista {
     private Label lblSerieEjemplo;
 
     @FXML
-    private TableView<EmpresaManager.EmpresaInfo> tablaEmpresas;
+    private TableView<Empresas.EmpresaInfo> tablaEmpresas;
     @FXML
-    private TableColumn<EmpresaManager.EmpresaInfo, String> colEmpresaNombre;
+    private TableColumn<Empresas.EmpresaInfo, String> colEmpresaNombre;
     @FXML
-    private TableColumn<EmpresaManager.EmpresaInfo, String> colEmpresaSlug;
+    private TableColumn<Empresas.EmpresaInfo, String> colEmpresaSlug;
     @FXML
     private Label lblEmpresasAviso;
 
     @Override
-    public void setServicios(Servicios s) {
-        this.servicios = s;
+    public void setModelo(Modelo m) {
+        this.modelo = m;
     }
 
     @Override
@@ -226,12 +226,12 @@ public class ConfiguracionController implements Vista {
         barraNavegacion.getChildren().add(barraSuperior);
         cargarTema();
         try {
-            empresa = servicios.config.getEmpresa();
+            empresa = modelo.getConfiguracion().getEmpresa();
         } catch (Exception e) {
             empresa = new Empresa();
         }
         cargarEmpresa();
-        datosPendientes = !servicios.config.datosPendientes(empresa).isEmpty();
+        datosPendientes = !modelo.getConfiguracion().datosPendientes(empresa).isEmpty();
         if (datosPendientes) {
             if (txtNombre.getText() == null || txtNombre.getText().isBlank()) {
                 txtNombre.setText(nombreVisibleEmpresaActiva());
@@ -332,7 +332,7 @@ public class ConfiguracionController implements Vista {
 
     private String nombreVisibleEmpresaActiva() {
         try {
-            for (EmpresaManager.EmpresaInfo e : EmpresaManager.listarEmpresas()) {
+            for (Empresas.EmpresaInfo e : Empresas.listarEmpresas()) {
                 if (e.slug().equals(Sesion.empresaSlug())) {
                     return e.nombre();
                 }
@@ -344,11 +344,11 @@ public class ConfiguracionController implements Vista {
 
     private void cargarPdfs() {
         try {
-            String auto = servicios.config.getPreferencia(PREV_CARPETA);
+            String auto = modelo.getConfiguracion().getPreferencia(PREV_CARPETA);
             txtCarpetaAuto.setText(nz(auto));
-            String ultima = servicios.config.getPreferencia(PREV_EXPORT);
+            String ultima = modelo.getConfiguracion().getPreferencia(PREV_EXPORT);
             txtUltimaCarpeta.setText(nz(ultima));
-            colorPdf.setValue(colorGuardado(servicios.config.getPreferencia(PdfService.PREF_COLOR)));
+            colorPdf.setValue(colorGuardado(modelo.getConfiguracion().getPreferencia(PdfService.PREF_COLOR)));
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudieron cargar las carpetas de PDF: " + e.getMessage());
         }
@@ -378,21 +378,21 @@ public class ConfiguracionController implements Vista {
     private void guardar() {
         try {
             recogerEmpresa();
-            List<String> faltan = servicios.config.datosPendientes(empresa);
+            List<String> faltan = modelo.getConfiguracion().datosPendientes(empresa);
             if (!faltan.isEmpty()) {
                 Dialogos.error("Configuración",
                         "Faltan datos obligatorios o no son válidos:\n" + String.join(", ", faltan));
                 return;
             }
-            servicios.config.saveEmpresa(empresa);
-            servicios.config.setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
+            modelo.getConfiguracion().saveEmpresa(empresa);
+            modelo.getConfiguracion().setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
             javafx.scene.paint.Color c = colorPdf.getValue();
             String hex = String.format("#%02X%02X%02X",
                     (int) Math.round(c.getRed() * 255),
                     (int) Math.round(c.getGreen() * 255),
                     (int) Math.round(c.getBlue() * 255));
-            servicios.config.setPreferencia(PdfService.PREF_COLOR, hex);
-            ThemeManager.guardar(servicios);
+            modelo.getConfiguracion().setPreferencia(PdfService.PREF_COLOR, hex);
+            ThemeManager.guardar(modelo);
             if (datosPendientes) {
                 Dialogos.info("Configuración", "Datos de la empresa completados.");
                 nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
@@ -519,7 +519,7 @@ public class ConfiguracionController implements Vista {
 
     private void refrescarIvas() {
         try {
-            ivas.setAll(servicios.ivas.listar(false));
+            ivas.setAll(modelo.getTiposIva().listar(false));
             tablaIva.setItems(ivas);
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudieron cargar los tipos de IVA: " + e.getMessage());
@@ -543,7 +543,7 @@ public class ConfiguracionController implements Vista {
 
     private boolean enUsoIva(TipoIva t) {
         try {
-            return t.getId() != null && servicios.ivas.enUso(t.getId());
+            return t.getId() != null && modelo.getTiposIva().enUso(t.getId());
         } catch (Exception e) {
             return false;
         }
@@ -610,9 +610,9 @@ public class ConfiguracionController implements Vista {
             t.setEsSuplido(suplido);
             if (t.getId() == null) {
                 t.setActivo(true);
-                t.setId(servicios.ivas.insertar(t));
+                t.setId(modelo.getTiposIva().insertar(t));
             } else {
-                servicios.ivas.actualizar(t);
+                modelo.getTiposIva().actualizar(t);
             }
             refrescarIvas();
             nuevoIva();
@@ -634,7 +634,7 @@ public class ConfiguracionController implements Vista {
             return;
         }
         try {
-            servicios.ivas.setActivo(t.getId(), !t.isActivo());
+            modelo.getTiposIva().setActivo(t.getId(), !t.isActivo());
             refrescarIvas();
         } catch (Exception e) {
             Dialogos.error("IVA", "No se pudo " + accion + ": " + e.getMessage());
@@ -655,7 +655,7 @@ public class ConfiguracionController implements Vista {
 
     private void refrescarRetenciones() {
         try {
-            retenciones.setAll(servicios.retenciones.listar(false));
+            retenciones.setAll(modelo.getTiposRetencion().listar(false));
             tablaRetenciones.setItems(retenciones);
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudieron cargar los tipos de retención: " + e.getMessage());
@@ -677,7 +677,7 @@ public class ConfiguracionController implements Vista {
 
     private boolean enUsoRetencion(TipoRetencion t) {
         try {
-            return t.getId() != null && servicios.retenciones.enUso(t.getId());
+            return t.getId() != null && modelo.getTiposRetencion().enUso(t.getId());
         } catch (Exception e) {
             return false;
         }
@@ -724,9 +724,9 @@ public class ConfiguracionController implements Vista {
             t.setPorcentaje(porcentaje);
             if (t.getId() == null) {
                 t.setActivo(true);
-                t.setId(servicios.retenciones.insertar(t));
+                t.setId(modelo.getTiposRetencion().insertar(t));
             } else {
-                servicios.retenciones.actualizar(t);
+                modelo.getTiposRetencion().actualizar(t);
             }
             refrescarRetenciones();
             nuevoRetencion();
@@ -748,7 +748,7 @@ public class ConfiguracionController implements Vista {
             return;
         }
         try {
-            servicios.retenciones.setActivo(t.getId(), !t.isActivo());
+            modelo.getTiposRetencion().setActivo(t.getId(), !t.isActivo());
             refrescarRetenciones();
         } catch (Exception e) {
             Dialogos.error("Retención", "No se pudo " + accion + ": " + e.getMessage());
@@ -787,10 +787,10 @@ public class ConfiguracionController implements Vista {
 
     private void refrescarSeries() {
         try {
-            List<Serie> lista = servicios.series.listar();
+            List<Serie> lista = modelo.getSeries().listar();
             int anio = anioTrabajo();
             for (Serie s : lista) {
-                s.setSiguienteCorrelativo(servicios.series.getSiguiente(s.getId(), anio));
+                s.setSiguienteCorrelativo(modelo.getSeries().getSiguiente(s.getId(), anio));
             }
             series.setAll(lista);
             tablaSeries.setItems(series);
@@ -800,7 +800,7 @@ public class ConfiguracionController implements Vista {
     }
 
     private int anioTrabajo() {
-        return servicios.reloj.fechaTrabajo().getYear();
+        return modelo.getReloj().fechaTrabajo().getYear();
     }
 
     private void seleccionarSerie(Serie s) {
@@ -888,12 +888,12 @@ public class ConfiguracionController implements Vista {
             s.setSiguienteCorrelativo(siguiente);
             s.setSufijoFecha(comboSerieFormato.getValue() != null ? comboSerieFormato.getValue() : Serie.SufijoFecha.MES);
             if (s.getId() == null) {
-                s.setId(servicios.series.insertar(s));
+                s.setId(modelo.getSeries().insertar(s));
             } else {
-                servicios.series.actualizar(s);
+                modelo.getSeries().actualizar(s);
             }
-            int nuevoAnio = Math.max(servicios.series.getSiguiente(s.getId(), anioTrabajo()), siguiente);
-            servicios.series.actualizarSiguiente(s.getId(), anioTrabajo(), nuevoAnio);
+            int nuevoAnio = Math.max(modelo.getSeries().getSiguiente(s.getId(), anioTrabajo()), siguiente);
+            modelo.getSeries().actualizarSiguiente(s.getId(), anioTrabajo(), nuevoAnio);
             refrescarSeries();
             nuevoSerie();
         } catch (Exception e) {
@@ -909,7 +909,7 @@ public class ConfiguracionController implements Vista {
             return;
         }
         try {
-            if (servicios.series.tieneFacturas(s.getId())) {
+            if (modelo.getSeries().tieneFacturas(s.getId())) {
                 Dialogos.error("Series", "La serie \"" + codigoOBlanco(s)
                         + "\" no puede eliminarse: tiene facturas (activas o históricas). El histórico no se elimina.");
                 return;
@@ -925,7 +925,7 @@ public class ConfiguracionController implements Vista {
             return;
         }
         try {
-            servicios.series.eliminar(s.getId());
+            modelo.getSeries().eliminar(s.getId());
             refrescarSeries();
         } catch (Exception e) {
             Dialogos.error("Series", "No se pudo eliminar la serie: " + e.getMessage());
@@ -949,7 +949,7 @@ public class ConfiguracionController implements Vista {
 
     private void refrescarEmpresas() {
         try {
-            empresas.setAll(EmpresaManager.listarEmpresas());
+            empresas.setAll(Empresas.listarEmpresas());
             tablaEmpresas.setItems(empresas);
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudieron cargar las empresas: " + e.getMessage());
@@ -967,7 +967,7 @@ public class ConfiguracionController implements Vista {
             return;
         }
         try {
-            EmpresaManager.EmpresaInfo nueva = EmpresaManager.crearEmpresa(nombre);
+            Empresas.EmpresaInfo nueva = Empresas.crearEmpresa(nombre);
             refrescarEmpresas();
             if (Dialogos.confirmar("Nueva empresa",
                     "Empresa \"" + nueva.nombre() + "\" creada (carpeta: " + nueva.slug() + ").\n\n"
@@ -985,13 +985,13 @@ public class ConfiguracionController implements Vista {
 
     @FXML
     private void cambiarEmpresa() {
-        EmpresaManager.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
+        Empresas.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
         if (elegida == null) {
             Dialogos.error("Empresas", "Seleccione una empresa de la tabla.");
             return;
         }
         try {
-            EmpresaManager.conectar(elegida.slug(), Sesion.fechaTrabajo());
+            Empresas.conectar(elegida.slug(), Sesion.fechaTrabajo());
             Dialogos.info("Empresas", "Cambiando a \"" + elegida.nombre() + "\"...");
             nav.mostrarInicio();
         } catch (Exception e) {
@@ -1001,7 +1001,7 @@ public class ConfiguracionController implements Vista {
 
     @FXML
     private void eliminarEmpresa() {
-        EmpresaManager.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
+        Empresas.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
         if (elegida == null) {
             Dialogos.error("Empresas", "Seleccione una empresa de la tabla.");
             return;
@@ -1016,7 +1016,7 @@ public class ConfiguracionController implements Vista {
             return;
         }
         try {
-            EmpresaManager.eliminarEmpresa(elegida.slug());
+            Empresas.eliminarEmpresa(elegida.slug());
             refrescarEmpresas();
         } catch (Exception e) {
             Dialogos.error("Empresas", "No se pudo eliminar la empresa: " + e.getMessage());

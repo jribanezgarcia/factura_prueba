@@ -7,9 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
@@ -42,9 +42,9 @@ import cabofactu.vista.utilidades.Dialogos;
 class ClientesNifValidationTest {
 
     @TempDir
-    static Path dataDir;
+    static Path carpetaEmpresa;
 
-    private static Servicios servicios;
+    private static Modelo modelo;
     private static Navegador nav;
     private static Stage stage;
     private static Grabador grabador;
@@ -76,8 +76,8 @@ class ClientesNifValidationTest {
 
     @BeforeAll
     static void arrancar() throws Exception {
-        Database.setDataDir(dataDir);
-        servicios = new Servicios();
+        Conexion.setCarpetaRaiz(carpetaEmpresa);
+        modelo = new Modelo();
         JavaFxTestSupport.arrancarFx();
         grabador = new Grabador();
         Dialogos.setImpl(grabador);
@@ -87,7 +87,7 @@ class ClientesNifValidationTest {
         Platform.runLater(() -> {
             try {
                 stage = new Stage();
-                nav = new Navegador(stage, servicios);
+                nav = new Navegador(stage, modelo);
                 nav.mostrar("/cabofactu/vista/recursos/Clientes.fxml");
                 stage.show();
             } catch (Throwable t) {
@@ -108,7 +108,7 @@ class ClientesNifValidationTest {
     @AfterAll
     static void parar() {
         Dialogos.restoreDefault();
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test
@@ -195,7 +195,7 @@ class ClientesNifValidationTest {
 
     private static int totalClientes() {
         try {
-            return servicios.clientes.listar(false).size();
+            return modelo.getClientes().listar(false).size();
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }
@@ -203,7 +203,7 @@ class ClientesNifValidationTest {
 
     private static void insertar(Cliente c) {
         try {
-            servicios.clientes.insertar(c);
+            modelo.getClientes().insertar(c);
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
         }

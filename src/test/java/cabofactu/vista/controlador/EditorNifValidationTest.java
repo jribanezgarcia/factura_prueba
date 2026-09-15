@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import cabofactu.modelo.negocio.sqlite.Database;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.modelo.Modelo;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -43,9 +43,9 @@ import cabofactu.vista.utilidades.Dialogos;
 class EditorNifValidationTest {
 
     @TempDir
-    static Path dataDir;
+    static Path carpetaEmpresa;
 
-    private static Servicios servicios;
+    private static Modelo modelo;
     private static Navegador nav;
     private static Stage stage;
     private static Grabador grabador;
@@ -79,8 +79,8 @@ class EditorNifValidationTest {
 
     @BeforeAll
     static void arrancar() throws Exception {
-        Database.setDataDir(dataDir);
-        servicios = new Servicios();
+        Conexion.setCarpetaRaiz(carpetaEmpresa);
+        modelo = new Modelo();
         JavaFxTestSupport.arrancarFx();
         grabador = new Grabador();
         Dialogos.setImpl(grabador);
@@ -90,7 +90,7 @@ class EditorNifValidationTest {
         Platform.runLater(() -> {
             try {
                 stage = new Stage();
-                nav = new Navegador(stage, servicios);
+                nav = new Navegador(stage, modelo);
                 nav.mostrar("/cabofactu/vista/recursos/Editor.fxml");
                 stage.show();
             } catch (Throwable t) {
@@ -111,7 +111,7 @@ class EditorNifValidationTest {
     @AfterAll
     static void parar() {
         Dialogos.restoreDefault();
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test

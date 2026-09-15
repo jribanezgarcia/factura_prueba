@@ -1,19 +1,19 @@
 package cabofactu.vista;
 
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 
 /**
- * Contrato de las vistas FXML: reciben servicios y navegador tras su carga.
+ * Contrato de las vistas FXML: reciben modelo y navegador tras su carga.
  */
 public interface Vista {
 
-    default void setServicios(Servicios s) {
+    default void setModelo(Modelo m) {
     }
 
     default void setNavegador(Navegador n) {
     }
 
-    /** Se llama despues de inyectar servicios; aqui se puebla la UI. */
+    /** Se llama despues de inyectar modelo; aqui se puebla la UI. */
     default void alIniciar() {
     }
 

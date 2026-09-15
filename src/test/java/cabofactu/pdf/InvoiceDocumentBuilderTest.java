@@ -3,9 +3,9 @@ package cabofactu.pdf;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.modelo.dominio.FacturaVersion;
+import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
-import cabofactu.modelo.negocio.FacturaService;
+import cabofactu.modelo.negocio.Facturas;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -30,8 +30,8 @@ class InvoiceDocumentBuilderTest {
         return e;
     }
 
-    private FacturaVersion version() {
-        FacturaVersion v = new FacturaVersion();
+    private VersionFactura version() {
+        VersionFactura v = new VersionFactura();
         v.setNumero("C-59/7");
         v.setFechaFactura(LocalDate.of(2026, 7, 14));
         v.setFechaGuardado(LocalDateTime.of(2026, 7, 14, 12, 0));
@@ -60,9 +60,9 @@ class InvoiceDocumentBuilderTest {
         return l;
     }
 
-    private InvoiceDocument doc(FacturaVersion v, List<LineaFactura> lineas) {
+    private InvoiceDocument doc(VersionFactura v, List<LineaFactura> lineas) {
         return InvoiceDocumentBuilder.build(
-                new FacturaService.VersionCompleta(new Factura(), v, lineas, null), empresa(), "#B08D57");
+                new Facturas.VersionCompleta(new Factura(), v, lineas, null), empresa(), "#B08D57");
     }
 
     @Test
@@ -82,7 +82,7 @@ class InvoiceDocumentBuilderTest {
 
     @Test
     void descuentoGlobal() {
-        FacturaVersion v = version();
+        VersionFactura v = version();
         v.setDescuentoPorcentaje(10);
         InvoiceDocument d = doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
         assertEquals("2.815,29", d.totals().totalsRow().base());
@@ -94,7 +94,7 @@ class InvoiceDocumentBuilderTest {
 
     @Test
     void retencionDelSnapshot() {
-        FacturaVersion v = version();
+        VersionFactura v = version();
         v.setTipoRetencionId(1L);
         v.setTipoRetencionNombre("IRPF profesional");
         v.setTipoRetencionPorcentaje(15);
@@ -141,7 +141,7 @@ class InvoiceDocumentBuilderTest {
 
     @Test
     void anuladaMarcadaEnModelo() {
-        FacturaVersion v = version();
+        VersionFactura v = version();
         v.setEstado(EstadoFactura.ANULADA);
         assertTrue(doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false))).header().cancelled());
         assertFalse(doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false))).header().cancelled());

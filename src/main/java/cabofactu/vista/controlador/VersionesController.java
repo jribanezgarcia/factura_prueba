@@ -1,8 +1,8 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.EstadoFactura;
-import cabofactu.modelo.dominio.FacturaVersion;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.dominio.VersionFactura;
+import cabofactu.modelo.Modelo;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -30,7 +30,7 @@ import cabofactu.vista.utilidades.Dialogos;
  */
 public class VersionesController implements Vista {
 
-    private Servicios servicios;
+    private Modelo modelo;
     private Navegador nav;
 
     @FXML
@@ -38,21 +38,21 @@ public class VersionesController implements Vista {
     @FXML
     private HBox barraNavegacion;
     @FXML
-    private TableView<FacturaVersion> tabla;
+    private TableView<VersionFactura> tabla;
     @FXML
-    private TableColumn<FacturaVersion, String> colVersion;
+    private TableColumn<VersionFactura, String> colVersion;
     @FXML
-    private TableColumn<FacturaVersion, String> colFecha;
+    private TableColumn<VersionFactura, String> colFecha;
     @FXML
-    private TableColumn<FacturaVersion, String> colGuardado;
+    private TableColumn<VersionFactura, String> colGuardado;
     @FXML
-    private TableColumn<FacturaVersion, String> colEstado;
+    private TableColumn<VersionFactura, String> colEstado;
     @FXML
-    private TableColumn<FacturaVersion, String> colTotal;
+    private TableColumn<VersionFactura, String> colTotal;
 
     @Override
-    public void setServicios(Servicios s) {
-        this.servicios = s;
+    public void setModelo(Modelo m) {
+        this.modelo = m;
     }
 
     @Override
@@ -71,7 +71,7 @@ public class VersionesController implements Vista {
 
         tabla.setPlaceholder(new Label("La factura aún no tiene versiones."));
         tabla.setRowFactory(tv -> {
-            TableRow<FacturaVersion> fila = new TableRow<>();
+            TableRow<VersionFactura> fila = new TableRow<>();
             fila.setOnMouseClicked(e -> {
                 if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2 && !fila.isEmpty()) {
                     abrirVersion(fila.getItem());
@@ -89,7 +89,7 @@ public class VersionesController implements Vista {
      */
     public void cargarFactura(long facturaId) {
         try {
-            List<FacturaVersion> versiones = servicios.versionado.versionesDeFactura(facturaId);
+            List<VersionFactura> versiones = modelo.getVersiones().versionesDeFactura(facturaId);
             String numero = versiones.isEmpty() ? "" : versiones.get(versiones.size() - 1).getNumero();
             lblTitulo.setText("Versiones de la factura " + numero);
             tabla.setItems(FXCollections.observableArrayList(versiones));
@@ -98,7 +98,7 @@ public class VersionesController implements Vista {
         }
     }
 
-    private void abrirVersion(FacturaVersion v) {
+    private void abrirVersion(VersionFactura v) {
         EditorController editor = nav.mostrar("/cabofactu/vista/recursos/Editor.fxml");
         if (editor == null) {
             return;

@@ -1,6 +1,6 @@
 package cabofactu;
 
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 import cabofactu.vista.controlador.ArranqueController;
 import cabofactu.vista.utilidades.Dialogos;
 import cabofactu.vista.Navegador;
@@ -16,14 +16,14 @@ import java.util.Locale;
 /**
  * Punto de entrada de la aplicación. Fija el idioma español, prepara la carpeta
  * de datos, asegura que solo haya una ventana abierta, muestra la pantalla de
- * arranque (empresa y fecha de trabajo) y, al entrar, construye los servicios y
+ * arranque (empresa y fecha de trabajo) y, al entrar, crea el modelo y
  * abre la primera pantalla. Cada paso delega en su pieza: PreparacionDatos,
  * InstanciaUnica, ArranqueController y Navegador.
  */
 public class Main extends Application {
 
     private Vista actual;
-    private Servicios servicios;
+    private Modelo modelo;
     private Navegador nav;
     private Stage stage;
     private ArranqueController arranque;
@@ -82,21 +82,21 @@ public class Main extends Application {
 
     /** Muestra la pantalla de arranque y deriva la entrada a entrarEnMenu. */
     private void mostrarArranque() {
-        Navegador navArranque = new Navegador(stage, servicios);
+        Navegador navArranque = new Navegador(stage, modelo);
         arranque = navArranque.mostrar("/cabofactu/vista/recursos/Arranque.fxml");
         arranque.setOnEntrar(e -> entrarEnMenu());
     }
 
-    /** Construye los servicios tras conectar la empresa y abre la primera pantalla. */
+    /** Crea el modelo tras conectar la empresa y abre la primera pantalla. */
     private void entrarEnMenu() {
         try {
-            servicios = new Servicios();
+            modelo = new Modelo();
         } catch (Exception e) {
             Dialogos.error("Facturación", "Error al inicializar la aplicación:\n" + e.getMessage());
             return;
         }
         stage.hide();
-        nav = new Navegador(stage, servicios);
+        nav = new Navegador(stage, modelo);
         nav.setOnVistaCambio(v -> this.actual = v);
         nav.mostrarInicio();
         stage.show();

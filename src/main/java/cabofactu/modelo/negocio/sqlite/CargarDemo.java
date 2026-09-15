@@ -1,6 +1,6 @@
 package cabofactu.modelo.negocio.sqlite;
 
-import cabofactu.modelo.negocio.EmpresaManager;
+import cabofactu.modelo.negocio.Empresas;
 
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -57,9 +57,9 @@ public final class CargarDemo {
         return partes;
     }
 
-    public static EmpresaManager.EmpresaInfo cargar() throws Exception {
-        EmpresaManager.EmpresaInfo info = EmpresaManager.crearEmpresa("Demo");
-        EmpresaManager.registrarNombre(SLUG, "Empresa Demo S.L.");
+    public static Empresas.EmpresaInfo cargar() throws Exception {
+        Empresas.EmpresaInfo info = Empresas.crearEmpresa("Demo");
+        Empresas.registrarNombre(SLUG, "Empresa Demo S.L.");
 
         String sql;
         try (InputStream in = CargarDemo.class.getClassLoader().getResourceAsStream("db/seed_demo.sql")) {
@@ -69,10 +69,10 @@ public final class CargarDemo {
             sql = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
 
-        Database.setEmpresaActiva(SLUG);
+        Conexion.setEmpresaActiva(SLUG);
         int sentencias = 0;
         try {
-            Connection c = Database.getConnection();
+            Connection c = Conexion.establecerConexion();
             try (Statement st = c.createStatement()) {
                 for (String sentencia : trocear(sql)) {
                     String t = sentencia.trim();
@@ -84,16 +84,16 @@ public final class CargarDemo {
                 }
             }
         } finally {
-            Database.resetConnection();
+            Conexion.cerrarConexion();
         }
         System.out.println("Demostración cargada: " + sentencias + " sentencias.");
         return info;
     }
 
     public static void main(String[] args) throws Exception {
-        Path carpeta = Database.baseDataDir().resolve(SLUG);
+        Path carpeta = Conexion.carpetaRaiz().resolve(SLUG);
         if (Files.exists(carpeta)) {
-            EmpresaManager.eliminarEmpresa(SLUG);
+            Empresas.eliminarEmpresa(SLUG);
             if (Files.exists(carpeta)) {
                 System.out.println("No se ha podido eliminar la empresa de demostración: "
                         + "cierra la aplicación antes de cargarla.");
@@ -105,18 +105,18 @@ public final class CargarDemo {
         cargar();
 
         int facturas = 0;
-        Database.setEmpresaActiva(SLUG);
+        Conexion.setEmpresaActiva(SLUG);
         try {
-            Connection c = Database.getConnection();
+            Connection c = Conexion.establecerConexion();
             try (Statement st = c.createStatement();
                  ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM factura")) {
                 rs.next();
                 facturas = rs.getInt(1);
             }
         } finally {
-            Database.resetConnection();
+            Conexion.cerrarConexion();
         }
         System.out.println("Demostración cargada: " + facturas + " facturas en "
-                + Database.dbPathDe(SLUG) + ".");
+                + Conexion.rutaBaseDe(SLUG) + ".");
     }
 }

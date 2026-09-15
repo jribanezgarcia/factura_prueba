@@ -1,21 +1,21 @@
 package cabofactu.vista.controlador;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.DatosPago;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
-import cabofactu.modelo.dominio.FacturaVersion;
+import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.ResumenFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.PdfService;
-import cabofactu.modelo.negocio.CalculoService;
-import cabofactu.modelo.negocio.FacturaService;
-import cabofactu.modelo.Servicios;
-import cabofactu.modelo.negocio.ValidationException;
+import cabofactu.modelo.negocio.Calculos;
+import cabofactu.modelo.negocio.Facturas;
+import cabofactu.modelo.Modelo;
+import cabofactu.modelo.negocio.ValidacionException;
 import cabofactu.utilidades.DocumentoFiscalValidator;
 import cabofactu.utilidades.Formatos;
 import cabofactu.utilidades.LogoMarco;
@@ -82,7 +82,7 @@ public class EditorController implements Vista {
     private static final String PREV_CARPETA = "carpeta_facturas";
     private static final String PREV_EXPORT = "ultima_carpeta_export";
 
-    private Servicios servicios;
+    private Modelo modelo;
     private Navegador nav;
     private boolean modificado;
     private boolean cargando;
@@ -215,8 +215,8 @@ public class EditorController implements Vista {
     private Button btnRectificativa;
 
     @Override
-    public void setServicios(Servicios s) {
-        this.servicios = s;
+    public void setModelo(Modelo m) {
+        this.modelo = m;
     }
 
     @Override
@@ -254,7 +254,7 @@ public class EditorController implements Vista {
 
     private void cargarLogo() {
         try {
-            Empresa empresa = servicios.config.getEmpresa();
+            Empresa empresa = modelo.getConfiguracion().getEmpresa();
             String ruta = empresa.getLogoPath();
             if (ruta == null || ruta.isBlank()) {
                 LogoMarco.limpiar(logoBox);
@@ -284,7 +284,7 @@ public class EditorController implements Vista {
      */
     public void cargarVersion(long versionId) {
         try {
-            FacturaService.VersionCompleta vc = servicios.factura.abrirVersion(versionId);
+            Facturas.VersionCompleta vc = modelo.getFacturas().abrirVersion(versionId);
             if (vc == null) {
                 Dialogos.error("Factura", "No se pudo abrir la versión.");
                 return;
@@ -294,9 +294,9 @@ public class EditorController implements Vista {
                 facturaAbiertaId = vc.factura().getId();
                 versionAbiertaId = versionId;
                 correlativoFijo = vc.factura().getCorrelativo();
-                estadoActual = servicios.factura.estadoActual(facturaAbiertaId);
+                estadoActual = modelo.getFacturas().estadoActual(facturaAbiertaId);
 
-                Serie serie = servicios.series.getById(vc.factura().getSerieId());
+                Serie serie = modelo.getSeries().getById(vc.factura().getSerieId());
                 comboSerie.setValue(serie);
                 comboSerie.setDisable(true);
                 actualizarVisibilidadReferencia(serie);
@@ -343,7 +343,7 @@ public class EditorController implements Vista {
     /** Carga la ultima version (estado actual) de la factura. */
     public void cargarFactura(long facturaId) {
         try {
-            FacturaVersion v = servicios.versionado.ultimaVersion(facturaId);
+            VersionFactura v = modelo.getVersiones().ultimaVersion(facturaId);
             if (v == null) {
                 Dialogos.error("Factura", "No se pudo abrir la factura.");
                 return;
@@ -372,10 +372,10 @@ public class EditorController implements Vista {
 
     private void cargarSeries() {
         try {
-            List<Serie> series = servicios.series.listar();
+            List<Serie> series = modelo.getSeries().listar();
             comboSerie.getItems().setAll(series);
             Serie inicial = null;
-            String ultima = servicios.config.getPreferencia(PREV_SERIE);
+            String ultima = modelo.getConfiguracion().getPreferencia(PREV_SERIE);
             if (ultima != null) {
                 for (Serie s : series) {
                     if (ultima.equals(s.getCodigo())) {
@@ -402,13 +402,13 @@ public class EditorController implements Vista {
     }
 
     private void cargarFechaInicial() {
-        LocalDate fechaInicial = servicios.reloj.fechaTrabajo();
+        LocalDate fechaInicial = modelo.getReloj().fechaTrabajo();
         fecha.setValue(fechaInicial);
     }
 
     private void cargarTiposIva() {
         try {
-            tiposIva.setAll(servicios.ivas.listar(true));
+            tiposIva.setAll(modelo.getTiposIva().listar(true));
         } catch (Exception e) {
             tiposIva.clear();
         }
@@ -431,7 +431,7 @@ public class EditorController implements Vista {
             }
             TipoIva existente = null;
             try {
-                existente = servicios.ivas.getById(l.getTipoIvaId());
+                existente = modelo.getTiposIva().getById(l.getTipoIvaId());
             } catch (Exception ignored) {
             }
             if (existente != null) {
@@ -451,7 +451,7 @@ public class EditorController implements Vista {
 
     private void cargarTiposRetencion() {
         try {
-            List<TipoRetencion> activas = servicios.retenciones.listar(true);
+            List<TipoRetencion> activas = modelo.getTiposRetencion().listar(true);
             TipoRetencion sin = new TipoRetencion();
             sin.setId(null);
             sin.setNombre("Sin retención");
@@ -512,7 +512,7 @@ public class EditorController implements Vista {
                 return;
             }
             try {
-                comboCliente.getItems().setAll(servicios.clientes.buscar(texto, true));
+                comboCliente.getItems().setAll(modelo.getClientes().buscar(texto, true));
             } catch (Exception e) {
                 Dialogos.error("Cliente", "Error al buscar clientes: " + e.getMessage());
             }
@@ -524,9 +524,9 @@ public class EditorController implements Vista {
             try {
                 String texto = comboCliente.getEditor().getText();
                 if (texto == null || texto.isBlank()) {
-                    comboCliente.getItems().setAll(servicios.clientes.listar(true));
+                    comboCliente.getItems().setAll(modelo.getClientes().listar(true));
                 } else {
-                    comboCliente.getItems().setAll(servicios.clientes.buscar(texto, true));
+                    comboCliente.getItems().setAll(modelo.getClientes().buscar(texto, true));
                 }
             } catch (Exception ex) {
                 Dialogos.error("Cliente", "Error al cargar clientes: " + ex.getMessage());
@@ -804,30 +804,30 @@ public class EditorController implements Vista {
     // Recálculo por tipo de cambio (6.4)
     private void aplicarCantidad(LineaFactura l, int v) {
         l.setCantidad(v);
-        BigDecimal total = CalculoService.totalLinea(l.getPrecioUnitario(), v);
+        BigDecimal total = Calculos.totalLinea(l.getPrecioUnitario(), v);
         l.setTotalBase(total);
-        l.setIvaImporte(CalculoService.ivaDeBase(total, l.getIvaPorcentaje()));
+        l.setIvaImporte(Calculos.ivaDeBase(total, l.getIvaPorcentaje()));
         marcarModificado();
     }
 
     private void aplicarPrecio(LineaFactura l, BigDecimal v) {
         l.setPrecioUnitario(v);
-        BigDecimal total = CalculoService.totalLinea(v, l.getCantidad());
+        BigDecimal total = Calculos.totalLinea(v, l.getCantidad());
         l.setTotalBase(total);
-        l.setIvaImporte(CalculoService.ivaDeBase(total, l.getIvaPorcentaje()));
+        l.setIvaImporte(Calculos.ivaDeBase(total, l.getIvaPorcentaje()));
         marcarModificado();
     }
 
     private void aplicarTotal(LineaFactura l, BigDecimal t) {
         if (chkTotalConIva.isSelected()) {
-            CalculoService.ResultadoConIva r = CalculoService.calcularDesdeTotalConIva(t, l.getIvaPorcentaje());
+            Calculos.ResultadoConIva r = Calculos.calcularDesdeTotalConIva(t, l.getIvaPorcentaje());
             l.setTotalBase(r.base());
             l.setIvaImporte(r.iva());
-            l.setPrecioUnitario(CalculoService.precioDesdeTotal(r.base(), l.getCantidad()));
+            l.setPrecioUnitario(Calculos.precioDesdeTotal(r.base(), l.getCantidad()));
         } else {
             l.setTotalBase(t);
-            l.setIvaImporte(CalculoService.ivaDeBase(t, l.getIvaPorcentaje()));
-            l.setPrecioUnitario(CalculoService.precioDesdeTotal(t, l.getCantidad()));
+            l.setIvaImporte(Calculos.ivaDeBase(t, l.getIvaPorcentaje()));
+            l.setPrecioUnitario(Calculos.precioDesdeTotal(t, l.getCantidad()));
         }
         marcarModificado();
     }
@@ -838,7 +838,7 @@ public class EditorController implements Vista {
         l.setIvaPorcentaje(t.getPorcentaje());
         l.setIvaMotivoExencion(t.getMotivoExencion());
         l.setEsSuplido(t.isEsSuplido());
-        l.setIvaImporte(CalculoService.ivaDeBase(l.getTotalBase(), t.getPorcentaje()));
+        l.setIvaImporte(Calculos.ivaDeBase(l.getTotalBase(), t.getPorcentaje()));
         marcarModificado();
     }
 
@@ -929,7 +929,7 @@ public class EditorController implements Vista {
     }
 
     private void actualizarResumen() {
-        ResumenFactura r = CalculoService.resumen(lineas, descuento, retencionActual);
+        ResumenFactura r = Calculos.resumen(lineas, descuento, retencionActual);
         boolean conDescuento = r.getImporteDescuento() != null && r.getImporteDescuento().compareTo(BigDecimal.ZERO) > 0;
         filaBaseBruta.setVisible(conDescuento);
         filaBaseBruta.setManaged(conDescuento);
@@ -1023,15 +1023,15 @@ public class EditorController implements Vista {
                 }
                 Integer hueco = pedirHueco(serie, f);
                 if (hueco != null) {
-                    txtNumero.setText(servicios.numeros.formarNumero(serie, hueco, f));
+                    txtNumero.setText(modelo.getNumeracion().formarNumero(serie, hueco, f));
                 }
-                Integer corr = servicios.numeros.parseCorrelativo(serie, txtNumero.getText());
+                Integer corr = modelo.getNumeracion().parseCorrelativo(serie, txtNumero.getText());
                 if (corr == null) {
                     Dialogos.error("Guardar", "El número no se ajusta al formato de la serie "
                             + serie.getCodigo() + " (p. ej. " + serie.getCodigo() + "-1).");
                     return false;
                 }
-                long id = servicios.factura.crearFactura(serie, f, cli, lis, descuento, obs, ref, corr, dp, retencionActual);
+                long id = modelo.getFacturas().crearFactura(serie, f, cli, lis, descuento, obs, ref, corr, dp, retencionActual);
                 guardarSeriePreferida(serie);
                 cargarFactura(id);
                 Dialogos.info("Guardar", "Factura guardada.");
@@ -1040,7 +1040,7 @@ public class EditorController implements Vista {
                 if (modo == Dialogos.ModoGuardarVersion.CANCELAR) {
                     return false;
                 }
-                FacturaVersion v = servicios.factura.guardarEditada(facturaAbiertaId, versionAbiertaId,
+                VersionFactura v = modelo.getFacturas().guardarEditada(facturaAbiertaId, versionAbiertaId,
                         f, cli, lis, descuento, obs, ref, dp,
                         modo == Dialogos.ModoGuardarVersion.NUEVA_VERSION, retencionActual);
                 txtNumero.setText(v.getNumero());
@@ -1049,7 +1049,7 @@ public class EditorController implements Vista {
                 Dialogos.info("Guardar", "Factura guardada.");
             }
             return true;
-        } catch (ValidationException e) {
+        } catch (ValidacionException e) {
             Dialogos.error("Guardar", e.getMessage());
             return false;
         } catch (Exception e) {
@@ -1152,10 +1152,10 @@ public class EditorController implements Vista {
             return;
         }
         try {
-            servicios.estado.anular(facturaAbiertaId);
+            modelo.getEstados().anular(facturaAbiertaId);
             Dialogos.info("Anular", "Factura anulada.");
             cargarFactura(facturaAbiertaId);
-        } catch (ValidationException e) {
+        } catch (ValidacionException e) {
             Dialogos.error("Anular", e.getMessage());
         } catch (Exception e) {
             Dialogos.error("Anular", "Error al anular: " + e.getMessage());
@@ -1172,10 +1172,10 @@ public class EditorController implements Vista {
             return;
         }
         try {
-            servicios.estado.restaurar(facturaAbiertaId);
+            modelo.getEstados().restaurar(facturaAbiertaId);
             Dialogos.info("Restaurar", "Factura restaurada.");
             cargarFactura(facturaAbiertaId);
-        } catch (ValidationException e) {
+        } catch (ValidacionException e) {
             Dialogos.error("Restaurar", e.getMessage());
         } catch (Exception e) {
             Dialogos.error("Restaurar", "Error al restaurar: " + e.getMessage());
@@ -1193,11 +1193,11 @@ public class EditorController implements Vista {
             return;
         }
         try {
-            long nueva = servicios.rectificativas.crearRectificativa(versionAbiertaId,
-                    servicios.reloj.fechaTrabajo(), null);
+            long nueva = modelo.getRectificativas().crearRectificativa(versionAbiertaId,
+                    modelo.getReloj().fechaTrabajo(), null);
             cargarFactura(nueva);
             Dialogos.info("Rectificativa", "Rectificativa creada. Puede editar la referencia antes de guardar.");
-        } catch (ValidationException e) {
+        } catch (ValidacionException e) {
             Dialogos.error("Rectificativa", e.getMessage());
         } catch (Exception e) {
             Dialogos.error("Rectificativa", "Error al crear la rectificativa: " + e.getMessage());
@@ -1211,11 +1211,11 @@ public class EditorController implements Vista {
             return;
         }
         try {
-            FacturaService.VersionCompleta vc = servicios.factura.abrirVersion(versionAbiertaId);
+            Facturas.VersionCompleta vc = modelo.getFacturas().abrirVersion(versionAbiertaId);
             if (vc == null) {
                 return;
             }
-            Empresa empresa = servicios.config.getEmpresa();
+            Empresa empresa = modelo.getConfiguracion().getEmpresa();
             Path sugerido = proponerDestinoPdf(vc);
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Exportar PDF");
@@ -1241,7 +1241,7 @@ public class EditorController implements Vista {
                 btnExportar.setDisable(false);
                 try {
                     if (ruta.getParent() != null) {
-                        servicios.config.setPreferencia(PREV_EXPORT, ruta.getParent().toString());
+                        modelo.getConfiguracion().setPreferencia(PREV_EXPORT, ruta.getParent().toString());
                     }
                 } catch (Exception ignored) {
                 }
@@ -1260,16 +1260,16 @@ public class EditorController implements Vista {
 
     private String colorPdfPreferido() {
         try {
-            return servicios.config.getPreferencia(PdfService.PREF_COLOR);
+            return modelo.getConfiguracion().getPreferencia(PdfService.PREF_COLOR);
         } catch (Exception e) {
             return null;
         }
     }
 
-    private Path proponerDestinoPdf(FacturaService.VersionCompleta vc) {
+    private Path proponerDestinoPdf(Facturas.VersionCompleta vc) {
         String carpeta = "Facturas";
         try {
-            String pref = servicios.config.getPreferencia(PREV_CARPETA);
+            String pref = modelo.getConfiguracion().getPreferencia(PREV_CARPETA);
             if (pref != null && !pref.isBlank()) {
                 carpeta = pref;
             }
@@ -1277,9 +1277,9 @@ public class EditorController implements Vista {
         }
         Path base = Path.of(carpeta);
         if (!base.isAbsolute()) {
-            base = Database.dataDir().resolve(base);
+            base = Conexion.carpetaEmpresa().resolve(base);
         }
-        Serie serie = servicios.series.getById(vc.factura().getSerieId());
+        Serie serie = modelo.getSeries().getById(vc.factura().getSerieId());
         String nombre = Formatos.nombreArchivoPdf(vc.version().getNumero());
         return base.resolve(String.valueOf(vc.version().getFechaFactura().getYear()))
                 .resolve(serie.getCodigo())
@@ -1351,11 +1351,11 @@ public class EditorController implements Vista {
             return;
         }
         if (facturaAbiertaId != null && correlativoFijo != null && f != null) {
-            txtNumero.setText(servicios.numeros.formarNumero(s, correlativoFijo, f));
+            txtNumero.setText(modelo.getNumeracion().formarNumero(s, correlativoFijo, f));
         } else if (f != null) {
             try {
-                int correlativo = servicios.numeros.siguienteCorrelativo(s, f);
-                txtNumero.setText(servicios.numeros.formarNumero(s, correlativo, f));
+                int correlativo = modelo.getNumeracion().siguienteCorrelativo(s, f);
+                txtNumero.setText(modelo.getNumeracion().formarNumero(s, correlativo, f));
             } catch (Exception e) {
                 txtNumero.setText("");
             }
@@ -1364,11 +1364,11 @@ public class EditorController implements Vista {
 
     private Integer pedirHueco(Serie serie, LocalDate fecha) {
         try {
-            List<Integer> huecos = servicios.numeros.huecosDisponibles(serie, fecha);
+            List<Integer> huecos = modelo.getNumeracion().huecosDisponibles(serie, fecha);
             if (huecos.isEmpty()) {
                 return null;
             }
-            int siguiente = servicios.numeros.siguienteCorrelativo(serie, fecha);
+            int siguiente = modelo.getNumeracion().siguienteCorrelativo(serie, fecha);
             List<Integer> menores = huecos.stream().filter(h -> h < siguiente).toList();
             if (menores.isEmpty()) {
                 return null;
@@ -1393,7 +1393,7 @@ public class EditorController implements Vista {
     private void guardarSeriePreferida(Serie s) {
         try {
             if (s != null) {
-                servicios.config.setPreferencia(PREV_SERIE, s.getCodigo());
+                modelo.getConfiguracion().setPreferencia(PREV_SERIE, s.getCodigo());
             }
         } catch (Exception ignored) {
         }

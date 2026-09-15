@@ -1,0 +1,130 @@
+package cabofactu.fichero;
+
+import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.modelo.negocio.sqlite.Migraciones;
+import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
+import cabofactu.modelo.negocio.sqlite.FacturaDAO;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import cabofactu.modelo.negocio.Empresas;
+import cabofactu.modelo.negocio.ValidacionException;
+
+/**
+ * Copias de seguridad de la base de datos mediante copia consistente en
+ * caliente. El archivo lleva un timestamp (facturas_AAAAMMDD_HHMMSS.db).
+ */
+public class CopiaSeguridad {
+
+    private final CopiaSeguridadDAO copiaSeguridadDAO;
+    private final FacturaDAO facturaDAO;
+    private final Clock clock;
+
+    public CopiaSeguridad(CopiaSeguridadDAO copiaSeguridadDAO, FacturaDAO facturaDAO, Clock clock) {
+        this.copiaSeguridadDAO = copiaSeguridadDAO;
+        this.facturaDAO = facturaDAO;
+        this.clock = clock;
+    }
+
+    private static final DateTimeFormatter STAMP = DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss");
+
+    public record ResumenCopia(
+            String nombreEmpresa,
+            String nif,
+            String logoPath,
+            boolean logoExiste,
+            int numFacturas,
+            LocalDate ultimaFecha,
+            int versionActual
+    ) {
+    }
+
+    /**
+     * Crea la copia en la carpeta indicada y devuelve la ruta generada.
+     */
+    public Path crearCopia(Path carpetaDestino) throws IOException {
+        Files.createDirectories(carpetaDestino);
+        String nombre = "facturas_" + LocalDateTime.now(clock).format(STAMP);
+        Path archivo = rutaLibre(carpetaDestino, nombre);
+
+        copiaSeguridadDAO.crearCopia(archivo);
+        return archivo;
+    }
+
+    static Path rutaLibre(Path carpeta, String base) {
+        Path primero = carpeta.resolve(base + ".db");
+        if (!Files.exists(primero)) {
+            return primero;
+        }
+        for (int i = 2; ; i++) {
+            Path candidato = carpeta.resolve(base + "_" + i + ".db");
+            if (!Files.exists(candidato)) {
+                return candidato;
+            }
+        }
+    }
+
+    public ResumenCopia leerResumen(Path origen) throws ValidacionException {
+        if (origen == null || !Files.isRegularFile(origen) || !Files.isReadable(origen)) {
+            throw new ValidacionException("El archivo seleccionado no es un archivo legible.");
+        }
+        if (origen.toAbsolutePath().normalize().equals(Conexion.rutaBase().toAbsolutePath().normalize())) {
+            throw new ValidacionException("No se puede usar la propia base activa como origen de restauración.");
+        }
+        return copiaSeguridadDAO.leerResumen(origen);
+    }
+
+    public Path restaurarEnEmpresaActiva(Path origen) throws IOException, ValidacionException {
+        leerResumen(origen);
+
+        Path carpetaRescate = Conexion.carpetaEmpresa().resolve("copias_previas");
+        Path rescate = crearCopia(carpetaRescate);
+
+        try {
+            copiaSeguridadDAO.reemplazarBaseActiva(origen);
+        } catch (Exception e) {
+            copiaSeguridadDAO.reemplazarBaseActiva(rescate);
+            throw new IOException("No se pudo restaurar; se ha recuperado la base anterior: " + e.getMessage(), e);
+        }
+
+        return rescate;
+    }
+
+    public Empresas.EmpresaInfo restaurarComoEmpresaNueva(Path origen, String nombre)
+            throws IOException, ValidacionException {
+        leerResumen(origen);
+
+        Empresas.EmpresaInfo nueva = null;
+        try {
+            nueva = Empresas.crearEmpresa(nombre);
+
+            Path destino = Conexion.rutaBaseDe(nueva.slug());
+            copiaSeguridadDAO.instalarComoBase(origen, destino);
+        } catch (Exception e) {
+            if (nueva != null) {
+                try {
+                    Empresas.eliminarEmpresa(nueva.slug());
+                } catch (Exception ignored) {
+                }
+            }
+            throw new IOException("No se pudo crear la empresa desde la copia: " + e.getMessage(), e);
+        }
+
+        return nueva;
+    }
+
+    /** Facturas de la empresa activa, para la regla de restauración. */
+    public int facturasEmpresaActiva() {
+        return facturaDAO.contar();
+    }
+
+    /** Versión de esquema de la aplicación, para comparar con la copia. */
+    public int versionEsquemaAplicacion() {
+        return Migraciones.ultimaVersion();
+    }
+}

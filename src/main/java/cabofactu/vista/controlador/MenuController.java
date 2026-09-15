@@ -1,7 +1,7 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Empresa;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 import cabofactu.utilidades.Formatos;
 import cabofactu.utilidades.LogoMarco;
 import javafx.fxml.FXML;
@@ -27,7 +27,7 @@ import cabofactu.vista.Vista;
  */
 public class MenuController implements Vista {
 
-    private Servicios servicios;
+    private Modelo modelo;
     private Navegador nav;
 
     @FXML
@@ -42,8 +42,8 @@ public class MenuController implements Vista {
     private Label lblEmpresaInfo;
 
     @Override
-    public void setServicios(Servicios s) {
-        this.servicios = s;
+    public void setModelo(Modelo m) {
+        this.modelo = m;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class MenuController implements Vista {
 
     @Override
     public void alIniciar() {
-        LocalDate f = servicios.reloj.fechaTrabajo();
+        LocalDate f = modelo.getReloj().fechaTrabajo();
         fechaTrabajo.setText(Formatos.fecha(f));
         cargarEmpresa();
         atajos();
@@ -72,7 +72,7 @@ public class MenuController implements Vista {
 
     private void cargarEmpresa() {
         try {
-            Empresa e = servicios.config.getEmpresa();
+            Empresa e = modelo.getConfiguracion().getEmpresa();
             if (e.getNombre() != null && !e.getNombre().isBlank()) {
                 lblEmpresa.setText(e.getNombre());
             }

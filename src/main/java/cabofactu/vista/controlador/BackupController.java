@@ -1,11 +1,11 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Empresa;
-import cabofactu.fichero.BackupService;
-import cabofactu.modelo.negocio.EmpresaManager;
+import cabofactu.fichero.CopiaSeguridad;
+import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Sesion;
-import cabofactu.modelo.Servicios;
-import cabofactu.modelo.negocio.ValidationException;
+import cabofactu.modelo.Modelo;
+import cabofactu.modelo.negocio.ValidacionException;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -27,7 +27,7 @@ import cabofactu.vista.utilidades.Dialogos;
 
 public class BackupController implements Vista {
 
-    private Servicios servicios;
+    private Modelo modelo;
     private Navegador nav;
 
     @FXML
@@ -61,11 +61,11 @@ public class BackupController implements Vista {
     private Label lblResultadoRestauracion;
 
     private Path origenSeleccionado;
-    private BackupService.ResumenBackup resumen;
+    private CopiaSeguridad.ResumenCopia resumen;
 
     @Override
-    public void setServicios(Servicios s) {
-        this.servicios = s;
+    public void setModelo(Modelo m) {
+        this.modelo = m;
     }
 
     @Override
@@ -105,7 +105,7 @@ public class BackupController implements Vista {
         Task<Path> t = new Task<>() {
             @Override
             protected Path call() throws Exception {
-                return servicios.backup.crearBackup(Path.of(destino));
+                return modelo.getCopiaSeguridad().crearCopia(Path.of(destino));
             }
         };
         t.setOnSucceeded(e -> {
@@ -137,10 +137,10 @@ public class BackupController implements Vista {
         cajaResumen.setVisible(false);
         cajaResumen.setManaged(false);
 
-        Task<BackupService.ResumenBackup> t = new Task<>() {
+        Task<CopiaSeguridad.ResumenCopia> t = new Task<>() {
             @Override
-            protected BackupService.ResumenBackup call() throws Exception {
-                return servicios.backup.leerResumen(origenSeleccionado);
+            protected CopiaSeguridad.ResumenCopia call() throws Exception {
+                return modelo.getCopiaSeguridad().leerResumen(origenSeleccionado);
             }
         };
         t.setOnSucceeded(e -> {
@@ -149,7 +149,7 @@ public class BackupController implements Vista {
             aplicarReglaNif(resumen);
         });
         t.setOnFailed(e -> {
-            String msg = t.getException() instanceof ValidationException
+            String msg = t.getException() instanceof ValidacionException
                     ? t.getException().getMessage()
                     : "No se pudo leer la copia: " + t.getException().getMessage();
             Dialogos.error("Restaurar copia", msg);
@@ -159,17 +159,17 @@ public class BackupController implements Vista {
         new Thread(t).start();
     }
 
-    private void mostrarResumen(BackupService.ResumenBackup r) {
+    private void mostrarResumen(CopiaSeguridad.ResumenCopia r) {
         StringBuilder sb = new StringBuilder();
         sb.append("Empresa: ").append(r.nombreEmpresa()).append("\n");
         sb.append("NIF: ").append(r.nif().isEmpty() ? "(sin NIF)" : r.nif()).append("\n");
         sb.append("Facturas: ").append(r.numFacturas()).append("\n");
         sb.append("Última fecha: ").append(r.ultimaFecha() == null ? "(ninguna)" : r.ultimaFecha()).append("\n");
-        sb.append("Versión de esquema: ").append(r.userVersion());
-        int app = servicios.backup.versionEsquemaAplicacion();
-        if (r.userVersion() < app) {
+        sb.append("Versión de esquema: ").append(r.versionActual());
+        int app = modelo.getCopiaSeguridad().versionEsquemaAplicacion();
+        if (r.versionActual() < app) {
             sb.append(" (anterior a la de la aplicación)");
-        } else if (r.userVersion() > app) {
+        } else if (r.versionActual() > app) {
             sb.append(" (posterior a la de la aplicación)");
         }
         if (!r.logoExiste() && !r.logoPath().isEmpty()) {
@@ -180,7 +180,7 @@ public class BackupController implements Vista {
         cajaResumen.setManaged(true);
     }
 
-    private void aplicarReglaNif(BackupService.ResumenBackup r) {
+    private void aplicarReglaNif(CopiaSeguridad.ResumenCopia r) {
         String nifBackup = normalizarNif(r.nif());
         String nifActiva = normalizarNif(obtenerNifActiva());
 
@@ -206,7 +206,7 @@ public class BackupController implements Vista {
 
     private String obtenerNifActiva() {
         try {
-            Empresa emp = servicios.config.getEmpresa();
+            Empresa emp = modelo.getConfiguracion().getEmpresa();
             return emp == null ? "" : emp.getNif() == null ? "" : emp.getNif();
         } catch (Exception e) {
             return "";
@@ -215,7 +215,7 @@ public class BackupController implements Vista {
 
     private int contarFacturasActivas() {
         try {
-            return servicios.backup.facturasEmpresaActiva();
+            return modelo.getCopiaSeguridad().facturasEmpresaActiva();
         } catch (Exception e) {
             return 0;
         }
@@ -224,7 +224,7 @@ public class BackupController implements Vista {
     private String nombreEmpresaActiva() {
         String slug = Sesion.empresaSlug();
         try {
-            for (EmpresaManager.EmpresaInfo e : EmpresaManager.listarEmpresas()) {
+            for (Empresas.EmpresaInfo e : Empresas.listarEmpresas()) {
                 if (e.slug().equals(slug)) {
                     return e.nombre();
                 }
@@ -262,10 +262,10 @@ public class BackupController implements Vista {
             @Override
             protected Object call() throws Exception {
                 if (reemplazar) {
-                    Path rescate = servicios.backup.restaurarEnEmpresaActiva(origenSeleccionado);
+                    Path rescate = modelo.getCopiaSeguridad().restaurarEnEmpresaActiva(origenSeleccionado);
                     return new Object[]{"reemplazar", rescate};
                 } else {
-                    EmpresaManager.EmpresaInfo nueva = servicios.backup.restaurarComoEmpresaNueva(origenSeleccionado, nombre);
+                    Empresas.EmpresaInfo nueva = modelo.getCopiaSeguridad().restaurarComoEmpresaNueva(origenSeleccionado, nombre);
                     return new Object[]{"nueva", nueva};
                 }
             }
@@ -281,13 +281,13 @@ public class BackupController implements Vista {
                         "Copia restaurada. Copia de rescate guardada en:\n" + rescate);
                 nav.mostrarInicio();
             } else {
-                EmpresaManager.EmpresaInfo nueva = (EmpresaManager.EmpresaInfo) resultado[1];
+                Empresas.EmpresaInfo nueva = (Empresas.EmpresaInfo) resultado[1];
                 lblResultadoRestauracion.setText("");
                 boolean cambiar = Dialogos.confirmar("Empresa creada",
                         "Empresa \"" + nueva.nombre() + "\" creada correctamente.\n¿Quieres cambiar a ella ahora?");
                 if (cambiar) {
                     try {
-                        EmpresaManager.conectar(nueva.slug(), Sesion.fechaTrabajo());
+                        Empresas.conectar(nueva.slug(), Sesion.fechaTrabajo());
                     } catch (Exception ex) {
                         Dialogos.error("Restaurar copia", "No se pudo conectar: " + ex.getMessage());
                         return;

@@ -1,6 +1,6 @@
 package cabofactu.modelo.negocio;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -49,7 +49,7 @@ public final class PreferenciasGlobales {
     }
 
     private static Path archivo() {
-        return Database.baseDataDir().resolve("preferencias.properties");
+        return Conexion.carpetaRaiz().resolve("preferencias.properties");
     }
 
     private static Properties cargar() {

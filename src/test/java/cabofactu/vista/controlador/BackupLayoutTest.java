@@ -1,7 +1,7 @@
 package cabofactu.vista.controlador;
 
-import cabofactu.modelo.negocio.sqlite.Database;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.modelo.Modelo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -35,15 +35,15 @@ class BackupLayoutTest {
     private static final int ALTO_ESCENA = 768;
 
     @TempDir
-    static Path dataDir;
+    static Path carpetaEmpresa;
 
-    private static Servicios servicios;
+    private static Modelo modelo;
     private static Navegador nav;
 
     @BeforeAll
     static void arrancar() throws Exception {
-        Database.setDataDir(dataDir);
-        servicios = new Servicios();
+        Conexion.setCarpetaRaiz(carpetaEmpresa);
+        modelo = new Modelo();
         JavaFxTestSupport.arrancarFx();
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -51,7 +51,7 @@ class BackupLayoutTest {
         Platform.runLater(() -> {
             try {
                 Stage stage = new Stage();
-                nav = new Navegador(stage, servicios);
+                nav = new Navegador(stage, modelo);
             } catch (Throwable t) {
                 error.set(t);
             } finally {
@@ -63,7 +63,7 @@ class BackupLayoutTest {
 
     @AfterAll
     static void parar() {
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test

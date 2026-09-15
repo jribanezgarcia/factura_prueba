@@ -3,9 +3,9 @@ package cabofactu.pdf;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.modelo.dominio.FacturaVersion;
+import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
-import cabofactu.modelo.negocio.FacturaService;
+import cabofactu.modelo.negocio.Facturas;
 import com.lowagie.text.pdf.PdfDictionary;
 import com.lowagie.text.pdf.PdfName;
 import com.lowagie.text.pdf.PdfReader;
@@ -58,8 +58,8 @@ class PdfServiceTest {
         return empresa;
     }
 
-    private FacturaVersion versionMuestra() {
-        FacturaVersion v = new FacturaVersion();
+    private VersionFactura versionMuestra() {
+        VersionFactura v = new VersionFactura();
         v.setNumero("C-59/7");
         v.setFechaFactura(LocalDate.of(2026, 7, 14));
         v.setFechaGuardado(LocalDateTime.of(2026, 7, 14, 12, 0));
@@ -108,7 +108,7 @@ class PdfServiceTest {
 
     @Test
     void exportaDisenoAprobadoConTotalConIvaYTarjetas() throws Exception {
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("C-59-7.pdf");
@@ -156,9 +156,9 @@ class PdfServiceTest {
 
     @Test
     void facturaAnuladaIncluyeLaMarca() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setEstado(EstadoFactura.ANULADA);
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("anulada.pdf");
@@ -172,9 +172,9 @@ class PdfServiceTest {
 
     @Test
     void totalesConDescuentoSeMuestranRestandoYCuadran() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setDescuentoPorcentaje(10);
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("descuento.pdf");
@@ -208,9 +208,9 @@ class PdfServiceTest {
 
     @Test
     void desgloseConVariosTiposYDescuentoMuestraBasePorTipo() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setDescuentoPorcentaje(10);
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v, List.of(linea("1000.00", 21), linea("500.00", 10)), null);
 
         Path destino = tempDir.resolve("varios-tipos.pdf");
@@ -244,9 +244,9 @@ class PdfServiceTest {
 
     @Test
     void elPdfNoUsaRotulosDeLaEscalera() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setDescuentoPorcentaje(10);
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v, List.of(linea("1000.00", 21), linea("500.00", 10),
                         lineaExenta("ASESORAMIENTO", "200.00")), null);
 
@@ -267,7 +267,7 @@ class PdfServiceTest {
 
     @Test
     void exentoMuestraGuionYSumaEnTotales() throws Exception {
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(),
                 List.of(linea("1000.00", 21), lineaExenta("ASESORAMIENTO", "200.00")), null);
 
@@ -287,12 +287,12 @@ class PdfServiceTest {
 
     @Test
     void elSimboloDeMonedaApareceUnaSolaVez() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setDescuentoPorcentaje(10);
         v.setTipoRetencionId(1L);
         v.setTipoRetencionNombre("IRPF profesional");
         v.setTipoRetencionPorcentaje(15);
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v,
                 List.of(lineaArmario(), lineaSuplido("TASAS", "250.00")), null);
 
@@ -309,11 +309,11 @@ class PdfServiceTest {
 
     @Test
     void retencionApareceComoFilaPropiaEnElPdf() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setTipoRetencionId(1L);
         v.setTipoRetencionNombre("IRPF profesional");
         v.setTipoRetencionPorcentaje(15);
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("retencion.pdf");
@@ -328,7 +328,7 @@ class PdfServiceTest {
 
     @Test
     void suplidosAparecenEntreRetencionYTotal() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setTipoRetencionId(1L);
         v.setTipoRetencionNombre("IRPF profesional");
         v.setTipoRetencionPorcentaje(15);
@@ -340,7 +340,7 @@ class PdfServiceTest {
         suplido.setIvaNombre("Suplido");
         suplido.setIvaPorcentaje(null);
         suplido.setEsSuplido(true);
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v, List.of(lineaArmario(), suplido), null);
 
         Path destino = tempDir.resolve("suplidos.pdf");
@@ -386,7 +386,7 @@ class PdfServiceTest {
 
     @Test
     void suplidoTieneBloquePropioYNoSeRotulaExento() throws Exception {
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(),
                 List.of(lineaArmario(), lineaExenta("ASESORAMIENTO EXENTO", "200.00"),
                         lineaSuplido("TASAS MUNICIPALES SUPLIDAS", "250.00")), null);
@@ -411,7 +411,7 @@ class PdfServiceTest {
 
     @Test
     void sinSuplidosNoHayBloqueNiNota() throws Exception {
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("sin-suplidos.pdf");
@@ -428,7 +428,7 @@ class PdfServiceTest {
 
     @Test
     void soloSuplidosMuestraTablaVacia() throws Exception {
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaSuplido("TASAS", "250.00")), null);
 
         Path destino = tempDir.resolve("solo-suplidos.pdf");
@@ -452,7 +452,7 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA OCUPAR VARIAS PAGINAS");
             lineas.add(l);
         }
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), lineas, null);
 
         Path destino = tempDir.resolve("larga.pdf");
@@ -469,7 +469,7 @@ class PdfServiceTest {
 
     @Test
     void fuenteEmbebidaSegunDisponibilidad() throws Exception {
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
         Path destino = tempDir.resolve("fuente.pdf");
         new PdfService().exportar(vc, empresaTexto(), destino, null);
@@ -497,7 +497,7 @@ class PdfServiceTest {
     void nombreEmpresaLargoNoSolapaFactura() throws Exception {
         Empresa e = empresaTexto();
         e.setNombre("EMPRESA PRUEBA SOCIEDAD COLECTIVA DE COCINAS Y MUEBLES DE ALMERIA Y ANEXOS S.C.");
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("nombre-largo.pdf");
@@ -512,12 +512,12 @@ class PdfServiceTest {
 
     @Test
     void datosDePagoRellenosAparecenEnElPdf() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setFormaPago("Transferencia");
         java.time.LocalDate vencimiento = LocalDate.of(2026, 8, 14);
         v.setVencimiento(vencimiento);
         v.setRealizadaPor("AURORA");
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("pago.pdf");
@@ -534,7 +534,7 @@ class PdfServiceTest {
 
     @Test
     void datosDePagoVaciosOcultanLaTarjeta() throws Exception {
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("sin-pago.pdf");
@@ -550,10 +550,10 @@ class PdfServiceTest {
 
     @Test
     void codigoPostalYProvinciaFilasPropias() throws Exception {
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setCliLocalidad("ALMERIA");
         v.setCliProvincia("ALMERÍA");
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("cp-provincia.pdf");
@@ -570,12 +570,12 @@ class PdfServiceTest {
 
     @Test
     void exportarAgrupadoUneDosFacturasEnUnSoloPdf() throws Exception {
-        FacturaService.VersionCompleta vc1 = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc1 = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
-        FacturaVersion v2 = versionMuestra();
+        VersionFactura v2 = versionMuestra();
         v2.setNumero("C-59/8");
         v2.setCliNombre("OTRO CLIENTE");
-        FacturaService.VersionCompleta vc2 = new FacturaService.VersionCompleta(
+        Facturas.VersionCompleta vc2 = new Facturas.VersionCompleta(
                 new Factura(), v2, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("agrupado.pdf");
@@ -588,8 +588,8 @@ class PdfServiceTest {
         }
     }
 
-    private FacturaVersion versionConPago() {
-        FacturaVersion v = versionMuestra();
+    private VersionFactura versionConPago() {
+        VersionFactura v = versionMuestra();
         v.setFormaPago("Transferencia");
         v.setRealizadaPor("Juan");
         v.setVencimiento(LocalDate.of(2026, 10, 1));
@@ -615,9 +615,9 @@ class PdfServiceTest {
         assertEquals(1, paginasDe(List.of(lineaSuplido("TASAS", "250.00")), null, null));
     }
 
-    private int paginasDe(List<LineaFactura> lineas, String obs, FacturaVersion ver) throws Exception {
-        FacturaVersion v = ver != null ? ver : versionMuestra();
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+    private int paginasDe(List<LineaFactura> lineas, String obs, VersionFactura ver) throws Exception {
+        VersionFactura v = ver != null ? ver : versionMuestra();
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         if (obs != null) v.setObservaciones(obs);
         Path destino = tempDir.resolve("pag-" + System.nanoTime() + ".pdf");
         new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
@@ -632,8 +632,8 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA OCUPAR VARIAS PAGINAS");
             lineas.add(l);
         }
-        FacturaVersion v = versionMuestra();
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        VersionFactura v = versionMuestra();
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("cierre-ultima.pdf");
         new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
@@ -658,8 +658,8 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA OCUPAR VARIAS PAGINAS");
             lineas.add(l);
         }
-        FacturaVersion v = versionConPago();
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        VersionFactura v = versionConPago();
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("tarjeta-pagina.pdf");
         new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
@@ -685,8 +685,8 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " LARGA");
             lineas.add(l);
         }
-        FacturaVersion v = versionConPago();
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        VersionFactura v = versionConPago();
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("no-blanco.pdf");
         new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
@@ -711,7 +711,7 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA OCUPAR VARIAS PAGINAS");
             lineas.add(l);
         }
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
         Path destino = tempDir.resolve("pie-unico.pdf");
         new PdfService().exportar(vc, emp, destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
@@ -732,15 +732,15 @@ class PdfServiceTest {
         Empresa empLargo = empresaTexto();
         empLargo.setPieLegal(pieReal);
         assertEquals(1, paginasDe(lineasN(20), null, null));
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         int paginasLargo = paginasDeConEmpresa(lineasN(20), empLargo, v);
         assertEquals(1, paginasLargo, "20 lineas con pie largo debe seguir en 1 pagina");
         int paginas10Largo = paginasDeConEmpresa(lineasN(10), empLargo, v);
         assertEquals(1, paginas10Largo);
     }
 
-    private int paginasDeConEmpresa(List<LineaFactura> lineas, Empresa emp, FacturaVersion ver) throws Exception {
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), ver, lineas, null);
+    private int paginasDeConEmpresa(List<LineaFactura> lineas, Empresa emp, VersionFactura ver) throws Exception {
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), ver, lineas, null);
         Path destino = tempDir.resolve("pag-emp-" + System.nanoTime() + ".pdf");
         new PdfService().exportar(vc, emp, destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) { return r.getNumberOfPages(); }
@@ -754,7 +754,7 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA");
             lineas.add(l);
         }
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
         Path destino = tempDir.resolve("cabecera-rep.pdf");
         new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
@@ -770,8 +770,8 @@ class PdfServiceTest {
         Empresa emp = empresaTexto();
         emp.setCabeceraModo("LOGO");
         emp.setLogoPath("logos/image-1788446954273.png");
-        FacturaVersion v = versionMuestra();
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineasN(2), null);
+        VersionFactura v = versionMuestra();
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineasN(2), null);
         Path destino = tempDir.resolve("logo-2.pdf");
         new PdfService().exportar(vc, emp, destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
@@ -785,7 +785,7 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " LARGA");
             lineas.add(l);
         }
-        FacturaService.VersionCompleta vc2 = new FacturaService.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
+        Facturas.VersionCompleta vc2 = new Facturas.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
         Path destino2 = tempDir.resolve("logo-60.pdf");
         new PdfService().exportar(vc2, emp, destino2, "#B08D57");
         try (PdfReader r = new PdfReader(destino2.toString())) {
@@ -803,9 +803,9 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " LARGA PARA ANULADA");
             lineas.add(l);
         }
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setEstado(EstadoFactura.ANULADA);
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("anulada-multi.pdf");
         new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
@@ -825,7 +825,7 @@ class PdfServiceTest {
         String pieReal = Files.readString(Path.of("capturas_pantalla/pie_factura.txt")).trim();
         Empresa emp = empresaTexto();
         emp.setPieLegal(pieReal);
-        FacturaVersion v = versionMuestra();
+        VersionFactura v = versionMuestra();
         v.setObservaciones("Observacion larga que ocupa espacio y ayuda a forzar el salto de pagina del cierre. ".repeat(10));
         List<LineaFactura> lineas = new ArrayList<>();
         for (int i = 0; i < 28; i++) {
@@ -833,7 +833,7 @@ class PdfServiceTest {
             l.setDescripcion("LINEA " + (i + 1) + " DESCRIPCION LARGA PARA FORZAR PAGINA");
             lineas.add(l);
         }
-        FacturaService.VersionCompleta vc = new FacturaService.VersionCompleta(new Factura(), v, lineas, null);
+        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("cierre-solitario.pdf");
         new PdfService().exportar(vc, emp, destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {

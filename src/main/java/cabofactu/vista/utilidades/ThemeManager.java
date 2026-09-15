@@ -1,7 +1,7 @@
 package cabofactu.vista.utilidades;
 
 import cabofactu.modelo.negocio.PreferenciasGlobales;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 import javafx.scene.Scene;
 
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public final class ThemeManager {
         return activo;
     }
 
-    public static void aplicar(Scene scene, Servicios servicios) {
+    public static void aplicar(Scene scene, Modelo modelo) {
         String tema = DEFAULT;
         String guardado = PreferenciasGlobales.get(PREV_TEMA);
         if (guardado != null && TEMAS.containsKey(guardado)) {
@@ -70,7 +70,7 @@ public final class ThemeManager {
         return hojas;
     }
 
-    public static void guardar(Servicios servicios) {
+    public static void guardar(Modelo modelo) {
         PreferenciasGlobales.set(PREV_TEMA, activo);
     }
 

@@ -1,6 +1,6 @@
 package cabofactu.vista;
 
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -18,21 +18,21 @@ import cabofactu.vista.utilidades.ThemeManager;
 public class Navegador {
 
     private final Stage stage;
-    private final Servicios servicios;
+    private final Modelo modelo;
     private Consumer<Vista> onVistaCambio;
     private Vista vistaActual;
 
-    public Navegador(Stage stage, Servicios servicios) {
+    public Navegador(Stage stage, Modelo modelo) {
         this.stage = stage;
-        this.servicios = servicios;
+        this.modelo = modelo;
     }
 
     public void setOnVistaCambio(Consumer<Vista> c) {
         this.onVistaCambio = c;
     }
 
-    public Servicios servicios() {
-        return servicios;
+    public Modelo modelo() {
+        return modelo;
     }
 
     public Stage stage() {
@@ -40,7 +40,7 @@ public class Navegador {
     }
 
     public void mostrarInicio() {
-        if (servicios.config.empresaCompleta()) {
+        if (modelo.getConfiguracion().empresaCompleta()) {
             mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
         } else {
             mostrar("/cabofactu/vista/recursos/Configuracion.fxml");
@@ -60,7 +60,7 @@ public class Navegador {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
             Parent root = loader.load();
             Scene scene = new Scene(root);
-            ThemeManager.aplicar(scene, servicios);
+            ThemeManager.aplicar(scene, modelo);
             stage.setScene(scene);
             VentanaConfig.para(fxml).ifPresent(cfg -> {
                 cfg.aplicar(stage);
@@ -69,7 +69,7 @@ public class Navegador {
             Ventanas.aplicarIcono(stage);
             T vista = loader.getController();
             if (vista != null) {
-                vista.setServicios(servicios);
+                vista.setModelo(modelo);
                 vista.setNavegador(this);
                 vistaActual = vista;
                 if (onVistaCambio != null) {

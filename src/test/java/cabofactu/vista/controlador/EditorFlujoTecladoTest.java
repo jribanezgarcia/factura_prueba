@@ -6,9 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.LineaFactura;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
@@ -40,16 +40,16 @@ import cabofactu.vista.Navegador;
 class EditorFlujoTecladoTest {
 
     @TempDir
-    static Path dataDir;
+    static Path carpetaEmpresa;
 
-    private static Servicios servicios;
+    private static Modelo modelo;
     private static Navegador nav;
     private static Stage stage;
 
     @BeforeAll
     static void arrancar() throws Exception {
-        Database.setDataDir(dataDir);
-        servicios = new Servicios();
+        Conexion.setCarpetaRaiz(carpetaEmpresa);
+        modelo = new Modelo();
         JavaFxTestSupport.arrancarFx();
 
         CountDownLatch latch = new CountDownLatch(1);
@@ -57,7 +57,7 @@ class EditorFlujoTecladoTest {
         Platform.runLater(() -> {
             try {
                 stage = new Stage();
-                nav = new Navegador(stage, servicios);
+                nav = new Navegador(stage, modelo);
             } catch (Throwable t) {
                 error.set(t);
             } finally {
@@ -74,7 +74,7 @@ class EditorFlujoTecladoTest {
 
     @AfterAll
     static void parar() {
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test

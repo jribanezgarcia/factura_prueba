@@ -1,7 +1,7 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Cliente;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 import cabofactu.utilidades.CodigoPostalValidator;
 import cabofactu.utilidades.DocumentoFiscalValidator;
 import cabofactu.utilidades.EmailValidator;
@@ -46,7 +46,7 @@ import cabofactu.vista.utilidades.Dialogos;
  */
 public class ClientesController implements Vista {
 
-    private Servicios servicios;
+    private Modelo modelo;
     private Navegador nav;
     private final ObservableList<Cliente> todos = FXCollections.observableArrayList();
 
@@ -68,8 +68,8 @@ public class ClientesController implements Vista {
     private HBox barraNavegacion;
 
     @Override
-    public void setServicios(Servicios s) {
-        this.servicios = s;
+    public void setModelo(Modelo m) {
+        this.modelo = m;
     }
 
     @Override
@@ -106,7 +106,7 @@ public class ClientesController implements Vista {
 
     private void recargar() {
         try {
-            todos.setAll(servicios.clientes.listar(false));
+            todos.setAll(modelo.getClientes().listar(false));
             filtrar();
         } catch (Exception e) {
             Dialogos.error("Clientes", "Error al cargar clientes: " + e.getMessage());
@@ -134,7 +134,7 @@ public class ClientesController implements Vista {
             return;
         }
         try {
-            servicios.clientes.insertar(c);
+            modelo.getClientes().insertar(c);
             recargar();
         } catch (Exception e) {
             Dialogos.error("Clientes", "No se pudo guardar el cliente: " + e.getMessage());
@@ -153,7 +153,7 @@ public class ClientesController implements Vista {
             return;
         }
         try {
-            servicios.clientes.actualizar(c);
+            modelo.getClientes().actualizar(c);
             recargar();
         } catch (Exception e) {
             Dialogos.error("Clientes", "No se pudo actualizar el cliente: " + e.getMessage());
@@ -168,18 +168,18 @@ public class ClientesController implements Vista {
             return;
         }
         try {
-            if (servicios.clientes.tieneFacturas(seleccion.getId())) {
+            if (modelo.getClientes().tieneFacturas(seleccion.getId())) {
                 if (Dialogos.confirmar("Cliente con facturas",
                         "El cliente \"" + seleccion.getNombre() + "\" tiene facturas asociadas y no puede eliminarse.\n\n"
                                 + "¿Desea marcarlo como inactivo?")) {
-                    servicios.clientes.setActivo(seleccion.getId(), false);
+                    modelo.getClientes().setActivo(seleccion.getId(), false);
                     recargar();
                 }
                 return;
             }
             if (Dialogos.confirmar("Eliminar cliente",
                     "¿Eliminar definitivamente el cliente \"" + seleccion.getNombre() + "\"?")) {
-                servicios.clientes.borrarFisico(seleccion.getId());
+                modelo.getClientes().borrarFisico(seleccion.getId());
                 recargar();
             }
         } catch (Exception e) {

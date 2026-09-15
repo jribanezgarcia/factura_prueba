@@ -1,8 +1,8 @@
 package cabofactu;
 
 import cabofactu.modelo.negocio.sqlite.CargarDemo;
-import cabofactu.modelo.negocio.sqlite.Database;
-import cabofactu.modelo.negocio.EmpresaManager;
+import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.PreferenciasGlobales;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,19 +23,19 @@ class PreparacionDatosTest {
 
     @BeforeEach
     void setUp() {
-        Database.setDataDir(tempDir);
-        Database.resetConnection();
+        Conexion.setCarpetaRaiz(tempDir);
+        Conexion.cerrarConexion();
     }
 
     @AfterEach
     void tearDown() {
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test
     void crearCarpetaEsIdempotente() throws Exception {
         Path sub = tempDir.resolve("sub").resolve("datos");
-        Database.setDataDir(sub);
+        Conexion.setCarpetaRaiz(sub);
         PreparacionDatos.crearCarpeta();
         assertTrue(Files.isDirectory(sub));
         PreparacionDatos.crearCarpeta();
@@ -45,7 +45,7 @@ class PreparacionDatosTest {
     @Test
     void sinEmpresasCargaLaDemoYLaDejaComoUltima() throws Exception {
         assertTrue(PreparacionDatos.cargarDemoSiNoHayEmpresas());
-        assertTrue(EmpresaManager.listarEmpresas().stream()
+        assertTrue(Empresas.listarEmpresas().stream()
                 .anyMatch(e -> e.slug().equals(CargarDemo.SLUG)));
         assertEquals(CargarDemo.SLUG,
                 PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA));
@@ -55,15 +55,15 @@ class PreparacionDatosTest {
     void segundaLlamadaNoDuplica() throws Exception {
         assertTrue(PreparacionDatos.cargarDemoSiNoHayEmpresas());
         assertFalse(PreparacionDatos.cargarDemoSiNoHayEmpresas());
-        assertEquals(1, EmpresaManager.listarEmpresas().size());
+        assertEquals(1, Empresas.listarEmpresas().size());
     }
 
     @Test
     void conOtraEmpresaNoCargaLaDemo() throws Exception {
-        EmpresaManager.crearEmpresa("Otra");
+        Empresas.crearEmpresa("Otra");
         assertFalse(PreparacionDatos.cargarDemoSiNoHayEmpresas());
-        assertEquals(1, EmpresaManager.listarEmpresas().size());
-        assertFalse(EmpresaManager.listarEmpresas().stream()
+        assertEquals(1, Empresas.listarEmpresas().size());
+        assertFalse(Empresas.listarEmpresas().stream()
                 .anyMatch(e -> e.slug().equals(CargarDemo.SLUG)));
     }
 }

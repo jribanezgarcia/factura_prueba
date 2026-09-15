@@ -1,7 +1,7 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.negocio.sqlite.CargarDemo;
-import cabofactu.modelo.negocio.EmpresaManager;
+import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.PreferenciasGlobales;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -26,10 +26,10 @@ import cabofactu.vista.utilidades.Dialogos;
  */
 public class ArranqueController implements Vista {
 
-    private Consumer<EmpresaManager.EmpresaInfo> onEntrar;
+    private Consumer<Empresas.EmpresaInfo> onEntrar;
 
     @FXML
-    private ComboBox<EmpresaManager.EmpresaInfo> cmbEmpresa;
+    private ComboBox<Empresas.EmpresaInfo> cmbEmpresa;
     @FXML
     private Button btnNuevaEmpresa;
     @FXML
@@ -52,7 +52,7 @@ public class ArranqueController implements Vista {
         cargarEmpresas();
     }
 
-    public void setOnEntrar(Consumer<EmpresaManager.EmpresaInfo> c) {
+    public void setOnEntrar(Consumer<Empresas.EmpresaInfo> c) {
         this.onEntrar = c;
     }
 
@@ -77,14 +77,14 @@ public class ArranqueController implements Vista {
     private void configurarListaEmpresas() {
         cmbEmpresa.setCellFactory(v -> new ListCell<>() {
             @Override
-            protected void updateItem(EmpresaManager.EmpresaInfo e, boolean vacio) {
+            protected void updateItem(Empresas.EmpresaInfo e, boolean vacio) {
                 super.updateItem(e, vacio);
                 setText(e == null ? null : e.nombre());
             }
         });
         cmbEmpresa.setButtonCell(new ListCell<>() {
             @Override
-            protected void updateItem(EmpresaManager.EmpresaInfo e, boolean vacio) {
+            protected void updateItem(Empresas.EmpresaInfo e, boolean vacio) {
                 super.updateItem(e, vacio);
                 setText(e == null ? null : e.nombre());
             }
@@ -140,7 +140,7 @@ public class ArranqueController implements Vista {
 
     private void cargarEmpresas() {
         try {
-            cmbEmpresa.getItems().setAll(EmpresaManager.listarEmpresas());
+            cmbEmpresa.getItems().setAll(Empresas.listarEmpresas());
             String ultima = PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA);
             if (ultima != null) {
                 cmbEmpresa.getItems().stream()
@@ -185,7 +185,7 @@ public class ArranqueController implements Vista {
             return;
         }
         try {
-            EmpresaManager.EmpresaInfo nueva = EmpresaManager.crearEmpresa(nombre);
+            Empresas.EmpresaInfo nueva = Empresas.crearEmpresa(nombre);
             cargarEmpresas();
             cmbEmpresa.getItems().stream()
                     .filter(e -> e.slug().equals(nueva.slug()))
@@ -198,7 +198,7 @@ public class ArranqueController implements Vista {
 
     @FXML
     private void entrar() {
-        EmpresaManager.EmpresaInfo elegida = cmbEmpresa.getValue();
+        Empresas.EmpresaInfo elegida = cmbEmpresa.getValue();
         LocalDate fecha = fechaTrabajo.getValue();
         if (fecha == null && cmbEjercicio.getValue() != null
                 && cmbEjercicio.getValue().equals(LocalDate.now().getYear())) {
@@ -213,7 +213,7 @@ public class ArranqueController implements Vista {
             return;
         }
         try {
-            EmpresaManager.conectar(elegida.slug(), fecha);
+            Empresas.conectar(elegida.slug(), fecha);
             if (onEntrar != null) {
                 onEntrar.accept(elegida);
             }

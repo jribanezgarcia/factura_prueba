@@ -2,11 +2,11 @@ package cabofactu.pdf;
 
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
-import cabofactu.modelo.dominio.FacturaVersion;
+import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.ResumenFactura;
-import cabofactu.modelo.negocio.CalculoService;
-import cabofactu.modelo.negocio.FacturaService;
+import cabofactu.modelo.negocio.Calculos;
+import cabofactu.modelo.negocio.Facturas;
 import cabofactu.utilidades.Formatos;
 
 import java.math.BigDecimal;
@@ -28,11 +28,11 @@ public final class InvoiceDocumentBuilder {
     private InvoiceDocumentBuilder() {
     }
 
-    public static InvoiceDocument build(FacturaService.VersionCompleta vc, Empresa empresa, String colorHex) {
-        FacturaVersion v = vc.version();
-        ResumenFactura resumen = CalculoService.resumen(vc.lineas(), v.getDescuentoPorcentaje(),
-                FacturaService.retencionDeVersion(v));
-        List<LineaFactura> suplidos = CalculoService.suplidosDe(vc.lineas());
+    public static InvoiceDocument build(Facturas.VersionCompleta vc, Empresa empresa, String colorHex) {
+        VersionFactura v = vc.version();
+        ResumenFactura resumen = Calculos.resumen(vc.lineas(), v.getDescuentoPorcentaje(),
+                Facturas.retencionDeVersion(v));
+        List<LineaFactura> suplidos = Calculos.suplidosDe(vc.lineas());
         return new InvoiceDocument(
                 header(v),
                 clientCard(v),
@@ -44,7 +44,7 @@ public final class InvoiceDocumentBuilder {
                 legalFooter(empresa));
     }
 
-    static InvoiceDocument.Header header(FacturaVersion v) {
+    static InvoiceDocument.Header header(VersionFactura v) {
         boolean corrective = v.getReferenciaRectifica() != null && !v.getReferenciaRectifica().isBlank();
         return new InvoiceDocument.Header(
                 nz(v.getNumero()),
@@ -54,7 +54,7 @@ public final class InvoiceDocumentBuilder {
                 v.getEstado() == EstadoFactura.ANULADA);
     }
 
-    static InvoiceDocument.ClientCard clientCard(FacturaVersion v) {
+    static InvoiceDocument.ClientCard clientCard(VersionFactura v) {
         List<InvoiceDocument.FieldRow> rows = new ArrayList<>();
         if (!nz(v.getCliNombre()).isBlank()) {
             rows.add(new InvoiceDocument.FieldRow("Nombre", v.getCliNombre()));
@@ -84,7 +84,7 @@ public final class InvoiceDocumentBuilder {
         return "DATOS DE PAGO";
     }
 
-    static Optional<InvoiceDocument.PaymentCard> paymentCard(FacturaVersion v) {
+    static Optional<InvoiceDocument.PaymentCard> paymentCard(VersionFactura v) {
         List<InvoiceDocument.FieldRow> rows = paymentRows(v);
         if (rows.isEmpty()) {
             return Optional.empty();
@@ -92,7 +92,7 @@ public final class InvoiceDocumentBuilder {
         return Optional.of(new InvoiceDocument.PaymentCard(paymentCardTitle(), rows));
     }
 
-    static List<InvoiceDocument.FieldRow> paymentRows(FacturaVersion v) {
+    static List<InvoiceDocument.FieldRow> paymentRows(VersionFactura v) {
         List<InvoiceDocument.FieldRow> rows = new ArrayList<>();
         if (!nz(v.getFormaPago()).isBlank()) {
             rows.add(new InvoiceDocument.FieldRow("Forma de pago", v.getFormaPago()));
@@ -118,7 +118,7 @@ public final class InvoiceDocumentBuilder {
                         nz(l.getDescripcion()),
                         importePdf(l.getPrecioUnitario()),
                         l.isExenta() ? "Exento" : l.getIvaPorcentaje() + " %",
-                        importePdf(CalculoService.totalConIva(l))));
+                        importePdf(Calculos.totalConIva(l))));
             }
         }
         return new InvoiceDocument.LinesTable(
@@ -194,7 +194,7 @@ public final class InvoiceDocumentBuilder {
         return Optional.of(nota);
     }
 
-    static Optional<String> observations(FacturaVersion v) {
+    static Optional<String> observations(VersionFactura v) {
         String obs = v.getObservaciones();
         return obs != null && !obs.isBlank() ? Optional.of(obs) : Optional.empty();
     }

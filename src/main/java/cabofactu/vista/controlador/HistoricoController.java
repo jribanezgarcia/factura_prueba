@@ -3,11 +3,11 @@ package cabofactu.vista.controlador;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.FiltrosHistorial;
-import cabofactu.modelo.dominio.HistorialFila;
+import cabofactu.modelo.dominio.FilaHistorial;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.pdf.PdfService;
-import cabofactu.modelo.negocio.FacturaService;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.negocio.Facturas;
+import cabofactu.modelo.Modelo;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -19,6 +19,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -54,7 +55,7 @@ public class HistoricoController implements Vista {
 
     private static final String PREV_EXPORT = "ultima_carpeta_export";
 
-    private Servicios servicios;
+    private Modelo modelo;
     private Navegador nav;
 
     @FXML
@@ -80,31 +81,31 @@ public class HistoricoController implements Vista {
     @FXML
     private HBox barraNavegacion;
     @FXML
-    private TableView<HistorialFila> tabla;
+    private TableView<FilaHistorial> tabla;
     @FXML
-    private TableColumn<HistorialFila, String> colFecha;
+    private TableColumn<FilaHistorial, String> colFecha;
     @FXML
-    private TableColumn<HistorialFila, String> colNumero;
+    private TableColumn<FilaHistorial, String> colNumero;
     @FXML
-    private TableColumn<HistorialFila, String> colVersion;
+    private TableColumn<FilaHistorial, String> colVersion;
     @FXML
-    private TableColumn<HistorialFila, String> colCliente;
+    private TableColumn<FilaHistorial, String> colCliente;
     @FXML
-    private TableColumn<HistorialFila, String> colNif;
+    private TableColumn<FilaHistorial, String> colNif;
     @FXML
-    private TableColumn<HistorialFila, String> colBase;
+    private TableColumn<FilaHistorial, String> colBase;
     @FXML
-    private TableColumn<HistorialFila, String> colIva;
+    private TableColumn<FilaHistorial, String> colIva;
     @FXML
-    private TableColumn<HistorialFila, String> colRetencion;
+    private TableColumn<FilaHistorial, String> colRetencion;
     @FXML
-    private TableColumn<HistorialFila, String> colTotal;
+    private TableColumn<FilaHistorial, String> colTotal;
     @FXML
-    private TableColumn<HistorialFila, String> colEstado;
+    private TableColumn<FilaHistorial, String> colEstado;
 
     @Override
-    public void setServicios(Servicios s) {
-        this.servicios = s;
+    public void setModelo(Modelo m) {
+        this.modelo = m;
     }
 
     @Override
@@ -117,7 +118,7 @@ public class HistoricoController implements Vista {
         barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "historico"));
         try {
             comboSerie.getItems().add("(Todas)");
-            for (Serie s : servicios.series.listar()) {
+            for (Serie s : modelo.getSeries().listar()) {
                 comboSerie.getItems().add(s.getCodigo());
             }
             comboSerie.setValue("(Todas)");
@@ -143,7 +144,7 @@ public class HistoricoController implements Vista {
         tabla.setPlaceholder(new javafx.scene.control.Label("Sin resultados. Pulsa Buscar."));
         tabla.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
         tabla.setRowFactory(tv -> {
-            javafx.scene.control.TableRow<HistorialFila> fila = new javafx.scene.control.TableRow<>();
+            TableRow<FilaHistorial> fila = new TableRow<>();
             fila.setOnMouseClicked(e -> {
                 if (e.getButton() == MouseButton.PRIMARY && e.getClickCount() == 2 && !fila.isEmpty()) {
                     abrirVersion(fila.getItem());
@@ -182,13 +183,13 @@ public class HistoricoController implements Vista {
             f.setImporteDesde(Formatos.parseMonedaOpcional(txtImporteDesde.getText()));
             f.setImporteHasta(Formatos.parseMonedaOpcional(txtImporteHasta.getText()));
             f.setEstado(comboEstado.getValue());
-            tabla.setItems(FXCollections.observableArrayList(servicios.historialService.buscar(f)));
+            tabla.setItems(FXCollections.observableArrayList(modelo.getHistorial().buscar(f)));
         } catch (Exception e) {
             Dialogos.error("Histórico", "Error al buscar: " + e.getMessage());
         }
     }
 
-    private void abrirVersion(HistorialFila fila) {
+    private void abrirVersion(FilaHistorial fila) {
         EditorController editor = nav.mostrar("/cabofactu/vista/recursos/Editor.fxml");
         if (editor == null) {
             return;
@@ -203,13 +204,13 @@ public class HistoricoController implements Vista {
 
     @FXML
     private void anularSeleccionadas() {
-        List<HistorialFila> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
+        List<FilaHistorial> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
         if (seleccion.isEmpty()) {
             Dialogos.info("Anular", "Selecciona al menos una factura del histórico.");
             return;
         }
         Set<Long> facturaIds = new LinkedHashSet<>();
-        for (HistorialFila fila : seleccion) {
+        for (FilaHistorial fila : seleccion) {
             facturaIds.add(fila.getFacturaId());
         }
         if (!Dialogos.confirmar("Anular",
@@ -218,7 +219,7 @@ public class HistoricoController implements Vista {
             return;
         }
         try {
-            var resultado = servicios.estado.anularFacturas(new ArrayList<>(facturaIds));
+            var resultado = modelo.getEstados().anularFacturas(new ArrayList<>(facturaIds));
             StringBuilder msg = new StringBuilder();
             msg.append("Anuladas: ").append(resultado.getAnuladas()).append("\n");
             msg.append("Ya anuladas: ").append(resultado.getYaAnuladas());
@@ -234,20 +235,20 @@ public class HistoricoController implements Vista {
 
     @FXML
     private void borrarSeleccionadas() {
-        List<HistorialFila> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
+        List<FilaHistorial> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
         if (seleccion.isEmpty()) {
             Dialogos.info("Eliminar", "Selecciona al menos una factura del histórico.");
             return;
         }
         Set<Long> facturaIds = new LinkedHashSet<>();
-        for (HistorialFila fila : seleccion) {
+        for (FilaHistorial fila : seleccion) {
             facturaIds.add(fila.getFacturaId());
         }
         int totalVersiones = 0;
         int totalLineas = 0;
         try {
             for (long id : facturaIds) {
-                FacturaService.ResumenBorrado r = servicios.factura.resumenBorrado(id);
+                Facturas.ResumenBorrado r = modelo.getFacturas().resumenBorrado(id);
                 totalVersiones += r.versiones();
                 totalLineas += r.lineas();
             }
@@ -266,7 +267,7 @@ public class HistoricoController implements Vista {
         List<String> errores = new ArrayList<>();
         for (long id : facturaIds) {
             try {
-                servicios.factura.borrarFactura(id);
+                modelo.getFacturas().borrarFactura(id);
                 borradas++;
             } catch (Exception e) {
                 fallos++;
@@ -285,7 +286,7 @@ public class HistoricoController implements Vista {
 
     @FXML
     private void exportarPdf() {
-        List<HistorialFila> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
+        List<FilaHistorial> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
         if (seleccion.isEmpty()) {
             Dialogos.info("Exportar PDF", "Selecciona al menos una factura del histórico.");
             return;
@@ -301,8 +302,8 @@ public class HistoricoController implements Vista {
         }
     }
 
-    private void exportarUna(HistorialFila fila) throws Exception {
-        FacturaService.VersionCompleta vc = servicios.factura.abrirVersion(fila.getVersionId());
+    private void exportarUna(FilaHistorial fila) throws Exception {
+        Facturas.VersionCompleta vc = modelo.getFacturas().abrirVersion(fila.getVersionId());
         if (vc == null) {
             Dialogos.error("Exportar PDF", "No se encontró la versión de la factura seleccionada.");
             return;
@@ -321,7 +322,7 @@ public class HistoricoController implements Vista {
         generarPdfs(List.of(vc), List.of(f.toPath()), f.toPath().getParent());
     }
 
-    private void preguntarYExportarVarias(List<HistorialFila> filas) throws Exception {
+    private void preguntarYExportarVarias(List<FilaHistorial> filas) throws Exception {
         ChoiceDialog<String> dialog = new ChoiceDialog<>("Un PDF por factura",
                 "Un PDF por factura", "Un único PDF agrupado");
         dialog.setTitle("Exportar PDF");
@@ -338,7 +339,7 @@ public class HistoricoController implements Vista {
         }
     }
 
-    private void exportarVarias(List<HistorialFila> filas) throws Exception {
+    private void exportarVarias(List<FilaHistorial> filas) throws Exception {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Carpeta donde guardar los PDF");
         File carpeta = carpetaExportacion();
@@ -349,10 +350,10 @@ public class HistoricoController implements Vista {
         if (destino == null) {
             return;
         }
-        List<FacturaService.VersionCompleta> versiones = new ArrayList<>();
+        List<Facturas.VersionCompleta> versiones = new ArrayList<>();
         List<Path> rutas = new ArrayList<>();
-        for (HistorialFila fila : filas) {
-            FacturaService.VersionCompleta vc = servicios.factura.abrirVersion(fila.getVersionId());
+        for (FilaHistorial fila : filas) {
+            Facturas.VersionCompleta vc = modelo.getFacturas().abrirVersion(fila.getVersionId());
             if (vc != null) {
                 versiones.add(vc);
                 rutas.add(destino.toPath().resolve(Formatos.nombreArchivoPdf(vc.version().getNumero())));
@@ -365,7 +366,7 @@ public class HistoricoController implements Vista {
         generarPdfs(versiones, rutas, destino.toPath());
     }
 
-    private void exportarAgrupado(List<HistorialFila> filas) throws Exception {
+    private void exportarAgrupado(List<FilaHistorial> filas) throws Exception {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Guardar PDF agrupado");
         File carpeta = carpetaExportacion();
@@ -377,9 +378,9 @@ public class HistoricoController implements Vista {
         if (destino == null) {
             return;
         }
-        List<FacturaService.VersionCompleta> versiones = new ArrayList<>();
-        for (HistorialFila fila : filas) {
-            FacturaService.VersionCompleta vc = servicios.factura.abrirVersion(fila.getVersionId());
+        List<Facturas.VersionCompleta> versiones = new ArrayList<>();
+        for (FilaHistorial fila : filas) {
+            Facturas.VersionCompleta vc = modelo.getFacturas().abrirVersion(fila.getVersionId());
             if (vc != null) {
                 versiones.add(vc);
             }
@@ -389,7 +390,7 @@ public class HistoricoController implements Vista {
             return;
         }
         btnExportarPdf.setDisable(true);
-        Empresa empresa = servicios.config.getEmpresa();
+        Empresa empresa = modelo.getConfiguracion().getEmpresa();
         String color = colorPdfPreferido();
         Task<Void> tarea = new Task<>() {
             @Override
@@ -411,10 +412,10 @@ public class HistoricoController implements Vista {
         new Thread(tarea).start();
     }
 
-    private void generarPdfs(List<FacturaService.VersionCompleta> versiones, List<Path> rutas, Path carpetaRecordar) {
+    private void generarPdfs(List<Facturas.VersionCompleta> versiones, List<Path> rutas, Path carpetaRecordar) {
         Empresa empresa;
         try {
-            empresa = servicios.config.getEmpresa();
+            empresa = modelo.getConfiguracion().getEmpresa();
         } catch (Exception e) {
             Dialogos.error("Exportar PDF", "No se pudieron leer los datos de la empresa: " + e.getMessage());
             return;
@@ -464,7 +465,7 @@ public class HistoricoController implements Vista {
 
     private File carpetaExportacion() {
         try {
-            String pref = servicios.config.getPreferencia(PREV_EXPORT);
+            String pref = modelo.getConfiguracion().getPreferencia(PREV_EXPORT);
             if (pref != null && !pref.isBlank()) {
                 File f = new File(pref);
                 if (f.isDirectory()) {
@@ -481,14 +482,14 @@ public class HistoricoController implements Vista {
             return;
         }
         try {
-            servicios.config.setPreferencia(PREV_EXPORT, carpeta.toString());
+            modelo.getConfiguracion().setPreferencia(PREV_EXPORT, carpeta.toString());
         } catch (Exception ignored) {
         }
     }
 
     private String colorPdfPreferido() {
         try {
-            return servicios.config.getPreferencia(PdfService.PREF_COLOR);
+            return modelo.getConfiguracion().getPreferencia(PdfService.PREF_COLOR);
         } catch (Exception e) {
             return null;
         }

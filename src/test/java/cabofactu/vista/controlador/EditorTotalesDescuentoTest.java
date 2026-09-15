@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.LineaFactura;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
@@ -36,17 +36,17 @@ import cabofactu.vista.Navegador;
 class EditorTotalesDescuentoTest {
 
     @TempDir
-    static Path dataDir;
+    static Path carpetaEmpresa;
 
     @BeforeAll
     static void arrancar() throws Exception {
-        Database.setDataDir(dataDir);
+        Conexion.setCarpetaRaiz(carpetaEmpresa);
         JavaFxTestSupport.arrancarFx();
     }
 
     @AfterEach
     void cerrarDb() {
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     private static Object campo(Object o, String nombre) throws Exception {
@@ -71,7 +71,7 @@ class EditorTotalesDescuentoTest {
         Platform.runLater(() -> {
             try {
                 Stage stage = new Stage();
-                Navegador nav = new Navegador(stage, new Servicios());
+                Navegador nav = new Navegador(stage, new Modelo());
                 EditorController ctrl = nav.mostrar("/cabofactu/vista/recursos/Editor.fxml");
                 stage.show();
                 ctrlRef.set(ctrl);

@@ -1,6 +1,6 @@
 package cabofactu;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 
 import java.io.IOException;
 import java.nio.channels.FileChannel;
@@ -34,7 +34,7 @@ public final class InstanciaUnica {
         if (bloqueo != null && bloqueo.isValid()) {
             return true;
         }
-        FileChannel abierto = FileChannel.open(Database.lockPathGlobal(),
+        FileChannel abierto = FileChannel.open(Conexion.rutaBloqueoGlobal(),
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         try {
             FileLock obtenido = abierto.tryLock();

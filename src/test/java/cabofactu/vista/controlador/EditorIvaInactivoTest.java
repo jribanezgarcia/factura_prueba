@@ -6,12 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.Modelo;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -44,9 +44,9 @@ import cabofactu.vista.utilidades.Dialogos;
 class EditorIvaInactivoTest {
 
     @TempDir
-    static Path dataDir;
+    static Path carpetaEmpresa;
 
-    private static Servicios servicios;
+    private static Modelo modelo;
     private static Navegador nav;
     private static Stage stage;
     private static final Grabador grabador = new Grabador();
@@ -72,8 +72,8 @@ class EditorIvaInactivoTest {
 
     @BeforeAll
     static void arrancar() throws Exception {
-        Database.setDataDir(dataDir);
-        servicios = new Servicios();
+        Conexion.setCarpetaRaiz(carpetaEmpresa);
+        modelo = new Modelo();
         JavaFxTestSupport.arrancarFx();
         Dialogos.setImpl(grabador);
 
@@ -82,7 +82,7 @@ class EditorIvaInactivoTest {
         Platform.runLater(() -> {
             try {
                 stage = new Stage();
-                nav = new Navegador(stage, servicios);
+                nav = new Navegador(stage, modelo);
                 nav.mostrar("/cabofactu/vista/recursos/Editor.fxml");
                 stage.show();
             } catch (Throwable t) {
@@ -97,7 +97,7 @@ class EditorIvaInactivoTest {
     @AfterAll
     static void parar() {
         Dialogos.restoreDefault();
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test
@@ -107,21 +107,21 @@ class EditorIvaInactivoTest {
         iva.setNombre("IVA 10%");
         iva.setPorcentaje(10);
         iva.setActivo(true);
-        long ivaId = servicios.ivas.insertar(iva);
+        long ivaId = modelo.getTiposIva().insertar(iva);
         iva.setId(ivaId);
 
         // 2. Cliente
         Cliente cli = new Cliente();
         cli.setNombre("Cliente IVA Inactivo");
         cli.setNif("12345678A");
-        long clienteId = servicios.clientes.insertar(cli);
+        long clienteId = modelo.getClientes().insertar(cli);
         cli.setId(clienteId);
 
         // 3. Serie
         Serie serie = new Serie();
         serie.setCodigo("IVA");
         serie.setDescripcion("Test IVA");
-        long serieId = servicios.series.insertar(serie);
+        long serieId = modelo.getSeries().insertar(serie);
         serie.setId(serieId);
 
         // 4. Linea con el tipo 10 %
@@ -136,11 +136,11 @@ class EditorIvaInactivoTest {
         linea.setIvaImporte(new BigDecimal("10.00"));
 
         // 5. Crear factura
-        long facturaId = servicios.factura.crearFactura(serie, LocalDate.of(2026, 9, 1),
+        long facturaId = modelo.getFacturas().crearFactura(serie, LocalDate.of(2026, 9, 1),
                 cli, List.of(linea), 0, null, null);
 
         // 6. Inactivar el tipo 10 %
-        servicios.ivas.setActivo(ivaId, false);
+        modelo.getTiposIva().setActivo(ivaId, false);
 
         // 7. Abrir la factura en el editor y forzar el layout de la tabla
         AtomicReference<Throwable> err = new AtomicReference<>();

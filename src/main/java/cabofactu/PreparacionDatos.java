@@ -1,8 +1,8 @@
 package cabofactu;
 
 import cabofactu.modelo.negocio.sqlite.CargarDemo;
-import cabofactu.modelo.negocio.sqlite.Database;
-import cabofactu.modelo.negocio.EmpresaManager;
+import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.PreferenciasGlobales;
 
 import java.io.IOException;
@@ -25,7 +25,7 @@ public final class PreparacionDatos {
      * @throws IOException si no se puede crear
      */
     public static void crearCarpeta() throws IOException {
-        Files.createDirectories(Database.baseDataDir());
+        Files.createDirectories(Conexion.carpetaRaiz());
     }
 
     /**
@@ -37,7 +37,7 @@ public final class PreparacionDatos {
      * @throws Exception si falla la carga
      */
     public static boolean cargarDemoSiNoHayEmpresas() throws Exception {
-        if (!EmpresaManager.listarEmpresas().isEmpty()) {
+        if (!Empresas.listarEmpresas().isEmpty()) {
             return false;
         }
         CargarDemo.cargar();

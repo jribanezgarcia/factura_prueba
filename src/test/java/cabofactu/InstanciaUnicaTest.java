@@ -1,6 +1,6 @@
 package cabofactu;
 
-import cabofactu.modelo.negocio.sqlite.Database;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,19 +24,19 @@ class InstanciaUnicaTest {
 
     @BeforeEach
     void setUp() {
-        Database.setDataDir(tempDir);
+        Conexion.setCarpetaRaiz(tempDir);
     }
 
     @AfterEach
     void tearDown() {
         InstanciaUnica.liberar();
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test
     void adquirirCreaElFicheroDeBloqueo() throws Exception {
         assertTrue(InstanciaUnica.adquirir());
-        assertTrue(Files.exists(Database.lockPathGlobal()));
+        assertTrue(Files.exists(Conexion.rutaBloqueoGlobal()));
     }
 
     @Test
@@ -47,7 +47,7 @@ class InstanciaUnicaTest {
 
     @Test
     void conElFicheroBloqueadoDevuelveFalse() throws Exception {
-        FileChannel otro = FileChannel.open(Database.lockPathGlobal(),
+        FileChannel otro = FileChannel.open(Conexion.rutaBloqueoGlobal(),
                 StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         FileLock suyo = otro.tryLock();
         try {
@@ -69,7 +69,7 @@ class InstanciaUnicaTest {
     void rutaImposibleLanzaIOException() throws Exception {
         Path fichero = tempDir.resolve("fichero");
         Files.writeString(fichero, "no es una carpeta");
-        Database.setDataDir(fichero);
+        Conexion.setCarpetaRaiz(fichero);
         assertThrows(IOException.class, InstanciaUnica::adquirir);
     }
 }

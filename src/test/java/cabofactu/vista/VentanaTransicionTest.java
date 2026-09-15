@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import cabofactu.modelo.negocio.sqlite.Database;
-import cabofactu.modelo.Servicios;
+import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.modelo.Modelo;
 import javafx.application.Platform;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterEach;
@@ -29,27 +29,27 @@ import java.util.concurrent.atomic.AtomicReference;
 class VentanaTransicionTest {
 
     @TempDir
-    static Path dataDir;
+    static Path carpetaEmpresa;
 
     @BeforeAll
     static void arrancar() throws Exception {
-        Database.setDataDir(dataDir);
+        Conexion.setCarpetaRaiz(carpetaEmpresa);
         JavaFxTestSupport.arrancarFx();
     }
 
     @AfterEach
     void cerrarDb() {
-        Database.resetConnection();
+        Conexion.cerrarConexion();
     }
 
     @Test
     void menuSubeHasta1024AlPasarDeArranque() throws Exception {
-        Servicios servicios = new Servicios();
+        Modelo modelo = new Modelo();
         AtomicReference<Stage> stageRef = new AtomicReference<>();
 
         enFx("JavaFX no cargo el Menu", () -> {
             Stage stage = new Stage();
-            Navegador navArranque = new Navegador(stage, servicios);
+            Navegador navArranque = new Navegador(stage, modelo);
             navArranque.mostrar("/cabofactu/vista/recursos/Arranque.fxml");
             stage.show();
             stageRef.set(stage);
@@ -65,7 +65,7 @@ class VentanaTransicionTest {
         assertFalse(stage.isResizable(), "Arranque no debe ser redimensionable");
 
         enFx("JavaFX no cargo el Menu", () -> {
-            Navegador nav = new Navegador(stage, servicios);
+            Navegador nav = new Navegador(stage, modelo);
             nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
         });
 
@@ -93,12 +93,12 @@ class VentanaTransicionTest {
 
     @Test
     void navegarEntreVistasConservaElTamanoDelUsuario() throws Exception {
-        Servicios servicios = new Servicios();
+        Modelo modelo = new Modelo();
         AtomicReference<Stage> stageRef = new AtomicReference<>();
 
         enFx("JavaFX no cargo el Menu", () -> {
             Stage stage = new Stage();
-            Navegador nav = new Navegador(stage, servicios);
+            Navegador nav = new Navegador(stage, modelo);
             nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
             stage.show();
             stage.setWidth(1300);
@@ -109,7 +109,7 @@ class VentanaTransicionTest {
         Stage stage = stageRef.get();
 
         enFx("JavaFX no cargo el Historico", () -> {
-            Navegador nav = new Navegador(stage, servicios);
+            Navegador nav = new Navegador(stage, modelo);
             nav.mostrar("/cabofactu/vista/recursos/Historico.fxml");
         });
 
@@ -121,12 +121,12 @@ class VentanaTransicionTest {
 
     @Test
     void navegarNoDesmaximizaLaVentana() throws Exception {
-        Servicios servicios = new Servicios();
+        Modelo modelo = new Modelo();
         AtomicReference<Stage> stageRef = new AtomicReference<>();
 
         enFx("JavaFX no cargo el Menu", () -> {
             Stage stage = new Stage();
-            Navegador nav = new Navegador(stage, servicios);
+            Navegador nav = new Navegador(stage, modelo);
             nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
             stage.show();
             stage.setMaximized(true);
@@ -137,7 +137,7 @@ class VentanaTransicionTest {
         assertTrue(stage.isMaximized(), "La ventana debe quedar maximizada antes de navegar");
 
         enFx("JavaFX no cargo el Historico", () -> {
-            Navegador nav = new Navegador(stage, servicios);
+            Navegador nav = new Navegador(stage, modelo);
             nav.mostrar("/cabofactu/vista/recursos/Historico.fxml");
         });
 
@@ -148,12 +148,12 @@ class VentanaTransicionTest {
 
     @Test
     void ventanaMuestraTituloConMarcaYIconoDeLaAplicacion() throws Exception {
-        Servicios servicios = new Servicios();
+        Modelo modelo = new Modelo();
         AtomicReference<Stage> stageRef = new AtomicReference<>();
 
         enFx("JavaFX no cargo el Menu", () -> {
             Stage stage = new Stage();
-            Navegador nav = new Navegador(stage, servicios);
+            Navegador nav = new Navegador(stage, modelo);
             nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
             stage.show();
             stageRef.set(stage);
