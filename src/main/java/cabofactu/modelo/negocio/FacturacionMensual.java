@@ -98,6 +98,7 @@ public class FacturacionMensual {
         if (cliente == null || cliente.getId() == null) {
             throw new ValidacionException("Seleccione un cliente existente.");
         }
+        ValidacionCliente.comprobar(cliente);
         if (serie == null || serie.getId() == null) {
             throw new ValidacionException("Seleccione una serie de numeración.");
         }

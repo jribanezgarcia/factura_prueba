@@ -53,8 +53,8 @@ class CopiaSeguridadTest {
     private void insertarDatosBasicos() throws Exception {
         try (Statement st = Conexion.establecerConexion().createStatement()) {
             st.executeUpdate("INSERT INTO empresa (id, nombre, nif, logo_path) "
-                    + "VALUES (1, 'Pruebas Backup', 'B12345678', '') "
-                    + "ON CONFLICT(id) DO UPDATE SET nombre='Pruebas Backup', nif='B12345678', logo_path=''");
+                    + "VALUES (1, 'Pruebas Backup', 'B12345674', '') "
+                    + "ON CONFLICT(id) DO UPDATE SET nombre='Pruebas Backup', nif='B12345674', logo_path=''");
             st.executeUpdate("INSERT INTO serie (id, codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados, sufijo_fecha) "
                     + "VALUES (1, 'C', 'Serie C', 0, 1, 0, 'MES')");
             st.executeUpdate("INSERT INTO factura (id, serie_id, correlativo) VALUES (1, 1, 1)");
@@ -85,7 +85,7 @@ class CopiaSeguridadTest {
              ResultSet rs = st.executeQuery("SELECT nombre, nif FROM empresa WHERE id=1")) {
             assertTrue(rs.next());
             assertEquals("Pruebas Backup", rs.getString("nombre"));
-            assertEquals("B12345678", rs.getString("nif"));
+            assertEquals("B12345674", rs.getString("nif"));
         }
         try (Statement st = Conexion.establecerConexion().createStatement();
              ResultSet rs = st.executeQuery("SELECT COUNT(*) AS n FROM factura")) {
@@ -100,7 +100,7 @@ class CopiaSeguridadTest {
         Path copiaAntigua = crearCopia();
 
         try (Statement st = Conexion.establecerConexion().createStatement()) {
-            st.executeUpdate("UPDATE empresa SET nif='Z00000000' WHERE id=1");
+            st.executeUpdate("UPDATE empresa SET nif='Z0000000M' WHERE id=1");
         }
         Path copiaNueva = crearCopia();
 
@@ -118,7 +118,7 @@ class CopiaSeguridadTest {
                  Statement st = c.createStatement();
                  ResultSet rs = st.executeQuery("SELECT nif FROM empresa WHERE id=1")) {
                 assertTrue(rs.next());
-                assertEquals("Z00000000", rs.getString("nif"));
+                assertEquals("Z0000000M", rs.getString("nif"));
             }
         }
     }
@@ -135,8 +135,8 @@ class CopiaSeguridadTest {
         Empresas.conectar("activa", LocalDate.now());
         Conexion.establecerConexion();
         try (Statement st = Conexion.establecerConexion().createStatement()) {
-            st.executeUpdate("INSERT INTO empresa (id, nombre, nif) VALUES (1, 'Activa', 'A11111111') "
-                    + "ON CONFLICT(id) DO UPDATE SET nombre='Activa', nif='A11111111'");
+            st.executeUpdate("INSERT INTO empresa (id, nombre, nif) VALUES (1, 'Activa', 'A11111119') "
+                    + "ON CONFLICT(id) DO UPDATE SET nombre='Activa', nif='A11111119'");
             st.executeUpdate("INSERT INTO serie (id, codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados, sufijo_fecha) "
                     + "VALUES (1, 'A', 'Serie A', 0, 1, 0, 'MES')");
             st.executeUpdate("INSERT INTO factura (id, serie_id, correlativo) VALUES (1, 1, 1)");
@@ -155,7 +155,7 @@ class CopiaSeguridadTest {
              ResultSet rs = st.executeQuery("SELECT nombre, nif FROM empresa WHERE id=1")) {
             assertTrue(rs.next());
             assertEquals("Activa", rs.getString("nombre"));
-            assertEquals("A11111111", rs.getString("nif"));
+            assertEquals("A11111119", rs.getString("nif"));
         }
 
         assertEquals("activa", Sesion.empresaSlug());
@@ -165,7 +165,7 @@ class CopiaSeguridadTest {
              ResultSet rs = st.executeQuery("SELECT nombre, nif FROM empresa WHERE id=1")) {
             assertTrue(rs.next());
             assertEquals("Activa", rs.getString("nombre"));
-            assertEquals("A11111111", rs.getString("nif"));
+            assertEquals("A11111119", rs.getString("nif"));
         }
     }
 
@@ -177,7 +177,7 @@ class CopiaSeguridadTest {
         CopiaSeguridad.ResumenCopia r = servicio.leerResumen(copia);
 
         assertEquals("Pruebas Backup", r.nombreEmpresa());
-        assertEquals("B12345678", r.nif());
+        assertEquals("B12345674", r.nif());
         assertEquals(1, r.numFacturas());
         assertEquals(LocalDate.now(), r.ultimaFecha());
         assertEquals(Migraciones.ultimaVersion(), r.versionActual());
@@ -243,7 +243,7 @@ class CopiaSeguridadTest {
         Path copia = crearCopia();
 
         try (Statement st = Conexion.establecerConexion().createStatement()) {
-            st.executeUpdate("UPDATE empresa SET nif='Z00000000' WHERE id=1");
+            st.executeUpdate("UPDATE empresa SET nif='Z0000000M' WHERE id=1");
         }
 
         servicio.restaurarEnEmpresaActiva(copia);
@@ -253,7 +253,7 @@ class CopiaSeguridadTest {
         try (Statement st = Conexion.establecerConexion().createStatement();
              ResultSet rs = st.executeQuery("SELECT nif FROM empresa WHERE id=1")) {
             assertTrue(rs.next());
-            assertEquals("B12345678", rs.getString("nif"));
+            assertEquals("B12345674", rs.getString("nif"));
         }
     }
 

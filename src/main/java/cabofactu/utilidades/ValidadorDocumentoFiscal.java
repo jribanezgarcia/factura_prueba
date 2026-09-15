@@ -12,7 +12,32 @@ public final class ValidadorDocumentoFiscal {
         if (valor == null || valor.isBlank()) {
             return true;
         }
-        String nif = valor.replaceAll("\\s+", "").toUpperCase();
+        return formatoCorrecto(valor) && letraCorrecta(valor);
+    }
+
+    /**
+     * Miramos si tiene forma de DNI, NIE o CIF, sin comprobar la letra.
+     * Vacío o null no tienen forma.
+     */
+    public static boolean formatoCorrecto(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return false;
+        }
+        String nif = normalizar(valor);
+        return nif.matches("\\d{8}[A-Z]")
+                || nif.matches("[XYZ]\\d{7}[A-Z]")
+                || nif.matches("[ABCDEFGHJKLMNPQRSUVW]\\d{7}[0-9A-J]");
+    }
+
+    /**
+     * Miramos si la letra (DNI, NIE) o el carácter de control (CIF)
+     * coincide con el cálculo actual. Sin formato correcto no hay letra que valga.
+     */
+    public static boolean letraCorrecta(String valor) {
+        if (!formatoCorrecto(valor)) {
+            return false;
+        }
+        String nif = normalizar(valor);
         if (nif.matches("\\d{8}[A-Z]")) {
             return letraDni(nif.substring(0, 8)) == nif.charAt(8);
         }
@@ -25,6 +50,10 @@ public final class ValidadorDocumentoFiscal {
             return letraDni(numero) == nif.charAt(8);
         }
         return esCifValido(nif);
+    }
+
+    private static String normalizar(String valor) {
+        return valor.replaceAll("\\s+", "").toUpperCase();
     }
 
     private static char letraDni(String numero) {

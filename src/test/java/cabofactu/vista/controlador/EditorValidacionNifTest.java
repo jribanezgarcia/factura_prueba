@@ -27,13 +27,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
+import cabofactu.vista.utilidades.CambiosSinGuardar;
 import cabofactu.vista.utilidades.Dialogos;
+import cabofactu.vista.utilidades.MostradorDialogos;
 
 /**
- * Pruebas de UI del flujo de validacion del NIF en el editor de factura
- * (tarea 2.3 de add-spanish-tax-id-validation): un NIF no vacio e invalido
- * debe marcarse en rojo, avisar y bloquear el guardado; uno vacio o valido
- * no debe bloquear ni avisar.
+ * Pruebas de UI del flujo de validacion del NIF en el editor de factura:
+ * al salir del campo con un NIF invalido se marca en rojo sin avisar;
+ * el aviso sale con Enter o al guardar, una sola vez.
  *
  * La implementacion real usa Alert.showAndWait() modal (bloqueante en el hilo
  * de JavaFX). Para evitar deadlock en los tests se sustituye Dialogos por un
@@ -50,13 +51,15 @@ class EditorValidacionNifTest {
     private static Stage stage;
     private static Grabador grabador;
 
-    private static final class Grabador implements Dialogos.Impl {
+    private static final class Grabador implements MostradorDialogos {
         int errores;
         int infos;
+        String ultimoError;
 
         @Override
         public void error(String titulo, String mensaje) {
             errores++;
+            ultimoError = mensaje;
         }
 
         @Override
@@ -70,10 +73,10 @@ class EditorValidacionNifTest {
         }
 
         @Override
-        public Dialogos.CambiosSinGuardar confirmarCambiosSinGuardar() {
+        public CambiosSinGuardar confirmarCambiosSinGuardar() {
             // Los tests navegan entre editores: descartar para que la
             // guarda de Navegador.mostrar() no bloquee ni cancele.
-            return Dialogos.CambiosSinGuardar.DESCARTAR;
+            return CambiosSinGuardar.DESCARTAR;
         }
     }
 
@@ -106,6 +109,7 @@ class EditorValidacionNifTest {
     void resetGrabador() {
         grabador.errores = 0;
         grabador.infos = 0;
+        grabador.ultimoError = null;
     }
 
     @AfterAll
@@ -121,48 +125,79 @@ class EditorValidacionNifTest {
         enFx(err, () -> ref[0] = nav.mostrar("/cabofactu/vista/recursos/Editor.fxml"));
         EditorController ctrl = ref[0];
         TextField cliNif = campo(err, ctrl, "cliNif");
+        TextField cliNombre = campo(err, ctrl, "cliNombre");
 
         // "75238360A" es invalido: la letra de control correcta es R.
-        enFx(err, () -> cliNif.setText("75238360A"));
-        // Dispara el flujo "al pulsar Enter" (OnAction) de forma determinista.
-        enFx(err, () -> cliNif.fireEvent(new ActionEvent()));
+        enFx(err, () -> {
+            cliNombre.setText("Cliente");
+            cliNif.setText("75238360A");
+            cliNif.requestFocus();
+        });
+        enFx(err, () -> cliNombre.requestFocus()); // el NIF pierde el foco
+        enFx(err, () -> {
+            assertFalse(cliNif.getStyle().contains("#d32f2f"),
+                    "Al salir del campo no hay rojo ni aviso");
+            assertEquals(0, grabador.errores, "Al salir del campo no hay aviso");
+        });
 
         enFx(err, () -> {
-            assertTrue(cliNif.getStyle().contains("#d32f2d") || cliNif.getStyle().contains("#d32f2f"),
-                    "El NIF invalido debe marcarse en rojo");
-            assertTrue(grabador.errores >= 1, "Debe avisar del NIF invalido");
             assertFalse((boolean) invoke(ctrl, "guardar"),
                     "No debe guardar con NIF invalido");
+            assertEquals(1, grabador.errores, "Al guardar hay un solo aviso");
+            assertEquals("La letra no es correcta.", grabador.ultimoError);
+            assertTrue(cliNif.getStyle().contains("#d32f2f"),
+                    "Al guardar el campo queda en rojo");
             assertNull(getField(ctrl, "facturaAbiertaId"),
                     "No debe haber creado ninguna factura");
         });
     }
 
     @Test
-    void nifVacioYValidoNoAvisanNiBloquean() {
+    void nifVacioAvisaAlGuardarYValidoNoAvisa() {
         AtomicReference<Throwable> err = new AtomicReference<>();
         EditorController[] ref = new EditorController[1];
         enFx(err, () -> ref[0] = nav.mostrar("/cabofactu/vista/recursos/Editor.fxml"));
-        TextField cliNif = campo(err, ref[0], "cliNif");
+        EditorController ctrl = ref[0];
+        TextField cliNif = campo(err, ctrl, "cliNif");
+        TextField cliNombre = campo(err, ctrl, "cliNombre");
 
-        // Vacío: permitido (opcional) y válido: no avisa ni marca rojo.
-        enFx(err, () -> {
-            int antes = grabador.errores;
-            cliNif.setText("");
-            cliNif.fireEvent(new ActionEvent());
-            assertFalse(cliNif.getStyle().contains("#d32f2d"),
-                    "El NIF vacio no debe marcarse en rojo");
-            assertEquals(antes, grabador.errores, "El NIF vacio no debe avisar");
-        });
-
-        // Válido: tampoco avisa ni marca rojo.
+        // Válido en un editor limpio: ni rojo ni aviso al pulsar Enter.
         enFx(err, () -> {
             int antes = grabador.errores;
             cliNif.setText("12345678Z");
             cliNif.fireEvent(new ActionEvent());
-            assertFalse(cliNif.getStyle().contains("#d32f2d"),
+            assertFalse(cliNif.getStyle().contains("#d32f2f"),
                     "El NIF valido no debe marcarse en rojo");
             assertEquals(antes, grabador.errores, "El NIF valido no debe avisar");
+        });
+
+        // Vacío en otro editor limpio: al salir nada...
+        enFx(err, () -> ref[0] = nav.mostrar("/cabofactu/vista/recursos/Editor.fxml"));
+        EditorController limpio = ref[0];
+        TextField nifVacio = campo(err, limpio, "cliNif");
+        TextField nombreVacio = campo(err, limpio, "cliNombre");
+
+        // Vacío con nombre: al salir nada...
+        enFx(err, () -> {
+            nombreVacio.setText("Cliente");
+            nifVacio.setText("");
+            nifVacio.requestFocus();
+        });
+        enFx(err, () -> nombreVacio.requestFocus()); // el NIF pierde el foco
+        enFx(err, () -> {
+            assertFalse(nifVacio.getStyle().contains("#d32f2f"),
+                    "Al salir del campo no hay rojo ni aviso");
+            assertEquals(0, grabador.errores, "Al salir del campo no hay aviso");
+        });
+
+        // ...y al guardar avisa una vez que es obligatorio.
+        enFx(err, () -> {
+            assertFalse((boolean) invoke(limpio, "guardar"),
+                    "No debe guardar sin NIF");
+            assertEquals(1, grabador.errores, "Al guardar hay un solo aviso");
+            assertEquals("El NIF/NIE es obligatorio.", grabador.ultimoError);
+            assertTrue(nifVacio.getStyle().contains("#d32f2f"),
+                    "Al guardar el campo queda en rojo");
         });
     }
 

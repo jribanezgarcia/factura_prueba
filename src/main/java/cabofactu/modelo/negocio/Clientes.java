@@ -21,11 +21,15 @@ public class Clientes {
         return clienteDAO.buscar(texto, soloActivos);
     }
 
-    public long insertar(Cliente c) {
+    /** Guardamos el cliente tras comprobar sus datos obligatorios. */
+    public long insertar(Cliente c) throws ValidacionException {
+        ValidacionCliente.comprobar(c);
         return clienteDAO.insertar(c);
     }
 
-    public void actualizar(Cliente c) {
+    /** Guardamos los cambios tras comprobar sus datos obligatorios. */
+    public void actualizar(Cliente c) throws ValidacionException {
+        ValidacionCliente.comprobar(c);
         clienteDAO.actualizar(c);
     }
 

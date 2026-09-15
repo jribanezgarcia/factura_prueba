@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.Modelo;
+import cabofactu.modelo.negocio.ValidacionException;
 
 import java.nio.file.Path;
 import java.util.concurrent.CountDownLatch;
@@ -28,7 +29,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
+import cabofactu.vista.utilidades.CambiosSinGuardar;
 import cabofactu.vista.utilidades.Dialogos;
+import cabofactu.vista.utilidades.MostradorDialogos;
 
 /**
  * Pruebas de UI del flujo de validacion del NIF en la ficha de cliente
@@ -49,13 +52,15 @@ class ClientesValidacionNifTest {
     private static Stage stage;
     private static Grabador grabador;
 
-    private static final class Grabador implements Dialogos.Impl {
+    private static final class Grabador implements MostradorDialogos {
         int errores;
         int infos;
+        String ultimoError;
 
         @Override
         public void error(String titulo, String mensaje) {
             errores++;
+            ultimoError = mensaje;
         }
 
         @Override
@@ -69,8 +74,8 @@ class ClientesValidacionNifTest {
         }
 
         @Override
-        public Dialogos.CambiosSinGuardar confirmarCambiosSinGuardar() {
-            return Dialogos.CambiosSinGuardar.CANCELAR;
+        public CambiosSinGuardar confirmarCambiosSinGuardar() {
+            return CambiosSinGuardar.CANCELAR;
         }
     }
 
@@ -103,6 +108,7 @@ class ClientesValidacionNifTest {
     void resetGrabador() {
         grabador.errores = 0;
         grabador.infos = 0;
+        grabador.ultimoError = null;
     }
 
     @AfterAll
@@ -112,7 +118,7 @@ class ClientesValidacionNifTest {
     }
 
     @Test
-    void nifInvalidoEnFichaNoGuarda() {
+    void nifConFormatoIncorrectoAvisaSoloAlGuardar() {
         AtomicReference<Throwable> err = new AtomicReference<>();
         ClientesController[] ref = new ClientesController[1];
         enFx(err, () -> ref[0] = nav.mostrar("/cabofactu/vista/recursos/Clientes.fxml"));
@@ -127,20 +133,32 @@ class ClientesValidacionNifTest {
         enFx(err, () -> {
             TextField nombre = (TextField) dialogo.getDialogPane().lookup("#txtNombreFicha");
             TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
-            Button guardar = (Button) dialogo.getDialogPane().lookup("#btnGuardarFicha");
             assertNotNull(nombre, "No se encontro el campo Nombre");
             assertNotNull(nif, "No se encontro el campo NIF");
-            assertNotNull(guardar, "No se encontro el boton Guardar");
             nombre.setText("Cliente prueba");
-            nif.setText("75238360A"); // invalido
+            nif.setText("123"); // sin forma de documento
+            nif.requestFocus();
+        });
+        enFx(err, () -> {
+            TextField nombre = (TextField) dialogo.getDialogPane().lookup("#txtNombreFicha");
+            nombre.requestFocus(); // el NIF pierde el foco
+        });
+        enFx(err, () -> {
+            TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
+            assertFalse(nif.getStyle().contains("#d32f2f"), "Al salir del campo no hay rojo ni aviso");
+            assertEquals(0, grabador.errores, "Al salir del campo no hay aviso");
         });
         enFx(err, () -> {
             Button guardar = (Button) dialogo.getDialogPane().lookup("#btnGuardarFicha");
             assertFalse(guardar.isDisable(), "El boton Guardar debe estar habilitado con nombre");
-            guardar.fire(); // debe ser consumido por el filtro de NIF invalido
+            guardar.fire(); // consumido: un solo aviso y sin resultado
         });
         enFx(err, () -> {
-            assertTrue(grabador.errores >= 1, "Debe avisar del NIF invalido");
+            assertEquals(1, grabador.errores, "Al guardar hay un solo aviso");
+            assertEquals("Formato NIF/NIE incorrecto. Debe ser como 12345678Z (DNI), X1234567L (NIE) o B12345674 (CIF).",
+                    grabador.ultimoError);
+            TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
+            assertTrue(nif.getStyle().contains("#d32f2f"), "Al guardar el campo queda en rojo");
             assertNull(dialogo.getResult(), "No debe producir cliente con NIF invalido");
         });
         enFx(err, () -> dialogo.hide());
@@ -148,6 +166,86 @@ class ClientesValidacionNifTest {
         // No se inserta nada (independiente del orden de ejecucion).
         assertEquals(antes, totalClientes(),
                 "Un NIF invalido no debe insertar cliente");
+    }
+
+    @Test
+    void nifConLetraIncorrectaAvisaSoloAlGuardar() {
+        AtomicReference<Throwable> err = new AtomicReference<>();
+        ClientesController[] ref = new ClientesController[1];
+        enFx(err, () -> ref[0] = nav.mostrar("/cabofactu/vista/recursos/Clientes.fxml"));
+        ClientesController ctrl = ref[0];
+        int antes = totalClientes();
+
+        Dialog<Cliente>[] dref = new Dialog[1];
+        enFx(err, () -> dref[0] = ctrl.construirFicha(null));
+        Dialog<Cliente> dialogo = dref[0];
+        enFx(err, () -> dialogo.show());
+        enFx(err, () -> { }); // dejar que el dialogo se materialice
+        enFx(err, () -> {
+            TextField nombre = (TextField) dialogo.getDialogPane().lookup("#txtNombreFicha");
+            TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
+            nombre.setText("Cliente prueba");
+            nif.setText("12345678A"); // forma bien, letra mal
+            nif.requestFocus();
+        });
+        enFx(err, () -> {
+            TextField nombre = (TextField) dialogo.getDialogPane().lookup("#txtNombreFicha");
+            nombre.requestFocus(); // el NIF pierde el foco
+        });
+        enFx(err, () -> {
+            TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
+            assertFalse(nif.getStyle().contains("#d32f2f"), "Al salir del campo no hay rojo ni aviso");
+            assertEquals(0, grabador.errores, "Al salir del campo no hay aviso");
+        });
+        enFx(err, () -> {
+            Button guardar = (Button) dialogo.getDialogPane().lookup("#btnGuardarFicha");
+            guardar.fire(); // consumido: un solo aviso y sin resultado
+        });
+        enFx(err, () -> {
+            assertEquals(1, grabador.errores, "Al guardar hay un solo aviso");
+            assertEquals("La letra no es correcta.", grabador.ultimoError);
+            TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
+            assertTrue(nif.getStyle().contains("#d32f2f"), "Al guardar el campo queda en rojo");
+            assertNull(dialogo.getResult(), "No debe producir cliente con NIF invalido");
+        });
+        enFx(err, () -> dialogo.hide());
+
+        assertEquals(antes, totalClientes(),
+                "Un NIF invalido no debe insertar cliente");
+    }
+
+    @Test
+    void nifVacioAvisaAlGuardar() {
+        AtomicReference<Throwable> err = new AtomicReference<>();
+        ClientesController[] ref = new ClientesController[1];
+        enFx(err, () -> ref[0] = nav.mostrar("/cabofactu/vista/recursos/Clientes.fxml"));
+        ClientesController ctrl = ref[0];
+        int antes = totalClientes();
+
+        Dialog<Cliente>[] dref = new Dialog[1];
+        enFx(err, () -> dref[0] = ctrl.construirFicha(null));
+        Dialog<Cliente> dialogo = dref[0];
+        enFx(err, () -> dialogo.show());
+        enFx(err, () -> { }); // dejar que el dialogo se materialice
+        enFx(err, () -> {
+            TextField nombre = (TextField) dialogo.getDialogPane().lookup("#txtNombreFicha");
+            nombre.setText("Cliente prueba");
+        });
+        enFx(err, () -> {
+            Button guardar = (Button) dialogo.getDialogPane().lookup("#btnGuardarFicha");
+            guardar.fire(); // consumido: un solo aviso y sin resultado
+        });
+        enFx(err, () -> {
+            assertEquals(1, grabador.errores, "Al guardar hay un solo aviso");
+            assertEquals("El NIF/NIE es obligatorio.", grabador.ultimoError);
+            TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
+            assertTrue(nif.getStyle().contains("#d32f2f"), "Al guardar el campo queda en rojo");
+            assertNull(dialogo.getResult(), "No debe producir cliente sin NIF");
+        });
+        enFx(err, () -> dialogo.hide());
+
+        assertEquals(antes, totalClientes(),
+                "Un NIF vacio no debe insertar cliente");
     }
 
     @Test
@@ -166,13 +264,11 @@ class ClientesValidacionNifTest {
         enFx(err, () -> {
             TextField nombre = (TextField) dialogo.getDialogPane().lookup("#txtNombreFicha");
             TextField nif = (TextField) dialogo.getDialogPane().lookup("#txtNifFicha");
-            TextField cp = (TextField) dialogo.getDialogPane().lookup("#txtCpFicha");
             assertNotNull(nombre);
             assertNotNull(nif);
-            assertNotNull(cp);
             nombre.setText("Cliente valido");
             nif.setText("12345678Z"); // valido
-            cp.setText("28001"); // obligatorio y valido
+            rellenarObligatorios(dialogo, "Calle Valida 1", "28001", "Madrid", "Madrid");
         });
         enFx(err, () -> {
             Button guardar = (Button) dialogo.getDialogPane().lookup("#btnGuardarFicha");
@@ -193,6 +289,16 @@ class ClientesValidacionNifTest {
                 "El cliente con NIF valido debe insertarse");
     }
 
+    private void rellenarObligatorios(Dialog<Cliente> dialogo, String direccion, String cp,
+            String localidad, String provincia) {
+        for (String[] par : new String[][]{{"#txtDireccionFicha", direccion}, {"#txtCpFicha", cp},
+                {"#txtLocalidadFicha", localidad}, {"#txtProvinciaFicha", provincia}}) {
+            TextField campo = (TextField) dialogo.getDialogPane().lookup(par[0]);
+            assertNotNull(campo, "No se encontro el campo " + par[0]);
+            campo.setText(par[1]);
+        }
+    }
+
     private static int totalClientes() {
         try {
             return modelo.getClientes().listar(false).size();
@@ -204,7 +310,7 @@ class ClientesValidacionNifTest {
     private static void insertar(Cliente c) {
         try {
             modelo.getClientes().insertar(c);
-        } catch (RuntimeException e) {
+        } catch (ValidacionException | RuntimeException e) {
             throw new RuntimeException(e);
         }
     }

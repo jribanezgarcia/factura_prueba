@@ -83,6 +83,10 @@ class FacturacionMensualTest {
         Cliente c = new Cliente();
         c.setNombre("Paco");
         c.setNif("12345678Z");
+        c.setDireccion("Calle Prueba 1");
+        c.setCp("28001");
+        c.setLocalidad("Madrid");
+        c.setProvincia("Madrid");
         c.setId(clienteDAO.insertar(c));
         return c;
     }
@@ -301,6 +305,20 @@ class FacturacionMensualTest {
                 .filter(v -> v.getFechaFactura().equals(LocalDate.of(2026, 4, 15)))
                 .findFirst().orElseThrow();
         assertEquals(1, facturas.factura(abril.getFacturaId()).getCorrelativo());
+    }
+
+    @Test
+    void noGeneraConClienteSinCodigoPostal() throws Exception {
+        Serie serie = serieC();
+        Cliente cliente = clientePaco();
+        cliente.setCp("");
+        TipoIva iva = iva21();
+
+        ValidacionException e = assertThrows(ValidacionException.class, () -> service.generar(cliente, 2026, 1, 3,
+                serie, 15, iva, null, List.of(plantilla("servicios", "60.00", true))));
+        assertEquals("El código postal es obligatorio.", e.getMessage());
+        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
+        assertEquals(0, versiones.size());
     }
 
     private LineaFactura linea(String precio) {

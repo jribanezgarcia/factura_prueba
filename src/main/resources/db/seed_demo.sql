@@ -4,7 +4,7 @@ UPDATE empresa SET nombre = 'Empresa Demo S.L.', nif = 'B99999997', direccion = 
 
 INSERT INTO cliente (nombre, nif, direccion, cp, localidad, provincia, activo, email) VALUES
   ('Cliente Ejemplo S.L.', 'B88888888', 'Calle Irreal 10', '28000', 'Madrid', 'Madrid', 1, 'ejemplo@irreal.es'),
-  ('Otro Cliente S.L.', 'B77777777', 'Avenida Ficticia 5', '08000', 'Barcelona', 'Barcelona', 1, NULL);
+  ('Otro Cliente S.L.', 'B77777779', 'Avenida Ficticia 5', '08000', 'Barcelona', 'Barcelona', 1, NULL);
 
 INSERT INTO serie (codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados, sufijo_fecha) VALUES
   ('A', 'Serie general', 0, 6, 0, 'MES'),
@@ -41,12 +41,12 @@ INSERT INTO factura_version (factura_id, version_num, numero, fecha_factura, fec
    '900.00', '189.00', '1089.00', NULL, NULL, NULL, '0.00', '0.00'),
   (3, 1, 'A-3/9', '2026-09-03', '2026-09-03 12:00:00', 'EMITIDA',
    0, NULL, NULL,
-   'Otro Cliente S.L.', 'B77777777', 'Avenida Ficticia 5', '08000', 'Barcelona', 'Barcelona', NULL,
+   'Otro Cliente S.L.', 'B77777779', 'Avenida Ficticia 5', '08000', 'Barcelona', 'Barcelona', NULL,
    'Transferencia', NULL, 'Demo',
    '1000.00', '210.00', '1060.00', 1, 'IRPF profesional', 15, '150.00', '0.00'),
   (4, 1, 'A-4/9', '2026-09-04', '2026-09-04 12:00:00', 'EMITIDA',
    0, NULL, NULL,
-   'Otro Cliente S.L.', 'B77777777', 'Avenida Ficticia 5', '08000', 'Barcelona', 'Barcelona', NULL,
+   'Otro Cliente S.L.', 'B77777779', 'Avenida Ficticia 5', '08000', 'Barcelona', 'Barcelona', NULL,
    'Transferencia', NULL, 'Demo',
    '1000.00', '210.00', '1310.00', 1, 'IRPF profesional', 15, '150.00', '250.00'),
   (5, 1, 'A-5/9', '2026-09-05', '2026-09-05 12:00:00', 'ANULADA',

@@ -4,14 +4,14 @@
 
 La aplicación SHALL permitir gestionar una ficha de clientes con nombre/razón social, NIF, dirección, código postal, localidad, provincia y email. El nombre, el NIF, la dirección, el código postal, la localidad y la provincia SHALL ser obligatorios, y sus etiquetas SHALL marcarse con un asterisco tanto en la ficha de cliente como en el bloque Cliente del editor de factura. El email SHALL ser opcional, pero cuando se informe SHALL tener un formato válido. El NIF SHALL validarse como DNI, NIE o NIF/CIF español, y la aplicación SHALL distinguir el aviso según el error: si el campo está vacío, «El NIF/NIE es obligatorio.»; si no tiene la forma de ningún documento, «Formato NIF/NIE incorrecto. Debe ser como 12345678Z (DNI), X1234567L (NIE) o B12345674 (CIF).»; si tiene la forma pero la letra o el carácter de control no corresponde, «La letra no es correcta.». El código postal SHALL tener cinco dígitos y comenzar entre 01 y 52.
 
-Al abandonar un campo con un dato incorrecto, la aplicación SHALL marcar el campo como erróneo sin mostrar ningún aviso y SHALL NOT retener el foco en él, de modo que el usuario pueda seguir en otro campo, cancelar la ficha o salir del editor. El aviso SHALL mostrarse al pulsar Enter en el campo o al intentar guardar; al guardar SHALL mostrarse un único aviso, el del primer dato incorrecto, y todos los campos incorrectos SHALL quedar marcados. Estas comprobaciones SHALL aplicarse también al guardar una factura desde el editor, al generar facturas mensuales y al crear rectificativas, de modo que no pueda guardarse ninguna factura nueva o editada sin cliente o con datos de cliente incompletos o incorrectos.
+Los datos del cliente SHALL comprobarse al intentar guardar, y no al abandonar un campo ni al pulsar Enter en él: la aplicación SHALL NOT mostrar avisos ni retener el foco mientras el usuario rellena la ficha o el bloque Cliente, de modo que pueda moverse entre campos, cancelar la ficha o salir del editor en cualquier momento. Al intentar guardar con algún dato incorrecto, la aplicación SHALL marcar como erróneos todos los campos incorrectos y SHALL mostrar un único aviso, el del primer dato incorrecto. Estas comprobaciones SHALL aplicarse también al guardar una factura desde el editor, al generar facturas mensuales y al crear rectificativas, de modo que no pueda guardarse ninguna factura nueva o editada sin cliente o con datos de cliente incompletos o incorrectos.
 
 Un cliente sin facturas asociadas SHALL poder eliminarse físicamente. Un cliente con facturas asociadas SHALL NOT poder eliminarse físicamente y SHALL poder marcarse como inactivo. Un cliente inactivo SHALL NOT aparecer normalmente al crear nuevas facturas, SHALL seguir apareciendo en el histórico y sus facturas SHALL seguir siendo consultables.
 
 #### Scenario: NIF inválido al alta o edición de cliente
-- **WHEN** el usuario escribe un NIF, un código postal o un email incorrectos en la ficha de cliente o en el editor y abandona el campo mediante Tab o haciendo clic en otro control
-- **THEN** el campo queda marcado como erróneo
-- **AND** no se muestra ningún aviso y el foco pasa al campo elegido por el usuario
+- **WHEN** el usuario escribe un NIF, un código postal o un email incorrectos en la ficha de cliente o en el editor y abandona el campo mediante Tab, Enter o haciendo clic en otro control
+- **THEN** no se muestra ningún aviso ni se marca el campo
+- **AND** el foco pasa al campo elegido por el usuario
 
 #### Scenario: Salir con un dato incorrecto
 - **WHEN** hay un dato de cliente incorrecto y el usuario pulsa Cancelar en la ficha o Volver en el editor
@@ -31,10 +31,6 @@ Un cliente sin facturas asociadas SHALL poder eliminarse físicamente. Un client
 - **WHEN** el usuario intenta guardar un cliente sin NIF
 - **THEN** la aplicación no guarda el cliente
 - **AND** muestra un único aviso «El NIF/NIE es obligatorio.»
-
-#### Scenario: Aviso al pulsar Enter en el campo
-- **WHEN** el usuario escribe un NIF incorrecto y pulsa Enter en ese campo
-- **THEN** la aplicación muestra el aviso correspondiente a ese error
 
 #### Scenario: Código postal obligatorio
 - **WHEN** el usuario intenta guardar un cliente sin código postal

@@ -31,6 +31,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FacturasTest {
@@ -41,6 +42,7 @@ class FacturasTest {
     private SerieDAO serieDAO;
     private Versiones versionesNegocio;
     private LineaFacturaDAO lineaFacturaDAO;
+    private FacturaDAO facturaDAO;
     private Facturas facturas;
 
     @BeforeEach
@@ -49,7 +51,7 @@ class FacturasTest {
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
         serieDAO = new SerieDAO();
-        FacturaDAO facturaDAO = new FacturaDAO();
+        facturaDAO = new FacturaDAO();
         ClienteDAO clienteDAO = new ClienteDAO();
         VersionFacturaDAO versionFacturaDAO = new VersionFacturaDAO();
         lineaFacturaDAO = new LineaFacturaDAO();
@@ -77,6 +79,17 @@ class FacturasTest {
         return s;
     }
 
+    private Cliente clientePrueba() {
+        Cliente c = new Cliente();
+        c.setNombre("Cliente Prueba");
+        c.setNif("12345678Z");
+        c.setDireccion("Calle Prueba 1");
+        c.setCp("28001");
+        c.setLocalidad("Madrid");
+        c.setProvincia("Madrid");
+        return c;
+    }
+
     private LineaFactura linea(String precio) {
         LineaFactura l = new LineaFactura();
         l.setCantidad(1);
@@ -93,13 +106,13 @@ class FacturasTest {
     void guardarEditadaSobrescribeLaUltimaVersion() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 11);
-        long facturaId = facturas.crearFactura(c, fecha, null, List.of(linea("100.00")), 0, null, null);
+        long facturaId = facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("100.00")), 0, null, null);
 
         VersionFactura v1 = versionesNegocio.ultimaVersion(facturaId);
         assertEquals(1, versionesNegocio.versionesDeFactura(facturaId).size());
         assertEquals(new BigDecimal("121.00"), v1.getTotal());
 
-        VersionFactura v = facturas.guardarEditada(facturaId, v1.getId(), fecha, null,
+        VersionFactura v = facturas.guardarEditada(facturaId, v1.getId(), fecha, clientePrueba(),
                 List.of(linea("200.00")), 0, "nueva observacion", null, null);
 
         assertEquals(v1.getId(), v.getId());
@@ -118,13 +131,13 @@ class FacturasTest {
     void guardarEditadaDesdeVersionAnteriorCreaNuevaVersion() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 11);
-        long facturaId = facturas.crearFactura(c, fecha, null, List.of(linea("100.00")), 0, null, null);
+        long facturaId = facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("100.00")), 0, null, null);
 
         VersionFactura v1 = versionesNegocio.ultimaVersion(facturaId);
         versionesNegocio.crearVersion(facturaId, fecha, v1.getNumero(), EstadoFactura.EMITIDA,
                 0, null, null, null, List.of(linea("100.00")));
 
-        facturas.guardarEditada(facturaId, v1.getId(), fecha, null,
+        facturas.guardarEditada(facturaId, v1.getId(), fecha, clientePrueba(),
                 List.of(linea("50.00")), 0, null, null, null);
 
         assertEquals(3, versionesNegocio.versionesDeFactura(facturaId).size());
@@ -134,12 +147,12 @@ class FacturasTest {
     void guardarComoNuevaVersionConservaLaAnterior() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 11);
-        long facturaId = facturas.crearFactura(c, fecha, null, List.of(linea("100.00")), 0, null, null);
+        long facturaId = facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("100.00")), 0, null, null);
 
         VersionFactura v1 = versionesNegocio.ultimaVersion(facturaId);
         assertEquals(new BigDecimal("121.00"), v1.getTotal());
 
-        VersionFactura v2 = facturas.guardarEditada(facturaId, v1.getId(), fecha, null,
+        VersionFactura v2 = facturas.guardarEditada(facturaId, v1.getId(), fecha, clientePrueba(),
                 List.of(linea("300.00")), 0, "modificacion", null, null, true);
 
         assertEquals(2, v2.getVersionNum());
@@ -161,6 +174,10 @@ class FacturasTest {
         Cliente cli = new Cliente();
         cli.setNombre("MARIA MARTAGON AVALOS");
         cli.setNif("49122168X");
+        cli.setDireccion("Calle Prueba 1");
+        cli.setCp("28001");
+        cli.setLocalidad("Madrid");
+        cli.setProvincia("Madrid");
         cli.setEmail("maria.martagon@correo.es");
         DatosPago dp = new DatosPago("Transferencia", LocalDate.of(2026, 9, 14), "AURORA");
 
@@ -185,7 +202,7 @@ class FacturasTest {
         irpf.setNombre("IRPF 15%");
         irpf.setPorcentaje(15);
 
-        long facturaId = facturas.crearFactura(c, fecha, null, List.of(linea("1000.00")),
+        long facturaId = facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("1000.00")),
                 0, null, null, null, null, irpf);
 
         VersionFactura v = versionesNegocio.ultimaVersion(facturaId);
@@ -201,6 +218,11 @@ class FacturasTest {
         LocalDate fecha = LocalDate.of(2026, 8, 21);
         Cliente cli = new Cliente();
         cli.setNombre("CLIENTE PRUEBA");
+        cli.setNif("12345678Z");
+        cli.setDireccion("Calle Prueba 1");
+        cli.setCp("28001");
+        cli.setLocalidad("Madrid");
+        cli.setProvincia("Madrid");
         cli.setEmail("cliente@prueba.es");
         DatosPago dp = new DatosPago("Efectivo", null, "AURORA");
 
@@ -240,7 +262,7 @@ class FacturasTest {
     void borrarFacturaEliminaRegistrosYLiberaNumero() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 21);
-        long facturaId = facturas.crearFactura(c, fecha, null, List.of(linea("100.00")),
+        long facturaId = facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("100.00")),
                 0, null, null);
         int correlativo = facturas.factura(facturaId).getCorrelativo();
 
@@ -261,10 +283,32 @@ class FacturasTest {
         Versiones conReloj = new Versiones(new VersionFacturaDAO(), lineaFacturaDAO, fijo);
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2031, 6, 15);
-        long facturaId = facturas.crearFactura(c, fecha, null, List.of(linea("100.00")), 0, null, null);
+        long facturaId = facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("100.00")), 0, null, null);
         VersionFactura v = conReloj.crearVersion(facturaId, fecha, "C-2/6", EstadoFactura.EMITIDA,
                 0, null, null, null, List.of(linea("100.00")));
 
         assertEquals(LocalDateTime.of(2031, 6, 15, 12, 0), v.getFechaGuardado());
+    }
+
+    @Test
+    void noCreaFacturaSinCliente() throws Exception {
+        Serie c = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 21);
+        ValidacionException e = assertThrows(ValidacionException.class, () ->
+                facturas.crearFactura(c, fecha, null, List.of(linea("100.00")), 0, null, null));
+        assertEquals("Indique los datos del cliente.", e.getMessage());
+        assertEquals(0, facturaDAO.contar());
+    }
+
+    @Test
+    void noCreaFacturaConLetraIncorrecta() throws Exception {
+        Serie c = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 21);
+        Cliente cli = clientePrueba();
+        cli.setNif("12345678A");
+        ValidacionException e = assertThrows(ValidacionException.class, () ->
+                facturas.crearFactura(c, fecha, cli, List.of(linea("100.00")), 0, null, null));
+        assertEquals("La letra no es correcta.", e.getMessage());
+        assertEquals(0, facturaDAO.contar());
     }
 }

@@ -108,12 +108,17 @@ Títulos del aviso: NIF → `NIF no válido`; CP → `Código postal no válido`
 
 **Comportamiento**:
 
-- Al **perder el foco** NIF, CP o email: solo `marcarCampo(campo, ValidacionCliente.errorX(campo.getText()))`. **Sin aviso y sin devolver el foco.** Al perder el foco el resto de obligatorios: igual, con su `errorX`.
-- **Enter** en NIF, CP o email: si hay error en ese campo, `marcarCampo` y un `Dialogos.error` con su título y mensaje. El foco se queda donde está (no se usa `runLater`).
-- **Guardar**: un **único** `addEventFilter(ActionEvent.ACTION, e -> comprobarAntesDeGuardar(e))`. `comprobarAntesDeGuardar` llama a `marcarCamposFicha()` y, si `avisarPrimerErrorFicha()` devuelve `true`, hace `e.consume()`.
-- **Cancelar** y cerrar la ficha funcionan siempre: nada retiene el foco.
+**Decidido por el usuario el 15/09/2026, tras aplicar la primera versión: todo se comprueba solo al guardar, como en Biblioteca8.**
+
+- Al **salir de un campo** o al pulsar **Enter** en él: **no pasa nada**. Ni aviso, ni rojo, ni se devuelve el foco. No hay escuchadores de foco (`focusedProperty().addListener`) ni `setOnAction` en los campos de la ficha.
+- **Guardar**: un **único** `addEventFilter(ActionEvent.ACTION, e -> comprobarAntesDeGuardar(e))`. `comprobarAntesDeGuardar` llama a `marcarCamposFicha()` (rojo en todos los incorrectos, sin rojo en los correctos) y, si `avisarPrimerErrorFicha()` devuelve `true`, hace `e.consume()`.
+- El rojo de un campo se actualiza en cada intento de guardar.
+- **Cancelar** y cerrar la ficha funcionan siempre.
 - La regla del botón Guardar desactivado hasta que haya nombre se queda como está.
-- Lambdas en `addListener`: `(propiedad, anterior, tieneFoco) -> alSalirDeCampo(...)`, que solo llaman a un método.
+
+Descartado: marcar en rojo al salir de cada campo y avisar con Enter. La primera versión aplicada marcaba todos los campos al salir de cualquiera (medio formulario en rojo antes de rellenarlo) y añadía escuchadores por campo. Avisar solo al guardar es más simple y es como lo hacía el usuario en Biblioteca8.
+
+Descartado: comprobar en los `set` de `Cliente` (como `Autor.setNombre` en Biblioteca8). El DAO crea `Cliente` al leer de la base y el Editor lo rellena campo a campo: un `set` que lanza haría fallar pantallas enteras, solo daría el primer error y obligaría a añadir `throws` en muchos sitios.
 
 **`nuevo()` y `editar()`**: añadir `catch (ValidacionException e)` antes del `catch (Exception e)` actual, con `Dialogos.error("Datos del cliente", e.getMessage())`. Es la red de seguridad: normalmente la ficha ya ha avisado.
 
@@ -127,8 +132,8 @@ Títulos del aviso: NIF → `NIF no válido`; CP → `Código postal no válido`
 
 **Comportamiento**:
 
-- Al **perder el foco** cualquiera de esos campos (y `!cargando`): solo `marcarCampo`. Sin aviso.
-- **Enter** en `cliNif`: si hay error, `marcarCampo` y un aviso con título `NIF no válido`.
+- Al **salir de un campo** o pulsar **Enter** en él: **no pasa nada** (mismo criterio que D6). Sin escuchadores de foco ni `setOnAction` de validación en los campos del cliente.
+- **`cargarDatosCliente(Cliente)`**: tras rellenar los campos, quitar el rojo de todos (`marcarCampo(campo, null)`), para que no quede el rojo de un intento de guardar anterior al elegir otro cliente.
 - **`guardar()`**: sustituir `if (!validarNifCliente(true)) { return false; }` y la comprobación del nombre por:
   1. `marcarCamposCliente();`
   2. si todos los campos del cliente están vacíos: `Dialogos.error("Datos del cliente", "Indique los datos del cliente.")` y `return false`;
@@ -151,8 +156,8 @@ Títulos del aviso: NIF → `NIF no válido`; CP → `Código postal no válido`
 | `modelo/negocio/EstadosTest` y `HistorialTest` | Sus facturas con cliente `null` usan el cliente de prueba |
 | `fichero/CopiaSeguridadTest` | `B12345678` → `B12345674`, `A11111111` → `A11111119`, `Z00000000` → `Z0000000M` (también en sus `assertEquals`) |
 | `vista/controlador/EditorIvaInactivoTest` | El cliente pasa a ser el de prueba (`12345678Z` y datos completos) |
-| `vista/controlador/ClientesValidacionNifTest` | Con un NIF no válido, **al salir del campo no hay aviso** (`grabador.errores == 0`) pero el campo queda en rojo; **al Guardar**, `grabador.errores == 1`, no se guarda y el mensaje es el de formato o el de letra según el caso. Nuevo caso: NIF vacío → al Guardar un aviso «El NIF/NIE es obligatorio.». El caso válido rellena todos los obligatorios |
-| `vista/controlador/EditorValidacionNifTest` | `nifInvalidoMuestraRojoYNoGuarda`: al salir, rojo y `errores == 0`; `guardar` devuelve `false` con `errores == 1`. `nifVacioYValidoNoAvisanNiBloquean` pasa a `nifVacioAvisaAlGuardarYValidoNoAvisa`: vacío → al salir rojo sin aviso, al guardar un aviso «El NIF/NIE es obligatorio.»; válido → ni rojo ni aviso |
+| `vista/controlador/ClientesValidacionNifTest` | Con un NIF no válido, **al salir del campo no hay aviso ni rojo** (`grabador.errores == 0`, sin estilo); **al Guardar**, `grabador.errores == 1`, el campo queda en rojo, no se guarda y el mensaje es el de formato o el de letra según el caso. Nuevo caso: NIF vacío → al Guardar un aviso «El NIF/NIE es obligatorio.». El caso válido rellena todos los obligatorios |
+| `vista/controlador/EditorValidacionNifTest` | `nifInvalidoMuestraRojoYNoGuarda`: al salir, ni rojo ni aviso; `guardar` devuelve `false` con `errores == 1` y el campo en rojo. `nifVacioYValidoNoAvisanNiBloquean` pasa a `nifVacioAvisaAlGuardarYValidoNoAvisa`: vacío → al salir nada, al guardar un aviso «El NIF/NIE es obligatorio.»; válido → ni rojo ni aviso |
 
 Los tests que usan un NIF no válido **a propósito** conservan ese NIF.
 
@@ -161,6 +166,73 @@ Para que `ClientesValidacionNifTest` y `EditorValidacionNifTest` puedan leer el 
 ### D9. Spec
 
 `MODIFIED` del requisito completo «Clientes» de `openspec/specs/invoicing/spec.md`, con **todos** sus escenarios (ver la spec delta). Cambia: datos obligatorios, avisos distintos, sin retener el foco y factura sin cliente no permitida. Se conservan los escenarios de borrado físico, bloqueo de borrado e inactivo en histórico.
+
+### D10. Avisos que no se cortan (`Dialogos`)
+
+**Problema visto en la prueba manual (15/09/2026):** el aviso «El código postal debe tener cinco dígitos y comenzar entre 01 y 52.» se ve cortado («…comenzar entre 01 ...»).
+
+**Causa, medida con un test temporal ya borrado:** `Dialogos` pone el mensaje con `Alert.setContentText`. JavaFX calcula el tamaño del aviso sin contar el margen de 18 px de `.dialog-card` (`base.css`); al aplicarse, la zona de texto queda en 360 px. Un mensaje que mide algo más de una línea (entre unos 360 y 390 px) recibe el alto de **una** línea y se corta con «...». Le pasa a cualquier mensaje de ese largo, no solo al del código postal (comprobado también con «Hay cambios sin guardar que se descartarán. ¿Desea continuar ya?»).
+
+**Arreglos medidos que NO funcionan**: `getDialogPane().setMinHeight(Region.USE_PREF_SIZE)`; etiqueta propia con `setPrefWidth(360)`; `applyCss()` antes de mostrar; `sizeToScene()` al mostrarse.
+
+**Arreglo medido que SÍ funciona**: en lugar de `setContentText`, poner como contenido del `DialogPane` una `Label` propia con `setWrapText(true)` y `setMinHeight(Region.USE_PREF_SIZE)`, **sin fijar su ancho**. Ningún texto se corta; a cambio, el ancho del aviso depende del mensaje (el del formato del NIF sale en una línea de unos 620 px).
+
+**Cambio en `vista/utilidades/Dialogos.java`:**
+
+- Método nuevo `static void ponerMensaje(Alert alerta, String mensaje)` (visible en el paquete para poder probarlo), con Javadoc corto que explique por qué no se usa `setContentText`:
+
+```java
+Label texto = new Label(mensaje);
+texto.setWrapText(true);
+texto.setMinHeight(Region.USE_PREF_SIZE);
+alerta.getDialogPane().setContent(texto);
+```
+
+- En `error` e `info`: sustituir `a.setContentText(mensaje)` por `ponerMensaje(a, mensaje)`.
+- En `confirmar`: crear el `Alert` sin mensaje (`new Alert(Alert.AlertType.CONFIRMATION, "", ButtonType.YES, ButtonType.NO)`) y llamar a `ponerMensaje(a, mensaje)`.
+- `confirmarCambiosSinGuardar` y `modoGuardarVersion` tienen textos cortos y fijos: no se tocan.
+- Fuera: los `TextInputDialog` y `ChoiceDialog` de Arranque, Configuración, Editor e Histórico (textos cortos junto a un campo).
+
+**Test nuevo** `src/test/java/cabofactu/vista/utilidades/DialogosTextoCompletoTest.java` (con `PruebasJavaFx.arrancarFx()`): para «El código postal debe tener cinco dígitos y comenzar entre 01 y 52.» y «Hay cambios sin guardar que se descartarán. ¿Desea continuar ya?», crear un `Alert` de error, llamar a `ponerMensaje` y `aplicarTema`, mostrarlo con `show()`, hacer `applyCss()` y `layout()`, y comprobar que la unión del texto de los nodos `.text` de la etiqueta es **igual al mensaje completo** (sin «...»). Cerrar el aviso al terminar.
+
+### D11. `Dialogos` ordenado como Biblioteca8 (adelantado)
+
+**Decidido por el usuario el 15/09/2026, al revisar `Dialogos`:** adelantar a este change la parte de `Dialogos` que estaba prevista para `clases-independientes`, `sin-clases-anonimas-ni-hilos` y `java-clasico`, para dejar el fichero legible como en Biblioteca8. No cambia nada visible ni el comportamiento de ningún aviso.
+
+**Ficheros en `cabofactu.vista.utilidades`:**
+
+| Fichero | Contenido |
+|---|---|
+| `CambiosSinGuardar.java` | `public enum CambiosSinGuardar { GUARDAR, DESCARTAR, CANCELAR }` (sale de `Dialogos`) |
+| `ModoGuardarVersion.java` | `public enum ModoGuardarVersion { SOBRESCRIBIR, NUEVA_VERSION, CANCELAR }` (sale de `Dialogos`) |
+| `MostradorDialogos.java` | la interfaz que hoy es `Dialogos.Impl`, con los mismos cinco métodos. El método `default modoGuardarVersion()` se conserva, pero con `if / else` en lugar del ternario |
+| `DialogosReales.java` | `public class DialogosReales implements MostradorDialogos`: el contenido de la clase anónima `IMPLEMENTACION_POR_DEFECTO`, método a método, sin cambiar qué hace |
+| `Dialogos.java` | solo la parte `static` que usan las pantallas y los tests (ver abajo) |
+
+**`Dialogos.java` queda así** (sin tipos dentro, sin clase anónima):
+
+- `private static MostradorDialogos mostrador = new DialogosReales();` (sustituye a `impl` e `IMPLEMENTACION_POR_DEFECTO`; se quita `volatile`).
+- `setImpl(MostradorDialogos m)` y `restoreDefault()` (este hace `mostrador = new DialogosReales();`). Se conservan los nombres para no tocar más tests.
+- `error`, `info`, `confirmar`, `confirmarCambiosSinGuardar` y `modoGuardarVersion` llaman a `mostrador`.
+- `ponerMensaje(Alert, String)` y `aplicarTema(DialogPane)` se quedan aquí, públicos o de paquete como hoy, porque los usan `DialogosReales` y otras pantallas.
+- `icono(Alert.AlertType)` e `iconoVentana(Alert)` pasan a `DialogosReales` como métodos privados, porque solo los usa esa clase.
+
+**Construcciones que se cambian al mover el código** (regla de `AGENTS.md`):
+
+| Hoy | Queda |
+|---|---|
+| `default` con `confirmar(...) ? SOBRESCRIBIR : CANCELAR` | `if (confirmar(...)) { return ModoGuardarVersion.SOBRESCRIBIR; } return ModoGuardarVersion.CANCELAR;` |
+| `a.showAndWait().map(b -> b == ButtonType.YES).orElse(false)` | `Optional<ButtonType> respuesta = a.showAndWait(); return respuesta.isPresent() && respuesta.get() == ButtonType.YES;` |
+| `iconoVentana`: `a.setOnShown(e -> { ...5 líneas... })` | `a.setOnShown(e -> ponerIconoVentana(a));` con método privado `ponerIconoVentana(Alert a)` |
+| `if (w instanceof Stage s) { Ventanas.aplicarIcono(s); }` | `if (w instanceof Stage) { Ventanas.aplicarIcono((Stage) w); }` |
+
+**Usos que cambian:**
+
+- `EditorController`: `Dialogos.CambiosSinGuardar` → `CambiosSinGuardar` y `Dialogos.ModoGuardarVersion` → `ModoGuardarVersion`, con sus `import`.
+- `ClientesValidacionNifTest`, `EditorIvaInactivoTest` y `EditorValidacionNifTest`: `implements Dialogos.Impl` → `implements MostradorDialogos`, y los tipos de los enum con su nombre corto e `import`. Sus clases `Grabador` siguen dentro del test (eso se ordena en `clases-independientes`).
+- `DialogosTextoCompletoTest`: el bloque dentro de `Platform.runLater(() -> { ... })` pasa a un método privado, para que la lambda solo llame a ese método.
+
+**Javadoc** corto en `MostradorDialogos`, `DialogosReales` y los dos enum, en primera persona del plural. En `MostradorDialogos`, un párrafo «Cómo funciona»: los avisos reales abren ventanas que esperan a que alguien pulse un botón; en los tests se cambia el mostrador por uno falso que solo cuenta los avisos, para que no se queden bloqueados.
 
 ## Risks / Trade-offs
 

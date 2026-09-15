@@ -2,10 +2,8 @@ package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.Modelo;
-import cabofactu.utilidades.ValidadorCodigoPostal;
-import cabofactu.utilidades.ValidadorDocumentoFiscal;
-import cabofactu.utilidades.ValidadorEmail;
-import javafx.application.Platform;
+import cabofactu.modelo.negocio.ValidacionCliente;
+import cabofactu.modelo.negocio.ValidacionException;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -32,7 +30,6 @@ import javafx.event.ActionEvent;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BooleanSupplier;
 import cabofactu.vista.Navegador;
 import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.BarraNavegacion;
@@ -66,6 +63,14 @@ public class ClientesController implements Vista {
     private TableColumn<Cliente, String> colEstado;
     @FXML
     private HBox barraNavegacion;
+
+    private TextField txtNombre;
+    private TextField txtNif;
+    private TextField txtDireccion;
+    private TextField txtCp;
+    private TextField txtLocalidad;
+    private TextField txtProvincia;
+    private TextField txtEmail;
 
     @Override
     public void setModelo(Modelo m) {
@@ -136,6 +141,8 @@ public class ClientesController implements Vista {
         try {
             modelo.getClientes().insertar(c);
             recargar();
+        } catch (ValidacionException e) {
+            Dialogos.error("Datos del cliente", e.getMessage());
         } catch (Exception e) {
             Dialogos.error("Clientes", "No se pudo guardar el cliente: " + e.getMessage());
         }
@@ -155,6 +162,8 @@ public class ClientesController implements Vista {
         try {
             modelo.getClientes().actualizar(c);
             recargar();
+        } catch (ValidacionException e) {
+            Dialogos.error("Datos del cliente", e.getMessage());
         } catch (Exception e) {
             Dialogos.error("Clientes", "No se pudo actualizar el cliente: " + e.getMessage());
         }
@@ -202,17 +211,20 @@ public class ClientesController implements Vista {
         ButtonType guardar = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
         dialogo.getDialogPane().getButtonTypes().addAll(guardar, ButtonType.CANCEL);
 
-        TextField txtNombre = new TextField();
+        txtNombre = new TextField();
         txtNombre.setPromptText("Nombre o razón social");
         txtNombre.setId("txtNombreFicha");
-        TextField txtNif = new TextField();
+        txtNif = new TextField();
         txtNif.setId("txtNifFicha");
-        TextField txtDireccion = new TextField();
-        TextField txtCp = new TextField();
+        txtDireccion = new TextField();
+        txtDireccion.setId("txtDireccionFicha");
+        txtCp = new TextField();
         txtCp.setId("txtCpFicha");
-        TextField txtLocalidad = new TextField();
-        TextField txtProvincia = new TextField();
-        TextField txtEmail = new TextField();
+        txtLocalidad = new TextField();
+        txtLocalidad.setId("txtLocalidadFicha");
+        txtProvincia = new TextField();
+        txtProvincia.setId("txtProvinciaFicha");
+        txtEmail = new TextField();
         txtEmail.setId("txtEmailFicha");
         txtEmail.setPromptText("correo@ejemplo.es");
         CheckBox chkActivo = new CheckBox("Cliente activo");
@@ -244,11 +256,11 @@ public class ClientesController implements Vista {
         grid.setVgap(8);
         grid.getColumnConstraints().addAll(etiqueta, campo);
         grid.addRow(0, new Label("Nombre*"), txtNombre);
-        grid.addRow(1, new Label("NIF"), txtNif);
-        grid.addRow(2, new Label("Dirección"), txtDireccion);
-        grid.addRow(3, new Label("CP"), txtCp);
-        grid.addRow(4, new Label("Localidad"), txtLocalidad);
-        grid.addRow(5, new Label("Provincia"), txtProvincia);
+        grid.addRow(1, new Label("NIF*"), txtNif);
+        grid.addRow(2, new Label("Dirección*"), txtDireccion);
+        grid.addRow(3, new Label("CP*"), txtCp);
+        grid.addRow(4, new Label("Localidad*"), txtLocalidad);
+        grid.addRow(5, new Label("Provincia*"), txtProvincia);
         grid.addRow(6, new Label("Email"), txtEmail);
         grid.add(chkActivo, 0, 7, 2, 1);
         dialogo.getDialogPane().setContent(grid);
@@ -260,91 +272,7 @@ public class ClientesController implements Vista {
         txtNombre.textProperty().addListener((o, a, b) ->
                 botonGuardar.setDisable(b == null || b.trim().isEmpty()));
 
-        BooleanSupplier nifValido = () -> ValidadorDocumentoFiscal.esValido(txtNif.getText());
-        boolean[] avisandoNif = {false};
-        Runnable avisarNifInvalido = () -> {
-            if (avisandoNif[0]) {
-                return;
-            }
-            avisandoNif[0] = true;
-            txtNif.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
-            Dialogos.error("NIF no válido", "Revise el DNI, NIE o NIF/CIF introducido.");
-            avisandoNif[0] = false;
-            Platform.runLater(txtNif::requestFocus);
-        };
-        txtNif.setOnAction(e -> {
-            if (!nifValido.getAsBoolean()) {
-                avisarNifInvalido.run();
-            }
-        });
-        txtNif.focusedProperty().addListener((o, anterior, tieneFoco) -> {
-            if (!tieneFoco && !avisandoNif[0] && !nifValido.getAsBoolean()) {
-                avisarNifInvalido.run();
-            } else if (tieneFoco || nifValido.getAsBoolean()) {
-                txtNif.setStyle("");
-            }
-        });
-        botonGuardar.addEventFilter(ActionEvent.ACTION, e -> {
-            if (!nifValido.getAsBoolean()) {
-                e.consume();
-                avisarNifInvalido.run();
-            }
-        });
-
-        BooleanSupplier cpValido = () -> ValidadorCodigoPostal.esValido(txtCp.getText());
-        boolean[] avisandoCp = {false};
-        Runnable avisarCpInvalido = () -> {
-            if (avisandoCp[0]) {
-                return;
-            }
-            avisandoCp[0] = true;
-            txtCp.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
-            Dialogos.error("Código postal no válido", "El código postal debe tener cinco dígitos y comenzar entre 01 y 52.");
-            avisandoCp[0] = false;
-            Platform.runLater(txtCp::requestFocus);
-        };
-        txtCp.focusedProperty().addListener((o, anterior, tieneFoco) -> {
-            if (tieneFoco || cpValido.getAsBoolean()) {
-                txtCp.setStyle("");
-            }
-        });
-        botonGuardar.addEventFilter(ActionEvent.ACTION, e -> {
-            if (!cpValido.getAsBoolean()) {
-                e.consume();
-                avisarCpInvalido.run();
-            }
-        });
-
-        BooleanSupplier emailValido = () -> ValidadorEmail.esValido(txtEmail.getText());
-        boolean[] avisandoEmail = {false};
-        Runnable avisarEmailInvalido = () -> {
-            if (avisandoEmail[0]) {
-                return;
-            }
-            avisandoEmail[0] = true;
-            txtEmail.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
-            Dialogos.error("Correo electrónico no válido", "Revise el formato del correo electrónico.");
-            avisandoEmail[0] = false;
-            Platform.runLater(txtEmail::requestFocus);
-        };
-        txtEmail.setOnAction(e -> {
-            if (!emailValido.getAsBoolean()) {
-                avisarEmailInvalido.run();
-            }
-        });
-        txtEmail.focusedProperty().addListener((o, anterior, tieneFoco) -> {
-            if (!tieneFoco && !avisandoEmail[0] && !emailValido.getAsBoolean()) {
-                avisarEmailInvalido.run();
-            } else if (tieneFoco || emailValido.getAsBoolean()) {
-                txtEmail.setStyle("");
-            }
-        });
-        botonGuardar.addEventFilter(ActionEvent.ACTION, e -> {
-            if (!emailValido.getAsBoolean()) {
-                e.consume();
-                avisarEmailInvalido.run();
-            }
-        });
+        botonGuardar.addEventFilter(ActionEvent.ACTION, e -> comprobarAntesDeGuardar(e));
 
         dialogo.setResultConverter(b -> {
             if (b != guardar) {
@@ -364,6 +292,70 @@ public class ClientesController implements Vista {
         });
 
         return dialogo;
+    }
+
+    private void marcarCampo(TextField campo, String error) {
+        if (error != null) {
+            campo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
+        } else {
+            campo.setStyle("");
+        }
+    }
+
+    private void marcarCamposFicha() {
+        marcarCampo(txtNombre, ValidacionCliente.errorNombre(txtNombre.getText()));
+        marcarCampo(txtNif, ValidacionCliente.errorNif(txtNif.getText()));
+        marcarCampo(txtDireccion, ValidacionCliente.errorDireccion(txtDireccion.getText()));
+        marcarCampo(txtCp, ValidacionCliente.errorCodigoPostal(txtCp.getText()));
+        marcarCampo(txtLocalidad, ValidacionCliente.errorLocalidad(txtLocalidad.getText()));
+        marcarCampo(txtProvincia, ValidacionCliente.errorProvincia(txtProvincia.getText()));
+        marcarCampo(txtEmail, ValidacionCliente.errorEmail(txtEmail.getText()));
+    }
+
+    private boolean avisarPrimerErrorFicha() {
+        String error = ValidacionCliente.errorNombre(txtNombre.getText());
+        if (error != null) {
+            Dialogos.error("Datos del cliente", error);
+            return true;
+        }
+        error = ValidacionCliente.errorNif(txtNif.getText());
+        if (error != null) {
+            Dialogos.error("NIF no válido", error);
+            return true;
+        }
+        error = ValidacionCliente.errorDireccion(txtDireccion.getText());
+        if (error != null) {
+            Dialogos.error("Datos del cliente", error);
+            return true;
+        }
+        error = ValidacionCliente.errorCodigoPostal(txtCp.getText());
+        if (error != null) {
+            Dialogos.error("Código postal no válido", error);
+            return true;
+        }
+        error = ValidacionCliente.errorLocalidad(txtLocalidad.getText());
+        if (error != null) {
+            Dialogos.error("Datos del cliente", error);
+            return true;
+        }
+        error = ValidacionCliente.errorProvincia(txtProvincia.getText());
+        if (error != null) {
+            Dialogos.error("Datos del cliente", error);
+            return true;
+        }
+        error = ValidacionCliente.errorEmail(txtEmail.getText());
+        if (error != null) {
+            Dialogos.error("Correo electrónico no válido", error);
+            return true;
+        }
+        return false;
+    }
+
+    private void comprobarAntesDeGuardar(ActionEvent e) {
+        marcarCamposFicha();
+        if (avisarPrimerErrorFicha()) {
+            e.consume();
+        }
     }
 
     @FXML

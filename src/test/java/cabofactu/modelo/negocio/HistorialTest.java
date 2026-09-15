@@ -1,6 +1,7 @@
 package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.FilaHistorial;
 import cabofactu.modelo.dominio.LineaFactura;
@@ -58,12 +59,23 @@ class HistorialTest {
         Conexion.cerrarConexion();
     }
 
+    private Cliente clientePrueba() {
+        Cliente c = new Cliente();
+        c.setNombre("Cliente Prueba");
+        c.setNif("12345678Z");
+        c.setDireccion("Calle Prueba 1");
+        c.setCp("28001");
+        c.setLocalidad("Madrid");
+        c.setProvincia("Madrid");
+        return c;
+    }
+
     @Test
     void buscaOrdenadoPorNumeroDeFactura() throws Exception {
         Serie c = serieC();
-        facturas.crearFactura(c, LocalDate.of(2026, 9, 1), null,
+        facturas.crearFactura(c, LocalDate.of(2026, 9, 1), clientePrueba(),
                 List.of(linea("200.00")), 0, null, null, 2);
-        facturas.crearFactura(c, LocalDate.of(2026, 10, 1), null,
+        facturas.crearFactura(c, LocalDate.of(2026, 10, 1), clientePrueba(),
                 List.of(linea("100.00")), 0, null, null, 1);
 
         List<FilaHistorial> filas = historial.buscar(new FiltrosHistorial());

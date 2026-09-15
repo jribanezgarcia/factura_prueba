@@ -34,7 +34,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
+import cabofactu.vista.utilidades.CambiosSinGuardar;
 import cabofactu.vista.utilidades.Dialogos;
+import cabofactu.vista.utilidades.MostradorDialogos;
 
 /**
  * Verifica que abrir una factura cuyo tipo de IVA esta inactivo no reescribe
@@ -51,7 +53,7 @@ class EditorIvaInactivoTest {
     private static Stage stage;
     private static final Grabador grabador = new Grabador();
 
-    private static final class Grabador implements Dialogos.Impl {
+    private static final class Grabador implements MostradorDialogos {
         int errores;
         int infos;
 
@@ -65,8 +67,8 @@ class EditorIvaInactivoTest {
         public boolean confirmar(String titulo, String mensaje) { return true; }
 
         @Override
-        public Dialogos.CambiosSinGuardar confirmarCambiosSinGuardar() {
-            return Dialogos.CambiosSinGuardar.DESCARTAR;
+        public CambiosSinGuardar confirmarCambiosSinGuardar() {
+            return CambiosSinGuardar.DESCARTAR;
         }
     }
 
@@ -112,8 +114,12 @@ class EditorIvaInactivoTest {
 
         // 2. Cliente
         Cliente cli = new Cliente();
-        cli.setNombre("Cliente IVA Inactivo");
-        cli.setNif("12345678A");
+        cli.setNombre("Cliente Prueba");
+        cli.setNif("12345678Z");
+        cli.setDireccion("Calle Prueba 1");
+        cli.setCp("28001");
+        cli.setLocalidad("Madrid");
+        cli.setProvincia("Madrid");
         long clienteId = modelo.getClientes().insertar(cli);
         cli.setId(clienteId);
 

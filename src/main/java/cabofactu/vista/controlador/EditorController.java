@@ -16,7 +16,7 @@ import cabofactu.modelo.negocio.Calculos;
 import cabofactu.modelo.negocio.Facturas;
 import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.ValidacionException;
-import cabofactu.utilidades.ValidadorDocumentoFiscal;
+import cabofactu.modelo.negocio.ValidacionCliente;
 import cabofactu.utilidades.Formatos;
 import cabofactu.utilidades.LogoMarco;
 import javafx.application.Platform;
@@ -65,7 +65,9 @@ import cabofactu.modelo.dominio.Factura;
 import cabofactu.vista.Navegador;
 import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.BarraNavegacion;
+import cabofactu.vista.utilidades.CambiosSinGuardar;
 import cabofactu.vista.utilidades.Dialogos;
+import cabofactu.vista.utilidades.ModoGuardarVersion;
 
 /**
  * Editor de factura completo (6.2-6.6, 7.x, 8.1): cabecera con serie, fecha,
@@ -92,7 +94,6 @@ public class EditorController implements Vista {
     private EstadoFactura estadoActual;
     private Cliente clienteActual;
     private int descuento;
-    private boolean corrigiendoNif;
 
     private final ObservableList<LineaFactura> lineas = FXCollections.observableArrayList();
     private final ObservableList<TipoIva> tiposIva = FXCollections.observableArrayList();
@@ -359,11 +360,11 @@ public class EditorController implements Vista {
         if (!modificado) {
             return true;
         }
-        Dialogos.CambiosSinGuardar r = Dialogos.confirmarCambiosSinGuardar();
-        if (r == Dialogos.CambiosSinGuardar.GUARDAR) {
+        CambiosSinGuardar r = Dialogos.confirmarCambiosSinGuardar();
+        if (r == CambiosSinGuardar.GUARDAR) {
             return guardar();
         }
-        return r == Dialogos.CambiosSinGuardar.DESCARTAR;
+        return r == CambiosSinGuardar.DESCARTAR;
     }
 
     // ------------------------------------------------------------------
@@ -568,25 +569,61 @@ public class EditorController implements Vista {
                 }
             });
         }
-        cliNif.setOnAction(e -> validarNifCliente(true));
-        cliNif.focusedProperty().addListener((o, anterior, tieneFoco) -> {
-            if (!tieneFoco && !cargando && !corrigiendoNif) {
-                validarNifCliente(true);
-            }
-        });
     }
 
-    private boolean validarNifCliente(boolean avisar) {
-        if (ValidadorDocumentoFiscal.esValido(cliNif.getText())) {
-            cliNif.setStyle("");
+    private void marcarCampo(TextField campo, String error) {
+        if (error != null) {
+            campo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
+        } else {
+            campo.setStyle("");
+        }
+    }
+
+    private void marcarCamposCliente() {
+        marcarCampo(cliNombre, ValidacionCliente.errorNombre(cliNombre.getText()));
+        marcarCampo(cliNif, ValidacionCliente.errorNif(cliNif.getText()));
+        marcarCampo(cliDireccion, ValidacionCliente.errorDireccion(cliDireccion.getText()));
+        marcarCampo(cliCp, ValidacionCliente.errorCodigoPostal(cliCp.getText()));
+        marcarCampo(cliLocalidad, ValidacionCliente.errorLocalidad(cliLocalidad.getText()));
+        marcarCampo(cliProvincia, ValidacionCliente.errorProvincia(cliProvincia.getText()));
+        marcarCampo(cliEmail, ValidacionCliente.errorEmail(cliEmail.getText()));
+    }
+
+    private boolean avisarPrimerErrorCliente() {
+        String error = ValidacionCliente.errorNombre(cliNombre.getText());
+        if (error != null) {
+            Dialogos.error("Datos del cliente", error);
             return true;
         }
-        cliNif.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
-        if (avisar && !corrigiendoNif) {
-            corrigiendoNif = true;
-            Dialogos.error("NIF no válido", "Revise el DNI, NIE o NIF/CIF introducido.");
-            corrigiendoNif = false;
-            Platform.runLater(cliNif::requestFocus);
+        error = ValidacionCliente.errorNif(cliNif.getText());
+        if (error != null) {
+            Dialogos.error("NIF no válido", error);
+            return true;
+        }
+        error = ValidacionCliente.errorDireccion(cliDireccion.getText());
+        if (error != null) {
+            Dialogos.error("Datos del cliente", error);
+            return true;
+        }
+        error = ValidacionCliente.errorCodigoPostal(cliCp.getText());
+        if (error != null) {
+            Dialogos.error("Código postal no válido", error);
+            return true;
+        }
+        error = ValidacionCliente.errorLocalidad(cliLocalidad.getText());
+        if (error != null) {
+            Dialogos.error("Datos del cliente", error);
+            return true;
+        }
+        error = ValidacionCliente.errorProvincia(cliProvincia.getText());
+        if (error != null) {
+            Dialogos.error("Datos del cliente", error);
+            return true;
+        }
+        error = ValidacionCliente.errorEmail(cliEmail.getText());
+        if (error != null) {
+            Dialogos.error("Correo electrónico no válido", error);
+            return true;
         }
         return false;
     }
@@ -987,7 +1024,13 @@ public class EditorController implements Vista {
 
     @FXML
     private boolean guardar() {
-        if (!validarNifCliente(true)) {
+        marcarCamposCliente();
+        Cliente cli = clienteDeFormulario();
+        if (cli == null) {
+            Dialogos.error("Datos del cliente", "Indique los datos del cliente.");
+            return false;
+        }
+        if (avisarPrimerErrorCliente()) {
             return false;
         }
         if (facturaAbiertaId != null && estadoActual != EstadoFactura.EMITIDA) {
@@ -1002,11 +1045,6 @@ public class EditorController implements Vista {
         List<LineaFactura> lis = lineasGuardables();
         if (lis.isEmpty()) {
             Dialogos.error("Guardar", "La factura debe tener al menos una línea con contenido.");
-            return false;
-        }
-        Cliente cli = clienteDeFormulario();
-        if (cli != null && (cli.getNombre() == null || cli.getNombre().isBlank())) {
-            Dialogos.error("Guardar", "Indique el nombre del cliente.");
             return false;
         }
         String obs = txtObservaciones.getText();
@@ -1036,13 +1074,13 @@ public class EditorController implements Vista {
                 cargarFactura(id);
                 Dialogos.info("Guardar", "Factura guardada.");
             } else {
-                Dialogos.ModoGuardarVersion modo = Dialogos.modoGuardarVersion();
-                if (modo == Dialogos.ModoGuardarVersion.CANCELAR) {
+                ModoGuardarVersion modo = Dialogos.modoGuardarVersion();
+                if (modo == ModoGuardarVersion.CANCELAR) {
                     return false;
                 }
                 VersionFactura v = modelo.getFacturas().guardarEditada(facturaAbiertaId, versionAbiertaId,
                         f, cli, lis, descuento, obs, ref, dp,
-                        modo == Dialogos.ModoGuardarVersion.NUEVA_VERSION, retencionActual);
+                        modo == ModoGuardarVersion.NUEVA_VERSION, retencionActual);
                 txtNumero.setText(v.getNumero());
                 lblTitulo.setText("Factura " + v.getNumero() + " (v" + v.getVersionNum() + ")");
                 modificado = false;
@@ -1342,6 +1380,13 @@ public class EditorController implements Vista {
         cliLocalidad.setText(c == null ? "" : nz(c.getLocalidad()));
         cliProvincia.setText(c == null ? "" : nz(c.getProvincia()));
         cliEmail.setText(c == null ? "" : nz(c.getEmail()));
+        marcarCampo(cliNombre, null);
+        marcarCampo(cliNif, null);
+        marcarCampo(cliDireccion, null);
+        marcarCampo(cliCp, null);
+        marcarCampo(cliLocalidad, null);
+        marcarCampo(cliProvincia, null);
+        marcarCampo(cliEmail, null);
     }
 
     private void recalcularNumero() {

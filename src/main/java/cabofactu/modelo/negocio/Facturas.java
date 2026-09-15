@@ -108,8 +108,9 @@ public class Facturas {
      */
     long crearFacturaSinTransaccion(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                                     int descuento, String observaciones, String referencia,
-                                    Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
+                                     Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
             throws ValidacionException {
+        ValidacionCliente.comprobar(cliente);
         validar(lineas, descuento);
         if (correlativoPedido != null && correlativoPedido < 1) {
             throw new ValidacionException("El correlativo debe ser al menos 1");
@@ -169,8 +170,9 @@ public class Facturas {
     public VersionFactura guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
                                          List<LineaFactura> lineas, int descuento,
                                          String observaciones, String referencia, DatosPago datosPago,
-                                         boolean comoNuevaVersion, TipoRetencion retencion)
+                                          boolean comoNuevaVersion, TipoRetencion retencion)
             throws ValidacionException {
+        ValidacionCliente.comprobar(cliente);
         validar(lineas, descuento);
 
         Conexion.iniciarTransaccion();
