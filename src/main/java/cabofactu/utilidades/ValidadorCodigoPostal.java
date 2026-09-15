@@ -1,9 +1,9 @@
 package cabofactu.utilidades;
 
 /** Valida códigos postales españoles: cinco dígitos con las dos primeras cifras entre 01 y 52. El código es obligatorio: vacío NO válido. */
-public final class CodigoPostalValidator {
+public final class ValidadorCodigoPostal {
 
-    private CodigoPostalValidator() {
+    private ValidadorCodigoPostal() {
     }
 
     public static boolean esValido(String valor) {

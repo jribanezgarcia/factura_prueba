@@ -25,11 +25,11 @@ import javafx.scene.Parent;
 import javafx.scene.layout.Region;
 import javafx.scene.control.ScrollPane;
 import javafx.stage.Stage;
-import cabofactu.vista.JavaFxTestSupport;
+import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
 import cabofactu.vista.Vista;
 
-class BackupLayoutTest {
+class CopiaSeguridadLayoutTest {
 
     private static final int ANCHO_ESCENA = 1024;
     private static final int ALTO_ESCENA = 768;
@@ -44,7 +44,7 @@ class BackupLayoutTest {
     static void arrancar() throws Exception {
         Conexion.setCarpetaRaiz(carpetaEmpresa);
         modelo = new Modelo();
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
 
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Throwable> error = new AtomicReference<>();
@@ -72,8 +72,8 @@ class BackupLayoutTest {
         AtomicReference<Throwable> error = new AtomicReference<>();
         Platform.runLater(() -> {
             try {
-                Vista v = nav.mostrar("/cabofactu/vista/recursos/Backup.fxml");
-                assertNotNull(v, "El controller de Backup.fxml no se creo");
+                Vista v = nav.mostrar("/cabofactu/vista/recursos/CopiaSeguridad.fxml");
+                assertNotNull(v, "El controller de CopiaSeguridad.fxml no se creo");
                 Parent raiz = nav.stage().getScene().getRoot();
                 raiz.applyCss();
                 raiz.resize(ANCHO_ESCENA, ALTO_ESCENA);
@@ -120,14 +120,14 @@ class BackupLayoutTest {
     private static void await(CountDownLatch latch, AtomicReference<Throwable> error) {
         try {
             if (!latch.await(30, TimeUnit.SECONDS)) {
-                fail("BackupLayoutTest no termino en 30 s");
+                fail("CopiaSeguridadLayoutTest no termino en 30 s");
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            fail("Interrumpido en BackupLayoutTest");
+            fail("Interrumpido en CopiaSeguridadLayoutTest");
         }
         if (error.get() != null) {
-            throw new AssertionError("Error en BackupLayoutTest", error.get());
+            throw new AssertionError("Error en CopiaSeguridadLayoutTest", error.get());
         }
     }
 }

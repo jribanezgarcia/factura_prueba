@@ -47,10 +47,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import cabofactu.vista.Navegador;
-import cabofactu.vista.VentanaConfig;
+import cabofactu.vista.ConfiguracionVentana;
 import cabofactu.vista.Ventanas;
 import cabofactu.vista.utilidades.Dialogos;
-import cabofactu.vista.utilidades.ThemeManager;
+import cabofactu.vista.utilidades.GestorTemas;
 
 public class GenerarFacturasMensualesController {
 
@@ -121,9 +121,9 @@ public class GenerarFacturasMensualesController {
             dialog.setTitle(Ventanas.PREFIJO + "Generar facturas mensuales");
             Ventanas.aplicarIcono(dialog);
             Scene scene = new Scene(root);
-            ThemeManager.aplicar(scene, nav.modelo());
+            GestorTemas.aplicar(scene, nav.modelo());
             dialog.setScene(scene);
-            VentanaConfig.para("/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml")
+            ConfiguracionVentana.para("/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml")
                     .ifPresent(cfg -> cfg.aplicar(dialog));
             c.setStage(dialog);
             c.alIniciar();

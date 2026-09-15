@@ -11,12 +11,12 @@ import cabofactu.modelo.dominio.ResumenFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.pdf.PdfService;
+import cabofactu.pdf.ExportadorPdf;
 import cabofactu.modelo.negocio.Calculos;
 import cabofactu.modelo.negocio.Facturas;
 import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.ValidacionException;
-import cabofactu.utilidades.DocumentoFiscalValidator;
+import cabofactu.utilidades.ValidadorDocumentoFiscal;
 import cabofactu.utilidades.Formatos;
 import cabofactu.utilidades.LogoMarco;
 import javafx.application.Platform;
@@ -577,7 +577,7 @@ public class EditorController implements Vista {
     }
 
     private boolean validarNifCliente(boolean avisar) {
-        if (DocumentoFiscalValidator.esValido(cliNif.getText())) {
+        if (ValidadorDocumentoFiscal.esValido(cliNif.getText())) {
             cliNif.setStyle("");
             return true;
         }
@@ -1233,7 +1233,7 @@ public class EditorController implements Vista {
             Task<Path> t = new Task<>() {
                 @Override
                 protected Path call() throws Exception {
-                    new PdfService().exportar(vc, empresa, ruta, colorPdf);
+                    new ExportadorPdf().exportar(vc, empresa, ruta, colorPdf);
                     return ruta;
                 }
             };
@@ -1260,7 +1260,7 @@ public class EditorController implements Vista {
 
     private String colorPdfPreferido() {
         try {
-            return modelo.getConfiguracion().getPreferencia(PdfService.PREF_COLOR);
+            return modelo.getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR);
         } catch (Exception e) {
             return null;
         }

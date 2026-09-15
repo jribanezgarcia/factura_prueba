@@ -7,7 +7,7 @@
 <?import javafx.geometry.*?>
 <BorderPane prefHeight="768.0" prefWidth="1024.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="cabofactu.vista.controlador.MenuController">
+            fx:controller="cabofactu.vista.controlador.MenuPrincipalController">
     <padding>
         <Insets top="12" right="16" bottom="24" left="16"/>
     </padding>
@@ -95,7 +95,7 @@
                         </HBox>
                     </graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#backup" styleClass="menu-item">
+                <Button maxWidth="Infinity" onAction="#copiaSeguridad" styleClass="menu-item">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
                             <StackPane styleClass="caja-icono-menu">

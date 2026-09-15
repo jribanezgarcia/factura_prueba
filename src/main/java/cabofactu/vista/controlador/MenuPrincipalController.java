@@ -25,7 +25,7 @@ import cabofactu.vista.Vista;
  * seguridad y Salir. Muestra la fecha de trabajo de la sesion (solo lectura).
  * El logo y los datos de empresa salen de la configuracion.
  */
-public class MenuController implements Vista {
+public class MenuPrincipalController implements Vista {
 
     private Modelo modelo;
     private Navegador nav;
@@ -140,8 +140,8 @@ public class MenuController implements Vista {
     }
 
     @FXML
-    private void backup() {
-        nav.mostrar("/cabofactu/vista/recursos/Backup.fxml");
+    private void copiaSeguridad() {
+        nav.mostrar("/cabofactu/vista/recursos/CopiaSeguridad.fxml");
     }
 
     @FXML

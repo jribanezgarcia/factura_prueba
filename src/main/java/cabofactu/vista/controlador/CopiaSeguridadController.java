@@ -25,7 +25,7 @@ import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.BarraNavegacion;
 import cabofactu.vista.utilidades.Dialogos;
 
-public class BackupController implements Vista {
+public class CopiaSeguridadController implements Vista {
 
     private Modelo modelo;
     private Navegador nav;
@@ -75,7 +75,7 @@ public class BackupController implements Vista {
 
     @Override
     public void alIniciar() {
-        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "backup"));
+        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "copiaSeguridad"));
         grupoDestino.selectedToggleProperty().addListener((obs, old, sel) -> {
             boolean nueva = sel == rbCrearNueva;
             filaNombreEmpresa.setVisible(nueva);
@@ -294,7 +294,7 @@ public class BackupController implements Vista {
                     }
                     nav.mostrarInicio();
                 } else {
-                    nav.mostrar("/cabofactu/vista/recursos/Backup.fxml");
+                    nav.mostrar("/cabofactu/vista/recursos/CopiaSeguridad.fxml");
                 }
             }
         });

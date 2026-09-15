@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CabeceraLayoutTest {
+class DisposicionCabeceraTest {
 
     private Empresa empresaBase() {
         Empresa empresa = new Empresa();
@@ -25,8 +25,8 @@ class CabeceraLayoutTest {
         Empresa empresa = empresaBase();
         empresa.setLogoAncho(120);
         empresa.setLogoAlto(60);
-        assertEquals(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01);
-        assertEquals(CabeceraLayout.ALTO_LOGO_FIJO, CabeceraLayout.altoLogoEfectivo(empresa), 0.01);
+        assertEquals(DisposicionCabecera.ANCHO_LOGO_FIJO, DisposicionCabecera.anchoLogoEfectivo(empresa), 0.01);
+        assertEquals(DisposicionCabecera.ALTO_LOGO_FIJO, DisposicionCabecera.altoLogoEfectivo(empresa), 0.01);
     }
 
     @Test
@@ -34,28 +34,28 @@ class CabeceraLayoutTest {
         Empresa empresa = empresaBase();
         empresa.setLogoAncho(4000);
         empresa.setLogoAlto(250);
-        assertEquals(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01,
+        assertEquals(DisposicionCabecera.ANCHO_LOGO_FIJO, DisposicionCabecera.anchoLogoEfectivo(empresa), 0.01,
                 "Con valores absurdos el logo mantiene su caja fija");
-        assertEquals(CabeceraLayout.ALTO_LOGO_FIJO, CabeceraLayout.altoLogoEfectivo(empresa), 0.01,
+        assertEquals(DisposicionCabecera.ALTO_LOGO_FIJO, DisposicionCabecera.altoLogoEfectivo(empresa), 0.01,
                 "Con valores absurdos el logo mantiene su caja fija");
     }
 
     @Test
     void elTamanoDelLogoConCamposNulosEsFijo() {
         Empresa empresa = empresaBase();
-        assertEquals(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.anchoLogoEfectivo(empresa), 0.01);
-        assertEquals(CabeceraLayout.ALTO_LOGO_FIJO, CabeceraLayout.altoLogoEfectivo(empresa), 0.01);
-        assertEquals(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.anchoLogoEfectivo(null), 0.01);
-        assertEquals(CabeceraLayout.ALTO_LOGO_FIJO, CabeceraLayout.altoLogoEfectivo(null), 0.01);
+        assertEquals(DisposicionCabecera.ANCHO_LOGO_FIJO, DisposicionCabecera.anchoLogoEfectivo(empresa), 0.01);
+        assertEquals(DisposicionCabecera.ALTO_LOGO_FIJO, DisposicionCabecera.altoLogoEfectivo(empresa), 0.01);
+        assertEquals(DisposicionCabecera.ANCHO_LOGO_FIJO, DisposicionCabecera.anchoLogoEfectivo(null), 0.01);
+        assertEquals(DisposicionCabecera.ALTO_LOGO_FIJO, DisposicionCabecera.altoLogoEfectivo(null), 0.01);
     }
 
     @Test
     void elAltoDeCabeceraCreceConLasLineas() {
-        assertEquals(108f, CabeceraLayout.altoCabeceraTexto(0), 0.01,
+        assertEquals(108f, DisposicionCabecera.altoCabeceraTexto(0), 0.01,
                 "Con pocas lineas se aplica el minimo de 108");
-        assertEquals(108f, CabeceraLayout.altoCabeceraTexto(3), 0.01);
-        assertEquals(116f, CabeceraLayout.altoCabeceraTexto(4), 0.01);
-        assertEquals(130f, CabeceraLayout.altoCabeceraTexto(5), 0.01);
+        assertEquals(108f, DisposicionCabecera.altoCabeceraTexto(3), 0.01);
+        assertEquals(116f, DisposicionCabecera.altoCabeceraTexto(4), 0.01);
+        assertEquals(130f, DisposicionCabecera.altoCabeceraTexto(5), 0.01);
     }
 
     @Test
@@ -63,7 +63,7 @@ class CabeceraLayoutTest {
         Empresa empresa = empresaBase();
         empresa.setLogoAncho(4000);
         empresa.setLogoAlto(250);
-        assertEquals(170f, CabeceraLayout.altoCabeceraLogo(empresa, 5), 0.01,
+        assertEquals(170f, DisposicionCabecera.altoCabeceraLogo(empresa, 5), 0.01,
                 "26 + caja fija (120) + 24, mayor que el bloque de informacion, sin depender de offsets");
     }
 
@@ -76,7 +76,7 @@ class CabeceraLayoutTest {
         empresa.setEmail("info@empresaprueba.es");
         empresa.setTelefono("950000000");
 
-        List<CabeceraLayout.LineaCabecera> lineas = CabeceraLayout.lineasEmpresa(empresa);
+        List<DisposicionCabecera.LineaCabecera> lineas = DisposicionCabecera.lineasEmpresa(empresa);
 
         assertFalse(lineas.isEmpty());
         long nifs = lineas.stream().filter(l -> l.chipNif).count();
@@ -87,17 +87,17 @@ class CabeceraLayoutTest {
 
     @Test
     void anchoLogoDibujadoRespetaLaCajaFija() {
-        assertEquals(120f, CabeceraLayout.anchoLogoDibujado(500, 500), 0.01);
-        assertEquals(240f, CabeceraLayout.anchoLogoDibujado(1000, 250), 0.01);
-        assertEquals(30f, CabeceraLayout.anchoLogoDibujado(100, 400), 0.01);
+        assertEquals(120f, DisposicionCabecera.anchoLogoDibujado(500, 500), 0.01);
+        assertEquals(240f, DisposicionCabecera.anchoLogoDibujado(1000, 250), 0.01);
+        assertEquals(30f, DisposicionCabecera.anchoLogoDibujado(100, 400), 0.01);
     }
 
     @Test
     void logoConPocaResolucionAvisaSoloSiAmpliaMucho() {
-        assertTrue(CabeceraLayout.logoConPocaResolucion(128, 128));
-        assertFalse(CabeceraLayout.logoConPocaResolucion(256, 256));
-        assertFalse(CabeceraLayout.logoConPocaResolucion(472, 194));
-        assertFalse(CabeceraLayout.logoConPocaResolucion(1254, 1254));
-        assertFalse(CabeceraLayout.logoConPocaResolucion(0, 128));
+        assertTrue(DisposicionCabecera.logoConPocaResolucion(128, 128));
+        assertFalse(DisposicionCabecera.logoConPocaResolucion(256, 256));
+        assertFalse(DisposicionCabecera.logoConPocaResolucion(472, 194));
+        assertFalse(DisposicionCabecera.logoConPocaResolucion(1254, 1254));
+        assertFalse(DisposicionCabecera.logoConPocaResolucion(0, 128));
     }
 }

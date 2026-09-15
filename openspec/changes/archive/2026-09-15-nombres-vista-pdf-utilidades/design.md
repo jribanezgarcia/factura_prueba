@@ -6,8 +6,7 @@ Parte del estado que deja `nombres-modelo-y-datos`: paquetes en español, `Model
 
 **Comprobaciones hechas (sobre el código del 14/09/2026, con nombres de entonces):**
 
-- `Launcher` solo hace `Application.launch(Main.class, args)`. Nadie más usa `Main`.
-- `Main` usa `InstanciaUnica` y `PreparacionDatos`, que son clases `public` con métodos `public static`: puede pasar a `vista` sin tocar visibilidades.
+- `Main` hace demasiadas cosas (idioma, carpeta de datos, instancia única, demo, ventana, arranque con `Navegador`, crear `Modelo`, cierre). Repartirlo es el objetivo del change de la arquitectura MVC, que va justo después de este; por eso aquí no se toca.
 - Claves de la pantalla de copias: `VentanaConfig.BACKUP` (`VentanaConfig.java:20`), `BarraNavegacion.RUTA_BACKUP` (`:22`), `ICONO_BACKUP` y la clave `"backup"` (`BarraNavegacion.java:45`, `BackupController.java:74`), `MenuController.backup()` (`:141`) con `onAction="#backup"` en `MenuPrincipal.fxml:98`, y `UiSmokeTest.java:92` con `cargar("Backup.fxml")`.
 - `InvoiceDocument` tiene 15 records anidados con componentes en inglés, que usan `InvoiceDocumentBuilder` (28 llamadas a sus métodos), `OpenPdfRenderer` y `CabeceraPiePdf`. Está decidido sustituirlos más adelante por 4 clases normales (`DocumentoFactura`, `FilaTexto`, `FilaLinea`, `FilaIva`) en un change propio del PDF, así que aquí **no se traducen**.
 - `ThemeManager.DEFAULT = "biblioteca8"` es el nombre de un tema guardado en preferencias: **el valor no cambia**, solo el nombre de la constante.
@@ -30,14 +29,9 @@ Parte del estado que deja `nombres-modelo-y-datos`: paquetes en español, `Model
 
 ### D1. Arranque
 
-| Hoy | Nuevo |
-|---|---|
-| `cabofactu.Launcher` | `cabofactu.AppCaboFactu` (`main` → `Application.launch(LanzadorVentanaPrincipal.class, args)`) |
-| `cabofactu.Main` | `cabofactu.vista.LanzadorVentanaPrincipal` (se mueve a `vista`) |
+**Fuera de este change.** `cabofactu.Launcher`, `cabofactu.Main`, `cabofactu.vista.Navegador` y la `mainClass` de `pom.xml` se quedan como están. El change de la arquitectura MVC los sustituye por `AppCaboFactu`, `Vista` (singleton que absorbe `Navegador`), `Controlador` y `LanzadorVentanaPrincipal`.
 
-`pom.xml`: `<mainClass>cabofactu.Main</mainClass>` → `<mainClass>cabofactu.vista.LanzadorVentanaPrincipal</mainClass>`.
-
-`InstanciaUnica` y `PreparacionDatos` se quedan en `cabofactu`.
+Descartado: mover aquí `Main` a `LanzadorVentanaPrincipal` tal cual. Habría que volver a abrirlo en el change siguiente para repartirlo.
 
 ### D2. Vista
 
@@ -102,7 +96,7 @@ Este change solo renombra. Según el apartado «Transición» de `AGENTS.md`, lo
 
 Lo que **sí** se exige en las líneas tocadas: `import` en vez de nombres completos de clase.
 
-`LanzadorVentanaPrincipal` conserva el contenido de `Main` tal cual; convertir `Vista` en singleton con `Controlador` es trabajo del change de la arquitectura MVC.
+`Main`, `Launcher` y `Navegador` no se tocan salvo para actualizar los nombres de las clases que usan (`GestorTemas`, `ConfiguracionVentana`…). Repartirlos es trabajo del change de la arquitectura MVC.
 
 ### D5. Documentación
 
@@ -113,9 +107,9 @@ Se actualiza para que describa **el código tal como queda**. Los nombres de cha
   - Caja «💡 Concepto» (línea ~106): `Database` → `Conexion`.
   - Añadir una frase: la estructura sigue la del proyecto Biblioteca8.
 - `docs/tecnico.md`:
-  - Diagrama (líneas ~28-33): `Launcher → Main` → `AppCaboFactu → LanzadorVentanaPrincipal`; `servicios.factura` → `modelo.facturas`; `Servicios` → `Modelo`; `Database + Migrations` → `Conexion + Migraciones`.
+  - Diagrama (líneas ~28-33): `Launcher → Main` se queda (lo cambia el change MVC); `servicios.factura` → `modelo.getFacturas()`; `Servicios` → `Modelo`; `Database + Migrations` → `Conexion + Migraciones`.
   - Tabla de capas (~46-49) y cajas de concepto (~52-58): mismos cambios. La caja «repositorio = DAO» pasa a explicar que las clases **se llaman** `*DAO`.
-  - Árbol de paquetes (~65-75): sustituir por el árbol real de `cabofactu/` (`AppCaboFactu`, `InstanciaUnica`, `PreparacionDatos`, `modelo/`, `modelo/dominio/`, `modelo/negocio/`, `modelo/negocio/sqlite/`, `fichero/`, `pdf/`, `vista/`, `vista/controlador/`, `vista/utilidades/`, `utilidades/`) y `src/main/resources/cabofactu/vista/recursos/` con `temas/` e `imagenes/`.
+  - Árbol de paquetes (~65-75): sustituir por el árbol real de `cabofactu/` (`Launcher`, `Main`, `InstanciaUnica`, `PreparacionDatos`, `modelo/`, `modelo/dominio/`, `modelo/negocio/`, `modelo/negocio/sqlite/`, `fichero/`, `pdf/`, `vista/`, `vista/controlador/`, `vista/utilidades/`, `utilidades/`) y `src/main/resources/cabofactu/vista/recursos/` con `temas/` e `imagenes/`.
   - Diagrama de secuencia (~88-91) y pasos (~105): `EditorController`, `Facturas`, `Numeracion`, `Calculos`, `Conexion`.
   - Caja de excepción no comprobada (~113): «Los DAO convierten…».
   - Tabla de decisiones (~222): «Capas negocio + DAO». Añadir fila: «Nombres en español al estilo Biblioteca8 | Nombres en inglés (`Service`, `Repository`) | Coherencia con el resto del código y con lo visto en clase».
@@ -126,5 +120,4 @@ Se actualiza para que describa **el código tal como queda**. Los nombres de cha
 - **Riesgo medio: claves de texto de la pantalla de copias.** `"backup"` se usa como identificador en dos sitios y `#backup` en el FXML. Si se cambia solo uno, el botón de la barra deja de marcarse como activo o el menú no abre la pantalla. `CargaPantallasTest` y la verificación manual lo cubren.
 - **Riesgo bajo: clases del PDF.** El compilador detecta cada uso del nombre viejo. Los tests del PDF comparan contenido y deben pasar sin cambios de lógica.
 - **Trade-off aceptado:** entre este change y el del PDF conviven `DocumentoFactura` con records internos en inglés (`Header`, `TotalsBlock`…).
-- **Riesgo bajo: `javafx:run`.** Si `mainClass` apunta mal, la aplicación no arranca desde Maven. Tarea 8.1.
 - **Trade-off aceptado:** el sufijo `Controller` se queda en inglés, como en Biblioteca8 y como lo espera Scene Builder por convención.

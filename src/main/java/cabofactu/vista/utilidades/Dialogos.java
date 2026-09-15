@@ -174,7 +174,7 @@ public final class Dialogos {
      */
     public static void aplicarTema(DialogPane pane) {
         pane.getStyleClass().add("dialog-card");
-        pane.getStylesheets().setAll(ThemeManager.hojas());
+        pane.getStylesheets().setAll(GestorTemas.hojas());
     }
 
     /**

@@ -26,10 +26,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import cabofactu.vista.JavaFxTestSupport;
+import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
 
-class MenuLayoutTest {
+class MenuPrincipalLayoutTest {
 
     private static final double TOLERANCIA = 2.0;
 
@@ -43,7 +43,7 @@ class MenuLayoutTest {
     static void arrancar() throws Exception {
         Conexion.setCarpetaRaiz(carpetaEmpresa);
         modelo = new Modelo();
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
 
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Throwable> error = new AtomicReference<>();
@@ -106,7 +106,7 @@ class MenuLayoutTest {
                 latch.countDown();
             }
         });
-        await(latch, error, "MenuLayoutTest no termino en 30 s");
+        await(latch, error, "MenuPrincipalLayoutTest no termino en 30 s");
         return medida.get();
     }
 
@@ -147,10 +147,10 @@ class MenuLayoutTest {
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            fail("Interrumpido en MenuLayoutTest");
+            fail("Interrumpido en MenuPrincipalLayoutTest");
         }
         if (error.get() != null) {
-            throw new AssertionError("Error en MenuLayoutTest", error.get());
+            throw new AssertionError("Error en MenuPrincipalLayoutTest", error.get());
         }
     }
 }

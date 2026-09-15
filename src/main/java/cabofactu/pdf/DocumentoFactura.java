@@ -6,7 +6,7 @@ import java.util.Optional;
 /**
  * Documento de factura ya compuesto a texto, sin paginar.
  */
-public record InvoiceDocument(
+public record DocumentoFactura(
         Header header,
         ClientCard clientCard,
         Optional<PaymentCard> paymentCard,

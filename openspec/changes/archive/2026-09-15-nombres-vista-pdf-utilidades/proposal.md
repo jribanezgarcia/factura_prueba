@@ -1,12 +1,12 @@
 ## Why
 
-Tercer y último change del renombrado al estilo Biblioteca8. Tras `paquetes-en-espanol` y `nombres-modelo-y-datos`, quedan en inglés o mezclados el arranque (`Launcher`, `Main`), algunas piezas de la vista (`ThemeManager`, `VentanaConfig`, `BackupController`, `MenuController` frente a `MenuPrincipal.fxml`), todo el PDF (`InvoiceDocument` con `Header`, `ClientCard`, `TotalsBlock`…, `InvoiceDocumentBuilder`, `OpenPdfRenderer`, `PdfService`, `CabeceraLayout`) y los validadores (`EmailValidator`…).
+Tercer y último change del renombrado al estilo Biblioteca8. Tras `paquetes-en-espanol` y `nombres-modelo-y-datos`, quedan en inglés o mezclados algunas piezas de la vista (`ThemeManager`, `VentanaConfig`, `BackupController`, `MenuController` frente a `MenuPrincipal.fxml`), todo el PDF (`InvoiceDocument` con `Header`, `ClientCard`, `TotalsBlock`…, `InvoiceDocumentBuilder`, `OpenPdfRenderer`, `PdfService`, `CabeceraLayout`) y los validadores (`EmailValidator`…).
 
 Además, `README.md` y `docs/` describen los paquetes y clases antiguos (`ui/`, `service/`, `repository/`, `Database`, `Servicios`…), y deben reflejar la estructura nueva.
 
 ## What Changes
 
-- **Arranque**, como `AppBiblioteca` y `vista.LanzadorVentanaPrincipal`: `Launcher` → `cabofactu.AppCaboFactu`, `Main` → `cabofactu.vista.LanzadorVentanaPrincipal`. Se actualiza la `mainClass` de `pom.xml`.
+- **Arranque**: `Launcher`, `Main` y `Navegador` **no se tocan aquí**. Los reparte el change siguiente, el de la arquitectura MVC como Biblioteca8 (`AppCaboFactu`, `Vista`, `Controlador` y `LanzadorVentanaPrincipal`), para no mover `Main` dos veces.
 - **Vista:**
   - `MenuController` → `MenuPrincipalController`, a juego con `MenuPrincipal.fxml`.
   - `BackupController` → `CopiaSeguridadController` y `Backup.fxml` → `CopiaSeguridad.fxml`, con sus claves internas (`BACKUP`, `RUTA_BACKUP`, `"backup"`, `#backup`).
@@ -34,6 +34,6 @@ Ninguna: `skip_specs: true`. Solo nombres internos y documentación.
 
 - `cabofactu` (arranque), `cabofactu.vista.*`, `cabofactu.pdf`, `cabofactu.utilidades` y sus tests.
 - Recursos: `cabofactu/vista/recursos/Backup.fxml` (renombrado), `MenuPrincipal.fxml` y `CopiaSeguridad.fxml` (`fx:controller` y `onAction`).
-- `pom.xml` (`mainClass`), `README.md`, `docs/tecnico.md` y `docs/metodologia.md`.
+- `README.md`, `docs/tecnico.md` y `docs/metodologia.md`. `pom.xml` no cambia.
 - Fuera: textos que ve el usuario, nombres de fichero de los temas CSS y de los demás FXML, nombres de métodos de test, métodos privados que no aparecen en `design.md`, y los changes archivados.
 - **Depende de** `nombres-modelo-y-datos` archivado.

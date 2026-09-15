@@ -7,7 +7,7 @@ import java.io.FileOutputStream;
 import java.nio.file.Path;
 import java.util.List;
 
-public class PdfService {
+public class ExportadorPdf {
 
     public static final String PREF_COLOR = "color_pdf";
     public static final String COLOR_DEFECTO = "#B08D57";
@@ -18,7 +18,7 @@ public class PdfService {
 
     public void exportar(Facturas.VersionCompleta vc, Empresa empresa, Path ruta, String colorHex) throws Exception {
         try (FileOutputStream fos = new FileOutputStream(ruta.toFile())) {
-            new OpenPdfRenderer().exportar(vc, empresa, fos, colorHex);
+            new GeneradorPdf().exportar(vc, empresa, fos, colorHex);
         }
     }
 
@@ -27,6 +27,6 @@ public class PdfService {
     }
 
     public void exportarAgrupado(List<Facturas.VersionCompleta> versiones, Empresa empresa, Path ruta, String colorHex) throws Exception {
-        new OpenPdfRenderer().exportarAgrupado(versiones, empresa, ruta, colorHex);
+        new GeneradorPdf().exportarAgrupado(versiones, empresa, ruta, colorHex);
     }
 }

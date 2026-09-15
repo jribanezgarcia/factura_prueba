@@ -38,16 +38,16 @@ import cabofactu.modelo.dominio.Serie;
  * en color, observaciones en caja y pie legal en recuadro repetido en todas
  * las paginas con Página X de Y. El color de acento es configurable.
  */
-final class OpenPdfRenderer {
+final class GeneradorPdf {
 
 
     void exportar(Facturas.VersionCompleta vc, Empresa empresa, OutputStream out, String colorHex) throws Exception {
         EstiloPdf.Colores colores = new EstiloPdf.Colores(colorDe(colorHex));
-        InvoiceDocument invoice = InvoiceDocumentBuilder.build(vc, empresa, colorHex);
+        DocumentoFactura invoice = ConstructorDocumentoFactura.build(vc, empresa, colorHex);
 
         Image logo = cargarLogo(empresa);
 
-        Optional<InvoiceDocument.SuplidosBlock> suplidos = invoice.suplidos();
+        Optional<DocumentoFactura.SuplidosBlock> suplidos = invoice.suplidos();
         boolean haySuplidos = suplidos.isPresent();
         Optional<String> obs = invoice.observations();
         boolean hayObs = obs.isPresent();
@@ -172,7 +172,7 @@ final class OpenPdfRenderer {
 
     PdfPTable tarjetas(Facturas.VersionCompleta vc, EstiloPdf.Colores c) {
         List<String[]> pagoFilas = new ArrayList<>();
-    for (InvoiceDocument.FieldRow fila : InvoiceDocumentBuilder.paymentRows(vc.version())) {
+    for (DocumentoFactura.FieldRow fila : ConstructorDocumentoFactura.paymentRows(vc.version())) {
         pagoFilas.add(new String[]{fila.label(), fila.value()});
     }
         PdfPTable exterior = new PdfPTable(new float[]{49f, 2f, 49f});
@@ -204,10 +204,10 @@ final class OpenPdfRenderer {
     }
 
     PdfPTable tarjetaCliente(Facturas.VersionCompleta vc, EstiloPdf.Colores c) {
-        return tarjetaCliente(InvoiceDocumentBuilder.clientCard(vc.version()), c);
+        return tarjetaCliente(ConstructorDocumentoFactura.clientCard(vc.version()), c);
     }
 
-    private PdfPTable tarjetaCliente(InvoiceDocument.ClientCard card, EstiloPdf.Colores c) {
+    private PdfPTable tarjetaCliente(DocumentoFactura.ClientCard card, EstiloPdf.Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
         t.setTableEvent(new EstiloPdf.ContornoTabla(EstiloPdf.RADIO_TARJETA, c.bordeTabla));
@@ -226,7 +226,7 @@ final class OpenPdfRenderer {
 
         float anchoEtiqueta = 0;
         BaseFont bfEtiq = EstiloPdf.baseRegular();
-        for (InvoiceDocument.FieldRow fila : card.rows()) {
+        for (DocumentoFactura.FieldRow fila : card.rows()) {
             float w = bfEtiq.getWidthPoint(fila.label(), 9.5f);
             if (w > anchoEtiqueta) anchoEtiqueta = w;
         }
@@ -236,7 +236,7 @@ final class OpenPdfRenderer {
         if (anchoValor < 40) anchoValor = 40;
         PdfPTable filasTabla = new PdfPTable(new float[]{anchoEtiqueta, anchoValor});
         filasTabla.setWidthPercentage(100);
-        for (InvoiceDocument.FieldRow fila : card.rows()) {
+        for (DocumentoFactura.FieldRow fila : card.rows()) {
             PdfPCell etiqueta = new PdfPCell(new Phrase(fila.label(), EstiloPdf.fuente(false, 9.5f, EstiloPdf.GRIS_CLARO)));
             etiqueta.setBorder(Rectangle.NO_BORDER);
             etiqueta.setPadding(1.5f);
@@ -255,14 +255,14 @@ final class OpenPdfRenderer {
     }
 
     PdfPTable tarjetaPago(List<String[]> filas, EstiloPdf.Colores c) {
-        List<InvoiceDocument.FieldRow> rows = new ArrayList<>();
+        List<DocumentoFactura.FieldRow> rows = new ArrayList<>();
         for (String[] fila : filas) {
-            rows.add(new InvoiceDocument.FieldRow(fila[0], fila[1]));
+            rows.add(new DocumentoFactura.FieldRow(fila[0], fila[1]));
         }
-        return tarjetaPago(new InvoiceDocument.PaymentCard(InvoiceDocumentBuilder.paymentCardTitle(), rows), c);
+        return tarjetaPago(new DocumentoFactura.PaymentCard(ConstructorDocumentoFactura.paymentCardTitle(), rows), c);
     }
 
-    PdfPTable tarjetaPago(InvoiceDocument.PaymentCard card, EstiloPdf.Colores c) {
+    PdfPTable tarjetaPago(DocumentoFactura.PaymentCard card, EstiloPdf.Colores c) {
         PdfPTable t = new PdfPTable(1);
         t.setWidthPercentage(100);
         t.setTableEvent(new EstiloPdf.ContornoTabla(EstiloPdf.RADIO_TARJETA, c.bordeTabla));
@@ -275,7 +275,7 @@ final class OpenPdfRenderer {
 
         float anchoEtiqueta = 0;
         BaseFont bfEtiq = EstiloPdf.baseRegular();
-        for (InvoiceDocument.FieldRow fila : card.rows()) {
+        for (DocumentoFactura.FieldRow fila : card.rows()) {
             float w = bfEtiq.getWidthPoint(fila.label(), 9.5f);
             if (w > anchoEtiqueta) anchoEtiqueta = w;
         }
@@ -285,7 +285,7 @@ final class OpenPdfRenderer {
         if (anchoValor < 40) anchoValor = 40;
         PdfPTable filasTabla = new PdfPTable(new float[]{anchoEtiqueta, anchoValor});
         filasTabla.setWidthPercentage(100);
-        for (InvoiceDocument.FieldRow fila : card.rows()) {
+        for (DocumentoFactura.FieldRow fila : card.rows()) {
             PdfPCell etiqueta = new PdfPCell(new Phrase(fila.label(), EstiloPdf.fuente(false, 9.5f, EstiloPdf.GRIS_CLARO)));
             etiqueta.setBorder(Rectangle.NO_BORDER);
             etiqueta.setPadding(1.5f);
@@ -327,11 +327,11 @@ final class OpenPdfRenderer {
         return t;
     }
 
-    private PdfPTable tablaLineas(InvoiceDocument.LinesTable lines, EstiloPdf.Colores c) {
+    private PdfPTable tablaLineas(DocumentoFactura.LinesTable lines, EstiloPdf.Colores c) {
         PdfPTable t = tablaLineasVacia(c);
         t.setTableEvent(new EstiloPdf.RayaAlCortar(c.bordeTabla));
         int fila = 0;
-        for (InvoiceDocument.LineRow l : lines.rows()) {
+        for (DocumentoFactura.LineRow l : lines.rows()) {
             t.addCell(celdaLinea(l.quantity(), fila, Element.ALIGN_CENTER, c));
             t.addCell(celdaLinea(l.description(), fila, Element.ALIGN_LEFT, c));
             t.addCell(celdaLinea(l.price(), fila, Element.ALIGN_CENTER, c));
@@ -343,7 +343,7 @@ final class OpenPdfRenderer {
         return t;
     }
 
-    private PdfPTable bloqueSuplidos(InvoiceDocument.SuplidosBlock suplidos, EstiloPdf.Colores c) {
+    private PdfPTable bloqueSuplidos(DocumentoFactura.SuplidosBlock suplidos, EstiloPdf.Colores c) {
         PdfPTable t = new PdfPTable(new float[]{7.85f, 1.45f});
         t.setWidthPercentage(100);
 
@@ -351,7 +351,7 @@ final class OpenPdfRenderer {
         t.addCell(celdaCabeceraColumnaCompacta(suplidos.headers().get(1), c));
 
         int fila = 0;
-        for (InvoiceDocument.SuplidoRow l : suplidos.rows()) {
+        for (DocumentoFactura.SuplidoRow l : suplidos.rows()) {
             t.addCell(celdaLineaCompacta(l.description(), fila, Element.ALIGN_LEFT, c));
             t.addCell(celdaLineaCompacta(l.amount(), fila, Element.ALIGN_RIGHT, c));
             fila++;
@@ -417,7 +417,7 @@ final class OpenPdfRenderer {
     // Totales
     // ------------------------------------------------------------------
 
-    private PdfPTable bloqueTotales(InvoiceDocument.TotalsBlock totals, EstiloPdf.Colores c) {
+    private PdfPTable bloqueTotales(DocumentoFactura.TotalsBlock totals, EstiloPdf.Colores c) {
         PdfPTable contenedor = new PdfPTable(new float[]{5.85f, 3.45f});
         contenedor.setWidthPercentage(100);
 
@@ -443,14 +443,14 @@ final class OpenPdfRenderer {
         return contenedor;
     }
 
-    private PdfPTable rejillaDesgloseIva(InvoiceDocument.TotalsBlock totals, EstiloPdf.Colores c) {
+    private PdfPTable rejillaDesgloseIva(DocumentoFactura.TotalsBlock totals, EstiloPdf.Colores c) {
         PdfPTable t = new PdfPTable(new float[]{38.78f, 152.08f, 129.26f});
         t.setWidthPercentage(100);
         t.addCell(celdaCabeceraRejilla(totals.desgloseHeaders().get(0), c));
         t.addCell(celdaCabeceraRejilla(totals.desgloseHeaders().get(1), c));
         t.addCell(celdaCabeceraRejilla(totals.desgloseHeaders().get(2), c));
 
-        for (InvoiceDocument.IvaRow g : totals.ivaRows()) {
+        for (DocumentoFactura.IvaRow g : totals.ivaRows()) {
             t.addCell(celdaCuerpoRejilla(g.type(), Element.ALIGN_CENTER, c, false, false));
             t.addCell(celdaCuerpoRejilla(g.base(), Element.ALIGN_RIGHT, c, false, false));
             t.addCell(celdaCuerpoRejilla(g.quota(), Element.ALIGN_RIGHT, c, false, false));
@@ -471,7 +471,7 @@ final class OpenPdfRenderer {
         return p;
     }
 
-    private PdfPTable rejillaLiquidacion(InvoiceDocument.Liquidation liquidation, EstiloPdf.Colores c) {
+    private PdfPTable rejillaLiquidacion(DocumentoFactura.Liquidation liquidation, EstiloPdf.Colores c) {
         PdfPTable t = new PdfPTable(new float[]{2.0f, 1.45f});
         t.setWidthPercentage(100);
 
@@ -483,11 +483,11 @@ final class OpenPdfRenderer {
         filaLiquidacion(t, liquidation.ivaLabel(), liquidation.ivaAmount(), c, false);
 
         if (liquidation.retention().isPresent()) {
-            InvoiceDocument.RetentionRow retention = liquidation.retention().orElseThrow();
+            DocumentoFactura.RetentionRow retention = liquidation.retention().orElseThrow();
             filaLiquidacion(t, retention.label(), retention.amount(), c, true);
         }
         if (liquidation.suplidos().isPresent()) {
-            InvoiceDocument.SuplidosTotalRow suplidos = liquidation.suplidos().orElseThrow();
+            DocumentoFactura.SuplidosTotalRow suplidos = liquidation.suplidos().orElseThrow();
             filaLiquidacion(t, suplidos.label(), suplidos.amount(), c, false);
         }
 
@@ -589,11 +589,11 @@ final class OpenPdfRenderer {
 
     private float[] margenes(Empresa empresa, Image logo, EstiloPdf.Colores c, float altoTarjetas) {
         float superior;
-        int lineas = CabeceraLayout.lineasEmpresa(empresa).size();
+        int lineas = DisposicionCabecera.lineasEmpresa(empresa).size();
         if (logo != null) {
-            superior = CabeceraLayout.altoCabeceraLogo(empresa, lineas);
+            superior = DisposicionCabecera.altoCabeceraLogo(empresa, lineas);
         } else {
-            superior = CabeceraLayout.altoCabeceraTexto(lineas);
+            superior = DisposicionCabecera.altoCabeceraTexto(lineas);
         }
         superior += altoTarjetas + EstiloPdf.HUECO_TARJETAS;
         return new float[]{superior, EstiloPdf.MARGEN_INFERIOR};
@@ -671,7 +671,7 @@ final class OpenPdfRenderer {
             }
             return new Color(Integer.parseInt(h.substring(1), 16));
         } catch (Exception e) {
-            return new Color(Integer.parseInt(PdfService.COLOR_DEFECTO.substring(1), 16));
+            return new Color(Integer.parseInt(ExportadorPdf.COLOR_DEFECTO.substring(1), 16));
         }
     }
 

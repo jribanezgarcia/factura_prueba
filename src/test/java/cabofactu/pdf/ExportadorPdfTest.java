@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PdfServiceTest {
+class ExportadorPdfTest {
 
     @TempDir
     Path tempDir;
@@ -112,7 +112,7 @@ class PdfServiceTest {
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("C-59-7.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         assertTrue(Files.exists(destino));
         assertTrue(Files.size(destino) > 500);
@@ -162,7 +162,7 @@ class PdfServiceTest {
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("anulada.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, null);
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, null);
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -178,7 +178,7 @@ class PdfServiceTest {
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("descuento.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -214,7 +214,7 @@ class PdfServiceTest {
                 new Factura(), v, List.of(linea("1000.00", 21), linea("500.00", 10)), null);
 
         Path destino = tempDir.resolve("varios-tipos.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -251,7 +251,7 @@ class PdfServiceTest {
                         lineaExenta("ASESORAMIENTO", "200.00")), null);
 
         Path destino = tempDir.resolve("sin-rotulos-escalera.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -272,7 +272,7 @@ class PdfServiceTest {
                 List.of(linea("1000.00", 21), lineaExenta("ASESORAMIENTO", "200.00")), null);
 
         Path destino = tempDir.resolve("exento.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -297,7 +297,7 @@ class PdfServiceTest {
                 List.of(lineaArmario(), lineaSuplido("TASAS", "250.00")), null);
 
         Path destino = tempDir.resolve("un-simbolo.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -317,7 +317,7 @@ class PdfServiceTest {
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("retencion.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -344,7 +344,7 @@ class PdfServiceTest {
                 new Factura(), v, List.of(lineaArmario(), suplido), null);
 
         Path destino = tempDir.resolve("suplidos.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -392,7 +392,7 @@ class PdfServiceTest {
                         lineaSuplido("TASAS MUNICIPALES SUPLIDAS", "250.00")), null);
 
         Path destino = tempDir.resolve("bloque-suplidos.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -415,7 +415,7 @@ class PdfServiceTest {
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("sin-suplidos.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -432,7 +432,7 @@ class PdfServiceTest {
                 new Factura(), versionMuestra(), List.of(lineaSuplido("TASAS", "250.00")), null);
 
         Path destino = tempDir.resolve("solo-suplidos.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -456,7 +456,7 @@ class PdfServiceTest {
                 new Factura(), versionMuestra(), lineas, null);
 
         Path destino = tempDir.resolve("larga.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, null);
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, null);
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             int paginas = reader.getNumberOfPages();
@@ -472,7 +472,7 @@ class PdfServiceTest {
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
         Path destino = tempDir.resolve("fuente.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, null);
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, null);
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             PdfDictionary recursos = reader.getPageN(1).getAsDict(PdfName.RESOURCES);
@@ -501,7 +501,7 @@ class PdfServiceTest {
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("nombre-largo.pdf");
-        new PdfService().exportar(vc, e, destino, null);
+        new ExportadorPdf().exportar(vc, e, destino, null);
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -521,7 +521,7 @@ class PdfServiceTest {
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("pago.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#96744A");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#96744A");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -538,7 +538,7 @@ class PdfServiceTest {
                 new Factura(), versionMuestra(), List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("sin-pago.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -557,7 +557,7 @@ class PdfServiceTest {
                 new Factura(), v, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("cp-provincia.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
 
         try (PdfReader reader = new PdfReader(destino.toString())) {
             String texto = textoDe(reader);
@@ -579,7 +579,7 @@ class PdfServiceTest {
                 new Factura(), v2, List.of(lineaArmario()), null);
 
         Path destino = tempDir.resolve("agrupado.pdf");
-        new PdfService().exportarAgrupado(List.of(vc1, vc2), empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportarAgrupado(List.of(vc1, vc2), empresaTexto(), destino, "#B08D57");
 
         assertTrue(Files.exists(destino));
         assertTrue(Files.size(destino) > 500);
@@ -620,7 +620,7 @@ class PdfServiceTest {
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         if (obs != null) v.setObservaciones(obs);
         Path destino = tempDir.resolve("pag-" + System.nanoTime() + ".pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) { return r.getNumberOfPages(); }
     }
 
@@ -635,7 +635,7 @@ class PdfServiceTest {
         VersionFactura v = versionMuestra();
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("cierre-ultima.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
             int n = r.getNumberOfPages();
             assertTrue(n >= 2, "factura larga debe tener al menos 2 paginas");
@@ -661,7 +661,7 @@ class PdfServiceTest {
         VersionFactura v = versionConPago();
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("tarjeta-pagina.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
             int n = r.getNumberOfPages();
             assertTrue(n >= 2, "debe tener al menos 2 paginas");
@@ -688,7 +688,7 @@ class PdfServiceTest {
         VersionFactura v = versionConPago();
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("no-blanco.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
             int n = r.getNumberOfPages();
             for (int p = 1; p <= n; p++) {
@@ -713,7 +713,7 @@ class PdfServiceTest {
         }
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
         Path destino = tempDir.resolve("pie-unico.pdf");
-        new PdfService().exportar(vc, emp, destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, emp, destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
             int n = r.getNumberOfPages();
             assertTrue(n >= 2);
@@ -742,7 +742,7 @@ class PdfServiceTest {
     private int paginasDeConEmpresa(List<LineaFactura> lineas, Empresa emp, VersionFactura ver) throws Exception {
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), ver, lineas, null);
         Path destino = tempDir.resolve("pag-emp-" + System.nanoTime() + ".pdf");
-        new PdfService().exportar(vc, emp, destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, emp, destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) { return r.getNumberOfPages(); }
     }
 
@@ -756,7 +756,7 @@ class PdfServiceTest {
         }
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
         Path destino = tempDir.resolve("cabecera-rep.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
             assertTrue(r.getNumberOfPages() >= 2);
             String p2 = textoPagina(r, 2);
@@ -773,7 +773,7 @@ class PdfServiceTest {
         VersionFactura v = versionMuestra();
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineasN(2), null);
         Path destino = tempDir.resolve("logo-2.pdf");
-        new PdfService().exportar(vc, emp, destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, emp, destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
             assertEquals(1, r.getNumberOfPages());
             String ultima = textoPagina(r, r.getNumberOfPages());
@@ -787,7 +787,7 @@ class PdfServiceTest {
         }
         Facturas.VersionCompleta vc2 = new Facturas.VersionCompleta(new Factura(), versionMuestra(), lineas, null);
         Path destino2 = tempDir.resolve("logo-60.pdf");
-        new PdfService().exportar(vc2, emp, destino2, "#B08D57");
+        new ExportadorPdf().exportar(vc2, emp, destino2, "#B08D57");
         try (PdfReader r = new PdfReader(destino2.toString())) {
             assertTrue(r.getNumberOfPages() >= 2);
             String ultima = textoPagina(r, r.getNumberOfPages());
@@ -807,7 +807,7 @@ class PdfServiceTest {
         v.setEstado(EstadoFactura.ANULADA);
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("anulada-multi.pdf");
-        new PdfService().exportar(vc, empresaTexto(), destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, empresaTexto(), destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
             int n = r.getNumberOfPages();
             assertTrue(n >= 2);
@@ -835,7 +835,7 @@ class PdfServiceTest {
         }
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, lineas, null);
         Path destino = tempDir.resolve("cierre-solitario.pdf");
-        new PdfService().exportar(vc, emp, destino, "#B08D57");
+        new ExportadorPdf().exportar(vc, emp, destino, "#B08D57");
         try (PdfReader r = new PdfReader(destino.toString())) {
             int n = r.getNumberOfPages();
             assertTrue(n >= 2, "debe tener al menos 2 paginas para forzar cierre solitario");

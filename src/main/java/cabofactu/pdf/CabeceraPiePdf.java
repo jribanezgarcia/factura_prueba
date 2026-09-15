@@ -27,7 +27,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
 
     private final Empresa empresa;
     private final Image logo;
-    private final InvoiceDocument.Header header;
+    private final DocumentoFactura.Header header;
     private final EstiloPdf.Colores c;
     private final PdfPTable tarjetas;
     private final PdfPTable tarjetasSinPago;
@@ -36,7 +36,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
     private PdfTemplate totalPaginas;
     private int paginasReales;
 
-    CabeceraPiePdf(Empresa empresa, Image logo, InvoiceDocument.Header header, EstiloPdf.Colores colores,
+    CabeceraPiePdf(Empresa empresa, Image logo, DocumentoFactura.Header header, EstiloPdf.Colores colores,
                 PdfPTable tarjetas, PdfPTable tarjetasSinPago, float altoTarjetas, boolean conPago) {
         this.empresa = empresa;
         this.logo = logo;
@@ -67,7 +67,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
         dibujarBloqueFactura(cb, derecha, pagina.getHeight());
         if (logo != null) {
             dibujarLogo(cb, izquierda, bordeSuperiorContenido);
-            float xInfo = izquierda + CabeceraLayout.ANCHO_LOGO_FIJO + 14f;
+            float xInfo = izquierda + DisposicionCabecera.ANCHO_LOGO_FIJO + 14f;
             dibujarDatosEmpresa(cb, xInfo, pagina.getHeight() - 34, 14f,
                     Math.max(derecha - EstiloPdf.RESERVA_FACTURA - xInfo, 80f));
         } else {
@@ -91,9 +91,9 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
     }
 
     private void dibujarLogo(PdfContentByte cb, float izquierda, float bordeSuperiorContenido) {
-        logo.scaleToFit(CabeceraLayout.ANCHO_LOGO_FIJO, CabeceraLayout.ALTO_LOGO_FIJO);
-        float bordeInferiorCaja = bordeSuperiorContenido + CabeceraLayout.HUECO_LOGO_INFERIOR + altoTarjetas + EstiloPdf.HUECO_TARJETAS;
-        float sobraAlto = CabeceraLayout.ALTO_LOGO_FIJO - logo.getScaledHeight();
+        logo.scaleToFit(DisposicionCabecera.ANCHO_LOGO_FIJO, DisposicionCabecera.ALTO_LOGO_FIJO);
+        float bordeInferiorCaja = bordeSuperiorContenido + DisposicionCabecera.HUECO_LOGO_INFERIOR + altoTarjetas + EstiloPdf.HUECO_TARJETAS;
+        float sobraAlto = DisposicionCabecera.ALTO_LOGO_FIJO - logo.getScaledHeight();
         logo.setAbsolutePosition(izquierda, bordeInferiorCaja + sobraAlto);
         try {
             cb.addImage(logo);
@@ -113,7 +113,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
         cb.showTextAligned(Element.ALIGN_LEFT, nombre, x, y, 0);
         cb.endText();
         y -= tamNombre + 1;
-        for (CabeceraLayout.LineaCabecera linea : lineasEmpresa(empresa)) {
+        for (DisposicionCabecera.LineaCabecera linea : lineasEmpresa(empresa)) {
             if (linea.chipNif) {
                 dibujarChipNif(cb, x, y, anchoDisponible);
             } else {
@@ -258,7 +258,7 @@ final class CabeceraPiePdf extends PdfPageEventHelper {
         return s == null ? "" : s;
     }
 
-    private static List<CabeceraLayout.LineaCabecera> lineasEmpresa(Empresa empresa) {
-        return CabeceraLayout.lineasEmpresa(empresa);
+    private static List<DisposicionCabecera.LineaCabecera> lineasEmpresa(Empresa empresa) {
+        return DisposicionCabecera.lineasEmpresa(empresa);
     }
 }

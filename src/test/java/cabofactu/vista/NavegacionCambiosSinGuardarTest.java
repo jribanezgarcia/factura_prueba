@@ -33,7 +33,7 @@ class NavegacionCambiosSinGuardarTest {
     @BeforeAll
     static void arrancar() throws Exception {
         Conexion.setCarpetaRaiz(carpetaEmpresa);
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
     }
 
     @AfterEach

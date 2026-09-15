@@ -85,15 +85,15 @@
 
 ## 🏗️ Cómo está montado (resumen)
 
-La aplicación sigue un **MVC por capas**. La regla de oro: **cada clase se encarga de una sola cosa**.
+La aplicación sigue un **MVC por capas**. La regla de oro: **cada clase se encarga de una sola cosa**. La estructura sigue la del proyecto Biblioteca8.
 
 ```mermaid
 flowchart TD
     A["🚀 Main<br/><small>arranque</small>"] --> B
-    B["🖥️ Pantallas<br/><b>ui/*Controller + *.fxml</b><br/><small>lo que ve el usuario</small>"] --> C
-    C["🧠 Reglas<br/><b>service/*Service</b><br/><small>qué se puede hacer y cómo</small>"] --> D
-    D["🗄️ Consultas SQL<br/><b>repository/*Repository</b><br/><small>los DAO</small>"] --> E
-    E["🔌 Database<br/><small>conexión SQLite</small>"]
+    B["🖥️ Pantallas<br/><b>vista/controlador/*Controller + vista/recursos/*.fxml</b><br/><small>lo que ve el usuario</small>"] --> C
+    C["🧠 Reglas<br/><b>modelo/negocio (Facturas, Clientes…)</b><br/><small>qué se puede hacer y cómo</small>"] --> D
+    D["🗄️ Consultas SQL<br/><b>modelo/negocio/sqlite/*DAO</b><br/><small>los DAO</small>"] --> E
+    E["🔌 Conexion<br/><small>conexión SQLite</small>"]
 
     style A fill:#FDE68A,stroke:#B45309,color:#1F2937
     style B fill:#BFDBFE,stroke:#1D4ED8,color:#1F2937
@@ -103,7 +103,7 @@ flowchart TD
 ```
 
 > [!TIP]
-> **💡 Concepto.** Si en clase has visto un MVC con una clase de conexión y un DAO por modelo, aquí es igual con una capa más: `Database` es la conexión, los `*Repository` son los DAO y los `*Service` guardan las **reglas de negocio**, para que ni la pantalla ni el DAO tomen decisiones.
+> **💡 Concepto.** Si en clase has visto un MVC con una clase de conexión y un DAO por modelo, aquí es igual con una capa más: `Conexion` es la conexión, las clases `*DAO` de `modelo/negocio/sqlite` son los DAO y las clases de `modelo/negocio` (`Facturas`, `Clientes`…) guardan las **reglas de negocio**, para que ni la pantalla ni el DAO tomen decisiones.
 
 👉 Paquetes, ejemplo paso a paso, modelo de datos y decisiones técnicas en **[docs/tecnico.md](docs/tecnico.md)**.<br/>
 👉 Cómo se desarrolla con opencode + OpenSpec, con un cambio real de ejemplo y la auditoría con IA, en **[docs/metodologia.md](docs/metodologia.md)**.

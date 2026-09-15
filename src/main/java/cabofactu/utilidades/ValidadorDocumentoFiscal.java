@@ -1,11 +1,11 @@
 package cabofactu.utilidades;
 
 /** Valida DNI, NIE y NIF/CIF españoles. Un valor vacío es opcional y válido. */
-public final class DocumentoFiscalValidator {
+public final class ValidadorDocumentoFiscal {
 
     private static final String LETRAS_DNI = "TRWAGMYFPDXBNJZSQVHLCKE";
 
-    private DocumentoFiscalValidator() {
+    private ValidadorDocumentoFiscal() {
     }
 
     public static boolean esValido(String valor) {

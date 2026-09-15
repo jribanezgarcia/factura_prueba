@@ -24,7 +24,7 @@ import cabofactu.vista.controlador.GenerarFacturasMensualesController;
  * inyeccion @FXML y alIniciar) para detectar errores de cableado sin tener
  * que abrir la aplicacion a mano.
  */
-class UiSmokeTest {
+class CargaPantallasTest {
 
     @TempDir
     static Path carpetaEmpresa;
@@ -36,7 +36,7 @@ class UiSmokeTest {
     static void arrancar() throws Exception {
         Conexion.setCarpetaRaiz(carpetaEmpresa);
         modelo = new Modelo();
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
 
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<Throwable> error = new AtomicReference<>();
@@ -90,7 +90,7 @@ class UiSmokeTest {
 
     @Test
     void cargarBackup() {
-        cargar("Backup.fxml");
+        cargar("CopiaSeguridad.fxml");
     }
 
     @Test

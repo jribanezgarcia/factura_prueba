@@ -23,7 +23,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.vista.JavaFxTestSupport;
+import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
 
 /**
@@ -38,7 +38,7 @@ class EditorBarraAccionesTest {
     @BeforeAll
     static void arrancar() throws Exception {
         Conexion.setCarpetaRaiz(carpetaEmpresa);
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
     }
 
     @AfterEach

@@ -1,7 +1,7 @@
 package cabofactu.vista.utilidades;
 
 import cabofactu.modelo.dominio.Empresa;
-import cabofactu.pdf.CabeceraLayout;
+import cabofactu.pdf.DisposicionCabecera;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -16,7 +16,7 @@ import java.io.File;
 
 /**
  * Previsualizacion aproximada de la cabecera del PDF. Usa la geometria de
- * {@link CabeceraLayout}, la misma que emplea la generacion real, y se pinta a
+ * {@link DisposicionCabecera}, la misma que emplea la generacion real, y se pinta a
  * escala sobre una hoja A4 recortada a la banda superior.
  */
 public class PreviaCabecera extends Pane {
@@ -49,7 +49,7 @@ public class PreviaCabecera extends Pane {
         if (w <= 0 || h <= 0) {
             return;
         }
-        double s = w / CabeceraLayout.ANCHO_A4;
+        double s = w / DisposicionCabecera.ANCHO_A4;
         double altoPagina = Math.min(842 * s, h);
 
         Rectangle pagina = new Rectangle(0, 0, w, altoPagina);
@@ -62,15 +62,15 @@ public class PreviaCabecera extends Pane {
         banda.setFill(acento);
         getChildren().add(banda);
 
-        double izquierda = CabeceraLayout.MARGEN_LATERAL * s;
-        double derecha = (CabeceraLayout.ANCHO_A4 - CabeceraLayout.MARGEN_LATERAL) * s;
+        double izquierda = DisposicionCabecera.MARGEN_LATERAL * s;
+        double derecha = (DisposicionCabecera.ANCHO_A4 - DisposicionCabecera.MARGEN_LATERAL) * s;
 
         double margenSuperior;
         if (logo != null) {
-            double anchoEfectivo = CabeceraLayout.ANCHO_LOGO_FIJO * s;
-            double altoEfectivo = CabeceraLayout.ALTO_LOGO_FIJO * s;
-            int lineas = CabeceraLayout.lineasEmpresa(empresa).size();
-            margenSuperior = CabeceraLayout.altoCabeceraLogo(empresa, lineas) * s;
+            double anchoEfectivo = DisposicionCabecera.ANCHO_LOGO_FIJO * s;
+            double altoEfectivo = DisposicionCabecera.ALTO_LOGO_FIJO * s;
+            int lineas = DisposicionCabecera.lineasEmpresa(empresa).size();
+            margenSuperior = DisposicionCabecera.altoCabeceraLogo(empresa, lineas) * s;
 
             ImageView img = new ImageView(logo);
             double fx = anchoEfectivo / Math.max(logo.getWidth(), 1);
@@ -79,13 +79,13 @@ public class PreviaCabecera extends Pane {
             img.setFitWidth(logo.getWidth() * factor);
             img.setFitHeight(logo.getHeight() * factor);
             img.setX(Math.max(izquierda, 2));
-            img.setY(Math.max(CabeceraLayout.HUECO_LOGO_SUPERIOR * s, 6));
+            img.setY(Math.max(DisposicionCabecera.HUECO_LOGO_SUPERIOR * s, 6));
             getChildren().add(img);
 
-            dibujarBloqueTexto(izquierda + CabeceraLayout.ANCHO_LOGO_FIJO * s + 14 * s, 14 * s, s);
+            dibujarBloqueTexto(izquierda + DisposicionCabecera.ANCHO_LOGO_FIJO * s + 14 * s, 14 * s, s);
         } else {
-            int lineas = CabeceraLayout.lineasEmpresa(empresa).size();
-            margenSuperior = CabeceraLayout.altoCabeceraTexto(lineas) * s;
+            int lineas = DisposicionCabecera.lineasEmpresa(empresa).size();
+            margenSuperior = DisposicionCabecera.altoCabeceraTexto(lineas) * s;
             dibujarBloqueTexto(izquierda, 16 * s, s);
         }
 
@@ -110,7 +110,7 @@ public class PreviaCabecera extends Pane {
             getChildren().add(texto(nombre, x, 34 * s, tamNombrePt * s, oscuro, true));
         }
         double y = (34 + tamNombrePt + 1) * s;
-        for (CabeceraLayout.LineaCabecera linea : CabeceraLayout.lineasEmpresa(empresa)) {
+        for (DisposicionCabecera.LineaCabecera linea : DisposicionCabecera.lineasEmpresa(empresa)) {
             if (linea.chipNif) {
                 dibujarChipNif(x, y / s, s);
             } else {

@@ -11,7 +11,7 @@ import java.util.List;
  * verdad para que el tamano efectivo del logo y el alto de cabecera que se
  * muestran al usuario coincidan con lo que se imprime.
  */
-public final class CabeceraLayout {
+public final class DisposicionCabecera {
 
     public static final float ANCHO_A4 = 595f;
     public static final float MARGEN_LATERAL = 40f;
@@ -23,7 +23,7 @@ public final class CabeceraLayout {
 
     private static final float ALTO_CABECERA_MINIMO = 108f;
 
-    private CabeceraLayout() {
+    private DisposicionCabecera() {
     }
 
     public static float anchoLogoEfectivo(Empresa empresa) {

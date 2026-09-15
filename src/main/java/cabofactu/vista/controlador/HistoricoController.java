@@ -5,7 +5,7 @@ import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.FilaHistorial;
 import cabofactu.modelo.dominio.Serie;
-import cabofactu.pdf.PdfService;
+import cabofactu.pdf.ExportadorPdf;
 import cabofactu.modelo.negocio.Facturas;
 import cabofactu.modelo.Modelo;
 import cabofactu.utilidades.Formatos;
@@ -395,7 +395,7 @@ public class HistoricoController implements Vista {
         Task<Void> tarea = new Task<>() {
             @Override
             protected Void call() throws Exception {
-                new PdfService().exportarAgrupado(versiones, empresa, destino.toPath(), color);
+                new ExportadorPdf().exportarAgrupado(versiones, empresa, destino.toPath(), color);
                 return null;
             }
         };
@@ -429,7 +429,7 @@ public class HistoricoController implements Vista {
                 List<String> fallos = new ArrayList<>();
                 for (int i = 0; i < versiones.size(); i++) {
                     try {
-                        new PdfService().exportar(versiones.get(i), empresa, rutas.get(i), color);
+                        new ExportadorPdf().exportar(versiones.get(i), empresa, rutas.get(i), color);
                         generados++;
                     } catch (Exception e) {
                         fallos.add(rutas.get(i).getFileName() + ": " + e.getMessage());
@@ -489,7 +489,7 @@ public class HistoricoController implements Vista {
 
     private String colorPdfPreferido() {
         try {
-            return modelo.getConfiguracion().getPreferencia(PdfService.PREF_COLOR);
+            return modelo.getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR);
         } catch (Exception e) {
             return null;
         }

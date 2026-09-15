@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class InvoiceDocumentBuilderTest {
+class ConstructorDocumentoFacturaTest {
 
     private Empresa empresa() {
         Empresa e = new Empresa();
@@ -60,17 +60,17 @@ class InvoiceDocumentBuilderTest {
         return l;
     }
 
-    private InvoiceDocument doc(VersionFactura v, List<LineaFactura> lineas) {
-        return InvoiceDocumentBuilder.build(
+    private DocumentoFactura doc(VersionFactura v, List<LineaFactura> lineas) {
+        return ConstructorDocumentoFactura.build(
                 new Facturas.VersionCompleta(new Factura(), v, lineas, null), empresa(), "#B08D57");
     }
 
     @Test
     void dosTiposDeIva() {
-        InvoiceDocument d = doc(version(),
+        DocumentoFactura d = doc(version(),
                 List.of(linea("CONCEPTO A", "1000.00", 21, false), linea("CONCEPTO B", "500.00", 10, false)));
         assertEquals(List.of("21,00", "10,00"),
-                d.totals().ivaRows().stream().map(InvoiceDocument.IvaRow::type).toList());
+                d.totals().ivaRows().stream().map(DocumentoFactura.IvaRow::type).toList());
         assertEquals("1.000,00", d.totals().ivaRows().get(0).base());
         assertEquals("210,00", d.totals().ivaRows().get(0).quota());
         assertEquals("Totales", d.totals().totalsRow().type());
@@ -84,7 +84,7 @@ class InvoiceDocumentBuilderTest {
     void descuentoGlobal() {
         VersionFactura v = version();
         v.setDescuentoPorcentaje(10);
-        InvoiceDocument d = doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        DocumentoFactura d = doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
         assertEquals("2.815,29", d.totals().totalsRow().base());
         assertEquals("591,21", d.totals().totalsRow().quota());
         assertTrue(d.totals().discountNote().isPresent());
@@ -98,7 +98,7 @@ class InvoiceDocumentBuilderTest {
         v.setTipoRetencionId(1L);
         v.setTipoRetencionNombre("IRPF profesional");
         v.setTipoRetencionPorcentaje(15);
-        InvoiceDocument d = doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        DocumentoFactura d = doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
         assertTrue(d.totals().liquidation().retention().isPresent());
         assertEquals("IRPF profesional 15 %", d.totals().liquidation().retention().orElseThrow().label());
         assertTrue(d.totals().liquidation().retention().orElseThrow().amount().contains("469,22"));
@@ -106,7 +106,7 @@ class InvoiceDocumentBuilderTest {
 
     @Test
     void suplidosYBloquePropio() {
-        InvoiceDocument d = doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false),
+        DocumentoFactura d = doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false),
                 linea("TASAS", "250.00", null, true)));
         assertTrue(d.suplidos().isPresent());
         assertEquals(List.of("SUPLIDOS", "IMPORTE"), d.suplidos().orElseThrow().headers());
@@ -119,7 +119,7 @@ class InvoiceDocumentBuilderTest {
 
     @Test
     void soloSuplidosTablaConSoloCabecera() {
-        InvoiceDocument d = doc(version(), List.of(linea("TASAS", "250.00", null, true)));
+        DocumentoFactura d = doc(version(), List.of(linea("TASAS", "250.00", null, true)));
         assertEquals(List.of("CANT.", "DESCRIPCIÓN", "PRECIO", "IVA %", "TOTAL"),
                 d.linesTable().headers());
         assertTrue(d.linesTable().rows().isEmpty());
@@ -132,7 +132,7 @@ class InvoiceDocumentBuilderTest {
         for (int i = 0; i < 60; i++) {
             lineas.add(linea("LINEA " + (i + 1) + " DESCRIPCION LARGA", "100.00", 21, false));
         }
-        InvoiceDocument d = doc(version(), lineas);
+        DocumentoFactura d = doc(version(), lineas);
         assertEquals(60, d.linesTable().rows().size());
         assertTrue(d.linesTable().rows().get(0).description().startsWith("LINEA 1 "));
         assertTrue(d.linesTable().rows().get(59).description().startsWith("LINEA 60 "));
@@ -149,7 +149,7 @@ class InvoiceDocumentBuilderTest {
 
     @Test
     void rotulosFijosEnModelo() {
-        InvoiceDocument d = doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        DocumentoFactura d = doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
         assertEquals("FACTURAR A", d.clientCard().title());
         assertEquals(List.of("TIPO", "BASE IMPONIBLE", "CUOTA IVA"), d.totals().desgloseHeaders());
         assertEquals("LIQUIDACIÓN", d.totals().liquidation().title());

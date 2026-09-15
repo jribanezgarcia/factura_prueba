@@ -82,7 +82,7 @@ Un cambio pequeño y completo, tal como se hizo.
 
 ### 🤔 El problema (`proposal.md`)
 
-La fecha actual se leía con `LocalDate.now()` **dentro** de las reglas de negocio: cinco veces en `NumeroService` para decidir el año de la numeración, dos en `VersionadoService` para sellar la hora de guardado, y otras en las pantallas. Además, la regla «fecha de trabajo o, si no hay, hoy» estaba **copiada en cuatro pantallas**.
+La fecha actual se leía con `LocalDate.now()` **dentro** de las reglas de negocio: cinco veces en `Numeracion` para decidir el año de la numeración, dos en `Versiones` para sellar la hora de guardado, y otras en las pantallas. Además, la regla «fecha de trabajo o, si no hay, hoy» estaba **copiada en cuatro pantallas**.
 
 Consecuencia: **no se podía probar** la numeración de otro año, porque los tests siempre usaban el día en que se ejecutaban.
 
@@ -93,7 +93,7 @@ Consecuencia: **no se podía probar** la numeración de otro año, porque los te
 | D1 | Los servicios reciben un `java.time.Clock` por constructor | Una interfaz propia `ProveedorFecha` | `Clock` ya existe en Java y tiene `Clock.fixed(...)` para tests |
 | D2 | El año del contador de una serie nueva lo decide el servicio, no el repositorio | Dejar `now()` en el repositorio | El DAO no debe conocer la fecha actual |
 | D3 | Clase `Reloj` con `hoy()`, `ahora()` y `fechaTrabajo()` para las pantallas | Repetir la regla en cada pantalla | Una sola fuente para la fecha de trabajo |
-| D4 | `Servicios(Clock)` crea un único reloj y lo reparte | Un reloj por servicio | Todos los servicios ven la misma hora |
+| D4 | `Modelo(Clock)` crea un único reloj y lo reparte | Un reloj por servicio | Todos los servicios ven la misma hora |
 | D5 | La pantalla de arranque queda fuera | Tocarla también | Se muestra antes de que existan los servicios y no numera nada |
 
 También se decidió **partir el cambio en dos**: el reloj por un lado y las excepciones por otro, porque juntos daban un diff enorme e imposible de revisar bien.
@@ -110,7 +110,7 @@ Clock fijo = Clock.fixed(Instant.parse("2031-06-15T10:00:00Z"), ZoneId.of("Europ
 - 🖱️ **Pruebas manuales**: arrancar con una fecha de trabajo de otro año y comprobar menú, editor, rectificativa y series; crear una copia de seguridad y comprobar que el nombre del fichero lleva la fecha y hora reales.
 
 > [!TIP]
-> **💡 Concepto: inyectar una dependencia.** En vez de que la clase «vaya a buscar» la hora (`LocalDate.now()`), **se la dan** al crearla (`new NumeroService(…, clock)`). En la aplicación se le pasa el reloj real y en los tests uno parado en la fecha que interese.
+> **💡 Concepto: inyectar una dependencia.** En vez de que la clase «vaya a buscar» la hora (`LocalDate.now()`), **se la dan** al crearla (`new Numeracion(…, clock)`). En la aplicación se le pasa el reloj real y en los tests uno parado en la fecha que interese.
 
 ---
 
@@ -127,7 +127,7 @@ Antes de seguir añadiendo funciones se hizo una **auditoría** del código para
 
 ### Cómo se hizo
 
-1. 🧪 **Probar el modelo antes de fiarse de él.** Se hizo una pregunta de control sobre una clase concreta. Un modelo (Nemotron 3 Ultra) **se inventó cinco clases** que no existían (`SerieService`, `ClienteService`…), porque dedujo los tipos por el nombre de los campos. Otro (Muse Spark 1.3) respondió bien citando fichero y línea, y fue el elegido.
+1. 🧪 **Probar el modelo antes de fiarse de él.** Se hizo una pregunta de control sobre una clase concreta. Un modelo (Nemotron 3 Ultra) **se inventó cinco clases** (los nombres que dio no existían en el código), porque dedujo los tipos por el nombre de los campos. Otro (Muse Spark 1.3) respondió bien citando fichero y línea, y fue el elegido.
 2. 📄 **Informe por bloques** guardado en ficheros, con cada hallazgo en formato `fichero:línea | gravedad | problema | arreglo`.
 3. ✔️ **Verificar cada hallazgo grave en el código real** antes de creerlo. Así se corrigieron recuentos de líneas mal hechos y se encontró algo que el informe no vio: que no existía el estado «Borrador».
 4. 📋 **Convertir lo confirmado en una cola de cambios pequeños**, ordenados de menos a más riesgo.
@@ -142,6 +142,7 @@ Antes de seguir añadiendo funciones se hizo una **auditoría** del código para
 | Empresa creada con un nombre fijo y sin datos fiscales | ✅ `empresa-inicial-obligatoria` |
 | `Main` con demasiadas responsabilidades | ✅ `main-delgado` |
 | SQL dentro de pantallas y servicios de copias | ✅ `sql-fuera-de-ui-y-service` |
+| Paquetes y clases con nombres en inglés o mezclados | ✅ `paquetes-en-espanol` · `nombres-modelo-y-datos` · `nombres-vista-pdf-utilidades` |
 | Emisión repartida, sin registro ni datos fiscales | ⏳ [Preparación para VeriFactu](tecnico.md#-preparación-para-verifactu) |
 
 > [!IMPORTANT]

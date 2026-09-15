@@ -26,7 +26,7 @@ class EstiloPdf {
     static final Color ROJO_ANULADA = new Color(0xB0, 0x00, 0x20);
     static final Color ROJO_DESCUENTO = new Color(0x8A, 0x2B, 0x2B);
     static final Color VALOR_SUAVE = new Color(0x55, 0x55, 0x55);
-    static final float MARGEN_LATERAL = CabeceraLayout.MARGEN_LATERAL;
+    static final float MARGEN_LATERAL = DisposicionCabecera.MARGEN_LATERAL;
 
     /**
      * Reserva a la derecha para el bloque FACTURA/Serie-Nº/fecha en cabecera.

@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.function.Consumer;
 import cabofactu.vista.utilidades.Botones;
 import cabofactu.vista.utilidades.Microinteracciones;
-import cabofactu.vista.utilidades.ThemeManager;
+import cabofactu.vista.utilidades.GestorTemas;
 
 /**
  * Navegacion entre vistas FXML sobre la misma ventana.
@@ -60,9 +60,9 @@ public class Navegador {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
             Parent root = loader.load();
             Scene scene = new Scene(root);
-            ThemeManager.aplicar(scene, modelo);
+            GestorTemas.aplicar(scene, modelo);
             stage.setScene(scene);
-            VentanaConfig.para(fxml).ifPresent(cfg -> {
+            ConfiguracionVentana.para(fxml).ifPresent(cfg -> {
                 cfg.aplicar(stage);
                 stage.setTitle(Ventanas.PREFIJO + cfg.titulo());
             });

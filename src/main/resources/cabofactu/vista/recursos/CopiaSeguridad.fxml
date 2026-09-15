@@ -5,7 +5,7 @@
 <?import javafx.geometry.*?>
 <BorderPane prefHeight="768.0" prefWidth="1024.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="cabofactu.vista.controlador.BackupController">
+            fx:controller="cabofactu.vista.controlador.CopiaSeguridadController">
     <padding>
         <Insets top="12" right="16" bottom="12" left="16"/>
     </padding>

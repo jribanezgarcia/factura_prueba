@@ -14,13 +14,13 @@ import java.util.Map;
  * junto a base.css (estructura comun). El tema activo se recuerda en la tabla
  * de preferencias y se aplica al cargar cada vista.
  */
-public final class ThemeManager {
+public final class GestorTemas {
 
-    public static final String PREV_TEMA = "tema";
-    public static final String DEFAULT = "biblioteca8";
+    public static final String PREF_TEMA = "tema";
+    public static final String POR_DEFECTO = "biblioteca8";
 
     private static final Map<String, String> TEMAS = new LinkedHashMap<>();
-    private static String activo = DEFAULT;
+    private static String activo = POR_DEFECTO;
 
     static {
         TEMAS.put("biblioteca8", "Biblioteca8");
@@ -32,7 +32,7 @@ public final class ThemeManager {
         TEMAS.put("neon", "Neon");
     }
 
-    private ThemeManager() {
+    private GestorTemas() {
     }
 
     public static List<String> temas() {
@@ -48,8 +48,8 @@ public final class ThemeManager {
     }
 
     public static void aplicar(Scene scene, Modelo modelo) {
-        String tema = DEFAULT;
-        String guardado = PreferenciasGlobales.get(PREV_TEMA);
+        String tema = POR_DEFECTO;
+        String guardado = PreferenciasGlobales.get(PREF_TEMA);
         if (guardado != null && TEMAS.containsKey(guardado)) {
             tema = guardado;
         }
@@ -71,11 +71,11 @@ public final class ThemeManager {
     }
 
     public static void guardar(Modelo modelo) {
-        PreferenciasGlobales.set(PREV_TEMA, activo);
+        PreferenciasGlobales.set(PREF_TEMA, activo);
     }
 
     private static String css(String nombre) {
-        return ThemeManager.class.getResource(
+        return GestorTemas.class.getResource(
                 "/cabofactu/vista/recursos/temas/" + (nombre.equals("base") ? "base" : "tema-" + nombre) + ".css")
                 .toExternalForm();
     }

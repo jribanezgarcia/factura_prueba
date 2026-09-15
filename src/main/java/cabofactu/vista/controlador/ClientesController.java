@@ -2,9 +2,9 @@ package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.Modelo;
-import cabofactu.utilidades.CodigoPostalValidator;
-import cabofactu.utilidades.DocumentoFiscalValidator;
-import cabofactu.utilidades.EmailValidator;
+import cabofactu.utilidades.ValidadorCodigoPostal;
+import cabofactu.utilidades.ValidadorDocumentoFiscal;
+import cabofactu.utilidades.ValidadorEmail;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -260,7 +260,7 @@ public class ClientesController implements Vista {
         txtNombre.textProperty().addListener((o, a, b) ->
                 botonGuardar.setDisable(b == null || b.trim().isEmpty()));
 
-        BooleanSupplier nifValido = () -> DocumentoFiscalValidator.esValido(txtNif.getText());
+        BooleanSupplier nifValido = () -> ValidadorDocumentoFiscal.esValido(txtNif.getText());
         boolean[] avisandoNif = {false};
         Runnable avisarNifInvalido = () -> {
             if (avisandoNif[0]) {
@@ -291,7 +291,7 @@ public class ClientesController implements Vista {
             }
         });
 
-        BooleanSupplier cpValido = () -> CodigoPostalValidator.esValido(txtCp.getText());
+        BooleanSupplier cpValido = () -> ValidadorCodigoPostal.esValido(txtCp.getText());
         boolean[] avisandoCp = {false};
         Runnable avisarCpInvalido = () -> {
             if (avisandoCp[0]) {
@@ -315,7 +315,7 @@ public class ClientesController implements Vista {
             }
         });
 
-        BooleanSupplier emailValido = () -> EmailValidator.esValido(txtEmail.getText());
+        BooleanSupplier emailValido = () -> ValidadorEmail.esValido(txtEmail.getText());
         boolean[] avisandoEmail = {false};
         Runnable avisarEmailInvalido = () -> {
             if (avisandoEmail[0]) {

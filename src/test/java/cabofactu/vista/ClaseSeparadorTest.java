@@ -20,7 +20,7 @@ import org.junit.jupiter.api.Test;
  * clases: FXMLLoader parte esas listas por comas, de modo que un espacio
  * crea una clase literal que no coincide con ningun selector CSS.
  */
-class StyleClassSeparadorTest {
+class ClaseSeparadorTest {
 
     private static final Path DIR_FXML = Path.of(
             "src", "main", "resources", "cabofactu", "vista", "recursos");

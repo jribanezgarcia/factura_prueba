@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cabofactu.vista.JavaFxTestSupport;
+import cabofactu.vista.PruebasJavaFx;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +30,7 @@ class LogoMarcoTest {
 
     @BeforeAll
     static void arrancar() throws Exception {
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
     }
 
     @Test

@@ -4,8 +4,8 @@ import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.pdf.PdfService;
-import cabofactu.pdf.CabeceraLayout;
+import cabofactu.pdf.ExportadorPdf;
+import cabofactu.pdf.DisposicionCabecera;
 import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.Sesion;
@@ -33,6 +33,7 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
@@ -45,7 +46,7 @@ import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.BarraNavegacion;
 import cabofactu.vista.utilidades.Dialogos;
 import cabofactu.vista.utilidades.PreviaCabecera;
-import cabofactu.vista.utilidades.ThemeManager;
+import cabofactu.vista.utilidades.GestorTemas;
 
 /**
  * Configuracion por secciones con lista lateral: Empresa, Cabecera y pie, PDF
@@ -251,11 +252,11 @@ public class ConfiguracionController implements Vista {
     }
 
     private void cargarTema() {
-        comboTema.getItems().setAll(ThemeManager.temas());
+        comboTema.getItems().setAll(GestorTemas.temas());
         comboTema.setConverter(new StringConverter<>() {
             @Override
             public String toString(String tema) {
-                return tema == null ? "" : ThemeManager.etiqueta(tema);
+                return tema == null ? "" : GestorTemas.etiqueta(tema);
             }
 
             @Override
@@ -263,10 +264,10 @@ public class ConfiguracionController implements Vista {
                 return s;
             }
         });
-        comboTema.setValue(ThemeManager.temaActivo());
+        comboTema.setValue(GestorTemas.temaActivo());
         comboTema.valueProperty().addListener((o, a, b) -> {
             if (b != null) {
-                ThemeManager.seleccionar(nav.stage().getScene(), b);
+                GestorTemas.seleccionar(nav.stage().getScene(), b);
             }
         });
     }
@@ -319,10 +320,10 @@ public class ConfiguracionController implements Vista {
         if (f != null) {
             txtLogoPath.setText(f.getAbsolutePath());
             Image imagen = new Image(f.toURI().toString());
-            if (CabeceraLayout.logoConPocaResolucion(imagen.getWidth(), imagen.getHeight())) {
+            if (DisposicionCabecera.logoConPocaResolucion(imagen.getWidth(), imagen.getHeight())) {
                 int ancho = (int) imagen.getWidth();
                 int alto = (int) imagen.getHeight();
-                long minimo = Math.round(CabeceraLayout.anchoLogoDibujado((float) imagen.getWidth(), (float) imagen.getHeight()) * 1.5);
+                long minimo = Math.round(DisposicionCabecera.anchoLogoDibujado((float) imagen.getWidth(), (float) imagen.getHeight()) * 1.5);
                 Dialogos.info("Logo", "La imagen es pequeña (" + ancho + " × " + alto
                         + " píxeles) y puede verse borrosa al imprimir la factura. "
                         + "Para un buen resultado, usa una imagen de al menos " + minimo + " píxeles de ancho.");
@@ -348,20 +349,20 @@ public class ConfiguracionController implements Vista {
             txtCarpetaAuto.setText(nz(auto));
             String ultima = modelo.getConfiguracion().getPreferencia(PREV_EXPORT);
             txtUltimaCarpeta.setText(nz(ultima));
-            colorPdf.setValue(colorGuardado(modelo.getConfiguracion().getPreferencia(PdfService.PREF_COLOR)));
+            colorPdf.setValue(colorGuardado(modelo.getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR)));
         } catch (Exception e) {
             Dialogos.error("Configuración", "No se pudieron cargar las carpetas de PDF: " + e.getMessage());
         }
     }
 
-    private javafx.scene.paint.Color colorGuardado(String hex) {
+    private Color colorGuardado(String hex) {
         try {
             if (hex != null && !hex.isBlank()) {
-                return javafx.scene.paint.Color.web(hex.trim());
+                return Color.web(hex.trim());
             }
         } catch (Exception ignored) {
         }
-        return javafx.scene.paint.Color.web(PdfService.COLOR_DEFECTO);
+        return Color.web(ExportadorPdf.COLOR_DEFECTO);
     }
 
     @FXML
@@ -386,13 +387,13 @@ public class ConfiguracionController implements Vista {
             }
             modelo.getConfiguracion().saveEmpresa(empresa);
             modelo.getConfiguracion().setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
-            javafx.scene.paint.Color c = colorPdf.getValue();
+            Color c = colorPdf.getValue();
             String hex = String.format("#%02X%02X%02X",
                     (int) Math.round(c.getRed() * 255),
                     (int) Math.round(c.getGreen() * 255),
                     (int) Math.round(c.getBlue() * 255));
-            modelo.getConfiguracion().setPreferencia(PdfService.PREF_COLOR, hex);
-            ThemeManager.guardar(modelo);
+            modelo.getConfiguracion().setPreferencia(ExportadorPdf.PREF_COLOR, hex);
+            GestorTemas.guardar(modelo);
             if (datosPendientes) {
                 Dialogos.info("Configuración", "Datos de la empresa completados.");
                 nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");

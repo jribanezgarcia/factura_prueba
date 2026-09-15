@@ -26,7 +26,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import cabofactu.vista.JavaFxTestSupport;
+import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
 import cabofactu.vista.utilidades.Dialogos;
 
@@ -39,7 +39,7 @@ import cabofactu.vista.utilidades.Dialogos;
  * (no bloqueante) para poder interactuar con los controles reales. Los modales
  * de Dialogos se neutralizan con un Impl grabador.
  */
-class ClientesNifValidationTest {
+class ClientesValidacionNifTest {
 
     @TempDir
     static Path carpetaEmpresa;
@@ -78,7 +78,7 @@ class ClientesNifValidationTest {
     static void arrancar() throws Exception {
         Conexion.setCarpetaRaiz(carpetaEmpresa);
         modelo = new Modelo();
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
         grabador = new Grabador();
         Dialogos.setImpl(grabador);
 

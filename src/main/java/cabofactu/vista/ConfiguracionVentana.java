@@ -8,7 +8,7 @@ import java.util.Optional;
 /**
  * Configuracion de tamaño por vista FXML.
  */
-public enum VentanaConfig {
+public enum ConfiguracionVentana {
 
     ARRANQUE("Seleccion de empresa", "/cabofactu/vista/recursos/Arranque.fxml", 760, 520, 760, 520, false),
     MENU("Menu Principal", "/cabofactu/vista/recursos/MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
@@ -17,7 +17,7 @@ public enum VentanaConfig {
     HISTORICO("Historico", "/cabofactu/vista/recursos/Historico.fxml", 1024, 768, 1024, 768, true),
     CLIENTES("Clientes", "/cabofactu/vista/recursos/Clientes.fxml", 1024, 768, 1024, 768, true),
     VERSIONES("Versiones", "/cabofactu/vista/recursos/Versiones.fxml", 1024, 768, 1024, 768, true),
-    BACKUP("Copias", "/cabofactu/vista/recursos/Backup.fxml", 1024, 768, 1024, 768, true),
+    COPIA_SEGURIDAD("Copias", "/cabofactu/vista/recursos/CopiaSeguridad.fxml", 1024, 768, 1024, 768, true),
     GENERAR_MENSUAL("Generar facturas mensuales", "/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
 
     private static final String CLAVE_CONFIG = "cabofactu.ventanaConfig";
@@ -33,11 +33,11 @@ public enum VentanaConfig {
     private final boolean redimensionable;
     private final boolean maximizado;
 
-    VentanaConfig(String titulo, String fxml, double ancho, double alto, double minAncho, double minAlto, boolean redimensionable) {
+    ConfiguracionVentana(String titulo, String fxml, double ancho, double alto, double minAncho, double minAlto, boolean redimensionable) {
         this(titulo, fxml, ancho, alto, minAncho, minAlto, Double.MAX_VALUE, Double.MAX_VALUE, redimensionable, false);
     }
 
-    VentanaConfig(String titulo, String fxml, double ancho, double alto, double minAncho, double minAlto,
+    ConfiguracionVentana(String titulo, String fxml, double ancho, double alto, double minAncho, double minAlto,
                   double maxAncho, double maxAlto, boolean redimensionable, boolean maximizado) {
         this.titulo = titulo;
         this.fxml = fxml;
@@ -83,14 +83,14 @@ public enum VentanaConfig {
         return maximizado;
     }
 
-    public static Optional<VentanaConfig> para(String fxml) {
+    public static Optional<ConfiguracionVentana> para(String fxml) {
         return Arrays.stream(values())
                 .filter(v -> v.fxml.equals(fxml))
                 .findFirst();
     }
 
     public void aplicar(Stage stage) {
-        VentanaConfig previa = (VentanaConfig) stage.getProperties().get(CLAVE_CONFIG);
+        ConfiguracionVentana previa = (ConfiguracionVentana) stage.getProperties().get(CLAVE_CONFIG);
         stage.getProperties().put(CLAVE_CONFIG, this);
 
         stage.setMaxWidth(Double.MAX_VALUE);
@@ -111,7 +111,7 @@ public enum VentanaConfig {
         }
     }
 
-    private boolean debeFijarTamano(Stage stage, VentanaConfig previa) {
+    private boolean debeFijarTamano(Stage stage, ConfiguracionVentana previa) {
         if (!stage.isShowing() || previa == null) {
             return true;
         }

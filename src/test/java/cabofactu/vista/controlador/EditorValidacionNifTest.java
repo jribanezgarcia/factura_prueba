@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import cabofactu.vista.JavaFxTestSupport;
+import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
 import cabofactu.vista.utilidades.Dialogos;
 
@@ -40,7 +40,7 @@ import cabofactu.vista.utilidades.Dialogos;
  * impl grabador que no abre ventana: la logica y el estilo aplicados por el
  * controlador se verifican igualmente sobre los controles reales.
  */
-class EditorNifValidationTest {
+class EditorValidacionNifTest {
 
     @TempDir
     static Path carpetaEmpresa;
@@ -81,7 +81,7 @@ class EditorNifValidationTest {
     static void arrancar() throws Exception {
         Conexion.setCarpetaRaiz(carpetaEmpresa);
         modelo = new Modelo();
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
         grabador = new Grabador();
         Dialogos.setImpl(grabador);
 

@@ -26,7 +26,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import cabofactu.vista.JavaFxTestSupport;
+import cabofactu.vista.PruebasJavaFx;
 import cabofactu.vista.Navegador;
 
 /**
@@ -41,7 +41,7 @@ class EditorTotalesDescuentoTest {
     @BeforeAll
     static void arrancar() throws Exception {
         Conexion.setCarpetaRaiz(carpetaEmpresa);
-        JavaFxTestSupport.arrancarFx();
+        PruebasJavaFx.arrancarFx();
     }
 
     @AfterEach

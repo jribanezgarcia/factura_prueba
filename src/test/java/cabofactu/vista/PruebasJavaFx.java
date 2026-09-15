@@ -10,11 +10,11 @@ import javafx.application.Platform;
  * una vez). No se ejecuta Platform.exit; las ventanas se ocultan y el toolkit
  * se mantiene vivo hasta que el JVM de surefire termina.
  */
-public final class JavaFxTestSupport {
+public final class PruebasJavaFx {
 
     private static boolean arrancado;
 
-    private JavaFxTestSupport() {
+    private PruebasJavaFx() {
     }
 
     public static synchronized void arrancarFx() throws Exception {

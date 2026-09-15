@@ -5,8 +5,13 @@ import cabofactu.modelo.dominio.Factura;
 import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.negocio.Facturas;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Rectangle;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
 import org.junit.jupiter.api.Test;
 
+import java.awt.Color;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,7 +20,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class OpenPdfRendererTest {
+class GeneradorPdfTest {
 
     private LineaFactura lineaArmario() {
         LineaFactura l = new LineaFactura();
@@ -61,18 +66,18 @@ class OpenPdfRendererTest {
 
     @Test
     void marcoSinRenglones() {
-        EstiloPdf.Colores c = new EstiloPdf.Colores(java.awt.Color.decode("#B08D57"));
+        EstiloPdf.Colores c = new EstiloPdf.Colores(Color.decode("#B08D57"));
         float hueco = 100f;
-        com.lowagie.text.pdf.PdfPTable marco = new OpenPdfRenderer().tablaRelleno(hueco, c);
+        PdfPTable marco = new GeneradorPdf().tablaRelleno(hueco, c);
         assertEquals(1, marco.getRows().size(), "marco debe ser una sola fila");
         assertEquals(5, marco.getNumberOfColumns());
         assertEquals(0, marco.getHeaderRows(), "marco no debe repetir cabecera");
-        marco.setTotalWidth(com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f);
+        marco.setTotalWidth(PageSize.A4.getWidth() - 2 * 40f);
         marco.setLockedWidth(true);
         marco.calculateHeights(true);
         assertEquals(hueco, marco.getTotalHeight(), 0.5, "marco debe ocupar hueco exacto");
-        com.lowagie.text.pdf.PdfPCell cell = marco.getRow(0).getCells()[0];
-        assertEquals(com.lowagie.text.Rectangle.LEFT | com.lowagie.text.Rectangle.RIGHT | com.lowagie.text.Rectangle.BOTTOM, cell.getBorder());
+        PdfPCell cell = marco.getRow(0).getCells()[0];
+        assertEquals(Rectangle.LEFT | Rectangle.RIGHT | Rectangle.BOTTOM, cell.getBorder());
     }
 
     @Test
@@ -89,21 +94,21 @@ class OpenPdfRendererTest {
         v.setVencimiento(LocalDate.of(2026, 8, 14));
         v.setRealizadaPor("AURORA");
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
-        OpenPdfRenderer renderer = new OpenPdfRenderer();
-        EstiloPdf.Colores c = new EstiloPdf.Colores(java.awt.Color.decode("#B08D57"));
+        GeneradorPdf renderer = new GeneradorPdf();
+        EstiloPdf.Colores c = new EstiloPdf.Colores(Color.decode("#B08D57"));
         // Con OpenPDF no se puede verificar el alto dibujado sin generar PDF y analizar el stream grafico
-        com.lowagie.text.pdf.PdfPTable tarjetas = renderer.tarjetas(vc, c);
-        com.lowagie.text.pdf.PdfPCell cellCliente = tarjetas.getRow(0).getCells()[0];
-        com.lowagie.text.pdf.PdfPCell cellPago = tarjetas.getRow(0).getCells()[2];
+        PdfPTable tarjetas = renderer.tarjetas(vc, c);
+        PdfPCell cellCliente = tarjetas.getRow(0).getCells()[0];
+        PdfPCell cellPago = tarjetas.getRow(0).getCells()[2];
         assertTrue(cellCliente.getCellEvent() == null, "borde no debe estar en celda exterior cliente");
         assertTrue(cellPago.getCellEvent() == null, "borde no debe estar en celda exterior pago");
         assertTrue(cellCliente.getTable() == null, "celda debe estar en modo composite");
         assertTrue(cellPago.getTable() == null, "celda debe estar en modo composite");
-        com.lowagie.text.pdf.PdfPTable cliente = renderer.tarjetaCliente(vc, c);
-        com.lowagie.text.pdf.PdfPTable pago = renderer.tarjetaPago(InvoiceDocumentBuilder.paymentCard(v).orElseThrow(), c);
+        PdfPTable cliente = renderer.tarjetaCliente(vc, c);
+        PdfPTable pago = renderer.tarjetaPago(ConstructorDocumentoFactura.paymentCard(v).orElseThrow(), c);
         assertTrue(cliente.getTableEvent() instanceof EstiloPdf.ContornoTabla, "cliente debe tener borde en tabla");
         assertTrue(pago.getTableEvent() instanceof EstiloPdf.ContornoTabla, "pago debe tener borde en tabla");
-        float ancho = com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f;
+        float ancho = PageSize.A4.getWidth() - 2 * 40f;
         cliente.setTotalWidth(ancho * 0.49f);
         cliente.setLockedWidth(true);
         cliente.calculateHeights(true);
@@ -128,18 +133,18 @@ class OpenPdfRendererTest {
         v.setVencimiento(LocalDate.of(2026, 8, 14));
         v.setRealizadaPor("AURORA");
         Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
-        OpenPdfRenderer renderer = new OpenPdfRenderer();
-        EstiloPdf.Colores c = new EstiloPdf.Colores(java.awt.Color.decode("#B08D57"));
-        com.lowagie.text.pdf.PdfPTable tarjetas = renderer.tarjetas(vc, c);
-        float ancho = com.lowagie.text.PageSize.A4.getWidth() - 2 * 40f;
+        GeneradorPdf renderer = new GeneradorPdf();
+        EstiloPdf.Colores c = new EstiloPdf.Colores(Color.decode("#B08D57"));
+        PdfPTable tarjetas = renderer.tarjetas(vc, c);
+        float ancho = PageSize.A4.getWidth() - 2 * 40f;
         tarjetas.setTotalWidth(ancho);
         tarjetas.setLockedWidth(true);
         tarjetas.calculateHeights(true);
         float altoTarjetas = tarjetas.getTotalHeight();
-        com.lowagie.text.pdf.PdfPTable sinPago = renderer.tarjetasSinPago(vc, c);
+        PdfPTable sinPago = renderer.tarjetasSinPago(vc, c);
         sinPago.setTotalWidth(ancho);
         sinPago.setLockedWidth(true);
-        for (com.lowagie.text.pdf.PdfPCell cell : sinPago.getRow(0).getCells()) {
+        for (PdfPCell cell : sinPago.getRow(0).getCells()) {
             if (cell != null) cell.setFixedHeight(altoTarjetas);
         }
         sinPago.calculateHeights(true);

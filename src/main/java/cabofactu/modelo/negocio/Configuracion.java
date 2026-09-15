@@ -2,9 +2,9 @@ package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
-import cabofactu.utilidades.CodigoPostalValidator;
-import cabofactu.utilidades.DocumentoFiscalValidator;
-import cabofactu.utilidades.EmailValidator;
+import cabofactu.utilidades.ValidadorCodigoPostal;
+import cabofactu.utilidades.ValidadorDocumentoFiscal;
+import cabofactu.utilidades.ValidadorEmail;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +38,13 @@ public class Configuracion {
         if (vacio(e == null ? null : e.getNombre())) {
             faltan.add("Nombre / razón social");
         }
-        if (vacio(e == null ? null : e.getNif()) || !DocumentoFiscalValidator.esValido(e.getNif())) {
+        if (vacio(e == null ? null : e.getNif()) || !ValidadorDocumentoFiscal.esValido(e.getNif())) {
             faltan.add("NIF");
         }
         if (vacio(e == null ? null : e.getDireccion())) {
             faltan.add("Dirección");
         }
-        if (!CodigoPostalValidator.esValido(e == null ? null : e.getCp())) {
+        if (!ValidadorCodigoPostal.esValido(e == null ? null : e.getCp())) {
             faltan.add("CP");
         }
         if (vacio(e == null ? null : e.getLocalidad())) {
@@ -53,7 +53,7 @@ public class Configuracion {
         if (vacio(e == null ? null : e.getProvincia())) {
             faltan.add("Provincia");
         }
-        if (vacio(e == null ? null : e.getEmail()) || !EmailValidator.esValido(e.getEmail())) {
+        if (vacio(e == null ? null : e.getEmail()) || !ValidadorEmail.esValido(e.getEmail())) {
             faltan.add("Email");
         }
         if (vacio(e == null ? null : e.getTelefono())) {
