@@ -92,6 +92,7 @@ public class CopiaSeguridad {
             throw new IOException("No se pudo restaurar; se ha recuperado la base anterior: " + e.getMessage(), e);
         }
 
+        Empresas.recordarTema();
         return rescate;
     }
 

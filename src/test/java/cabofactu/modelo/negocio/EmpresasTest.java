@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.SerieDAO;
 
 class EmpresasTest {
@@ -152,5 +153,20 @@ class EmpresasTest {
             assertTrue(rs.next());
             assertEquals(Migraciones.ultimaVersion(), rs.getInt(1));
         }
+    }
+
+    @Test
+    void conectarRecuerdaElTemaDeCadaEmpresa() throws Exception {
+        Empresas.crearEmpresa("Primera");
+        Empresas.crearEmpresa("Segunda");
+        Empresas.conectar("primera", LocalDate.now());
+        new ConfiguracionDAO().setPreferencia(PreferenciasGlobales.TEMA, "omarchy");
+        Empresas.conectar("segunda", LocalDate.now());
+        assertEquals("", PreferenciasGlobales.get(PreferenciasGlobales.TEMA));
+        new ConfiguracionDAO().setPreferencia(PreferenciasGlobales.TEMA, "esmeralda");
+        Empresas.conectar("primera", LocalDate.now());
+        assertEquals("omarchy", PreferenciasGlobales.get(PreferenciasGlobales.TEMA));
+        Empresas.conectar("segunda", LocalDate.now());
+        assertEquals("esmeralda", PreferenciasGlobales.get(PreferenciasGlobales.TEMA));
     }
 }

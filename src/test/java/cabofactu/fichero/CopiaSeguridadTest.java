@@ -3,6 +3,7 @@ package cabofactu.fichero;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.negocio.sqlite.Migraciones;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
+import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.negocio.Empresas;
+import cabofactu.modelo.negocio.PreferenciasGlobales;
 import cabofactu.modelo.negocio.Sesion;
 import cabofactu.modelo.negocio.ValidacionException;
 
@@ -311,5 +313,17 @@ class CopiaSeguridadTest {
         servicio.restaurarEnEmpresaActiva(copia);
 
         assertFalse(Files.exists(wal), "El diario wal debe desaparecer tras restaurar");
+    }
+
+    @Test
+    void restaurarRecuerdaElTemaDeLaCopia() throws Exception {
+        new ConfiguracionDAO().setPreferencia(PreferenciasGlobales.TEMA, "sakura");
+        Path copia = crearCopia();
+
+        new ConfiguracionDAO().setPreferencia(PreferenciasGlobales.TEMA, "neon");
+        PreferenciasGlobales.set(PreferenciasGlobales.TEMA, "neon");
+        servicio.restaurarEnEmpresaActiva(copia);
+
+        assertEquals("sakura", PreferenciasGlobales.get(PreferenciasGlobales.TEMA));
     }
 }

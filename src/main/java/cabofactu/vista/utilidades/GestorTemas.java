@@ -70,7 +70,9 @@ public final class GestorTemas {
         return hojas;
     }
 
+    /** Guardamos el tema en la empresa activa y lo recordamos para el arranque. */
     public static void guardar(Modelo modelo) {
+        modelo.getConfiguracion().setPreferencia(PREF_TEMA, activo);
         PreferenciasGlobales.set(PREF_TEMA, activo);
     }
 

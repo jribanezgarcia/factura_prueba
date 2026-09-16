@@ -1,6 +1,7 @@
 package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,6 +70,21 @@ public final class Empresas {
         Conexion.establecerConexion();
         Sesion.inicializar(slug, fecha);
         PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, slug);
+        recordarTema();
+    }
+
+    /**
+     * Copiamos el tema de la empresa activa a las preferencias globales, para
+     * que las pantallas y el arranque usen el de esta empresa. Si la empresa no
+     * tiene tema guardado, dejamos el valor vacío y se usa el tema por defecto.
+     */
+    public static void recordarTema() {
+        ConfiguracionDAO configuracionDAO = new ConfiguracionDAO();
+        String tema = configuracionDAO.getPreferencia(PreferenciasGlobales.TEMA);
+        if (tema == null) {
+            tema = "";
+        }
+        PreferenciasGlobales.set(PreferenciasGlobales.TEMA, tema);
     }
 
     /**
