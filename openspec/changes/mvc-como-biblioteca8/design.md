@@ -43,7 +43,7 @@ Pantallas que abren otra y le pasan un dato: `HistoricoController.abrirVersion` 
 **Goals:** misma estructura que Biblioteca8 (`AppCaboFactu`, `Controlador`, `Vista` singleton, `LanzadorVentanaPrincipal`); pantallas sin campos `modelo`/`nav` ni métodos inyectados; sin `Consumer` de avisos; barra en FXML; arranque en ventana propia; comportamiento visible igual.
 
 **Non-Goals:**
-- `Empresas`, `Sesion`, `PreferenciasGlobales` y `Calculos` siguen `static` (change `negocio-dentro-del-modelo`).
+- `Empresas` y `Sesion` siguen `static` (change `negocio-dentro-del-modelo`).
 - Quitar la pantalla «Versiones» (apuntado para el futuro).
 - Quitar ternarios, streams, clases anónimas, `Task`, `runLater` o `::` que ya existen fuera del código nuevo o de las líneas que se reescriben por completo (changes `sin-clases-anonimas-ni-hilos` y `java-clasico`).
 - Cambiar textos, tamaños, estilos o atajos.
