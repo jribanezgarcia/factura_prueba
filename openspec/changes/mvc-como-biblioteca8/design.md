@@ -572,6 +572,14 @@ En «Arquitectura (MVC como Biblioteca8)»:
   - Javadoc de clase: «Comprueba que el arranque tiene su propia ventana de 760x520 y que la ventana principal se abre a 1024x768 y conserva el tamaño del usuario al navegar.».
 - Sin `var`, ternarios, streams ni `::` en las líneas nuevas o reescritas.
 
+### D13. Documentación
+
+En `docs/tecnico.md`:
+- Diagrama de capas: `A["🚀 Launcher → Main<br/><small>PreparacionDatos · InstanciaUnica</small>"] --> B` → `A["🚀 AppCaboFactu → Controlador → Vista<br/><small>PreparacionDatos · InstanciaUnica</small>"] --> B`, y la flecha de B a C con el texto `"Vista.getInstancia().getControlador().getModelo().getFacturas()…"`.
+- Paquetes: `├── 🚀 Launcher, Main         → punto de entrada JavaFX` → `├── 🚀 AppCaboFactu           → punto de entrada: crea Modelo, Vista y Controlador`; añadir debajo `├── 🎛️ controlador/           → Controlador: arranca y cierra la aplicación`; `vista/` → `Vista (singleton), Pantalla, LanzadorVentanaPrincipal, ConfiguracionVentana y Ventanas`; `vista/controlador/` → `un Controller por FXML (MenuPrincipalController, BarraNavegacionController…)`; `vista/utilidades/` → `Dialogos, GestorTemas y PreviaCabecera`.
+
+En `README.md`, diagrama «Cómo está montado»: `A["🚀 Main<br/><small>arranque</small>"] --> B` → `A["🚀 AppCaboFactu · Controlador · Vista<br/><small>arranque</small>"] --> B`.
+
 ## Risks / Trade-offs
 
 - **`fireEvent(WINDOW_CLOSE_REQUEST)` debe cerrar la ventana si nadie consume el evento** (comportamiento estándar de JavaFX) → si en la prueba manual «Salir» pregunta pero no cierra, añadir `ventana.close()` en `salir()` cuando `puedeSalir()` sea true, en lugar de disparar el evento.

@@ -36,5 +36,6 @@ Ninguna.
 - Nuevo: `cabofactu/AppCaboFactu`, `cabofactu/controlador/Controlador`, `cabofactu/vista/Vista` (clase), `cabofactu/vista/Pantalla`, `cabofactu/vista/LanzadorVentanaPrincipal`, `cabofactu/vista/controlador/BarraNavegacionController`, `vista/recursos/BarraNavegacion.fxml`.
 - Se borran: `cabofactu/Launcher`, `cabofactu/Main`, `cabofactu/vista/Navegador`, la interfaz `cabofactu/vista/Vista`, `cabofactu/vista/utilidades/BarraNavegacion`.
 - Cambian: `modelo/Modelo`, `vista/ConfiguracionVentana`, las 9 pantallas de `vista/controlador`, los FXML con barra (Clientes, Configuracion, CopiaSeguridad, Editor, Historico, Versiones), `temas/base.css`, `pom.xml` y `AGENTS.md`.
+- Documentación: `docs/tecnico.md` (diagrama de capas y paquetes) y `README.md` (diagrama).
 - Tests: `PruebasJavaFx`, `VistaPrueba`, `CargaPantallasTest`, `VentanaTransicionTest`, `NavegacionCambiosSinGuardarTest` y los 11 tests de `vista/controlador` que usan `Navegador`.
 - Fuera (changes posteriores): `Empresas`, `Sesion`, `PreferenciasGlobales` y `Calculos` siguen siendo `static` (`negocio-dentro-del-modelo`); quitar la pantalla «Versiones» (apuntado para el futuro); ternarios, streams, clases anónimas, `Task` y `runLater` que ya existen fuera del código nuevo.

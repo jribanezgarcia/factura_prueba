@@ -135,6 +135,12 @@ if (r.ultimaFecha() == null) {
   - Quitar el import de `Migraciones`.
 - Borrar `MigracionesTest.java`.
 
+### D8. Documentación
+
+En `docs/tecnico.md`:
+- Diagrama de capas: `F["🔌 Conexion + Migraciones<br/><small>conexión SQLite y tablas</small>"]` → `F["🔌 Conexion<br/><small>conexión SQLite y creación de tablas</small>"]`.
+- Tabla de decisiones: la fila «**Migraciones versionadas** (`PRAGMA user_version`) | Crear las tablas a mano | Una base antigua se actualiza sola al abrirla» → «**Un único script de tablas** (`db/crear_tablas.sql`) | Migraciones versionadas (`PRAGMA user_version`) | En una versión en desarrollo las tablas son siempre las mismas; crear una base nueva es ejecutar un solo script».
+
 ## Risks / Trade-offs
 
 - **Una base con la tabla `empresa` pero sin otras tablas** no se completaría → solo puede pasar a mano; las copias se comprueban por estructura antes de restaurar. Aceptado.

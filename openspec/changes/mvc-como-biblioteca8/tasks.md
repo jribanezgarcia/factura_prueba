@@ -35,6 +35,7 @@
 ## 4. AGENTS.md
 
 - [ ] 4.1 Actualizar la sección «Arquitectura (MVC como Biblioteca8)». Ver `design.md - D11`.
+- [ ] 4.2 Actualizar `docs/tecnico.md` y `README.md`. Ver `design.md - D13`.
 
 ## 5. Tests
 

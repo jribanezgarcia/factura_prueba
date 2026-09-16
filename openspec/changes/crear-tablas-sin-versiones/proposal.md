@@ -23,6 +23,7 @@ Ninguna.
 
 - Código: `modelo/negocio/sqlite/Conexion`, `modelo/negocio/sqlite/CopiaSeguridadDAO`, `modelo/negocio/sqlite/CargarDemo` (Javadoc), `modelo/negocio/Empresas` (Javadoc), `fichero/CopiaSeguridad`, `vista/controlador/CopiaSeguridadController`. Se borra `modelo/negocio/sqlite/Migraciones`.
 - Recursos: `src/main/resources/db/migrations/001_baseline.sql` → `src/main/resources/db/crear_tablas.sql` (mismo contenido); la carpeta `migrations` desaparece.
+- Documentación: `docs/tecnico.md` (diagrama de capas y tabla de decisiones).
 - Tests: se borra `MigracionesTest`; cambian `ConexionTest`, `EmpresasTest` y `CopiaSeguridadTest`.
 - No hay migración de datos: el programa está en desarrollo y los datos se van a reiniciar. Las bases ya creadas siguen funcionando porque ya tienen sus tablas.
 - Fuera: pasar `ResumenCopia` a clase normal (change `clases-independientes`) y quitar la `Task` de restaurar (change `sin-clases-anonimas-ni-hilos`).

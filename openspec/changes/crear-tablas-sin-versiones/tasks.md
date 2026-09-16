@@ -19,6 +19,7 @@
 - [ ] 3.1 Actualizar el Javadoc de `modelo/negocio/sqlite/CargarDemo.java` y de `Empresas.conectar`. Ver `design.md - D6`.
 - [ ] 3.2 `grep -rni "migraci\|user_version\|versionActual\|versionEsquema" src/main`: sin resultados.
 - [ ] 3.3 `mvn -q compile` sin errores.
+- [ ] 3.4 Actualizar `docs/tecnico.md`. Ver `design.md - D8`.
 
 ## 4. Tests
 
