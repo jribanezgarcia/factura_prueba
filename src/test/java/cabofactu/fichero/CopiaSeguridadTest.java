@@ -1,7 +1,6 @@
 package cabofactu.fichero;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
-import cabofactu.modelo.negocio.sqlite.Migraciones;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
 import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
@@ -182,7 +181,6 @@ class CopiaSeguridadTest {
         assertEquals("B12345674", r.nif());
         assertEquals(1, r.numFacturas());
         assertEquals(LocalDate.now(), r.ultimaFecha());
-        assertEquals(Migraciones.ultimaVersion(), r.versionActual());
     }
 
     @Test
@@ -231,16 +229,15 @@ class CopiaSeguridadTest {
         Path sinNucleo = tempDir.resolve("sin_nucleo.db");
         Files.copy(copia, sinNucleo);
         try (var c = DriverManager.getConnection("jdbc:sqlite:" + sinNucleo);
-             Statement st = c.createStatement()) {
+              Statement st = c.createStatement()) {
             st.executeUpdate("DROP TABLE factura");
-            st.executeUpdate("PRAGMA user_version = 1");
         }
 
         assertThrows(ValidacionException.class, () -> servicio.leerResumen(sinNucleo));
     }
 
     @Test
-    void restaurarDejaLaBaseMigrada() throws Exception {
+    void restaurarDejaLaBaseUtilizable() throws Exception {
         insertarDatosBasicos();
         Path copia = crearCopia();
 
@@ -250,7 +247,11 @@ class CopiaSeguridadTest {
 
         servicio.restaurarEnEmpresaActiva(copia);
 
-        assertEquals(Migraciones.ultimaVersion(), Migraciones.versionActual(Conexion.establecerConexion()));
+        try (Statement st = Conexion.establecerConexion().createStatement();
+             ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM tipo_iva")) {
+            assertTrue(rs.next());
+            assertEquals(4, rs.getInt(1));
+        }
 
         try (Statement st = Conexion.establecerConexion().createStatement();
              ResultSet rs = st.executeQuery("SELECT nif FROM empresa WHERE id=1")) {
@@ -267,23 +268,19 @@ class CopiaSeguridadTest {
     }
 
     @Test
-    void aceptaEsquemaPosteriorConLasMismasTablas() throws Exception {
+    void aceptaCopiaConLasMismasTablas() throws Exception {
         insertarDatosBasicos();
         Path copia = crearCopia();
 
         Path posterior = tempDir.resolve("posterior.db");
         Files.copy(copia, posterior);
-        try (var c = DriverManager.getConnection("jdbc:sqlite:" + posterior);
-             Statement st = c.createStatement()) {
-            st.executeUpdate("PRAGMA user_version = 99");
-        }
 
         CopiaSeguridad.ResumenCopia r = servicio.leerResumen(posterior);
-        assertEquals(99, r.versionActual());
+        assertEquals("Pruebas Backup", r.nombreEmpresa());
     }
 
     @Test
-    void rechazaEsquemaPosteriorConTablasDistintas() throws Exception {
+    void rechazaCopiaConTablasDistintas() throws Exception {
         insertarDatosBasicos();
         Path copia = crearCopia();
 
@@ -293,7 +290,6 @@ class CopiaSeguridadTest {
              Statement st = c.createStatement()) {
             st.executeUpdate("DROP TABLE numero_disponible");
             st.executeUpdate("CREATE TABLE numero_disponible_v2 (id INTEGER PRIMARY KEY)");
-            st.executeUpdate("PRAGMA user_version = 99");
         }
 
         ValidacionException e = assertThrows(

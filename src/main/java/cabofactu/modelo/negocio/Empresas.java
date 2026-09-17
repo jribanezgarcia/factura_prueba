@@ -42,8 +42,8 @@ public final class Empresas {
     }
 
     /**
-     * Crea una empresa nueva: carpeta, base de datos vacia con todas las
-     * migraciones y entrada en el catalogo. No cambia la empresa activa ni la
+     * Crea una empresa nueva: carpeta, base de datos vacia con sus tablas
+     * y entrada en el catalogo. No cambia la empresa activa ni la
      * conexion en curso.
      */
     public static EmpresaInfo crearEmpresa(String nombre) throws Exception {
@@ -61,8 +61,9 @@ public final class Empresas {
     }
 
     /**
-     * Conecta con una empresa existente: la fija como activa, abre y migra su
-     * base de datos e inicializa la sesion con la fecha de trabajo.
+     * Conecta con una empresa existente: la fija como activa, abre su base
+     * de datos (creando las tablas si es nueva) e inicializa la sesion con
+     * la fecha de trabajo.
      */
     public static void conectar(String slug, LocalDate fecha) throws Exception {
         Conexion.setEmpresaActiva(slug);
@@ -105,7 +106,7 @@ public final class Empresas {
     }
 
     /**
-     * Registra el nombre visible de una empresa ya existente (migracion o
+     * Registra el nombre visible de una empresa ya existente (restaurada o
      * rescatada sin entrada de catalogo).
      */
     public static void registrarNombre(String slug, String nombre) throws IOException {

@@ -164,13 +164,11 @@ public class CopiaSeguridadController implements Vista {
         sb.append("Empresa: ").append(r.nombreEmpresa()).append("\n");
         sb.append("NIF: ").append(r.nif().isEmpty() ? "(sin NIF)" : r.nif()).append("\n");
         sb.append("Facturas: ").append(r.numFacturas()).append("\n");
-        sb.append("Última fecha: ").append(r.ultimaFecha() == null ? "(ninguna)" : r.ultimaFecha()).append("\n");
-        sb.append("Versión de esquema: ").append(r.versionActual());
-        int app = modelo.getCopiaSeguridad().versionEsquemaAplicacion();
-        if (r.versionActual() < app) {
-            sb.append(" (anterior a la de la aplicación)");
-        } else if (r.versionActual() > app) {
-            sb.append(" (posterior a la de la aplicación)");
+        sb.append("Última fecha: ");
+        if (r.ultimaFecha() == null) {
+            sb.append("(ninguna)");
+        } else {
+            sb.append(r.ultimaFecha());
         }
         if (!r.logoExiste() && !r.logoPath().isEmpty()) {
             sb.append("\n⚠ El logo del backup no se encontrará en esta máquina.");

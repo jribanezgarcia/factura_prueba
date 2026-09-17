@@ -78,19 +78,10 @@ public class CopiaSeguridadDAO {
 
             comprobarTablasNucleo(c);
 
-            int uv;
-            try (Statement st = c.createStatement();
-                 ResultSet rs = st.executeQuery("PRAGMA user_version")) {
-                uv = rs.next() ? rs.getInt(1) : 0;
-            }
-            if (uv <= 0) {
-                throw new ValidacionException("La copia no tiene una versión de esquema válida.");
-            }
-
             List<String> faltantes = elementosFaltantes(c);
             if (!faltantes.isEmpty()) {
                 throw new ValidacionException("La copia no contiene "
-                        + String.join(", ", faltantes) + "." + notaVersion(uv));
+                        + String.join(", ", faltantes) + ".");
             }
             String nombre = "";
             String nif = "";
@@ -125,7 +116,7 @@ public class CopiaSeguridadDAO {
             boolean logoExiste = !logoPath.isBlank() && Files.exists(Path.of(logoPath));
 
             return new CopiaSeguridad.ResumenCopia(nombre, nif, logoPath, logoExiste,
-                    numFacturas, ultimaFecha, uv);
+                    numFacturas, ultimaFecha);
         } catch (SQLException e) {
             throw new ValidacionException("No se pudo leer la copia: " + e.getMessage());
         }
@@ -147,7 +138,6 @@ public class CopiaSeguridadDAO {
     public void instalarComoBase(Path origen, Path destinoDb) throws IOException {
         Files.copy(origen, destinoDb, StandardCopyOption.REPLACE_EXISTING);
         borrarDiario(destinoDb.getParent());
-        Conexion.migrarBase(destinoDb);
     }
 
     private static void borrarDiario(Path carpeta) throws IOException {
@@ -166,17 +156,6 @@ public class CopiaSeguridadDAO {
                 }
             }
         }
-    }
-
-    private static String notaVersion(int uv) {
-        int app = Migraciones.ultimaVersion();
-        if (uv < app) {
-            return " La versión de esquema de la copia (" + uv + ") es anterior a la de la aplicación (" + app + ").";
-        }
-        if (uv > app) {
-            return " La versión de esquema de la copia (" + uv + ") es posterior a la de la aplicación (" + app + ").";
-        }
-        return "";
     }
 
     private static List<String> elementosFaltantes(Connection c) throws SQLException {

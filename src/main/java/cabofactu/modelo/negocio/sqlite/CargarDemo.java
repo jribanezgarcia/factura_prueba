@@ -15,8 +15,8 @@ import cabofactu.modelo.dominio.Empresa;
 
 /**
  * Carga la empresa de demostración: la recrea desde cero (si ya existía
- * se elimina antes, así que ejecutar dos veces no duplica nada), aplica
- * las migraciones y ejecuta {@code db/seed_demo.sql}.
+ * se elimina antes, así que ejecutar dos veces no duplica nada), crea sus
+ * tablas y ejecuta {@code db/seed_demo.sql}.
  */
 public final class CargarDemo {
 

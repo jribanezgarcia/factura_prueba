@@ -1,7 +1,6 @@
 package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
-import cabofactu.modelo.negocio.sqlite.Migraciones;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -149,9 +148,8 @@ class EmpresasTest {
         Path base = Conexion.rutaBaseDe("esquema_completa");
         try (var c = DriverManager.getConnection("jdbc:sqlite:" + base);
              Statement st = c.createStatement();
-             ResultSet rs = st.executeQuery("PRAGMA user_version")) {
+             ResultSet rs = st.executeQuery("SELECT name FROM sqlite_master WHERE type='table' AND name='empresa'")) {
             assertTrue(rs.next());
-            assertEquals(Migraciones.ultimaVersion(), rs.getInt(1));
         }
     }
 

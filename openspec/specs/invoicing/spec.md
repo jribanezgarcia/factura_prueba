@@ -781,11 +781,9 @@ Los campos obligatorios de la sección Empresa SHALL marcarse con un asterisco. 
 
 ### Requirement: Copia de seguridad
 
-La aplicación SHALL tener un botón para crear una copia de seguridad manual. En la V1 la copia SHALL ser únicamente del archivo SQLite; no se incluyen PDFs ni configuración. La aplicación SHALL permitir restaurar una copia de seguridad desde la misma pantalla. Antes de restaurar, la aplicación SHALL mostrar un resumen del contenido del archivo (empresa, NIF, número de facturas, última fecha y versión de esquema). La aplicación SHALL validar la copia antes de sustituir nada: rechazará archivos que no sean bases de datos válidas de la aplicación, que no contengan las tablas fundamentales de la aplicación ni que sean la propia base activa.
+La aplicación SHALL tener un botón para crear una copia de seguridad manual. En la V1 la copia SHALL ser únicamente del archivo SQLite; no se incluyen PDFs ni configuración. La aplicación SHALL permitir restaurar una copia de seguridad desde la misma pantalla. Antes de restaurar, la aplicación SHALL mostrar un resumen del contenido del archivo (empresa, NIF, número de facturas y última fecha). La aplicación SHALL validar la copia antes de sustituir nada: rechazará archivos que no sean bases de datos válidas de la aplicación, que no contengan las tablas fundamentales de la aplicación ni que sean la propia base activa.
 
-La aplicación SHALL decidir si acepta una copia por **su estructura**, no por su número de versión de esquema. Una copia cuya versión no coincida con la de la aplicación SHALL aceptarse si contiene todas las tablas y columnas que la aplicación necesita, avisando antes de continuar; SHALL rechazarse en caso contrario. El aviso y el rechazo SHALL decir si la versión de la copia es anterior o posterior a la de la aplicación, y SHALL NOT describir como más nueva una copia cuyo número de versión sea mayor por proceder de un historial de migraciones distinto.
-
-Cuando la copia sea de una versión anterior dentro del historial de migraciones que la aplicación conserva, SHALL aplicársele las migraciones pendientes al restaurarla. Tras restaurar, la base SHALL quedar en un estado utilizable sin que el usuario tenga que hacer nada más.
+La aplicación SHALL decidir si acepta una copia por **su estructura**: SHALL aceptarla si contiene todas las tablas y columnas que la aplicación necesita, y SHALL rechazarla en caso contrario, indicando qué tabla o columna falta. Las bases de datos SHALL NOT llevar número de versión de esquema. Tras restaurar, la base SHALL quedar en un estado utilizable sin que el usuario tenga que hacer nada más.
 
 Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de rescate del estado previo de la empresa activa. La aplicación SHALL permitir restaurar sobre la empresa activa o crear una nueva empresa a partir de la copia. La aplicación SHALL NOT permitir sobrescribir una empresa con los datos de otra con NIF distinto; en ese caso solo se ofrecerá crear una empresa nueva. Si el logo referenciado en la copia no existe en la máquina, la aplicación SHALL avisar y continuar sin bloquear.
 
@@ -803,11 +801,11 @@ Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de r
 
 #### Scenario: La base restaurada queda utilizable
 - **WHEN** el usuario restaura una copia de seguridad
-- **THEN** la base resultante queda a la última versión de esquema que la aplicación conoce, lista para usarse sin pasos adicionales
+- **THEN** la base resultante tiene todas las tablas y columnas de la aplicación y queda lista para usarse sin pasos adicionales
 
 #### Scenario: Restaurar una copia de esquema anterior
-- **WHEN** el usuario restaura una copia cuya versión de esquema es anterior a la de la aplicación dentro del historial de migraciones que la aplicación conserva
-- **THEN** la aplicación la acepta, la restaura y le aplica las migraciones pendientes, quedando al esquema actual
+- **WHEN** el usuario restaura una copia hecha con un programa anterior que contiene todas las tablas y columnas que la aplicación necesita
+- **THEN** la aplicación la acepta y la restaura tal cual, sin modificar sus tablas
 
 #### Scenario: Archivo sin las tablas fundamentales
 - **WHEN** el usuario selecciona un archivo que no contiene las tablas fundamentales de la aplicación
@@ -830,13 +828,12 @@ Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de r
 - **THEN** la aplicación rechaza el archivo e informa del error sin tocar los datos
 
 #### Scenario: Copia de esquema posterior con las mismas tablas
-- **WHEN** el archivo de copia tiene una versión de esquema superior pero contiene todas las tablas y columnas que la aplicación conoce
-- **THEN** la aplicación acepta la copia y avisa de la diferencia de versión antes de continuar
-- **AND** el aviso no afirma que la copia proceda de una versión más nueva de la aplicación cuando su número mayor solo refleja un historial de migraciones distinto
+- **WHEN** el archivo de copia procede de un programa más nuevo pero contiene todas las tablas y columnas que la aplicación conoce
+- **THEN** la aplicación acepta la copia sin mostrar ningún aviso de versión
 
 #### Scenario: Copia de esquema posterior con tablas distintas
-- **WHEN** el archivo de copia tiene una versión de esquema superior y falta alguna tabla o columna que la aplicación necesita
-- **THEN** la aplicación rechaza la copia e informa de qué falta, indicando si su número de versión es anterior o posterior
+- **WHEN** al archivo de copia le falta alguna tabla o columna que la aplicación necesita
+- **THEN** la aplicación rechaza la copia e informa de qué falta
 
 #### Scenario: Logo del backup inexistente
 - **WHEN** la copia referencia un archivo de logo que no existe en la máquina actual

@@ -1,7 +1,6 @@
 package cabofactu.fichero;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
-import cabofactu.modelo.negocio.sqlite.Migraciones;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 
@@ -39,8 +38,7 @@ public class CopiaSeguridad {
             String logoPath,
             boolean logoExiste,
             int numFacturas,
-            LocalDate ultimaFecha,
-            int versionActual
+            LocalDate ultimaFecha
     ) {
     }
 
@@ -122,10 +120,5 @@ public class CopiaSeguridad {
     /** Facturas de la empresa activa, para la regla de restauración. */
     public int facturasEmpresaActiva() {
         return facturaDAO.contar();
-    }
-
-    /** Versión de esquema de la aplicación, para comparar con la copia. */
-    public int versionEsquemaAplicacion() {
-        return Migraciones.ultimaVersion();
     }
 }

@@ -30,7 +30,7 @@ flowchart TD
     C["📦 Modelo<br/><small>crea y reparte todo al arrancar</small>"] --> D
     D["🧠 Reglas<br/><b>modelo/negocio</b>"] --> E
     E["🗄️ DAO<br/><b>modelo/negocio/sqlite</b>"] --> F
-    F["🔌 Conexion + Migraciones<br/><small>conexión SQLite y tablas</small>"]
+    F["🔌 Conexion<br/><small>conexión SQLite y creación de tablas</small>"]
 
     style A fill:#FDE68A,stroke:#B45309,color:#1F2937
     style B fill:#BFDBFE,stroke:#1D4ED8,color:#1F2937
@@ -238,7 +238,7 @@ erDiagram
 | **`Clock` inyectado** | `LocalDate.now()` repartido por el código | Permite fijar la fecha en los tests y tener una sola fuente de fecha y hora |
 | **Excepción de datos no comprobada** | `throws SQLException` en todas las capas | Las capas altas no dependen del driver JDBC |
 | **Instancia única con bloqueo de fichero** | Permitir varias ventanas | SQLite con un solo usuario: dos ventanas escribiendo a la vez podrían pisarse |
-| **Migraciones versionadas** (`PRAGMA user_version`) | Crear las tablas a mano | Una base antigua se actualiza sola al abrirla |
+| **Un único script de tablas** (`db/crear_tablas.sql`) | Migraciones versionadas (`PRAGMA user_version`) | En una versión en desarrollo las tablas son siempre las mismas; crear una base nueva es ejecutar un solo script |
 | **OpenPDF** | Generar el PDF desde otra herramienta | Librería Java libre que permite dibujar cabecera, tablas y pie a medida |
 
 ---

@@ -1,10 +1,14 @@
 package cabofactu.modelo.negocio.sqlite;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -19,6 +23,7 @@ import java.util.stream.Stream;
 public final class Conexion {
 
     private static final String FICHERO_BASE = "facturas.db";
+    private static final String SCRIPT_TABLAS = "db/crear_tablas.sql";
     private static Connection conexion;
     private static Path carpetaRaiz = carpetaRaizPorDefecto();
     private static Path carpetaEmpresa = carpetaRaiz;
@@ -117,7 +122,7 @@ public final class Conexion {
                 throw new SQLException("No se pudo crear la carpeta de datos", e);
             }
             conexion = abrir(rutaBase());
-            Migraciones.migrar(conexion);
+            crearTablasSiFaltan(conexion);
         }
         return conexion;
     }
@@ -130,7 +135,7 @@ public final class Conexion {
         return c;
     }
 
-    /** Crea una base nueva en la ruta indicada, con la carpeta padre y el esquema. */
+    /** Crea una base nueva en la ruta indicada, con su carpeta y sus tablas. */
     public static void crearBase(Path destinoDb) {
         try {
             Files.createDirectories(destinoDb.getParent());
@@ -138,18 +143,57 @@ public final class Conexion {
             throw new DatosException("No se pudo crear la carpeta de datos", e);
         }
         try (Connection c = abrir(destinoDb)) {
-            Migraciones.migrar(c);
+            crearTablasSiFaltan(c);
         } catch (SQLException e) {
             throw new DatosException(e);
         }
     }
 
-    /** Aplica las migraciones pendientes a una base existente. */
-    public static void migrarBase(Path destinoDb) {
-        try (Connection c = abrir(destinoDb)) {
-            Migraciones.migrar(c);
-        } catch (SQLException e) {
-            throw new DatosException(e);
+    /**
+     * Creamos las tablas de la aplicación si la base todavía no las tiene.
+     * Consideramos que una base es nueva cuando no existe la tabla empresa;
+     * así, abrir una base ya creada no vuelve a insertar los tipos de IVA.
+     */
+    public static void crearTablasSiFaltan(Connection c) throws SQLException {
+        if (!existeTabla(c, "empresa")) {
+            ejecutarScript(c, leerScript(SCRIPT_TABLAS));
+        }
+    }
+
+    private static boolean existeTabla(Connection c, String tabla) throws SQLException {
+        try (PreparedStatement ps = c.prepareStatement(
+                "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?")) {
+            ps.setString(1, tabla);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    /**
+     * Ejecuta cada sentencia del script por separado (una unica llamada a
+     * execute no garantiza que el driver procese todas las sentencias).
+     */
+    private static void ejecutarScript(Connection conn, String sql) throws SQLException {
+        for (String sentencia : sql.split(";")) {
+            String t = sentencia.trim();
+            if (t.isEmpty()) {
+                continue;
+            }
+            try (Statement st = conn.createStatement()) {
+                st.execute(t);
+            }
+        }
+    }
+
+    private static String leerScript(String resource) {
+        try (InputStream in = Conexion.class.getClassLoader().getResourceAsStream(resource)) {
+            if (in == null) {
+                throw new IllegalStateException("Script no encontrado: " + resource);
+            }
+            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new IllegalStateException("Error al leer el script " + resource, e);
         }
     }
 
