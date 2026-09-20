@@ -13,7 +13,7 @@ Por dónde va el proyecto y qué toca ahora. Las normas de cómo se escribe el c
 | Cambios terminados | `openspec/changes/archive/` |
 | Normas de código y flujo de trabajo | `AGENTS.md` |
 | Estado (este fichero) | `ESTADO.md` |
-| Notas de trabajo y decisiones sin publicar | `borrador_changes/` (fuera de git) |
+| Notas de trabajo y decisiones sin publicar | `borrador_changes/` (fuera de git; en `viejo/` la auditoría y las pruebas visuales de agosto) |
 | Documentación técnica | `docs/tecnico.md`, `README.md` |
 
 El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/changes/archive/` y en `git log`.
