@@ -36,6 +36,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
 
+Change escrito y pendiente de aplicar: **`modulo-clientes`** — segundo módulo: `Cliente` que se valida en sus setters, `Clientes` singleton con el SQL dentro (fuera `ClienteDAO`), las operaciones de cliente en `Controlador` y `Modelo`, la ficha en `FichaCliente.fxml` y la pantalla con el patrón de tabla + formulario.
+
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
 ## Qué toca ahora
