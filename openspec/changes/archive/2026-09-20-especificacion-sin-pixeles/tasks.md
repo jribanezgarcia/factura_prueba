@@ -20,4 +20,4 @@
 
 ## 4. Pruebas manuales
 
-- [ ] 4.1 Ninguna: este change no cambia el programa. Basta con abrir la aplicación una vez y comprobar que sigue viéndose igual.
+- [x] 4.1 Ninguna: este change no cambia el programa. Basta con abrir la aplicación una vez y comprobar que sigue viéndose igual.
