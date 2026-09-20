@@ -32,8 +32,7 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026). No hay ningún change aplicándose.
 
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
-- Decidido hasta ahora: se quitan las versiones de factura; VeriFactu se hará más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; el negocio pasa a llevar el SQL dentro (sin DAO); las clases de datos validan en sus setters; solo se usa `Exception`; `Dialogos` vuelve a ser la clase que se usa en clase; las pantallas de tabla usan formulario modal reutilizable.
-- Quedan por decidir los últimos detalles de código (reparto de `Facturas` y `Series`, recorrer listas, textos, constantes, paquetes y comentarios).
+- **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
 
 **Changes escritos que ya no valen**, pendientes de borrar: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`. Se rehacen con el enfoque por módulos.
 
