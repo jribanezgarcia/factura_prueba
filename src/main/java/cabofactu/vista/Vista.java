@@ -1,28 +1,158 @@
 package cabofactu.vista;
 
+import cabofactu.controlador.Controlador;
 import cabofactu.modelo.Modelo;
+import cabofactu.vista.recursos.LocalizadorRecursos;
+import cabofactu.vista.utilidades.Botones;
+import cabofactu.vista.utilidades.Dialogos;
+import cabofactu.vista.utilidades.GestorTemas;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
+
+import java.io.IOException;
 
 /**
- * Contrato de las vistas FXML: reciben modelo y navegador tras su carga.
+ * Vista de la aplicación. Es un singleton: solo existe un objeto, que se pide
+ * con Vista.getInstancia() desde cualquier pantalla. Guarda el controlador, la
+ * ventana en la que se muestran las pantallas y la pantalla actual.
  */
-public interface Vista {
+public class Vista {
 
-    default void setModelo(Modelo m) {
+    private static final String MENU = "MenuPrincipal.fxml";
+    private static final String CONFIGURACION = "Configuracion.fxml";
+
+    private static Vista instancia;
+    private Controlador controlador;
+    private Stage ventana;
+    private Pantalla pantallaActual;
+
+    private Vista() {
     }
 
-    default void setNavegador(Navegador n) {
+    public static Vista getInstancia() {
+        if (instancia == null) {
+            instancia = new Vista();
+        }
+        return instancia;
     }
 
-    /** Se llama despues de inyectar modelo; aqui se puebla la UI. */
-    default void alIniciar() {
+    public void setControlador(Controlador controlador) {
+        if (controlador == null) {
+            throw new IllegalArgumentException("El controlador no puede ser nulo.");
+        }
+        this.controlador = controlador;
     }
 
-    /** false si hay cambios sin guardar que impiden volver o cerrar. */
-    default boolean puedeCerrar() {
+    public Controlador getControlador() {
+        return controlador;
+    }
+
+    public Stage getVentana() {
+        return ventana;
+    }
+
+    public Pantalla getPantallaActual() {
+        return pantallaActual;
+    }
+
+    /** Cambiamos la ventana donde se muestran las pantallas; todavía no tiene ninguna. */
+    public void setVentana(Stage ventana) {
+        this.ventana = ventana;
+        this.pantallaActual = null;
+    }
+
+    /** Arrancamos JavaFX; el método vuelve cuando se cierra la última ventana. */
+    public void comenzar() {
+        LanzadorVentanaPrincipal.comenzar();
+    }
+
+    /** Menú principal si la empresa tiene sus datos completos; si no, Configuración. */
+    public void mostrarInicio() {
+        if (controlador.getModelo().getConfiguracion().empresaCompleta()) {
+            mostrar(MENU);
+        } else {
+            mostrar(CONFIGURACION);
+        }
+    }
+
+    /**
+     * Cargamos la pantalla del FXML y la ponemos en la ventana. Si la pantalla
+     * actual tiene cambios sin guardar y el usuario decide quedarse, no cambiamos
+     * y devolvemos null. Si no, devolvemos su controlador, por si hay que pasarle
+     * algún dato.
+     *
+     * Cómo funciona: al hacer loader.load(), JavaFX crea el controlador y llama a
+     * su initialize(), donde la pantalla carga sus datos. En ese momento la
+     * pantalla todavía no está en la ventana; por eso los atajos de teclado se
+     * registran después, en alMostrar().
+     */
+    public Pantalla mostrar(String fxml) {
+        if (pantallaActual != null && !pantallaActual.puedeCerrar()) {
+            return null;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(LocalizadorRecursos.class.getResource(fxml));
+            Parent raiz = loader.load();
+            Scene escena = new Scene(raiz);
+            GestorTemas.aplicar(escena, controlador.getModelo());
+            ventana.setScene(escena);
+            ConfiguracionVentana configuracion = ConfiguracionVentana.para(fxml);
+            if (configuracion != null) {
+                configuracion.aplicar(ventana);
+                ventana.setTitle(Ventanas.PREFIJO + configuracion.titulo());
+            }
+            Ventanas.aplicarIcono(ventana);
+            Pantalla pantalla = loader.getController();
+            pantallaActual = pantalla;
+            if (pantalla != null) {
+                pantalla.alMostrar();
+            }
+            raiz.applyCss();
+            Botones.igualarGrupos(raiz);
+            return pantalla;
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo cargar la pantalla " + fxml, e);
+        }
+    }
+
+    /**
+     * Abrimos la ventana principal (1024x768) con la primera pantalla. Al pulsar la
+     * X o Salir preguntamos antes de cerrar.
+     */
+    public void abrirVentanaPrincipal() {
+        Stage principal = new Stage();
+        principal.setOnCloseRequest(e -> pedirCierre(e));
+        setVentana(principal);
+        mostrarInicio();
+        principal.show();
+    }
+
+    /** Si el usuario no quiere salir, anulamos el cierre de la ventana. */
+    private void pedirCierre(WindowEvent evento) {
+        if (!puedeSalir()) {
+            evento.consume();
+        }
+    }
+
+    /** Las mismas preguntas de antes de salir: cambios sin guardar y confirmación. */
+    private boolean puedeSalir() {
+        if (pantallaActual != null && !pantallaActual.puedeCerrar()) {
+            return false;
+        }
+        if (!Dialogos.mostrarDialogoConfirmacion("Salir", "¿Seguro que deseas salir de la aplicación?")) {
+            return false;
+        }
+        if (pantallaActual != null) {
+            pantallaActual.alCerrar();
+        }
         return true;
     }
 
-    /** Se llama al cerrar la ventana (para persistir preferencias). */
-    default void alCerrar() {
+    /** Pedimos cerrar la ventana principal, igual que al pulsar la X. */
+    public void salir() {
+        ventana.fireEvent(new WindowEvent(ventana, WindowEvent.WINDOW_CLOSE_REQUEST));
     }
 }

@@ -7,13 +7,13 @@ import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.ExportadorPdf;
 import cabofactu.pdf.DisposicionCabecera;
 import cabofactu.modelo.negocio.Empresas;
-import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.Sesion;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
@@ -39,11 +39,12 @@ import javafx.stage.FileChooser;
 import javafx.util.StringConverter;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import cabofactu.vista.Navegador;
+import java.util.ResourceBundle;
+import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
-import cabofactu.vista.utilidades.BarraNavegacion;
 import cabofactu.vista.utilidades.Dialogos;
 import cabofactu.vista.utilidades.PreviaCabecera;
 import cabofactu.vista.utilidades.GestorTemas;
@@ -53,13 +54,11 @@ import cabofactu.vista.utilidades.GestorTemas;
  * y apariencia se guardan con un boton global; IVA, Retenciones, Series y
  * Empresas se administran fila a fila con sus propias acciones.
  */
-public class ConfiguracionController implements Vista {
+public class ConfiguracionController implements Pantalla, Initializable {
 
     private static final String PREV_CARPETA = "carpeta_facturas";
     private static final String PREV_EXPORT = "ultima_carpeta_export";
 
-    private Modelo modelo;
-    private Navegador nav;
     private Empresa empresa = new Empresa();
     private TipoIva ivaSeleccionado;
     private TipoRetencion retencionSeleccionada;
@@ -124,13 +123,14 @@ public class ConfiguracionController implements Vista {
     private TextField txtCarpetaAuto;
     @FXML
     private TextField txtUltimaCarpeta;
+    // Cómo funciona: JavaFX inyecta aquí el controlador del <fx:include fx:id="barra">;
+    // el nombre del campo es el fx:id más "Controller".
     @FXML
-    private HBox barraNavegacion;
+    private BarraNavegacionController barraController;
     @FXML
     private Label lblDatosPendientes;
     @FXML
     private Button btnVolver;
-    private HBox barraSuperior;
     private boolean datosPendientes;
     @FXML
     private ComboBox<String> comboTema;
@@ -212,34 +212,23 @@ public class ConfiguracionController implements Vista {
     private Label lblEmpresasAviso;
 
     @Override
-    public void setModelo(Modelo m) {
-        this.modelo = m;
-    }
-
-    @Override
-    public void setNavegador(Navegador n) {
-        this.nav = n;
-    }
-
-    @Override
-    public void alIniciar() {
-        barraSuperior = BarraNavegacion.crear(nav, "configuracion");
-        barraNavegacion.getChildren().add(barraSuperior);
+    public void initialize(URL url, ResourceBundle rb) {
+        barraController.marcarActivo("configuracion");
         cargarTema();
         try {
-            empresa = modelo.getConfiguracion().getEmpresa();
+            empresa = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
         } catch (Exception e) {
             empresa = new Empresa();
         }
         cargarEmpresa();
-        datosPendientes = !modelo.getConfiguracion().datosPendientes(empresa).isEmpty();
+        datosPendientes = !Vista.getInstancia().getControlador().getModelo().getConfiguracion().datosPendientes(empresa).isEmpty();
         if (datosPendientes) {
             if (txtNombre.getText() == null || txtNombre.getText().isBlank()) {
                 txtNombre.setText(nombreVisibleEmpresaActiva());
             }
             lblDatosPendientes.setVisible(true);
             lblDatosPendientes.setManaged(true);
-            BarraNavegacion.bloquearSalvoSalir(barraSuperior);
+            barraController.bloquearSalvoSalir();
             btnVolver.setDisable(true);
         }
         cargarIvas();
@@ -267,7 +256,7 @@ public class ConfiguracionController implements Vista {
         comboTema.setValue(GestorTemas.temaActivo());
         comboTema.valueProperty().addListener((o, a, b) -> {
             if (b != null) {
-                GestorTemas.seleccionar(nav.stage().getScene(), b);
+                GestorTemas.seleccionar(Vista.getInstancia().getVentana().getScene(), b);
             }
         });
     }
@@ -316,7 +305,7 @@ public class ConfiguracionController implements Vista {
         chooser.setTitle("Seleccionar logo");
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Imágenes", "*.png", "*.jpg", "*.jpeg", "*.gif", "*.bmp"));
-        File f = chooser.showOpenDialog(nav.stage());
+        File f = chooser.showOpenDialog(Vista.getInstancia().getVentana());
         if (f != null) {
             txtLogoPath.setText(f.getAbsolutePath());
             Image imagen = new Image(f.toURI().toString());
@@ -324,7 +313,7 @@ public class ConfiguracionController implements Vista {
                 int ancho = (int) imagen.getWidth();
                 int alto = (int) imagen.getHeight();
                 long minimo = Math.round(DisposicionCabecera.anchoLogoDibujado((float) imagen.getWidth(), (float) imagen.getHeight()) * 1.5);
-                Dialogos.info("Logo", "La imagen es pequeña (" + ancho + " × " + alto
+                Dialogos.mostrarDialogoInformacion("Logo", "La imagen es pequeña (" + ancho + " × " + alto
                         + " píxeles) y puede verse borrosa al imprimir la factura. "
                         + "Para un buen resultado, usa una imagen de al menos " + minimo + " píxeles de ancho.");
             }
@@ -345,13 +334,13 @@ public class ConfiguracionController implements Vista {
 
     private void cargarPdfs() {
         try {
-            String auto = modelo.getConfiguracion().getPreferencia(PREV_CARPETA);
+            String auto = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_CARPETA);
             txtCarpetaAuto.setText(nz(auto));
-            String ultima = modelo.getConfiguracion().getPreferencia(PREV_EXPORT);
+            String ultima = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_EXPORT);
             txtUltimaCarpeta.setText(nz(ultima));
-            colorPdf.setValue(colorGuardado(modelo.getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR)));
+            colorPdf.setValue(colorGuardado(Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR)));
         } catch (Exception e) {
-            Dialogos.error("Configuración", "No se pudieron cargar las carpetas de PDF: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar las carpetas de PDF: " + e.getMessage());
         }
     }
 
@@ -369,7 +358,7 @@ public class ConfiguracionController implements Vista {
     private void seleccionarCarpetaAuto() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Carpeta automática de almacenamiento de PDF");
-        File dir = chooser.showDialog(nav.stage());
+        File dir = chooser.showDialog(Vista.getInstancia().getVentana());
         if (dir != null) {
             txtCarpetaAuto.setText(dir.getAbsolutePath());
         }
@@ -379,29 +368,29 @@ public class ConfiguracionController implements Vista {
     private void guardar() {
         try {
             recogerEmpresa();
-            List<String> faltan = modelo.getConfiguracion().datosPendientes(empresa);
+            List<String> faltan = Vista.getInstancia().getControlador().getModelo().getConfiguracion().datosPendientes(empresa);
             if (!faltan.isEmpty()) {
-                Dialogos.error("Configuración",
+                Dialogos.mostrarDialogoError("Configuración",
                         "Faltan datos obligatorios o no son válidos:\n" + String.join(", ", faltan));
                 return;
             }
-            modelo.getConfiguracion().saveEmpresa(empresa);
-            modelo.getConfiguracion().setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
+            Vista.getInstancia().getControlador().getModelo().getConfiguracion().saveEmpresa(empresa);
+            Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
             Color c = colorPdf.getValue();
             String hex = String.format("#%02X%02X%02X",
                     (int) Math.round(c.getRed() * 255),
                     (int) Math.round(c.getGreen() * 255),
                     (int) Math.round(c.getBlue() * 255));
-            modelo.getConfiguracion().setPreferencia(ExportadorPdf.PREF_COLOR, hex);
-            GestorTemas.guardar(modelo);
+            Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(ExportadorPdf.PREF_COLOR, hex);
+            GestorTemas.guardar(Vista.getInstancia().getControlador().getModelo());
             if (datosPendientes) {
-                Dialogos.info("Configuración", "Datos de la empresa completados.");
-                nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
+                Dialogos.mostrarDialogoInformacion("Configuración", "Datos de la empresa completados.");
+                Vista.getInstancia().mostrar("MenuPrincipal.fxml");
             } else {
-                Dialogos.info("Configuración", "Configuración guardada.");
+                Dialogos.mostrarDialogoInformacion("Configuración", "Configuración guardada.");
             }
         } catch (Exception e) {
-            Dialogos.error("Configuración", "No se pudo guardar: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Configuración", "No se pudo guardar: " + e.getMessage());
         }
     }
 
@@ -520,10 +509,10 @@ public class ConfiguracionController implements Vista {
 
     private void refrescarIvas() {
         try {
-            ivas.setAll(modelo.getTiposIva().listar(false));
+            ivas.setAll(Vista.getInstancia().getControlador().getModelo().getTiposIva().listar(false));
             tablaIva.setItems(ivas);
         } catch (Exception e) {
-            Dialogos.error("Configuración", "No se pudieron cargar los tipos de IVA: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar los tipos de IVA: " + e.getMessage());
         }
     }
 
@@ -544,7 +533,7 @@ public class ConfiguracionController implements Vista {
 
     private boolean enUsoIva(TipoIva t) {
         try {
-            return t.getId() != null && modelo.getTiposIva().enUso(t.getId());
+            return t.getId() != null && Vista.getInstancia().getControlador().getModelo().getTiposIva().enUso(t.getId());
         } catch (Exception e) {
             return false;
         }
@@ -567,7 +556,7 @@ public class ConfiguracionController implements Vista {
     private void guardarIva() {
         String nombre = trim(txtIvaNombre);
         if (nombre.isBlank()) {
-            Dialogos.error("IVA", "Indique el nombre del tipo de IVA.");
+            Dialogos.mostrarDialogoError("IVA", "Indique el nombre del tipo de IVA.");
             return;
         }
         Integer porcentaje = null;
@@ -580,7 +569,7 @@ public class ConfiguracionController implements Vista {
                     throw new NumberFormatException();
                 }
             } catch (NumberFormatException e) {
-                Dialogos.error("IVA", "El porcentaje debe ser un entero entre 0 y 100 (o dejar vacío para exento).");
+                Dialogos.mostrarDialogoError("IVA", "El porcentaje debe ser un entero entre 0 y 100 (o dejar vacío para exento).");
                 return;
             }
         }
@@ -588,19 +577,19 @@ public class ConfiguracionController implements Vista {
             porcentaje = null;
         }
         if (porcentaje == null && ivaSeleccionado != null && !ivaSeleccionado.isExento()) {
-            Dialogos.error("IVA", "Un tipo ya usado en el histórico no puede pasarse a exento.");
+            Dialogos.mostrarDialogoError("IVA", "Un tipo ya usado en el histórico no puede pasarse a exento.");
             return;
         }
         if (porcentaje != null && ivaSeleccionado != null && ivaSeleccionado.isExento()) {
-            Dialogos.error("IVA", "Un tipo de exención ya usado en el histórico no puede convertirse a porcentaje.");
+            Dialogos.mostrarDialogoError("IVA", "Un tipo de exención ya usado en el histórico no puede convertirse a porcentaje.");
             return;
         }
         if (suplido && ivaSeleccionado != null && !ivaSeleccionado.isEsSuplido()) {
-            Dialogos.error("IVA", "Un tipo existente no puede convertirse a suplido.");
+            Dialogos.mostrarDialogoError("IVA", "Un tipo existente no puede convertirse a suplido.");
             return;
         }
         if (!suplido && ivaSeleccionado != null && ivaSeleccionado.isEsSuplido()) {
-            Dialogos.error("IVA", "Un suplido existente no puede dejar de ser suplido.");
+            Dialogos.mostrarDialogoError("IVA", "Un suplido existente no puede dejar de ser suplido.");
             return;
         }
         try {
@@ -611,14 +600,14 @@ public class ConfiguracionController implements Vista {
             t.setEsSuplido(suplido);
             if (t.getId() == null) {
                 t.setActivo(true);
-                t.setId(modelo.getTiposIva().insertar(t));
+                t.setId(Vista.getInstancia().getControlador().getModelo().getTiposIva().insertar(t));
             } else {
-                modelo.getTiposIva().actualizar(t);
+                Vista.getInstancia().getControlador().getModelo().getTiposIva().actualizar(t);
             }
             refrescarIvas();
             nuevoIva();
         } catch (Exception e) {
-            Dialogos.error("IVA", "No se pudo guardar: " + e.getMessage());
+            Dialogos.mostrarDialogoError("IVA", "No se pudo guardar: " + e.getMessage());
         }
     }
 
@@ -626,19 +615,19 @@ public class ConfiguracionController implements Vista {
     private void inactivarIva() {
         TipoIva t = tablaIva.getSelectionModel().getSelectedItem();
         if (t == null) {
-            Dialogos.error("IVA", "Seleccione un tipo de IVA de la tabla.");
+            Dialogos.mostrarDialogoError("IVA", "Seleccione un tipo de IVA de la tabla.");
             return;
         }
         String accion = t.isActivo() ? "inactivar" : "reactivar";
-        if (!Dialogos.confirmar("IVA", "¿" + (t.isActivo() ? "Inactivar" : "Reactivar")
+        if (!Dialogos.mostrarDialogoConfirmacion("IVA", "¿" + (t.isActivo() ? "Inactivar" : "Reactivar")
                 + " el tipo \"" + nz(t.getNombre()) + "\"?")) {
             return;
         }
         try {
-            modelo.getTiposIva().setActivo(t.getId(), !t.isActivo());
+            Vista.getInstancia().getControlador().getModelo().getTiposIva().setActivo(t.getId(), !t.isActivo());
             refrescarIvas();
         } catch (Exception e) {
-            Dialogos.error("IVA", "No se pudo " + accion + ": " + e.getMessage());
+            Dialogos.mostrarDialogoError("IVA", "No se pudo " + accion + ": " + e.getMessage());
         }
     }
 
@@ -656,10 +645,10 @@ public class ConfiguracionController implements Vista {
 
     private void refrescarRetenciones() {
         try {
-            retenciones.setAll(modelo.getTiposRetencion().listar(false));
+            retenciones.setAll(Vista.getInstancia().getControlador().getModelo().getTiposRetencion().listar(false));
             tablaRetenciones.setItems(retenciones);
         } catch (Exception e) {
-            Dialogos.error("Configuración", "No se pudieron cargar los tipos de retención: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar los tipos de retención: " + e.getMessage());
         }
     }
 
@@ -678,7 +667,7 @@ public class ConfiguracionController implements Vista {
 
     private boolean enUsoRetencion(TipoRetencion t) {
         try {
-            return t.getId() != null && modelo.getTiposRetencion().enUso(t.getId());
+            return t.getId() != null && Vista.getInstancia().getControlador().getModelo().getTiposRetencion().enUso(t.getId());
         } catch (Exception e) {
             return false;
         }
@@ -699,7 +688,7 @@ public class ConfiguracionController implements Vista {
     private void guardarRetencion() {
         String nombre = trim(txtRetencionNombre);
         if (nombre.isBlank()) {
-            Dialogos.error("Retención", "Indique el nombre del tipo de retención.");
+            Dialogos.mostrarDialogoError("Retención", "Indique el nombre del tipo de retención.");
             return;
         }
         int porcentaje;
@@ -709,13 +698,13 @@ public class ConfiguracionController implements Vista {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            Dialogos.error("Retención", "El porcentaje debe ser un entero entre 0 y 100.");
+            Dialogos.mostrarDialogoError("Retención", "El porcentaje debe ser un entero entre 0 y 100.");
             return;
         }
         if (retencionSeleccionada != null && enUsoRetencion(retencionSeleccionada)) {
             int actual = retencionSeleccionada.getPorcentaje() != null ? retencionSeleccionada.getPorcentaje() : 0;
             if (porcentaje != actual) {
-                Dialogos.error("Retención", "El porcentaje de un tipo ya usado en el histórico no se puede modificar.");
+                Dialogos.mostrarDialogoError("Retención", "El porcentaje de un tipo ya usado en el histórico no se puede modificar.");
                 return;
             }
         }
@@ -725,14 +714,14 @@ public class ConfiguracionController implements Vista {
             t.setPorcentaje(porcentaje);
             if (t.getId() == null) {
                 t.setActivo(true);
-                t.setId(modelo.getTiposRetencion().insertar(t));
+                t.setId(Vista.getInstancia().getControlador().getModelo().getTiposRetencion().insertar(t));
             } else {
-                modelo.getTiposRetencion().actualizar(t);
+                Vista.getInstancia().getControlador().getModelo().getTiposRetencion().actualizar(t);
             }
             refrescarRetenciones();
             nuevoRetencion();
         } catch (Exception e) {
-            Dialogos.error("Retención", "No se pudo guardar: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Retención", "No se pudo guardar: " + e.getMessage());
         }
     }
 
@@ -740,19 +729,19 @@ public class ConfiguracionController implements Vista {
     private void inactivarRetencion() {
         TipoRetencion t = tablaRetenciones.getSelectionModel().getSelectedItem();
         if (t == null) {
-            Dialogos.error("Retención", "Seleccione un tipo de retención de la tabla.");
+            Dialogos.mostrarDialogoError("Retención", "Seleccione un tipo de retención de la tabla.");
             return;
         }
         String accion = t.isActivo() ? "inactivar" : "reactivar";
-        if (!Dialogos.confirmar("Retención", "¿" + (t.isActivo() ? "Inactivar" : "Reactivar")
+        if (!Dialogos.mostrarDialogoConfirmacion("Retención", "¿" + (t.isActivo() ? "Inactivar" : "Reactivar")
                 + " el tipo \"" + nz(t.getNombre()) + "\"?")) {
             return;
         }
         try {
-            modelo.getTiposRetencion().setActivo(t.getId(), !t.isActivo());
+            Vista.getInstancia().getControlador().getModelo().getTiposRetencion().setActivo(t.getId(), !t.isActivo());
             refrescarRetenciones();
         } catch (Exception e) {
-            Dialogos.error("Retención", "No se pudo " + accion + ": " + e.getMessage());
+            Dialogos.mostrarDialogoError("Retención", "No se pudo " + accion + ": " + e.getMessage());
         }
     }
 
@@ -788,20 +777,20 @@ public class ConfiguracionController implements Vista {
 
     private void refrescarSeries() {
         try {
-            List<Serie> lista = modelo.getSeries().listar();
+            List<Serie> lista = Vista.getInstancia().getControlador().getModelo().getSeries().listar();
             int anio = anioTrabajo();
             for (Serie s : lista) {
-                s.setSiguienteCorrelativo(modelo.getSeries().getSiguiente(s.getId(), anio));
+                s.setSiguienteCorrelativo(Vista.getInstancia().getControlador().getModelo().getSeries().getSiguiente(s.getId(), anio));
             }
             series.setAll(lista);
             tablaSeries.setItems(series);
         } catch (Exception e) {
-            Dialogos.error("Configuración", "No se pudieron cargar las series: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar las series: " + e.getMessage());
         }
     }
 
     private int anioTrabajo() {
-        return modelo.getReloj().fechaTrabajo().getYear();
+        return Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo().getYear();
     }
 
     private void seleccionarSerie(Serie s) {
@@ -860,7 +849,7 @@ public class ConfiguracionController implements Vista {
                 throw new NumberFormatException();
             }
         } catch (NumberFormatException e) {
-            Dialogos.error("Series", "El siguiente número debe ser un entero mayor o igual que 1.");
+            Dialogos.mostrarDialogoError("Series", "El siguiente número debe ser un entero mayor o igual que 1.");
             return;
         }
         try {
@@ -869,14 +858,14 @@ public class ConfiguracionController implements Vista {
                         (x.getCodigo() == null || x.getCodigo().isBlank())
                                 && (serieSeleccionada == null || !serieSeleccionada.getId().equals(x.getId())));
                 if (otraSinCodigo) {
-                    Dialogos.error("Series", "Solo puede haber una serie sin código. Ponle un código o una descripción para distinguirla.");
+                    Dialogos.mostrarDialogoError("Series", "Solo puede haber una serie sin código. Ponle un código o una descripción para distinguirla.");
                     return;
                 }
             } else {
                 for (Serie s : series) {
                     if (s.getCodigo() != null && s.getCodigo().equalsIgnoreCase(codigo)
                             && (serieSeleccionada == null || !serieSeleccionada.getId().equals(s.getId()))) {
-                        Dialogos.error("Series", "Ya existe una serie con el código \"" + codigo + "\".");
+                        Dialogos.mostrarDialogoError("Series", "Ya existe una serie con el código \"" + codigo + "\".");
                         return;
                     }
                 }
@@ -889,16 +878,16 @@ public class ConfiguracionController implements Vista {
             s.setSiguienteCorrelativo(siguiente);
             s.setSufijoFecha(comboSerieFormato.getValue() != null ? comboSerieFormato.getValue() : Serie.SufijoFecha.MES);
             if (s.getId() == null) {
-                s.setId(modelo.getSeries().insertar(s));
+                s.setId(Vista.getInstancia().getControlador().getModelo().getSeries().insertar(s));
             } else {
-                modelo.getSeries().actualizar(s);
+                Vista.getInstancia().getControlador().getModelo().getSeries().actualizar(s);
             }
-            int nuevoAnio = Math.max(modelo.getSeries().getSiguiente(s.getId(), anioTrabajo()), siguiente);
-            modelo.getSeries().actualizarSiguiente(s.getId(), anioTrabajo(), nuevoAnio);
+            int nuevoAnio = Math.max(Vista.getInstancia().getControlador().getModelo().getSeries().getSiguiente(s.getId(), anioTrabajo()), siguiente);
+            Vista.getInstancia().getControlador().getModelo().getSeries().actualizarSiguiente(s.getId(), anioTrabajo(), nuevoAnio);
             refrescarSeries();
             nuevoSerie();
         } catch (Exception e) {
-            Dialogos.error("Series", "No se pudo guardar: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Series", "No se pudo guardar: " + e.getMessage());
         }
     }
 
@@ -906,30 +895,30 @@ public class ConfiguracionController implements Vista {
     private void eliminarSerie() {
         Serie s = tablaSeries.getSelectionModel().getSelectedItem();
         if (s == null) {
-            Dialogos.error("Series", "Seleccione una serie de la tabla.");
+            Dialogos.mostrarDialogoError("Series", "Seleccione una serie de la tabla.");
             return;
         }
         try {
-            if (modelo.getSeries().tieneFacturas(s.getId())) {
-                Dialogos.error("Series", "La serie \"" + codigoOBlanco(s)
+            if (Vista.getInstancia().getControlador().getModelo().getSeries().tieneFacturas(s.getId())) {
+                Dialogos.mostrarDialogoError("Series", "La serie \"" + codigoOBlanco(s)
                         + "\" no puede eliminarse: tiene facturas (activas o históricas). El histórico no se elimina.");
                 return;
             }
         } catch (Exception e) {
-            Dialogos.error("Series", "No se pudo comprobar la serie: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Series", "No se pudo comprobar la serie: " + e.getMessage());
             return;
         }
         String etiqueta = (s.getCodigo() == null || s.getCodigo().isBlank())
                 ? (s.getDescripcion() == null || s.getDescripcion().isBlank() ? "esta serie" : s.getDescripcion())
                 : s.getCodigo();
-        if (!Dialogos.confirmar("Eliminar serie", "¿Seguro que deseas eliminar la serie \"" + etiqueta + "\"?")) {
+        if (!Dialogos.mostrarDialogoConfirmacion("Eliminar serie", "¿Seguro que deseas eliminar la serie \"" + etiqueta + "\"?")) {
             return;
         }
         try {
-            modelo.getSeries().eliminar(s.getId());
+            Vista.getInstancia().getControlador().getModelo().getSeries().eliminar(s.getId());
             refrescarSeries();
         } catch (Exception e) {
-            Dialogos.error("Series", "No se pudo eliminar la serie: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Series", "No se pudo eliminar la serie: " + e.getMessage());
         }
     }
 
@@ -953,7 +942,7 @@ public class ConfiguracionController implements Vista {
             empresas.setAll(Empresas.listarEmpresas());
             tablaEmpresas.setItems(empresas);
         } catch (Exception e) {
-            Dialogos.error("Configuración", "No se pudieron cargar las empresas: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar las empresas: " + e.getMessage());
         }
     }
 
@@ -970,7 +959,7 @@ public class ConfiguracionController implements Vista {
         try {
             Empresas.EmpresaInfo nueva = Empresas.crearEmpresa(nombre);
             refrescarEmpresas();
-            if (Dialogos.confirmar("Nueva empresa",
+            if (Dialogos.mostrarDialogoConfirmacion("Nueva empresa",
                     "Empresa \"" + nueva.nombre() + "\" creada (carpeta: " + nueva.slug() + ").\n\n"
                             + "¿Quieres cambiar a ella ahora?")) {
                 empresas.stream()
@@ -980,7 +969,7 @@ public class ConfiguracionController implements Vista {
                 cambiarEmpresa();
             }
         } catch (Exception e) {
-            Dialogos.error("Nueva empresa", "No se pudo crear la empresa: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Nueva empresa", "No se pudo crear la empresa: " + e.getMessage());
         }
     }
 
@@ -988,15 +977,15 @@ public class ConfiguracionController implements Vista {
     private void cambiarEmpresa() {
         Empresas.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
         if (elegida == null) {
-            Dialogos.error("Empresas", "Seleccione una empresa de la tabla.");
+            Dialogos.mostrarDialogoError("Empresas", "Seleccione una empresa de la tabla.");
             return;
         }
         try {
             Empresas.conectar(elegida.slug(), Sesion.fechaTrabajo());
-            Dialogos.info("Empresas", "Cambiando a \"" + elegida.nombre() + "\"...");
-            nav.mostrarInicio();
+            Dialogos.mostrarDialogoInformacion("Empresas", "Cambiando a \"" + elegida.nombre() + "\"...");
+            Vista.getInstancia().mostrarInicio();
         } catch (Exception e) {
-            Dialogos.error("Empresas", "No se pudo cambiar de empresa: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Empresas", "No se pudo cambiar de empresa: " + e.getMessage());
         }
     }
 
@@ -1004,14 +993,14 @@ public class ConfiguracionController implements Vista {
     private void eliminarEmpresa() {
         Empresas.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
         if (elegida == null) {
-            Dialogos.error("Empresas", "Seleccione una empresa de la tabla.");
+            Dialogos.mostrarDialogoError("Empresas", "Seleccione una empresa de la tabla.");
             return;
         }
         if (elegida.slug().equals(Sesion.empresaSlug())) {
-            Dialogos.error("Empresas", "La empresa activa no se puede eliminar.");
+            Dialogos.mostrarDialogoError("Empresas", "La empresa activa no se puede eliminar.");
             return;
         }
-        if (!Dialogos.confirmar("Eliminar empresa",
+        if (!Dialogos.mostrarDialogoConfirmacion("Eliminar empresa",
                 "¿Seguro que deseas eliminar \"" + elegida.nombre() + "\"?\n"
                         + "Se eliminará físicamente su carpeta de datos. Esta acción no se puede deshacer.")) {
             return;
@@ -1020,7 +1009,7 @@ public class ConfiguracionController implements Vista {
             Empresas.eliminarEmpresa(elegida.slug());
             refrescarEmpresas();
         } catch (Exception e) {
-            Dialogos.error("Empresas", "No se pudo eliminar la empresa: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Empresas", "No se pudo eliminar la empresa: " + e.getMessage());
         }
     }
 
@@ -1028,7 +1017,7 @@ public class ConfiguracionController implements Vista {
 
     @FXML
     private void volver() {
-        nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
+        Vista.getInstancia().mostrar("MenuPrincipal.fxml");
     }
 
     private String trim(TextField f) {

@@ -29,7 +29,7 @@
     </padding>
     <top>
         <VBox spacing="8">
-            <HBox fx:id="barraNavegacion" styleClass="nav-bar" />
+            <fx:include fx:id="barra" source="BarraNavegacion.fxml"/>
             <VBox spacing="8" styleClass="card, card-editor, panel-busqueda">
                 <HBox alignment="CENTER_LEFT" styleClass="action-bar">
                     <StackPane fx:id="logoBox" maxHeight="58.0" maxWidth="110.0" minHeight="40.0" minWidth="110.0" prefHeight="58.0" prefWidth="110.0" styleClass="menu-logo-box">

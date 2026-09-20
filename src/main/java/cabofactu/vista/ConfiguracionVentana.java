@@ -2,23 +2,20 @@ package cabofactu.vista;
 
 import javafx.stage.Stage;
 
-import java.util.Arrays;
-import java.util.Optional;
-
 /**
  * Configuracion de tamaño por vista FXML.
  */
 public enum ConfiguracionVentana {
 
-    ARRANQUE("Seleccion de empresa", "/cabofactu/vista/recursos/Arranque.fxml", 760, 520, 760, 520, false),
-    MENU("Menu Principal", "/cabofactu/vista/recursos/MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
-    EDITOR("Editor de factura", "/cabofactu/vista/recursos/Editor.fxml", 1024, 768, 1024, 768, true),
-    CONFIGURACION("Configuracion", "/cabofactu/vista/recursos/Configuracion.fxml", 1024, 768, 1024, 768, true),
-    HISTORICO("Historico", "/cabofactu/vista/recursos/Historico.fxml", 1024, 768, 1024, 768, true),
-    CLIENTES("Clientes", "/cabofactu/vista/recursos/Clientes.fxml", 1024, 768, 1024, 768, true),
-    VERSIONES("Versiones", "/cabofactu/vista/recursos/Versiones.fxml", 1024, 768, 1024, 768, true),
-    COPIA_SEGURIDAD("Copias", "/cabofactu/vista/recursos/CopiaSeguridad.fxml", 1024, 768, 1024, 768, true),
-    GENERAR_MENSUAL("Generar facturas mensuales", "/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
+    ARRANQUE("Seleccion de empresa", "Arranque.fxml", 760, 520, 760, 520, false),
+    MENU("Menu Principal", "MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
+    EDITOR("Editor de factura", "Editor.fxml", 1024, 768, 1024, 768, true),
+    CONFIGURACION("Configuracion", "Configuracion.fxml", 1024, 768, 1024, 768, true),
+    HISTORICO("Historico", "Historico.fxml", 1024, 768, 1024, 768, true),
+    CLIENTES("Clientes", "Clientes.fxml", 1024, 768, 1024, 768, true),
+    VERSIONES("Versiones", "Versiones.fxml", 1024, 768, 1024, 768, true),
+    COPIA_SEGURIDAD("Copias", "CopiaSeguridad.fxml", 1024, 768, 1024, 768, true),
+    GENERAR_MENSUAL("Generar facturas mensuales", "GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
 
     private static final String CLAVE_CONFIG = "cabofactu.ventanaConfig";
 
@@ -83,10 +80,14 @@ public enum ConfiguracionVentana {
         return maximizado;
     }
 
-    public static Optional<ConfiguracionVentana> para(String fxml) {
-        return Arrays.stream(values())
-                .filter(v -> v.fxml.equals(fxml))
-                .findFirst();
+    /** Devolvemos la configuración de esa pantalla, o null si no tiene. */
+    public static ConfiguracionVentana para(String fxml) {
+        for (ConfiguracionVentana v : values()) {
+            if (v.fxml.equals(fxml)) {
+                return v;
+            }
+        }
+        return null;
     }
 
     public void aplicar(Stage stage) {

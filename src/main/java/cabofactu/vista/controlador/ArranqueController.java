@@ -4,17 +4,21 @@ import cabofactu.modelo.negocio.sqlite.CargarDemo;
 import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.PreferenciasGlobales;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextInputDialog;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 
+import java.net.URL;
 import java.time.LocalDate;
-import java.util.function.Consumer;
+import java.util.ResourceBundle;
 import cabofactu.modelo.dominio.Empresa;
+import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.Dialogos;
 
@@ -24,9 +28,7 @@ import cabofactu.vista.utilidades.Dialogos;
  * fija a hoy automaticamente; en otro caso se pide a mano dentro del ejercicio.
  * Tambien permite crear una empresa nueva desde aqui.
  */
-public class ArranqueController implements Vista {
-
-    private Consumer<Empresas.EmpresaInfo> onEntrar;
+public class ArranqueController implements Pantalla, Initializable {
 
     @FXML
     private ComboBox<Empresas.EmpresaInfo> cmbEmpresa;
@@ -46,25 +48,21 @@ public class ArranqueController implements Vista {
     private Label lblAyudaEmpresa;
 
     @Override
-    public void alIniciar() {
+    public void initialize(URL url, ResourceBundle rb) {
         configurarListaEmpresas();
         configurarEjercicio();
         cargarEmpresas();
     }
 
-    public void setOnEntrar(Consumer<Empresas.EmpresaInfo> c) {
-        this.onEntrar = c;
-    }
-
     public void mostrarAvisoInicial(boolean demoRecienCargada) {
         if (demoRecienCargada) {
-            Dialogos.info("Bienvenido", "Se ha cargado una empresa de demostración con datos ficticios "
+            Dialogos.mostrarDialogoInformacion("Bienvenido", "Se ha cargado una empresa de demostración con datos ficticios "
                     + "para que puedas probar el programa.\n\nCuando quieras trabajar con tu empresa, "
                     + "créala con «Nueva…». Al entrar en ella tendrás que completar sus datos fiscales "
                     + "y de contacto en Configuración. La empresa de demostración se puede eliminar "
                     + "después desde Configuración > Empresas.");
         } else if (cmbEmpresa.getItems().isEmpty()) {
-            Dialogos.info("Bienvenido", "Para iniciar el programa crea tu empresa con «Nueva…».\n\n"
+            Dialogos.mostrarDialogoInformacion("Bienvenido", "Para iniciar el programa crea tu empresa con «Nueva…».\n\n"
                     + "Al entrar en ella tendrás que completar sus datos fiscales y de contacto "
                     + "en Configuración.");
         }
@@ -214,9 +212,9 @@ public class ArranqueController implements Vista {
         }
         try {
             Empresas.conectar(elegida.slug(), fecha);
-            if (onEntrar != null) {
-                onEntrar.accept(elegida);
-            }
+            Stage ventanaArranque = (Stage) btnEntrar.getScene().getWindow();
+            Vista.getInstancia().abrirVentanaPrincipal();
+            ventanaArranque.close();
         } catch (Exception e) {
             lblError.setText("No se pudo entrar en la empresa: " + e.getMessage());
         }

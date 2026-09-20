@@ -2,11 +2,11 @@ package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.VersionFactura;
-import cabofactu.modelo.Modelo;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -15,12 +15,12 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.HBox;
 
 import java.util.List;
-import cabofactu.vista.Navegador;
+import java.net.URL;
+import java.util.ResourceBundle;
+import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
-import cabofactu.vista.utilidades.BarraNavegacion;
 import cabofactu.vista.utilidades.Dialogos;
 
 /**
@@ -28,15 +28,14 @@ import cabofactu.vista.utilidades.Dialogos;
  * abrirse (en la ultima si la factura esta Emitida se puede editar y al
  * guardar se crea una nueva version sin modificar la historica).
  */
-public class VersionesController implements Vista {
-
-    private Modelo modelo;
-    private Navegador nav;
+public class VersionesController implements Pantalla, Initializable {
 
     @FXML
     private Label lblTitulo;
+    // Cómo funciona: JavaFX inyecta aquí el controlador del <fx:include fx:id="barra">;
+    // el nombre del campo es el fx:id más "Controller".
     @FXML
-    private HBox barraNavegacion;
+    private BarraNavegacionController barraController;
     @FXML
     private TableView<VersionFactura> tabla;
     @FXML
@@ -51,18 +50,8 @@ public class VersionesController implements Vista {
     private TableColumn<VersionFactura, String> colTotal;
 
     @Override
-    public void setModelo(Modelo m) {
-        this.modelo = m;
-    }
-
-    @Override
-    public void setNavegador(Navegador n) {
-        this.nav = n;
-    }
-
-    @Override
-    public void alIniciar() {
-        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "versiones"));
+    public void initialize(URL url, ResourceBundle rb) {
+        barraController.marcarActivo("versiones");
         colVersion.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>("v" + c.getValue().getVersionNum()));
         colFecha.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.fecha(c.getValue().getFechaFactura())));
         colGuardado.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.fechaHora(c.getValue().getFechaGuardado())));
@@ -79,9 +68,12 @@ public class VersionesController implements Vista {
             });
             return fila;
         });
+    }
 
-        nav.stage().getScene().getAccelerators().put(
-                new KeyCodeCombination(KeyCode.ESCAPE), this::volver);
+    @Override
+    public void alMostrar() {
+        Vista.getInstancia().getVentana().getScene().getAccelerators().put(
+                new KeyCodeCombination(KeyCode.ESCAPE), () -> volver());
     }
 
     /**
@@ -89,17 +81,17 @@ public class VersionesController implements Vista {
      */
     public void cargarFactura(long facturaId) {
         try {
-            List<VersionFactura> versiones = modelo.getVersiones().versionesDeFactura(facturaId);
+            List<VersionFactura> versiones = Vista.getInstancia().getControlador().getModelo().getVersiones().versionesDeFactura(facturaId);
             String numero = versiones.isEmpty() ? "" : versiones.get(versiones.size() - 1).getNumero();
             lblTitulo.setText("Versiones de la factura " + numero);
             tabla.setItems(FXCollections.observableArrayList(versiones));
         } catch (Exception e) {
-            Dialogos.error("Versiones", "Error al cargar las versiones: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Versiones", "Error al cargar las versiones: " + e.getMessage());
         }
     }
 
     private void abrirVersion(VersionFactura v) {
-        EditorController editor = nav.mostrar("/cabofactu/vista/recursos/Editor.fxml");
+        EditorController editor = (EditorController) Vista.getInstancia().mostrar("Editor.fxml");
         if (editor == null) {
             return;
         }
@@ -112,6 +104,6 @@ public class VersionesController implements Vista {
 
     @FXML
     private void volver() {
-        nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
+        Vista.getInstancia().mostrar("MenuPrincipal.fxml");
     }
 }

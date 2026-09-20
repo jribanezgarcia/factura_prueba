@@ -782,7 +782,7 @@ El menú principal SHALL mostrar el nombre, el NIF y el logo de la empresa confi
 
 ### Requirement: Ventana
 
-La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantalla principal, en la primera ejecución y en todas las siguientes. La posición y el tamaño de la ventana SHALL seguir guardándose al cerrar la aplicación, pero SHALL NOT usarse al abrirla: la aplicación SHALL ignorar cualquier posición o tamaño guardados. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo y maximizar la ventana durante la sesión. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y las filas de alta rápida de IVA y Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) es una pantalla fija pequeña de 760x520, también centrada; al pasar de ella a una vista principal con tamaño mínimo 1024x768, la aplicación SHALL mostrar la ventana a 1024x768 y centrada.
+La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantalla principal, en la primera ejecución y en todas las siguientes. La posición y el tamaño de la ventana SHALL seguir guardándose al cerrar la aplicación, pero SHALL NOT usarse al abrirla: la aplicación SHALL ignorar cualquier posición o tamaño guardados. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo y maximizar la ventana durante la sesión. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y las filas de alta rápida de IVA y Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) SHALL mostrarse en una ventana propia, fija y pequeña de 760x520, también centrada. Al entrar en una empresa, la aplicación SHALL abrir la ventana principal a 1024x768 y centrada con la primera pantalla, y SHALL cerrar la ventana de arranque.
 
 #### Scenario: Primera ejecución abre a 1024x768 centrada
 - **WHEN** el usuario inicia la aplicación sin preferencias de ventana guardadas
@@ -813,8 +813,9 @@ La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantal
 - **THEN** los campos de la cabecera se reparten el ancho disponible sin salirse de la ventana
 
 #### Scenario: Corrección al navegar desde una vista pequeña
-- **WHEN** la aplicación pasa de la pantalla de arranque (760x520) al menú u otra vista principal con tamaño mínimo 1024x768 con la ventana ya visible
-- **THEN** la ventana crece a 1024x768 (o hasta el mínimo de la vista de destino) al cargar la vista, sin necesidad de redimensionar o maximizar manualmente
+- **WHEN** el usuario pulsa Entrar en la ventana de arranque (760x520)
+- **THEN** se abre la ventana principal a 1024x768 y centrada con el menú u otra vista principal, sin necesidad de redimensionar o maximizar manualmente
+- **AND** la ventana de arranque se cierra
 
 ### Requirement: Identidad de la aplicación en la interfaz
 
@@ -829,8 +830,9 @@ La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus v
 - **THEN** esa ventana muestra el mismo icono de aplicación en su barra de título y en la barra de tareas de Windows
 
 #### Scenario: Título de la ventana principal por pantalla
-- **WHEN** el usuario navega entre las pantallas de la aplicación (Menú Principal, Histórico, Configuración, Editor, Clientes, Versiones, Copias o Arranque)
+- **WHEN** el usuario navega entre las pantallas de la aplicación (Menú Principal, Histórico, Configuración, Editor, Clientes, Versiones o Copias)
 - **THEN** la ventana principal se titula «CaboFactu® <nombre de la pantalla actual>»
+- **AND** la ventana de arranque, que es una ventana propia, se titula «CaboFactu® Seleccion de empresa»
 
 #### Scenario: Título con prefijo de marca en ventanas secundarias
 - **WHEN** se abre una ventana secundaria de tipo `Stage` con su propio título

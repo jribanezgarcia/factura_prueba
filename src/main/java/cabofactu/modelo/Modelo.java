@@ -1,7 +1,5 @@
 package cabofactu.modelo;
 
-import cabofactu.modelo.negocio.sqlite.Conexion;
-import cabofactu.modelo.negocio.sqlite.DatosException;
 import cabofactu.modelo.negocio.sqlite.ClienteDAO;
 import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
@@ -14,7 +12,6 @@ import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import cabofactu.modelo.negocio.sqlite.TipoRetencionDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 
-import java.sql.SQLException;
 import java.time.Clock;
 import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.negocio.Clientes;
@@ -58,11 +55,6 @@ public class Modelo {
     }
 
     public Modelo(Clock clock) {
-        try {
-            Conexion.establecerConexion();
-        } catch (SQLException e) {
-            throw new DatosException(e);
-        }
         ClienteDAO clienteDAO = new ClienteDAO();
         SerieDAO serieDAO = new SerieDAO();
         TipoIvaDAO tipoIvaDAO = new TipoIvaDAO();

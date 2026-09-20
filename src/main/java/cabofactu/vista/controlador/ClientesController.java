@@ -1,7 +1,6 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Cliente;
-import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.ValidacionCliente;
 import cabofactu.modelo.negocio.ValidacionException;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -23,16 +22,17 @@ import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.event.ActionEvent;
+import javafx.fxml.Initializable;
 
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import cabofactu.vista.Navegador;
+import java.util.ResourceBundle;
+import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
-import cabofactu.vista.utilidades.BarraNavegacion;
 import cabofactu.vista.utilidades.Dialogos;
 
 /**
@@ -41,10 +41,8 @@ import cabofactu.vista.utilidades.Dialogos;
  * marcar como inactivo. Los inactivos se muestran en la lista y no se ofrecen
  * al crear facturas nuevas.
  */
-public class ClientesController implements Vista {
+public class ClientesController implements Pantalla, Initializable {
 
-    private Modelo modelo;
-    private Navegador nav;
     private final ObservableList<Cliente> todos = FXCollections.observableArrayList();
 
     @FXML
@@ -61,8 +59,10 @@ public class ClientesController implements Vista {
     private TableColumn<Cliente, String> colLocalidad;
     @FXML
     private TableColumn<Cliente, String> colEstado;
+    // Cómo funciona: JavaFX inyecta aquí el controlador del <fx:include fx:id="barra">;
+    // el nombre del campo es el fx:id más "Controller".
     @FXML
-    private HBox barraNavegacion;
+    private BarraNavegacionController barraController;
 
     private TextField txtNombre;
     private TextField txtNif;
@@ -73,18 +73,8 @@ public class ClientesController implements Vista {
     private TextField txtEmail;
 
     @Override
-    public void setModelo(Modelo m) {
-        this.modelo = m;
-    }
-
-    @Override
-    public void setNavegador(Navegador n) {
-        this.nav = n;
-    }
-
-    @Override
-    public void alIniciar() {
-        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "clientes"));
+    public void initialize(URL url, ResourceBundle rb) {
+        barraController.marcarActivo("clientes");
         colNombre.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getNombre()));
         colNif.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getNif()));
         colLocalidad.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getLocalidad()));
@@ -104,17 +94,20 @@ public class ClientesController implements Vista {
 
         txtBusqueda.textProperty().addListener((o, a, b) -> filtrar());
         recargar();
+    }
 
-        nav.stage().getScene().getAccelerators().put(
-                new KeyCodeCombination(KeyCode.ESCAPE), this::volver);
+    @Override
+    public void alMostrar() {
+        Vista.getInstancia().getVentana().getScene().getAccelerators().put(
+                new KeyCodeCombination(KeyCode.ESCAPE), () -> volver());
     }
 
     private void recargar() {
         try {
-            todos.setAll(modelo.getClientes().listar(false));
+            todos.setAll(Vista.getInstancia().getControlador().getModelo().getClientes().listar(false));
             filtrar();
         } catch (Exception e) {
-            Dialogos.error("Clientes", "Error al cargar clientes: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Clientes", "Error al cargar clientes: " + e.getMessage());
         }
     }
 
@@ -139,12 +132,12 @@ public class ClientesController implements Vista {
             return;
         }
         try {
-            modelo.getClientes().insertar(c);
+            Vista.getInstancia().getControlador().getModelo().getClientes().insertar(c);
             recargar();
         } catch (ValidacionException e) {
-            Dialogos.error("Datos del cliente", e.getMessage());
+            Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
         } catch (Exception e) {
-            Dialogos.error("Clientes", "No se pudo guardar el cliente: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Clientes", "No se pudo guardar el cliente: " + e.getMessage());
         }
     }
 
@@ -152,7 +145,7 @@ public class ClientesController implements Vista {
     private void editar() {
         Cliente seleccion = tabla.getSelectionModel().getSelectedItem();
         if (seleccion == null) {
-            Dialogos.info("Clientes", "Seleccione un cliente de la lista.");
+            Dialogos.mostrarDialogoInformacion("Clientes", "Seleccione un cliente de la lista.");
             return;
         }
         Cliente c = fichaCliente(seleccion);
@@ -160,12 +153,12 @@ public class ClientesController implements Vista {
             return;
         }
         try {
-            modelo.getClientes().actualizar(c);
+            Vista.getInstancia().getControlador().getModelo().getClientes().actualizar(c);
             recargar();
         } catch (ValidacionException e) {
-            Dialogos.error("Datos del cliente", e.getMessage());
+            Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
         } catch (Exception e) {
-            Dialogos.error("Clientes", "No se pudo actualizar el cliente: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Clientes", "No se pudo actualizar el cliente: " + e.getMessage());
         }
     }
 
@@ -173,26 +166,26 @@ public class ClientesController implements Vista {
     private void eliminar() {
         Cliente seleccion = tabla.getSelectionModel().getSelectedItem();
         if (seleccion == null) {
-            Dialogos.info("Clientes", "Seleccione un cliente de la lista.");
+            Dialogos.mostrarDialogoInformacion("Clientes", "Seleccione un cliente de la lista.");
             return;
         }
         try {
-            if (modelo.getClientes().tieneFacturas(seleccion.getId())) {
-                if (Dialogos.confirmar("Cliente con facturas",
+            if (Vista.getInstancia().getControlador().getModelo().getClientes().tieneFacturas(seleccion.getId())) {
+                if (Dialogos.mostrarDialogoConfirmacion("Cliente con facturas",
                         "El cliente \"" + seleccion.getNombre() + "\" tiene facturas asociadas y no puede eliminarse.\n\n"
                                 + "¿Desea marcarlo como inactivo?")) {
-                    modelo.getClientes().setActivo(seleccion.getId(), false);
+                    Vista.getInstancia().getControlador().getModelo().getClientes().setActivo(seleccion.getId(), false);
                     recargar();
                 }
                 return;
             }
-            if (Dialogos.confirmar("Eliminar cliente",
+            if (Dialogos.mostrarDialogoConfirmacion("Eliminar cliente",
                     "¿Eliminar definitivamente el cliente \"" + seleccion.getNombre() + "\"?")) {
-                modelo.getClientes().borrarFisico(seleccion.getId());
+                Vista.getInstancia().getControlador().getModelo().getClientes().borrarFisico(seleccion.getId());
                 recargar();
             }
         } catch (Exception e) {
-            Dialogos.error("Clientes", "No se pudo eliminar el cliente: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Clientes", "No se pudo eliminar el cliente: " + e.getMessage());
         }
     }
 
@@ -205,7 +198,7 @@ public class ClientesController implements Vista {
         Dialog<Cliente> dialogo = new Dialog<>();
         dialogo.setTitle(original == null ? "Nuevo cliente" : "Editar cliente");
         dialogo.setHeaderText(original == null ? "Alta de cliente" : "Datos del cliente");
-        dialogo.initOwner(nav.stage());
+        dialogo.initOwner(Vista.getInstancia().getVentana());
         dialogo.getDialogPane().setPrefWidth(375);
 
         ButtonType guardar = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
@@ -315,37 +308,37 @@ public class ClientesController implements Vista {
     private boolean avisarPrimerErrorFicha() {
         String error = ValidacionCliente.errorNombre(txtNombre.getText());
         if (error != null) {
-            Dialogos.error("Datos del cliente", error);
+            Dialogos.mostrarDialogoError("Datos del cliente", error);
             return true;
         }
         error = ValidacionCliente.errorNif(txtNif.getText());
         if (error != null) {
-            Dialogos.error("NIF no válido", error);
+            Dialogos.mostrarDialogoError("NIF no válido", error);
             return true;
         }
         error = ValidacionCliente.errorDireccion(txtDireccion.getText());
         if (error != null) {
-            Dialogos.error("Datos del cliente", error);
+            Dialogos.mostrarDialogoError("Datos del cliente", error);
             return true;
         }
         error = ValidacionCliente.errorCodigoPostal(txtCp.getText());
         if (error != null) {
-            Dialogos.error("Código postal no válido", error);
+            Dialogos.mostrarDialogoError("Código postal no válido", error);
             return true;
         }
         error = ValidacionCliente.errorLocalidad(txtLocalidad.getText());
         if (error != null) {
-            Dialogos.error("Datos del cliente", error);
+            Dialogos.mostrarDialogoError("Datos del cliente", error);
             return true;
         }
         error = ValidacionCliente.errorProvincia(txtProvincia.getText());
         if (error != null) {
-            Dialogos.error("Datos del cliente", error);
+            Dialogos.mostrarDialogoError("Datos del cliente", error);
             return true;
         }
         error = ValidacionCliente.errorEmail(txtEmail.getText());
         if (error != null) {
-            Dialogos.error("Correo electrónico no válido", error);
+            Dialogos.mostrarDialogoError("Correo electrónico no válido", error);
             return true;
         }
         return false;
@@ -360,6 +353,6 @@ public class ClientesController implements Vista {
 
     @FXML
     private void volver() {
-        nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
+        Vista.getInstancia().mostrar("MenuPrincipal.fxml");
     }
 }

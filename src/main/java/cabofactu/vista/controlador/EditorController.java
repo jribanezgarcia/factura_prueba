@@ -14,7 +14,6 @@ import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.ExportadorPdf;
 import cabofactu.modelo.negocio.Calculos;
 import cabofactu.modelo.negocio.Facturas;
-import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.ValidacionException;
 import cabofactu.modelo.negocio.ValidacionCliente;
 import cabofactu.utilidades.Formatos;
@@ -26,6 +25,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
@@ -55,16 +55,17 @@ import javafx.util.StringConverter;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.ResourceBundle;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.vista.Navegador;
+import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
-import cabofactu.vista.utilidades.BarraNavegacion;
 import cabofactu.vista.utilidades.CambiosSinGuardar;
 import cabofactu.vista.utilidades.Dialogos;
 import cabofactu.vista.utilidades.ModoGuardarVersion;
@@ -76,7 +77,7 @@ import cabofactu.vista.utilidades.ModoGuardarVersion;
  * general y desglose por tipos de IVA; observaciones; validaciones al guardar;
  * estados Emitida/Anulada; creacion de rectificativas y exportacion a PDF.
  */
-public class EditorController implements Vista {
+public class EditorController implements Pantalla, Initializable {
 
     /** Trazas temporales para diagnosticar el flujo de foco al editar líneas. */
     private static final boolean DIAGNOSTICO_FOCO = false;
@@ -84,8 +85,6 @@ public class EditorController implements Vista {
     private static final String PREV_CARPETA = "carpeta_facturas";
     private static final String PREV_EXPORT = "ultima_carpeta_export";
 
-    private Modelo modelo;
-    private Navegador nav;
     private boolean modificado;
     private boolean cargando;
     private Long facturaAbiertaId;
@@ -144,8 +143,10 @@ public class EditorController implements Vista {
     private ImageView logo;
     @FXML
     private StackPane logoBox;
+    // Cómo funciona: JavaFX inyecta aquí el controlador del <fx:include fx:id="barra">;
+    // el nombre del campo es el fx:id más "Controller".
     @FXML
-    private HBox barraNavegacion;
+    private BarraNavegacionController barraController;
     @FXML
     private Label lblReferencia;
     @FXML
@@ -216,20 +217,10 @@ public class EditorController implements Vista {
     private Button btnRectificativa;
 
     @Override
-    public void setModelo(Modelo m) {
-        this.modelo = m;
-    }
-
-    @Override
-    public void setNavegador(Navegador n) {
-        this.nav = n;
-    }
-
-    @Override
-    public void alIniciar() {
+    public void initialize(URL url, ResourceBundle rb) {
+        barraController.marcarActivo("editor");
         cargando = true;
         try {
-            barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "editor"));
             cargarLogo();
             cargarSeries();
             cargarFechaInicial();
@@ -240,7 +231,6 @@ public class EditorController implements Vista {
             configurarTabla();
             configurarMatriz();
             configurarCambios();
-            atajos();
             actualizarVisibilidadReferencia(comboSerie.getValue());
             actualizarBotonesEstado();
             if (lineas.isEmpty()) {
@@ -253,9 +243,14 @@ public class EditorController implements Vista {
         actualizarResumen();
     }
 
+    @Override
+    public void alMostrar() {
+        atajos();
+    }
+
     private void cargarLogo() {
         try {
-            Empresa empresa = modelo.getConfiguracion().getEmpresa();
+            Empresa empresa = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
             String ruta = empresa.getLogoPath();
             if (ruta == null || ruta.isBlank()) {
                 LogoMarco.limpiar(logoBox);
@@ -285,9 +280,9 @@ public class EditorController implements Vista {
      */
     public void cargarVersion(long versionId) {
         try {
-            Facturas.VersionCompleta vc = modelo.getFacturas().abrirVersion(versionId);
+            Facturas.VersionCompleta vc = Vista.getInstancia().getControlador().getModelo().getFacturas().abrirVersion(versionId);
             if (vc == null) {
-                Dialogos.error("Factura", "No se pudo abrir la versión.");
+                Dialogos.mostrarDialogoError("Factura", "No se pudo abrir la versión.");
                 return;
             }
             cargando = true;
@@ -295,9 +290,9 @@ public class EditorController implements Vista {
                 facturaAbiertaId = vc.factura().getId();
                 versionAbiertaId = versionId;
                 correlativoFijo = vc.factura().getCorrelativo();
-                estadoActual = modelo.getFacturas().estadoActual(facturaAbiertaId);
+                estadoActual = Vista.getInstancia().getControlador().getModelo().getFacturas().estadoActual(facturaAbiertaId);
 
-                Serie serie = modelo.getSeries().getById(vc.factura().getSerieId());
+                Serie serie = Vista.getInstancia().getControlador().getModelo().getSeries().getById(vc.factura().getSerieId());
                 comboSerie.setValue(serie);
                 comboSerie.setDisable(true);
                 actualizarVisibilidadReferencia(serie);
@@ -337,21 +332,21 @@ public class EditorController implements Vista {
             }
             actualizarResumen();
         } catch (Exception e) {
-            Dialogos.error("Factura", "Error al abrir la factura: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Factura", "Error al abrir la factura: " + e.getMessage());
         }
     }
 
     /** Carga la ultima version (estado actual) de la factura. */
     public void cargarFactura(long facturaId) {
         try {
-            VersionFactura v = modelo.getVersiones().ultimaVersion(facturaId);
+            VersionFactura v = Vista.getInstancia().getControlador().getModelo().getVersiones().ultimaVersion(facturaId);
             if (v == null) {
-                Dialogos.error("Factura", "No se pudo abrir la factura.");
+                Dialogos.mostrarDialogoError("Factura", "No se pudo abrir la factura.");
                 return;
             }
             cargarVersion(v.getId());
         } catch (Exception e) {
-            Dialogos.error("Factura", "Error al abrir la factura: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Factura", "Error al abrir la factura: " + e.getMessage());
         }
     }
 
@@ -360,7 +355,7 @@ public class EditorController implements Vista {
         if (!modificado) {
             return true;
         }
-        CambiosSinGuardar r = Dialogos.confirmarCambiosSinGuardar();
+        CambiosSinGuardar r = Dialogos.mostrarDialogoCambiosSinGuardar();
         if (r == CambiosSinGuardar.GUARDAR) {
             return guardar();
         }
@@ -373,10 +368,10 @@ public class EditorController implements Vista {
 
     private void cargarSeries() {
         try {
-            List<Serie> series = modelo.getSeries().listar();
+            List<Serie> series = Vista.getInstancia().getControlador().getModelo().getSeries().listar();
             comboSerie.getItems().setAll(series);
             Serie inicial = null;
-            String ultima = modelo.getConfiguracion().getPreferencia(PREV_SERIE);
+            String ultima = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_SERIE);
             if (ultima != null) {
                 for (Serie s : series) {
                     if (ultima.equals(s.getCodigo())) {
@@ -398,18 +393,18 @@ public class EditorController implements Vista {
             }
             comboSerie.setValue(inicial);
         } catch (Exception e) {
-            Dialogos.error("Factura", "No se pudieron cargar las series: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Factura", "No se pudieron cargar las series: " + e.getMessage());
         }
     }
 
     private void cargarFechaInicial() {
-        LocalDate fechaInicial = modelo.getReloj().fechaTrabajo();
+        LocalDate fechaInicial = Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo();
         fecha.setValue(fechaInicial);
     }
 
     private void cargarTiposIva() {
         try {
-            tiposIva.setAll(modelo.getTiposIva().listar(true));
+            tiposIva.setAll(Vista.getInstancia().getControlador().getModelo().getTiposIva().listar(true));
         } catch (Exception e) {
             tiposIva.clear();
         }
@@ -432,7 +427,7 @@ public class EditorController implements Vista {
             }
             TipoIva existente = null;
             try {
-                existente = modelo.getTiposIva().getById(l.getTipoIvaId());
+                existente = Vista.getInstancia().getControlador().getModelo().getTiposIva().getById(l.getTipoIvaId());
             } catch (Exception ignored) {
             }
             if (existente != null) {
@@ -452,7 +447,7 @@ public class EditorController implements Vista {
 
     private void cargarTiposRetencion() {
         try {
-            List<TipoRetencion> activas = modelo.getTiposRetencion().listar(true);
+            List<TipoRetencion> activas = Vista.getInstancia().getControlador().getModelo().getTiposRetencion().listar(true);
             TipoRetencion sin = new TipoRetencion();
             sin.setId(null);
             sin.setNombre("Sin retención");
@@ -513,9 +508,9 @@ public class EditorController implements Vista {
                 return;
             }
             try {
-                comboCliente.getItems().setAll(modelo.getClientes().buscar(texto, true));
+                comboCliente.getItems().setAll(Vista.getInstancia().getControlador().getModelo().getClientes().buscar(texto, true));
             } catch (Exception e) {
-                Dialogos.error("Cliente", "Error al buscar clientes: " + e.getMessage());
+                Dialogos.mostrarDialogoError("Cliente", "Error al buscar clientes: " + e.getMessage());
             }
         });
         comboCliente.setOnShowing(e -> {
@@ -525,12 +520,12 @@ public class EditorController implements Vista {
             try {
                 String texto = comboCliente.getEditor().getText();
                 if (texto == null || texto.isBlank()) {
-                    comboCliente.getItems().setAll(modelo.getClientes().listar(true));
+                    comboCliente.getItems().setAll(Vista.getInstancia().getControlador().getModelo().getClientes().listar(true));
                 } else {
-                    comboCliente.getItems().setAll(modelo.getClientes().buscar(texto, true));
+                    comboCliente.getItems().setAll(Vista.getInstancia().getControlador().getModelo().getClientes().buscar(texto, true));
                 }
             } catch (Exception ex) {
-                Dialogos.error("Cliente", "Error al cargar clientes: " + ex.getMessage());
+                Dialogos.mostrarDialogoError("Cliente", "Error al cargar clientes: " + ex.getMessage());
             }
         });
         comboCliente.setOnAction(e -> {
@@ -592,37 +587,37 @@ public class EditorController implements Vista {
     private boolean avisarPrimerErrorCliente() {
         String error = ValidacionCliente.errorNombre(cliNombre.getText());
         if (error != null) {
-            Dialogos.error("Datos del cliente", error);
+            Dialogos.mostrarDialogoError("Datos del cliente", error);
             return true;
         }
         error = ValidacionCliente.errorNif(cliNif.getText());
         if (error != null) {
-            Dialogos.error("NIF no válido", error);
+            Dialogos.mostrarDialogoError("NIF no válido", error);
             return true;
         }
         error = ValidacionCliente.errorDireccion(cliDireccion.getText());
         if (error != null) {
-            Dialogos.error("Datos del cliente", error);
+            Dialogos.mostrarDialogoError("Datos del cliente", error);
             return true;
         }
         error = ValidacionCliente.errorCodigoPostal(cliCp.getText());
         if (error != null) {
-            Dialogos.error("Código postal no válido", error);
+            Dialogos.mostrarDialogoError("Código postal no válido", error);
             return true;
         }
         error = ValidacionCliente.errorLocalidad(cliLocalidad.getText());
         if (error != null) {
-            Dialogos.error("Datos del cliente", error);
+            Dialogos.mostrarDialogoError("Datos del cliente", error);
             return true;
         }
         error = ValidacionCliente.errorProvincia(cliProvincia.getText());
         if (error != null) {
-            Dialogos.error("Datos del cliente", error);
+            Dialogos.mostrarDialogoError("Datos del cliente", error);
             return true;
         }
         error = ValidacionCliente.errorEmail(cliEmail.getText());
         if (error != null) {
-            Dialogos.error("Correo electrónico no válido", error);
+            Dialogos.mostrarDialogoError("Correo electrónico no válido", error);
             return true;
         }
         return false;
@@ -732,9 +727,9 @@ public class EditorController implements Vista {
             }
         });
 
-        if (DIAGNOSTICO_FOCO && nav != null && nav.stage() != null
-                && nav.stage().getScene() != null) {
-            nav.stage().getScene().focusOwnerProperty().addListener((o, anterior, actual) ->
+        if (DIAGNOSTICO_FOCO && Vista.getInstancia().getVentana() != null
+                && Vista.getInstancia().getVentana().getScene() != null) {
+            Vista.getInstancia().getVentana().getScene().focusOwnerProperty().addListener((o, anterior, actual) ->
                     trazarFoco("Scene.focusOwner", actual));
         }
     }
@@ -930,7 +925,7 @@ public class EditorController implements Vista {
                 tablaLineas.requestFocus();
             }
             Platform.runLater(() -> trazarFoco("editarCeldaSegura: comprobación posterior", 
-                    nav.stage().getScene().getFocusOwner()));
+                    Vista.getInstancia().getVentana().getScene().getFocusOwner()));
         });
     }
 
@@ -1027,24 +1022,24 @@ public class EditorController implements Vista {
         marcarCamposCliente();
         Cliente cli = clienteDeFormulario();
         if (cli == null) {
-            Dialogos.error("Datos del cliente", "Indique los datos del cliente.");
+            Dialogos.mostrarDialogoError("Datos del cliente", "Indique los datos del cliente.");
             return false;
         }
         if (avisarPrimerErrorCliente()) {
             return false;
         }
         if (facturaAbiertaId != null && estadoActual != EstadoFactura.EMITIDA) {
-            Dialogos.info("Guardar", "Una factura anulada no se puede editar.");
+            Dialogos.mostrarDialogoInformacion("Guardar", "Una factura anulada no se puede editar.");
             return false;
         }
         LocalDate f = fecha.getValue();
         if (f == null) {
-            Dialogos.error("Guardar", "Indique la fecha de la factura.");
+            Dialogos.mostrarDialogoError("Guardar", "Indique la fecha de la factura.");
             return false;
         }
         List<LineaFactura> lis = lineasGuardables();
         if (lis.isEmpty()) {
-            Dialogos.error("Guardar", "La factura debe tener al menos una línea con contenido.");
+            Dialogos.mostrarDialogoError("Guardar", "La factura debe tener al menos una línea con contenido.");
             return false;
         }
         String obs = txtObservaciones.getText();
@@ -1056,42 +1051,42 @@ public class EditorController implements Vista {
             if (facturaAbiertaId == null) {
                 Serie serie = comboSerie.getValue();
                 if (serie == null) {
-                    Dialogos.error("Guardar", "Seleccione la serie.");
+                    Dialogos.mostrarDialogoError("Guardar", "Seleccione la serie.");
                     return false;
                 }
                 Integer hueco = pedirHueco(serie, f);
                 if (hueco != null) {
-                    txtNumero.setText(modelo.getNumeracion().formarNumero(serie, hueco, f));
+                    txtNumero.setText(Vista.getInstancia().getControlador().getModelo().getNumeracion().formarNumero(serie, hueco, f));
                 }
-                Integer corr = modelo.getNumeracion().parseCorrelativo(serie, txtNumero.getText());
+                Integer corr = Vista.getInstancia().getControlador().getModelo().getNumeracion().parseCorrelativo(serie, txtNumero.getText());
                 if (corr == null) {
-                    Dialogos.error("Guardar", "El número no se ajusta al formato de la serie "
+                    Dialogos.mostrarDialogoError("Guardar", "El número no se ajusta al formato de la serie "
                             + serie.getCodigo() + " (p. ej. " + serie.getCodigo() + "-1).");
                     return false;
                 }
-                long id = modelo.getFacturas().crearFactura(serie, f, cli, lis, descuento, obs, ref, corr, dp, retencionActual);
+                long id = Vista.getInstancia().getControlador().getModelo().getFacturas().crearFactura(serie, f, cli, lis, descuento, obs, ref, corr, dp, retencionActual);
                 guardarSeriePreferida(serie);
                 cargarFactura(id);
-                Dialogos.info("Guardar", "Factura guardada.");
+                Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
             } else {
-                ModoGuardarVersion modo = Dialogos.modoGuardarVersion();
+                ModoGuardarVersion modo = Dialogos.mostrarDialogoModoGuardarVersion();
                 if (modo == ModoGuardarVersion.CANCELAR) {
                     return false;
                 }
-                VersionFactura v = modelo.getFacturas().guardarEditada(facturaAbiertaId, versionAbiertaId,
+                VersionFactura v = Vista.getInstancia().getControlador().getModelo().getFacturas().guardarEditada(facturaAbiertaId, versionAbiertaId,
                         f, cli, lis, descuento, obs, ref, dp,
                         modo == ModoGuardarVersion.NUEVA_VERSION, retencionActual);
                 txtNumero.setText(v.getNumero());
                 lblTitulo.setText("Factura " + v.getNumero() + " (v" + v.getVersionNum() + ")");
                 modificado = false;
-                Dialogos.info("Guardar", "Factura guardada.");
+                Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
             }
             return true;
         } catch (ValidacionException e) {
-            Dialogos.error("Guardar", e.getMessage());
+            Dialogos.mostrarDialogoError("Guardar", e.getMessage());
             return false;
         } catch (Exception e) {
-            Dialogos.error("Guardar", "Error al guardar: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Guardar", "Error al guardar: " + e.getMessage());
             return false;
         }
     }
@@ -1181,22 +1176,22 @@ public class EditorController implements Vista {
         if (facturaAbiertaId == null) {
             return;
         }
-        if (modificado && !Dialogos.confirmar("Cambios sin guardar",
+        if (modificado && !Dialogos.mostrarDialogoConfirmacion("Cambios sin guardar",
                 "Hay cambios sin guardar que se descartarán. ¿Continuar?")) {
             return;
         }
-        if (!Dialogos.confirmar("Anular factura",
+        if (!Dialogos.mostrarDialogoConfirmacion("Anular factura",
                 "¿Anular la factura? Se creará una nueva versión con estado Anulada.")) {
             return;
         }
         try {
-            modelo.getEstados().anular(facturaAbiertaId);
-            Dialogos.info("Anular", "Factura anulada.");
+            Vista.getInstancia().getControlador().getModelo().getEstados().anular(facturaAbiertaId);
+            Dialogos.mostrarDialogoInformacion("Anular", "Factura anulada.");
             cargarFactura(facturaAbiertaId);
         } catch (ValidacionException e) {
-            Dialogos.error("Anular", e.getMessage());
+            Dialogos.mostrarDialogoError("Anular", e.getMessage());
         } catch (Exception e) {
-            Dialogos.error("Anular", "Error al anular: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Anular", "Error al anular: " + e.getMessage());
         }
     }
 
@@ -1205,55 +1200,55 @@ public class EditorController implements Vista {
         if (facturaAbiertaId == null) {
             return;
         }
-        if (!Dialogos.confirmar("Restaurar factura",
+        if (!Dialogos.mostrarDialogoConfirmacion("Restaurar factura",
                 "¿Restaurar la factura a estado Emitida? Se creará una nueva versión.")) {
             return;
         }
         try {
-            modelo.getEstados().restaurar(facturaAbiertaId);
-            Dialogos.info("Restaurar", "Factura restaurada.");
+            Vista.getInstancia().getControlador().getModelo().getEstados().restaurar(facturaAbiertaId);
+            Dialogos.mostrarDialogoInformacion("Restaurar", "Factura restaurada.");
             cargarFactura(facturaAbiertaId);
         } catch (ValidacionException e) {
-            Dialogos.error("Restaurar", e.getMessage());
+            Dialogos.mostrarDialogoError("Restaurar", e.getMessage());
         } catch (Exception e) {
-            Dialogos.error("Restaurar", "Error al restaurar: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Restaurar", "Error al restaurar: " + e.getMessage());
         }
     }
 
     @FXML
     private void crearRectificativa() {
         if (versionAbiertaId == null) {
-            Dialogos.info("Rectificativa", "Abra primero la factura a rectificar.");
+            Dialogos.mostrarDialogoInformacion("Rectificativa", "Abra primero la factura a rectificar.");
             return;
         }
-        if (modificado && !Dialogos.confirmar("Cambios sin guardar",
+        if (modificado && !Dialogos.mostrarDialogoConfirmacion("Cambios sin guardar",
                 "Hay cambios sin guardar que se descartarán. ¿Continuar?")) {
             return;
         }
         try {
-            long nueva = modelo.getRectificativas().crearRectificativa(versionAbiertaId,
-                    modelo.getReloj().fechaTrabajo(), null);
+            long nueva = Vista.getInstancia().getControlador().getModelo().getRectificativas().crearRectificativa(versionAbiertaId,
+                    Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo(), null);
             cargarFactura(nueva);
-            Dialogos.info("Rectificativa", "Rectificativa creada. Puede editar la referencia antes de guardar.");
+            Dialogos.mostrarDialogoInformacion("Rectificativa", "Rectificativa creada. Puede editar la referencia antes de guardar.");
         } catch (ValidacionException e) {
-            Dialogos.error("Rectificativa", e.getMessage());
+            Dialogos.mostrarDialogoError("Rectificativa", e.getMessage());
         } catch (Exception e) {
-            Dialogos.error("Rectificativa", "Error al crear la rectificativa: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Rectificativa", "Error al crear la rectificativa: " + e.getMessage());
         }
     }
 
     @FXML
     private void exportarPdf() {
         if (versionAbiertaId == null) {
-            Dialogos.info("Exportar PDF", "Guarde primero la factura para poder exportarla.");
+            Dialogos.mostrarDialogoInformacion("Exportar PDF", "Guarde primero la factura para poder exportarla.");
             return;
         }
         try {
-            Facturas.VersionCompleta vc = modelo.getFacturas().abrirVersion(versionAbiertaId);
+            Facturas.VersionCompleta vc = Vista.getInstancia().getControlador().getModelo().getFacturas().abrirVersion(versionAbiertaId);
             if (vc == null) {
                 return;
             }
-            Empresa empresa = modelo.getConfiguracion().getEmpresa();
+            Empresa empresa = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
             Path sugerido = proponerDestinoPdf(vc);
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Exportar PDF");
@@ -1261,7 +1256,7 @@ public class EditorController implements Vista {
                 chooser.setInitialDirectory(sugerido.getParent().toFile());
             }
             chooser.setInitialFileName(sugerido.getFileName().toString());
-            File f = chooser.showSaveDialog(nav.stage());
+            File f = chooser.showSaveDialog(Vista.getInstancia().getVentana());
             if (f == null) {
                 return;
             }
@@ -1279,26 +1274,26 @@ public class EditorController implements Vista {
                 btnExportar.setDisable(false);
                 try {
                     if (ruta.getParent() != null) {
-                        modelo.getConfiguracion().setPreferencia(PREV_EXPORT, ruta.getParent().toString());
+                        Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(PREV_EXPORT, ruta.getParent().toString());
                     }
                 } catch (Exception ignored) {
                 }
-                Dialogos.info("Exportar PDF", "PDF generado en:\n" + ruta);
+                Dialogos.mostrarDialogoInformacion("Exportar PDF", "PDF generado en:\n" + ruta);
             });
             t.setOnFailed(e -> {
                 btnExportar.setDisable(false);
-                Dialogos.error("Exportar PDF", "No se pudo generar el PDF: "
+                Dialogos.mostrarDialogoError("Exportar PDF", "No se pudo generar el PDF: "
                         + (t.getException() == null ? "error desconocido" : t.getException().getMessage()));
             });
             new Thread(t).start();
         } catch (Exception e) {
-            Dialogos.error("Exportar PDF", "Error: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Exportar PDF", "Error: " + e.getMessage());
         }
     }
 
     private String colorPdfPreferido() {
         try {
-            return modelo.getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR);
+            return Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR);
         } catch (Exception e) {
             return null;
         }
@@ -1307,7 +1302,7 @@ public class EditorController implements Vista {
     private Path proponerDestinoPdf(Facturas.VersionCompleta vc) {
         String carpeta = "Facturas";
         try {
-            String pref = modelo.getConfiguracion().getPreferencia(PREV_CARPETA);
+            String pref = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_CARPETA);
             if (pref != null && !pref.isBlank()) {
                 carpeta = pref;
             }
@@ -1317,7 +1312,7 @@ public class EditorController implements Vista {
         if (!base.isAbsolute()) {
             base = Conexion.carpetaEmpresa().resolve(base);
         }
-        Serie serie = modelo.getSeries().getById(vc.factura().getSerieId());
+        Serie serie = Vista.getInstancia().getControlador().getModelo().getSeries().getById(vc.factura().getSerieId());
         String nombre = Formatos.nombreArchivoPdf(vc.version().getNumero());
         return base.resolve(String.valueOf(vc.version().getFechaFactura().getYear()))
                 .resolve(serie.getCodigo())
@@ -1327,10 +1322,10 @@ public class EditorController implements Vista {
     @FXML
     private void verVersiones() {
         if (facturaAbiertaId == null) {
-            Dialogos.info("Versiones", "Guarde primero la factura para tener versiones.");
+            Dialogos.mostrarDialogoInformacion("Versiones", "Guarde primero la factura para tener versiones.");
             return;
         }
-        VersionesController vc = nav.mostrar("/cabofactu/vista/recursos/Versiones.fxml");
+        VersionesController vc = (VersionesController) Vista.getInstancia().mostrar("Versiones.fxml");
         if (vc == null) {
             return;
         }
@@ -1396,11 +1391,11 @@ public class EditorController implements Vista {
             return;
         }
         if (facturaAbiertaId != null && correlativoFijo != null && f != null) {
-            txtNumero.setText(modelo.getNumeracion().formarNumero(s, correlativoFijo, f));
+            txtNumero.setText(Vista.getInstancia().getControlador().getModelo().getNumeracion().formarNumero(s, correlativoFijo, f));
         } else if (f != null) {
             try {
-                int correlativo = modelo.getNumeracion().siguienteCorrelativo(s, f);
-                txtNumero.setText(modelo.getNumeracion().formarNumero(s, correlativo, f));
+                int correlativo = Vista.getInstancia().getControlador().getModelo().getNumeracion().siguienteCorrelativo(s, f);
+                txtNumero.setText(Vista.getInstancia().getControlador().getModelo().getNumeracion().formarNumero(s, correlativo, f));
             } catch (Exception e) {
                 txtNumero.setText("");
             }
@@ -1409,11 +1404,11 @@ public class EditorController implements Vista {
 
     private Integer pedirHueco(Serie serie, LocalDate fecha) {
         try {
-            List<Integer> huecos = modelo.getNumeracion().huecosDisponibles(serie, fecha);
+            List<Integer> huecos = Vista.getInstancia().getControlador().getModelo().getNumeracion().huecosDisponibles(serie, fecha);
             if (huecos.isEmpty()) {
                 return null;
             }
-            int siguiente = modelo.getNumeracion().siguienteCorrelativo(serie, fecha);
+            int siguiente = Vista.getInstancia().getControlador().getModelo().getNumeracion().siguienteCorrelativo(serie, fecha);
             List<Integer> menores = huecos.stream().filter(h -> h < siguiente).toList();
             if (menores.isEmpty()) {
                 return null;
@@ -1438,7 +1433,7 @@ public class EditorController implements Vista {
     private void guardarSeriePreferida(Serie s) {
         try {
             if (s != null) {
-                modelo.getConfiguracion().setPreferencia(PREV_SERIE, s.getCodigo());
+                Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(PREV_SERIE, s.getCodigo());
             }
         } catch (Exception ignored) {
         }
@@ -1472,24 +1467,24 @@ public class EditorController implements Vista {
     }
 
     private void atajos() {
-        nav.stage().getScene().getAccelerators().put(
-                new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), this::guardar);
-        nav.stage().getScene().getAccelerators().put(
-                new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN), this::exportarPdf);
-        nav.stage().getScene().getAccelerators().put(
-                new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), this::nuevaFactura);
-        nav.stage().getScene().getAccelerators().put(
-                new KeyCodeCombination(KeyCode.ESCAPE), this::volver);
+        Vista.getInstancia().getVentana().getScene().getAccelerators().put(
+                new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), () -> guardar());
+        Vista.getInstancia().getVentana().getScene().getAccelerators().put(
+                new KeyCodeCombination(KeyCode.P, KeyCombination.CONTROL_DOWN), () -> exportarPdf());
+        Vista.getInstancia().getVentana().getScene().getAccelerators().put(
+                new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), () -> nuevaFactura());
+        Vista.getInstancia().getVentana().getScene().getAccelerators().put(
+                new KeyCodeCombination(KeyCode.ESCAPE), () -> volver());
     }
 
     @FXML
     private void nuevaFactura() {
-        nav.mostrar("/cabofactu/vista/recursos/Editor.fxml");
+        Vista.getInstancia().mostrar("Editor.fxml");
     }
 
     @FXML
     private void volver() {
-        nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
+        Vista.getInstancia().mostrar("MenuPrincipal.fxml");
     }
 
     // ------------------------------------------------------------------

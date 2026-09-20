@@ -5,7 +5,6 @@ import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.FacturacionMensual;
-import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.ValidacionException;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.BooleanProperty;
@@ -23,6 +22,7 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
@@ -41,20 +41,21 @@ import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URL;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.ResourceBundle;
 import java.util.stream.Collectors;
-import cabofactu.vista.Navegador;
 import cabofactu.vista.ConfiguracionVentana;
+import cabofactu.vista.Vista;
 import cabofactu.vista.Ventanas;
 import cabofactu.vista.utilidades.Dialogos;
 import cabofactu.vista.utilidades.GestorTemas;
 
 public class GenerarFacturasMensualesController {
 
-    private Modelo modelo;
     private Stage stage;
 
     private final ObservableList<LineaDialogo> lineas = FXCollections.observableArrayList();
@@ -100,45 +101,38 @@ public class GenerarFacturasMensualesController {
     @FXML
     private Label lblInfo;
 
-    public void setModelo(Modelo modelo) {
-        this.modelo = modelo;
-    }
-
     public void setStage(Stage stage) {
         this.stage = stage;
     }
 
-    public static void abrir(Navegador nav) {
+    public static void abrir() {
         try {
             FXMLLoader loader = new FXMLLoader(GenerarFacturasMensualesController.class.getResource(
                     "/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml"));
             Parent root = loader.load();
             GenerarFacturasMensualesController c = loader.getController();
-            c.setModelo(nav.modelo());
             Stage dialog = new Stage();
-            dialog.initOwner(nav.stage());
+            dialog.initOwner(Vista.getInstancia().getVentana());
             dialog.initModality(Modality.APPLICATION_MODAL);
             dialog.setTitle(Ventanas.PREFIJO + "Generar facturas mensuales");
             Ventanas.aplicarIcono(dialog);
             Scene scene = new Scene(root);
-            GestorTemas.aplicar(scene, nav.modelo());
+            GestorTemas.aplicar(scene, Vista.getInstancia().getControlador().getModelo());
             dialog.setScene(scene);
-            ConfiguracionVentana.para("/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml")
-                    .ifPresent(cfg -> cfg.aplicar(dialog));
+            ConfiguracionVentana configuracion = ConfiguracionVentana.para("GenerarFacturasMensuales.fxml");
+            if (configuracion != null) {
+                configuracion.aplicar(dialog);
+            }
             c.setStage(dialog);
-            c.alIniciar();
             dialog.showAndWait();
         } catch (IOException e) {
-            Dialogos.error("Diálogo", "No se pudo abrir el diálogo: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Diálogo", "No se pudo abrir el diálogo: " + e.getMessage());
         }
     }
 
     @FXML
-    public void initialize() {
+    public void initialize(URL url, ResourceBundle rb) {
         configurarTabla();
-    }
-
-    public void alIniciar() {
         cargarClientes();
         cargarSeries();
         cargarMeses();
@@ -156,7 +150,7 @@ public class GenerarFacturasMensualesController {
 
     private void cargarClientes() {
         try {
-            List<Cliente> activos = modelo.getClientes().listar(true);
+            List<Cliente> activos = Vista.getInstancia().getControlador().getModelo().getClientes().listar(true);
             comboCliente.getItems().setAll(activos);
             comboCliente.setConverter(new StringConverter<>() {
                 @Override
@@ -170,14 +164,14 @@ public class GenerarFacturasMensualesController {
                 }
             });
         } catch (Exception e) {
-            Dialogos.error("Clientes", "Error al cargar clientes: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Clientes", "Error al cargar clientes: " + e.getMessage());
         }
     }
 
     private void cargarSeries() {
         try {
             List<Serie> series = new ArrayList<>();
-            for (Serie s : modelo.getSeries().listar()) {
+            for (Serie s : Vista.getInstancia().getControlador().getModelo().getSeries().listar()) {
                 if (!s.isEsRectificativa()) {
                     series.add(s);
                 }
@@ -195,7 +189,7 @@ public class GenerarFacturasMensualesController {
                 }
             });
         } catch (Exception e) {
-            Dialogos.error("Series", "Error al cargar series: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Series", "Error al cargar series: " + e.getMessage());
         }
     }
 
@@ -223,7 +217,7 @@ public class GenerarFacturasMensualesController {
 
     private void cargarIvas() {
         try {
-            comboIva.getItems().setAll(modelo.getTiposIva().listar(true));
+            comboIva.getItems().setAll(Vista.getInstancia().getControlador().getModelo().getTiposIva().listar(true));
             comboIva.setConverter(new StringConverter<>() {
                 @Override
                 public String toString(TipoIva t) {
@@ -236,7 +230,7 @@ public class GenerarFacturasMensualesController {
                 }
             });
         } catch (Exception e) {
-            Dialogos.error("IVA", "Error al cargar tipos de IVA: " + e.getMessage());
+            Dialogos.mostrarDialogoError("IVA", "Error al cargar tipos de IVA: " + e.getMessage());
         }
     }
 
@@ -248,7 +242,7 @@ public class GenerarFacturasMensualesController {
             sin.setPorcentaje(0);
             List<TipoRetencion> items = new ArrayList<>();
             items.add(sin);
-            items.addAll(modelo.getTiposRetencion().listar(true));
+            items.addAll(Vista.getInstancia().getControlador().getModelo().getTiposRetencion().listar(true));
             comboRetencion.getItems().setAll(items);
             comboRetencion.setConverter(new StringConverter<>() {
                 @Override
@@ -263,12 +257,12 @@ public class GenerarFacturasMensualesController {
             });
             comboRetencion.setValue(sin);
         } catch (Exception e) {
-            Dialogos.error("Retenciones", "Error al cargar retenciones: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Retenciones", "Error al cargar retenciones: " + e.getMessage());
         }
     }
 
     private void configurarSpinners() {
-        int anioActual = modelo.getReloj().hoy().getYear();
+        int anioActual = Vista.getInstancia().getControlador().getModelo().getReloj().hoy().getYear();
         spinnerAnio.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(anioActual - 5, anioActual + 10, anioActual));
         spinnerDia.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 31, 15));
         spinnerDia.setEditable(true);
@@ -365,23 +359,23 @@ public class GenerarFacturasMensualesController {
     private void generar() {
         Cliente cliente = comboCliente.getValue();
         if (cliente == null) {
-            Dialogos.error("Generar", "Seleccione un cliente.");
+            Dialogos.mostrarDialogoError("Generar", "Seleccione un cliente.");
             return;
         }
         Serie serie = comboSerie.getValue();
         if (serie == null) {
-            Dialogos.error("Generar", "Seleccione una serie.");
+            Dialogos.mostrarDialogoError("Generar", "Seleccione una serie.");
             return;
         }
         TipoIva iva = comboIva.getValue();
         if (iva == null) {
-            Dialogos.error("Generar", "Seleccione un tipo de IVA.");
+            Dialogos.mostrarDialogoError("Generar", "Seleccione un tipo de IVA.");
             return;
         }
         Integer mesInicio = comboMesInicio.getValue();
         Integer mesFin = comboMesFin.getValue();
         if (mesInicio == null || mesFin == null || mesInicio > mesFin) {
-            Dialogos.error("Generar", "El mes de inicio debe ser anterior o igual al mes de fin.");
+            Dialogos.mostrarDialogoError("Generar", "El mes de inicio debe ser anterior o igual al mes de fin.");
             return;
         }
         List<FacturacionMensual.LineaPlantilla> plantillas = new ArrayList<>();
@@ -393,7 +387,7 @@ public class GenerarFacturasMensualesController {
                     l.getCantidad(), l.getDescripcion().trim(), l.getPrecioUnitario(), l.isAnadirMes()));
         }
         if (plantillas.isEmpty()) {
-            Dialogos.error("Generar", "Añada al menos una línea con descripción.");
+            Dialogos.mostrarDialogoError("Generar", "Añada al menos una línea con descripción.");
             return;
         }
         TipoRetencion retencion = comboRetencion.getValue();
@@ -404,19 +398,19 @@ public class GenerarFacturasMensualesController {
         boolean generarDuplicados = false;
         List<String> duplicados = List.of();
         try {
-            duplicados = modelo.getFacturacionMensual().detectarDuplicados(
+            duplicados = Vista.getInstancia().getControlador().getModelo().getFacturacionMensual().detectarDuplicados(
                     cliente, spinnerAnio.getValue(), mesInicio, mesFin);
             if (!duplicados.isEmpty()) {
                 String mensaje = "Ya existen facturas para este cliente en:\n\n"
                         + String.join(", ", duplicados)
                         + "\n\n¿Deseas generar las facturas de todos modos?";
-                if (!Dialogos.confirmar("Meses con facturas", mensaje)) {
+                if (!Dialogos.mostrarDialogoConfirmacion("Meses con facturas", mensaje)) {
                     return;
                 }
                 generarDuplicados = true;
             }
         } catch (Exception e) {
-            Dialogos.error("Generar", "Error al comprobar duplicados: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Generar", "Error al comprobar duplicados: " + e.getMessage());
             return;
         }
 
@@ -441,26 +435,26 @@ public class GenerarFacturasMensualesController {
         boolean usarHuecos = false;
         try {
             if (mesesAGenerar > 0) {
-                List<Integer> conHuecos = modelo.getNumeracion().proponerNumeros(
+                List<Integer> conHuecos = Vista.getInstancia().getControlador().getModelo().getNumeracion().proponerNumeros(
                         serie, spinnerAnio.getValue(), mesesAGenerar, true);
-                List<Integer> sinHuecos = modelo.getNumeracion().proponerNumeros(
+                List<Integer> sinHuecos = Vista.getInstancia().getControlador().getModelo().getNumeracion().proponerNumeros(
                         serie, spinnerAnio.getValue(), mesesAGenerar, false);
                 if (!conHuecos.equals(sinHuecos)) {
                     String numeros = conHuecos.stream()
                             .map(String::valueOf)
                             .collect(Collectors.joining(", "));
-                    usarHuecos = Dialogos.confirmar("Huecos de numeración",
+                    usarHuecos = Dialogos.mostrarDialogoConfirmacion("Huecos de numeración",
                             "Hay huecos disponibles en la numeración. ¿Quieres usarlos?\n\n"
                                     + "Números propuestos: " + numeros);
                 }
             }
         } catch (Exception e) {
-            Dialogos.error("Generar", "Error al calcular la numeración: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Generar", "Error al calcular la numeración: " + e.getMessage());
             return;
         }
 
         try {
-            FacturacionMensual.Resultado r = modelo.getFacturacionMensual().generar(
+            FacturacionMensual.Resultado r = Vista.getInstancia().getControlador().getModelo().getFacturacionMensual().generar(
                     cliente, spinnerAnio.getValue(), mesInicio, mesFin, serie,
                     diaMode, diaFijo, iva, retencion, plantillas, generarDuplicados, usarHuecos);
             StringBuilder msg = new StringBuilder();
@@ -469,14 +463,14 @@ public class GenerarFacturasMensualesController {
                 msg.append("\n\nMeses ya existentes omitidos:\n");
                 msg.append(String.join(", ", r.getMesesOmitidos()));
             }
-            Dialogos.info("Generar facturas mensuales", msg.toString());
+            Dialogos.mostrarDialogoInformacion("Generar facturas mensuales", msg.toString());
             if (stage != null) {
                 stage.close();
             }
         } catch (ValidacionException e) {
-            Dialogos.error("Generar", e.getMessage());
+            Dialogos.mostrarDialogoError("Generar", e.getMessage());
         } catch (Exception e) {
-            Dialogos.error("Generar", "Error al generar las facturas: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Generar", "Error al generar las facturas: " + e.getMessage());
         }
     }
 

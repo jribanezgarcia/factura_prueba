@@ -4,10 +4,10 @@ import cabofactu.modelo.dominio.Empresa;
 import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Sesion;
-import cabofactu.modelo.Modelo;
 import cabofactu.modelo.negocio.ValidacionException;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -19,16 +19,14 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 
 import java.io.File;
+import java.net.URL;
 import java.nio.file.Path;
-import cabofactu.vista.Navegador;
+import java.util.ResourceBundle;
+import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
-import cabofactu.vista.utilidades.BarraNavegacion;
 import cabofactu.vista.utilidades.Dialogos;
 
-public class CopiaSeguridadController implements Vista {
-
-    private Modelo modelo;
-    private Navegador nav;
+public class CopiaSeguridadController implements Pantalla, Initializable {
 
     @FXML
     private Label lblDestino;
@@ -36,8 +34,10 @@ public class CopiaSeguridadController implements Vista {
     private Label lblResultado;
     @FXML
     private Button btnCrear;
+    // Cómo funciona: JavaFX inyecta aquí el controlador del <fx:include fx:id="barra">;
+    // el nombre del campo es el fx:id más "Controller".
     @FXML
-    private HBox barraNavegacion;
+    private BarraNavegacionController barraController;
 
     @FXML
     private Label lblOrigen;
@@ -64,18 +64,8 @@ public class CopiaSeguridadController implements Vista {
     private CopiaSeguridad.ResumenCopia resumen;
 
     @Override
-    public void setModelo(Modelo m) {
-        this.modelo = m;
-    }
-
-    @Override
-    public void setNavegador(Navegador n) {
-        this.nav = n;
-    }
-
-    @Override
-    public void alIniciar() {
-        barraNavegacion.getChildren().add(BarraNavegacion.crear(nav, "copiaSeguridad"));
+    public void initialize(URL url, ResourceBundle rb) {
+        barraController.marcarActivo("copiaSeguridad");
         grupoDestino.selectedToggleProperty().addListener((obs, old, sel) -> {
             boolean nueva = sel == rbCrearNueva;
             filaNombreEmpresa.setVisible(nueva);
@@ -87,7 +77,7 @@ public class CopiaSeguridadController implements Vista {
     private void seleccionarDestino() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Carpeta de destino de la copia de seguridad");
-        File dir = chooser.showDialog(nav.stage());
+        File dir = chooser.showDialog(Vista.getInstancia().getVentana());
         if (dir != null) {
             lblDestino.setText(dir.getAbsolutePath());
             btnCrear.setDisable(false);
@@ -98,24 +88,24 @@ public class CopiaSeguridadController implements Vista {
     private void crear() {
         String destino = lblDestino.getText();
         if (destino == null || destino.isBlank()) {
-            Dialogos.error("Copia de seguridad", "Seleccione primero la carpeta de destino.");
+            Dialogos.mostrarDialogoError("Copia de seguridad", "Seleccione primero la carpeta de destino.");
             return;
         }
         btnCrear.setDisable(true);
         Task<Path> t = new Task<>() {
             @Override
             protected Path call() throws Exception {
-                return modelo.getCopiaSeguridad().crearCopia(Path.of(destino));
+                return Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().crearCopia(Path.of(destino));
             }
         };
         t.setOnSucceeded(e -> {
             btnCrear.setDisable(false);
             lblResultado.setText("Copia creada:\n" + t.getValue());
-            Dialogos.info("Copia de seguridad", "Copia de seguridad creada en:\n" + t.getValue());
+            Dialogos.mostrarDialogoInformacion("Copia de seguridad", "Copia de seguridad creada en:\n" + t.getValue());
         });
         t.setOnFailed(e -> {
             btnCrear.setDisable(false);
-            Dialogos.error("Copia de seguridad", "No se pudo crear la copia: "
+            Dialogos.mostrarDialogoError("Copia de seguridad", "No se pudo crear la copia: "
                     + (t.getException() == null ? "error desconocido" : t.getException().getMessage()));
         });
         new Thread(t).start();
@@ -126,7 +116,7 @@ public class CopiaSeguridadController implements Vista {
         FileChooser chooser = new FileChooser();
         chooser.setTitle("Seleccionar copia a restaurar");
         chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Bases de datos SQLite", "*.db"));
-        File archivo = chooser.showOpenDialog(nav.stage());
+        File archivo = chooser.showOpenDialog(Vista.getInstancia().getVentana());
         if (archivo == null) {
             return;
         }
@@ -140,7 +130,7 @@ public class CopiaSeguridadController implements Vista {
         Task<CopiaSeguridad.ResumenCopia> t = new Task<>() {
             @Override
             protected CopiaSeguridad.ResumenCopia call() throws Exception {
-                return modelo.getCopiaSeguridad().leerResumen(origenSeleccionado);
+                return Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().leerResumen(origenSeleccionado);
             }
         };
         t.setOnSucceeded(e -> {
@@ -152,7 +142,7 @@ public class CopiaSeguridadController implements Vista {
             String msg = t.getException() instanceof ValidacionException
                     ? t.getException().getMessage()
                     : "No se pudo leer la copia: " + t.getException().getMessage();
-            Dialogos.error("Restaurar copia", msg);
+            Dialogos.mostrarDialogoError("Restaurar copia", msg);
             origenSeleccionado = null;
             lblOrigen.setText("(ninguna copia seleccionada)");
         });
@@ -204,7 +194,7 @@ public class CopiaSeguridadController implements Vista {
 
     private String obtenerNifActiva() {
         try {
-            Empresa emp = modelo.getConfiguracion().getEmpresa();
+            Empresa emp = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
             return emp == null ? "" : emp.getNif() == null ? "" : emp.getNif();
         } catch (Exception e) {
             return "";
@@ -213,7 +203,7 @@ public class CopiaSeguridadController implements Vista {
 
     private int contarFacturasActivas() {
         try {
-            return modelo.getCopiaSeguridad().facturasEmpresaActiva();
+            return Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().facturasEmpresaActiva();
         } catch (Exception e) {
             return 0;
         }
@@ -240,7 +230,7 @@ public class CopiaSeguridadController implements Vista {
         boolean reemplazar = grupoDestino.getSelectedToggle() == rbReemplazar;
         String nombre = reemplazar ? null : txtNombreEmpresa.getText();
         if (!reemplazar && (nombre == null || nombre.isBlank())) {
-            Dialogos.error("Restaurar copia", "Introduce un nombre para la nueva empresa.");
+            Dialogos.mostrarDialogoError("Restaurar copia", "Introduce un nombre para la nueva empresa.");
             return;
         }
 
@@ -249,7 +239,7 @@ public class CopiaSeguridadController implements Vista {
                 ? "¿Reemplazar los datos de la empresa activa (" + empresaActiva + ") con la copia seleccionada?\n"
                         + "Se guardará una copia de rescate antes de continuar. Esta operación no se puede deshacer desde la aplicación."
                 : "¿Crear una nueva empresa \"" + nombre + "\" con los datos de la copia?";
-        if (!Dialogos.confirmar("Restaurar copia", msg)) {
+        if (!Dialogos.mostrarDialogoConfirmacion("Restaurar copia", msg)) {
             return;
         }
 
@@ -260,10 +250,10 @@ public class CopiaSeguridadController implements Vista {
             @Override
             protected Object call() throws Exception {
                 if (reemplazar) {
-                    Path rescate = modelo.getCopiaSeguridad().restaurarEnEmpresaActiva(origenSeleccionado);
+                    Path rescate = Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().restaurarEnEmpresaActiva(origenSeleccionado);
                     return new Object[]{"reemplazar", rescate};
                 } else {
-                    Empresas.EmpresaInfo nueva = modelo.getCopiaSeguridad().restaurarComoEmpresaNueva(origenSeleccionado, nombre);
+                    Empresas.EmpresaInfo nueva = Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().restaurarComoEmpresaNueva(origenSeleccionado, nombre);
                     return new Object[]{"nueva", nueva};
                 }
             }
@@ -275,30 +265,30 @@ public class CopiaSeguridadController implements Vista {
             if ("reemplazar".equals(tipo)) {
                 Path rescate = (Path) resultado[1];
                 lblResultadoRestauracion.setText("");
-                Dialogos.info("Restaurar copia",
+                Dialogos.mostrarDialogoInformacion("Restaurar copia",
                         "Copia restaurada. Copia de rescate guardada en:\n" + rescate);
-                nav.mostrarInicio();
+                Vista.getInstancia().mostrarInicio();
             } else {
                 Empresas.EmpresaInfo nueva = (Empresas.EmpresaInfo) resultado[1];
                 lblResultadoRestauracion.setText("");
-                boolean cambiar = Dialogos.confirmar("Empresa creada",
+                boolean cambiar = Dialogos.mostrarDialogoConfirmacion("Empresa creada",
                         "Empresa \"" + nueva.nombre() + "\" creada correctamente.\n¿Quieres cambiar a ella ahora?");
                 if (cambiar) {
                     try {
                         Empresas.conectar(nueva.slug(), Sesion.fechaTrabajo());
                     } catch (Exception ex) {
-                        Dialogos.error("Restaurar copia", "No se pudo conectar: " + ex.getMessage());
+                        Dialogos.mostrarDialogoError("Restaurar copia", "No se pudo conectar: " + ex.getMessage());
                         return;
                     }
-                    nav.mostrarInicio();
+                    Vista.getInstancia().mostrarInicio();
                 } else {
-                    nav.mostrar("/cabofactu/vista/recursos/CopiaSeguridad.fxml");
+                    Vista.getInstancia().mostrar("CopiaSeguridad.fxml");
                 }
             }
         });
         t.setOnFailed(e -> {
             btnRestaurar.setDisable(false);
-            Dialogos.error("Restaurar copia",
+            Dialogos.mostrarDialogoError("Restaurar copia",
                     "No se pudo restaurar: " + (t.getException() == null ? "error desconocido" : t.getException().getMessage()));
             lblResultadoRestauracion.setText("");
         });
@@ -307,6 +297,6 @@ public class CopiaSeguridadController implements Vista {
 
     @FXML
     private void volver() {
-        nav.mostrar("/cabofactu/vista/recursos/MenuPrincipal.fxml");
+        Vista.getInstancia().mostrar("MenuPrincipal.fxml");
     }
 }

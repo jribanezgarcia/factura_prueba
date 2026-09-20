@@ -1,11 +1,13 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Empresa;
-import cabofactu.modelo.Modelo;
 import cabofactu.utilidades.Formatos;
 import cabofactu.utilidades.LogoMarco;
-import javafx.fxml.FXML;
+import cabofactu.vista.Pantalla;
+import cabofactu.vista.Vista;
 import javafx.application.Platform;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -13,11 +15,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.StackPane;
-import javafx.stage.WindowEvent;
 
 import java.io.File;
+import java.net.URL;
 import java.time.LocalDate;
-import cabofactu.vista.Navegador;
+import java.util.ResourceBundle;
 import cabofactu.vista.Vista;
 
 /**
@@ -25,10 +27,7 @@ import cabofactu.vista.Vista;
  * seguridad y Salir. Muestra la fecha de trabajo de la sesion (solo lectura).
  * El logo y los datos de empresa salen de la configuracion.
  */
-public class MenuPrincipalController implements Vista {
-
-    private Modelo modelo;
-    private Navegador nav;
+public class MenuPrincipalController implements Pantalla, Initializable {
 
     @FXML
     private Label fechaTrabajo;
@@ -42,20 +41,14 @@ public class MenuPrincipalController implements Vista {
     private Label lblEmpresaInfo;
 
     @Override
-    public void setModelo(Modelo m) {
-        this.modelo = m;
-    }
-
-    @Override
-    public void setNavegador(Navegador n) {
-        this.nav = n;
-    }
-
-    @Override
-    public void alIniciar() {
-        LocalDate f = modelo.getReloj().fechaTrabajo();
+    public void initialize(URL url, ResourceBundle rb) {
+        LocalDate f = Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo();
         fechaTrabajo.setText(Formatos.fecha(f));
         cargarEmpresa();
+    }
+
+    @Override
+    public void alMostrar() {
         atajos();
         quitarFocoInicial();
     }
@@ -65,14 +58,14 @@ public class MenuPrincipalController implements Vista {
      * el foco inicial se deja en el fondo de la escena y no en los botones.
      */
     private void quitarFocoInicial() {
-        if (nav.stage().getScene() != null) {
-            Platform.runLater(() -> nav.stage().getScene().getRoot().requestFocus());
+        if (Vista.getInstancia().getVentana().getScene() != null) {
+            Platform.runLater(() -> Vista.getInstancia().getVentana().getScene().getRoot().requestFocus());
         }
     }
 
     private void cargarEmpresa() {
         try {
-            Empresa e = modelo.getConfiguracion().getEmpresa();
+            Empresa e = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
             if (e.getNombre() != null && !e.getNombre().isBlank()) {
                 lblEmpresa.setText(e.getNombre());
             }
@@ -107,45 +100,45 @@ public class MenuPrincipalController implements Vista {
     }
 
     private void atajos() {
-        nav.stage().getScene().getAccelerators().put(
-                new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), this::nuevaFactura);
-        nav.stage().getScene().getAccelerators().put(
-                new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), this::historico);
+        Vista.getInstancia().getVentana().getScene().getAccelerators().put(
+                new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN), () -> nuevaFactura());
+        Vista.getInstancia().getVentana().getScene().getAccelerators().put(
+                new KeyCodeCombination(KeyCode.F, KeyCombination.CONTROL_DOWN), () -> historico());
     }
 
     @FXML
     private void nuevaFactura() {
-        nav.mostrar("/cabofactu/vista/recursos/Editor.fxml");
+        Vista.getInstancia().mostrar("Editor.fxml");
     }
 
     @FXML
     private void generarMensual() {
-        GenerarFacturasMensualesController.abrir(nav);
+        GenerarFacturasMensualesController.abrir();
         quitarFocoInicial();
     }
 
     @FXML
     private void historico() {
-        nav.mostrar("/cabofactu/vista/recursos/Historico.fxml");
+        Vista.getInstancia().mostrar("Historico.fxml");
     }
 
     @FXML
     private void clientes() {
-        nav.mostrar("/cabofactu/vista/recursos/Clientes.fxml");
+        Vista.getInstancia().mostrar("Clientes.fxml");
     }
 
     @FXML
     private void configuracion() {
-        nav.mostrar("/cabofactu/vista/recursos/Configuracion.fxml");
+        Vista.getInstancia().mostrar("Configuracion.fxml");
     }
 
     @FXML
     private void copiaSeguridad() {
-        nav.mostrar("/cabofactu/vista/recursos/CopiaSeguridad.fxml");
+        Vista.getInstancia().mostrar("CopiaSeguridad.fxml");
     }
 
     @FXML
     private void salir() {
-        nav.stage().fireEvent(new WindowEvent(nav.stage(), WindowEvent.WINDOW_CLOSE_REQUEST));
+        Vista.getInstancia().salir();
     }
 }

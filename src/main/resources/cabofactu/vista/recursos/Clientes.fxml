@@ -12,7 +12,7 @@
     </padding>
     <top>
         <VBox spacing="8">
-            <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+            <fx:include fx:id="barra" source="BarraNavegacion.fxml"/>
             <VBox spacing="8" styleClass="card, card-editor, panel-busqueda">
                 <HBox styleClass="action-bar" alignment="CENTER_LEFT">
                     <Region HBox.hgrow="ALWAYS"/>

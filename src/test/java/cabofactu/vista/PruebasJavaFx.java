@@ -1,5 +1,9 @@
 package cabofactu.vista;
 
+import cabofactu.controlador.Controlador;
+import cabofactu.modelo.Modelo;
+import javafx.stage.Stage;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
@@ -32,5 +36,11 @@ public final class PruebasJavaFx {
         }
         Platform.setImplicitExit(false);
         arrancado = true;
+    }
+
+    /** Preparamos la Vista como al arrancar: con su controlador, el modelo y una ventana. */
+    public static void prepararVista(Modelo modelo, Stage ventana) {
+        new Controlador(modelo, Vista.getInstancia());
+        Vista.getInstancia().setVentana(ventana);
     }
 }

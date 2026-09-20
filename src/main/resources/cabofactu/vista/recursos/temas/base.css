@@ -84,7 +84,7 @@
 .nav-bar {
     -fx-alignment: CENTER;
     -fx-spacing: 22px;
-    -fx-padding: 4px 0 4px 0;
+    -fx-padding: 8px 0 8px 0;
 }
 
 .nav-button {
@@ -105,6 +105,11 @@
 
 .nav-button:hover {
     -fx-background-color: rgba(128,128,128,0.10);
+}
+
+.menu-item:hover, .primary-button:hover {
+    -fx-scale-x: 1.02;
+    -fx-scale-y: 1.02;
 }
 
 .nav-button.activo {

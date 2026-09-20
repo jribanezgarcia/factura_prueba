@@ -15,7 +15,7 @@
     </fx:define>
     <top>
         <VBox spacing="4">
-            <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+            <fx:include fx:id="barra" source="BarraNavegacion.fxml"/>
             <Label styleClass="titulo" text="Configuración"/>
         </VBox>
     </top>

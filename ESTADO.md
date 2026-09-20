@@ -25,8 +25,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Tema de apariencia por empresa.
 - Tablas creadas con un único script (`db/crear_tablas.sql`), sin migraciones ni versiones de esquema.
 - Especificación sin píxeles: 20 requisitos de apariencia retirados y resumidos en «Apariencia de la interfaz» (54 → 35 requisitos).
+- Esqueleto como Biblioteca8: `AppCaboFactu`, `Controlador`, `Vista` singleton, `LanzadorVentanaPrincipal`, `Pantalla`, barra en FXML y `Dialogos` como en clase.
 
-Último cambio archivado: `2026-09-20-especificacion-sin-pixeles`.
+Último cambio archivado: `2026-09-20-estructura-como-biblioteca8`.
 
 ## En curso
 
@@ -35,13 +36,11 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
 
-Change escrito y pendiente de aplicar: **`estructura-como-biblioteca8`** — primer módulo: `AppCaboFactu`, `Controlador`, `Modelo`, `Vista` singleton y `LanzadorVentanaPrincipal`; arranque en ventana propia; FXML con `LocalizadorRecursos`; barra de navegación en FXML; `Dialogos` como en clase; y limpieza de los tests de pantalla.
-
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
 ## Qué toca ahora
 
-1. Escribir y aplicar los changes por módulos, en este orden: estructura → clientes → empresas y menú → configuración → facturas → editor → histórico → PDF → mensuales → copias → documentación.
+1. Escribir y aplicar los changes por módulos, en este orden: clientes → empresas y menú → configuración → facturas → editor → histórico → PDF → mensuales → copias → documentación.
 2. VeriFactu, después, en otra rama.
 
 ## Trampas conocidas

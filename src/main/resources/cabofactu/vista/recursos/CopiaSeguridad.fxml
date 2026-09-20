@@ -10,7 +10,7 @@
         <Insets top="12" right="16" bottom="12" left="16"/>
     </padding>
     <top>
-        <HBox fx:id="barraNavegacion" styleClass="nav-bar"/>
+        <fx:include fx:id="barra" source="BarraNavegacion.fxml"/>
     </top>
     <center>
         <ScrollPane fitToWidth="true" hbarPolicy="NEVER">
