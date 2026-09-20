@@ -1,4 +1,4 @@
-## Context
+## Situación de partida
 
 `openspec/specs/invoicing/spec.md`: 54 requisitos, 1.672 líneas. Contados el 20/09/2026, **19 requisitos (unas 700 líneas) solo describen apariencia** y salen de ~58 changes de retoque visual archivados. Un vigésimo, «Temas y apariencia», sí dice algo que importa y se reescribe dentro del requisito nuevo.
 
@@ -6,16 +6,16 @@
 
 Decisión del usuario (19/09/2026): «los ~20 requisitos visuales se resumen en uno, Apariencia». No cambia nada de lo que se ve.
 
-## Goals / Non-Goals
+## Objetivos y lo que queda fuera
 
-**Goals:** que la especificación describa **qué hace** la aplicación; que los detalles de aspecto vivan en el CSS; que quede un único requisito con las reglas visuales que sí hay que cumplir.
+**Objetivos:** que la especificación describa **qué hace** la aplicación; que los detalles de aspecto vivan en el CSS; que quede un único requisito con las reglas visuales que sí hay que cumplir.
 
-**Non-Goals:**
+**Queda fuera:**
 - Cambiar el aspecto, el CSS o cualquier línea de código.
 - Tocar `pdf-rendering`.
 - Tocar los requisitos que describen **qué hay** en una pantalla: «Ventana», «Menú y navegación», «Identidad de empresa en la interfaz», «Identidad de la aplicación en la interfaz» y «Configuración organizada por secciones».
 
-## Decisions
+## Decisiones
 
 ### D1. Los 20 requisitos que se retiran
 
@@ -65,7 +65,7 @@ Se añade **«Apariencia de la interfaz»**, con el texto y los escenarios que e
 - «Menú y navegación», «Identidad de empresa en la interfaz», «Identidad de la aplicación en la interfaz» y «Configuración organizada por secciones».
 - Ni una línea de `src/` ni de los CSS.
 
-## Risks / Trade-offs
+## Riesgos y renuncias
 
 - **Se pierde el detalle escrito de algunos acabados** (el gris `#F6F6F6` del tema por defecto, el tinte del sombreado). Sigue estando **en el CSS**, que es donde se aplica, y en los changes archivados si alguna vez hace falta saber por qué se hizo así.
 - **El archivado retira esos requisitos del spec vivo**: si alguno se considera imprescindible, hay que decirlo antes de archivar.

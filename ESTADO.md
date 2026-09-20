@@ -50,4 +50,5 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **No lanzar los tests con la aplicación abierta**: se mezclan las clases de `target` y salen errores falsos.
 - **`mvn clean` puede fallar** al borrar `target`; borrar la carpeta a mano y ejecutar `mvn test`.
 - **En OpenSpec, un requisito `MODIFIED` reemplaza el bloque entero**: hay que copiar todos sus escenarios, aunque solo cambie una frase.
+- **No traduzcas las palabras clave de OpenSpec** (`ADDED`/`MODIFIED`/`REMOVED Requirements`, `Requirement:`, `Scenario:`, `WHEN`/`THEN`, y `## Why` y `## What Changes` del proposal): `validate` sigue diciendo «is valid» y el requisito desaparece al archivar.
 - **Los datos se van a reiniciar** mientras el programa esté en desarrollo: no hace falta migrar nada.

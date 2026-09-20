@@ -16,6 +16,15 @@ Obligatorio en cada change:
 - **Al archivar**: pasarlo a «Hecho» en `ESTADO.md`, actualizar «Qué toca ahora» y apuntar en «Trampas conocidas» lo que haya salido mal por el camino.
 - **Si el change cambia alguna norma de este fichero**, actualizar `AGENTS.md` en el mismo change.
 
+### Idioma de los changes
+
+Todo se escribe en **español**, salvo las palabras que OpenSpec necesita leer en inglés:
+
+- En `proposal.md`, las cabeceras `## Why` y `## What Changes`. Sin ellas, `openspec show` falla con «Change must have a Why section».
+- En las specs y en los deltas: `## ADDED Requirements`, `## MODIFIED Requirements`, `## REMOVED Requirements`, `### Requirement:`, `#### Scenario:`, `- **WHEN**`, `- **THEN**`, `- **AND**` y los `SHALL`. **Si se traducen, `openspec validate --strict` sigue diciendo «is valid» y el requisito se pierde en silencio al archivar.**
+
+El resto de cabeceras van en español: «Capacidades», «A qué afecta», «Situación de partida», «Objetivos y lo que queda fuera», «Decisiones», «Riesgos y renuncias» y todo `tasks.md`.
+
 `ESTADO.md` no guarda el historial de cada change: eso está en `openspec/changes/archive/` y en `git log`.
 
 ## Mapa de la documentación

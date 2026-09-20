@@ -2,14 +2,14 @@
 
 ## 1. Comprobaciones antes de archivar
 
-- [ ] 1.1 Los 20 requisitos de `## REMOVED Requirements` existen en `openspec/specs/invoicing/spec.md` con **exactamente** ese título (compruébalo con `openspec show invoicing --type spec --json --requirements --no-scenarios`).
-- [ ] 1.2 El requisito nuevo «Apariencia de la interfaz» **no** existe ya en el spec vivo.
-- [ ] 1.3 `openspec validate especificacion-sin-pixeles --strict` sin errores.
-- [ ] 1.4 `git status --short` solo muestra la carpeta de este change y `ESTADO.md`.
+- [x] 1.1 Los 20 requisitos de `## REMOVED Requirements` existen en `openspec/specs/invoicing/spec.md` con **exactamente** ese título (compruébalo con `openspec show invoicing --type spec --json --requirements --no-scenarios`).
+- [x] 1.2 El requisito nuevo «Apariencia de la interfaz» **no** existe ya en el spec vivo.
+- [x] 1.3 `openspec validate especificacion-sin-pixeles --strict` sin errores.
+- [x] 1.4 `git status --short` solo muestra la carpeta de este change y `ESTADO.md`.
 
 ## 2. Estado
 
-- [ ] 2.1 Añadir este change a la sección «En curso» de `ESTADO.md`, con una línea de qué cambia.
+- [x] 2.1 Añadir este change a la sección «En curso» de `ESTADO.md`, con una línea de qué cambia.
 
 ## 3. Después de archivar
 

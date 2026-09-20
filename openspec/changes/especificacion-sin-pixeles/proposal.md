@@ -16,17 +16,17 @@ Son el poso de unos 58 changes de retoque visual. Cada uno dejó su requisito, y
 - **El aspecto pasa a vivir en las hojas de estilo** (`base.css` y un fichero por tema), no en la especificación.
 - **No cambia nada de lo que ve el usuario ni una línea de código**: es solo la especificación.
 
-## Capabilities
+## Capacidades
 
-### New Capabilities
+### Capacidades nuevas
 
 Ninguna.
 
-### Modified Capabilities
+### Capacidades modificadas
 
 - `invoicing`: 20 requisitos retirados y uno nuevo, «Apariencia de la interfaz», que los resume.
 
-## Impact
+## A qué afecta
 
 - `openspec/specs/invoicing/spec.md`: de 54 requisitos a 35, y de ~1.670 a unas 1.000 líneas.
 - Sin cambios en `src/`, ni en los tests, ni en los CSS.
