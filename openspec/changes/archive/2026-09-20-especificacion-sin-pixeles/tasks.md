@@ -13,10 +13,10 @@
 
 ## 3. Después de archivar
 
-- [ ] 3.1 `openspec show invoicing --type spec --json --requirements --no-scenarios` devuelve **35 requisitos**, con «Apariencia de la interfaz» entre ellos y sin ninguno de los 20 retirados.
-- [ ] 3.2 `openspec validate --all` sin errores.
-- [ ] 3.3 `grep -n "Apple\|Microinteracciones\|Sombreado uniforme" openspec/specs/invoicing/spec.md`: sin resultados.
-- [ ] 3.4 Pasar el change a «Hecho» en `ESTADO.md` y actualizar «Qué toca ahora».
+- [x] 3.1 `openspec show invoicing --type spec --json --requirements --no-scenarios` devuelve **35 requisitos**, con «Apariencia de la interfaz» entre ellos y sin ninguno de los 20 retirados.
+- [x] 3.2 `openspec validate --all` sin errores.
+- [x] 3.3 `grep -n "Apple\|Microinteracciones\|Sombreado uniforme" openspec/specs/invoicing/spec.md`: sin resultados.
+- [x] 3.4 Pasar el change a «Hecho» en `ESTADO.md` y actualizar «Qué toca ahora».
 
 ## 4. Pruebas manuales
 

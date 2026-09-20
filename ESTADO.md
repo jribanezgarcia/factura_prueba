@@ -24,8 +24,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - NIF con un aviso distinto por caso y datos de cliente obligatorios, comprobados al guardar.
 - Tema de apariencia por empresa.
 - Tablas creadas con un único script (`db/crear_tablas.sql`), sin migraciones ni versiones de esquema.
+- Especificación sin píxeles: 20 requisitos de apariencia retirados y resumidos en «Apariencia de la interfaz» (54 → 35 requisitos).
 
-Último cambio archivado: `2026-09-16-crear-tablas-sin-versiones`.
+Último cambio archivado: `2026-09-20-especificacion-sin-pixeles`.
 
 ## En curso
 
@@ -34,15 +35,12 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
 
-Change escrito y pendiente de aplicar: **`especificacion-sin-pixeles`** — retira de la especificación los 20 requisitos que solo describen apariencia y los resume en uno, «Apariencia de la interfaz». No toca código.
-
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
 ## Qué toca ahora
 
-1. Aplicar y archivar `especificacion-sin-pixeles`.
-2. Escribir y aplicar los changes por módulos, en este orden: estructura → clientes → empresas y menú → configuración → facturas → editor → histórico → PDF → mensuales → copias → documentación.
-3. VeriFactu, después, en otra rama.
+1. Escribir y aplicar los changes por módulos, en este orden: estructura → clientes → empresas y menú → configuración → facturas → editor → histórico → PDF → mensuales → copias → documentación.
+2. VeriFactu, después, en otra rama.
 
 ## Trampas conocidas
 
