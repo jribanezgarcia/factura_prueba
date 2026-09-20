@@ -25,7 +25,7 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Tema de apariencia por empresa.
 - Tablas creadas con un único script (`db/crear_tablas.sql`), sin migraciones ni versiones de esquema.
 
-Último cambio archivado: `2026-09-19-crear-tablas-sin-versiones`.
+Último cambio archivado: `2026-09-16-crear-tablas-sin-versiones`.
 
 ## En curso
 
