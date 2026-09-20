@@ -23,8 +23,13 @@ schema: spec-driven
 # Add advisory guidance for how apply and archive work should be conducted.
 # This is separate from artifact rules above.
 operations:
+  propose:
+    guidance:
+      - Anade el change a la seccion "En curso" de ESTADO.md, con una linea de que va a cambiar.
+      - Si el change cambia alguna norma de AGENTS.md (estilo, arquitectura o comentarios), actualiza AGENTS.md en el mismo change.
   archive:
     guidance:
+      - Pasa el change a "Hecho" en ESTADO.md, actualiza "Que toca ahora" y apunta en "Trampas conocidas" lo que haya salido mal.
       - Archivar es mover una carpeta. Usa git add -A para que el commit registre tambien el borrado del origen.
       - Antes de terminar, git status --short debe quedar vacio y git ls-tree no debe devolver la carpeta origen.
       - Tras archivar, haz commit automaticamente. Despues pregunta al usuario si hace push; no hagas push sin su confirmacion.

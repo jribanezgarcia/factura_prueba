@@ -8,7 +8,20 @@ El autor es alumno de 1º de DAM: el código tiene que poder leerlo, entenderlo 
 
 - **Cómo funciona la aplicación** (reglas de negocio y lo que ve el usuario): `openspec/specs/`. Es la fuente de verdad. Si un cambio modifica el comportamiento, su change lleva la spec delta correspondiente.
 - **Cómo se construye un cambio**: `design.md` y `tasks.md` de cada change en `openspec/changes/`.
-- **Cómo se escribe el código**: este fichero.
+- **Cómo se escribe el código y cómo se trabaja**: este fichero.
+- **Por dónde va el proyecto y qué toca ahora**: `ESTADO.md`.
+
+## Flujo de trabajo
+
+Todo el trabajo pasa por OpenSpec, con los comandos de opencode: `/opsx-propose` → `/opsx-apply` → `/opsx-archive`. No se toca el código ni `openspec/specs/` fuera de un change.
+
+Obligatorio en cada change:
+
+- **Al proponer**: añadir el change a la sección «En curso» de `ESTADO.md`, con una línea de qué va a cambiar.
+- **Al archivar**: pasarlo a «Hecho» en `ESTADO.md`, actualizar «Qué toca ahora» y apuntar en «Trampas conocidas» lo que haya salido mal por el camino.
+- **Si el change cambia alguna norma de este fichero** (estilo, arquitectura o comentarios), actualizar `AGENTS.md` en el mismo change.
+
+`ESTADO.md` no guarda el historial de cada change: eso está en `openspec/changes/archive/` y en `git log`.
 
 ## Estilo del código
 
