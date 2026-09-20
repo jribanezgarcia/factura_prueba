@@ -35,6 +35,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
 
+Change escrito y pendiente de aplicar: **`estructura-como-biblioteca8`** — primer módulo: `AppCaboFactu`, `Controlador`, `Modelo`, `Vista` singleton y `LanzadorVentanaPrincipal`; arranque en ventana propia; FXML con `LocalizadorRecursos`; barra de navegación en FXML; `Dialogos` como en clase; y limpieza de los tests de pantalla.
+
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
 ## Qué toca ahora
