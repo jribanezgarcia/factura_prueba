@@ -37,6 +37,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
 
+Change escrito y pendiente de aplicar: **`modulo-empresas-y-menu`** — empresas solo en el arranque (crear, elegir y eliminar), «Cambiar de empresa» en Configuración, sin bloqueo por datos incompletos (franja en el menú y comprobación al guardar, rectificar, generar y exportar), `Empresas` y `Sesion` singletons y `EmpresaDisponible` en lugar del `record`.
+
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
 ## Qué toca ahora
