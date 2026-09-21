@@ -14,8 +14,6 @@ import javafx.stage.Stage;
  */
 public class LanzadorVentanaPrincipal extends Application {
 
-    private static final String ARRANQUE = "Arranque.fxml";
-
     public static void comenzar() {
         launch(LanzadorVentanaPrincipal.class);
     }
@@ -37,8 +35,7 @@ public class LanzadorVentanaPrincipal extends Application {
             Dialogos.mostrarDialogoError("Facturación",
                     "No se pudo cargar la empresa de demostración:\n" + e.getMessage());
         }
-        Vista.getInstancia().setVentana(stage);
-        ArranqueController arranque = (ArranqueController) Vista.getInstancia().mostrar(ARRANQUE);
+        ArranqueController arranque = Vista.getInstancia().prepararArranque(stage);
         boolean demo = demoCargada;
         stage.setOnShown(e -> arranque.mostrarAvisoInicial(demo));
         stage.show();

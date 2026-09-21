@@ -3,7 +3,6 @@ package cabofactu.vista.controlador;
 import cabofactu.vista.Vista;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 
 /**
@@ -71,15 +70,6 @@ public class BarraNavegacionController {
             case "configuracion" -> btnConfiguracion.getStyleClass().add("activo");
             case "copiaSeguridad" -> btnCopias.getStyleClass().add("activo");
             default -> {
-            }
-        }
-    }
-
-    /** Desactivamos todos los botones menos Salir. */
-    public void bloquearSalvoSalir() {
-        for (Node n : btnSalir.getParent().getChildrenUnmodifiable()) {
-            if (n instanceof Button && !"Salir".equals(((Button) n).getText())) {
-                ((Button) n).setDisable(true);
             }
         }
     }

@@ -2,6 +2,7 @@ package cabofactu.vista;
 
 import cabofactu.controlador.Controlador;
 import cabofactu.modelo.Modelo;
+import cabofactu.vista.controlador.ArranqueController;
 import cabofactu.vista.recursos.LocalizadorRecursos;
 import cabofactu.vista.utilidades.Botones;
 import cabofactu.vista.utilidades.Dialogos;
@@ -23,7 +24,7 @@ import java.io.IOException;
 public class Vista {
 
     private static final String MENU = "MenuPrincipal.fxml";
-    private static final String CONFIGURACION = "Configuracion.fxml";
+    private static final String ARRANQUE = "Arranque.fxml";
 
     private static Vista instancia;
     private Controlador controlador;
@@ -97,12 +98,43 @@ public class Vista {
         LanzadorVentanaPrincipal.comenzar();
     }
 
-    /** Menú principal si la empresa tiene sus datos completos; si no, Configuración. */
+    /** Menú principal: se entra siempre en él, haya o no datos pendientes. */
     public void mostrarInicio() {
-        if (controlador.getModelo().getConfiguracion().empresaCompleta()) {
-            mostrar(MENU);
-        } else {
-            mostrar(CONFIGURACION);
+        mostrar(MENU);
+    }
+
+    /** Ponemos la pantalla de arranque en esa ventana, sin mostrarla todavía. */
+    public ArranqueController prepararArranque(Stage ventanaArranque) {
+        setVentana(ventanaArranque);
+        return (ArranqueController) mostrar(ARRANQUE);
+    }
+
+    /**
+     * Cerramos la empresa en uso y volvemos a la pantalla de arranque. Abrimos la
+     * ventana de arranque antes de cerrar la principal para que nunca se queden
+     * cero ventanas, porque entonces JavaFX cerraría la aplicación.
+     */
+    public void volverAlArranque() {
+        Stage principal = ventana;
+        controlador.cerrarEmpresa();
+        Stage arranque = new Stage();
+        prepararArranque(arranque);
+        arranque.show();
+        principal.close();
+    }
+
+    /**
+     * Antes de guardar una factura, rectificar, generar las mensuales o exportar
+     * PDF, comprobamos que la empresa tiene sus datos completos. Si no, avisamos
+     * de lo que falta y devolvemos false.
+     */
+    public boolean comprobarDatosEmpresa() {
+        try {
+            controlador.comprobarDatosEmpresa();
+            return true;
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoAdvertencia("Datos de la empresa", e.getMessage());
+            return false;
         }
     }
 

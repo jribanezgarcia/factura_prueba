@@ -1,8 +1,10 @@
 package cabofactu.modelo.negocio;
 
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -11,67 +13,106 @@ import java.nio.file.Path;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
 /**
- * Gestion de empresas: listado, creacion, conexion, eliminacion y catalogo
- * (BASE_DATA_DIR/empresas.properties) que mapea el slug al nombre visible.
+ * Las empresas de la aplicación: cada una es una carpeta con su base de datos,
+ * y su nombre visible se guarda en el catálogo empresas.properties.
  */
-public final class Empresas {
+public class Empresas {
 
     private static final String CATALOGO = "empresas.properties";
 
-    public record EmpresaInfo(String slug, String nombre) {
-    }
+    private static Empresas empresas;
 
     private Empresas() {
     }
 
-    public static List<EmpresaInfo> listarEmpresas() throws IOException {
-        Properties catalogo = cargarCatalogo();
-        List<EmpresaInfo> lista = new ArrayList<>();
-        for (String slug : Conexion.getEmpresasDisponibles()) {
-            String nombre = catalogo.getProperty(claveNombre(slug));
-            lista.add(new EmpresaInfo(slug, nombre == null || nombre.isBlank() ? slug : nombre));
+    public static Empresas getEmpresas() {
+        if (empresas == null) {
+            empresas = new Empresas();
         }
-        lista.sort(Comparator.comparing(EmpresaInfo::nombre));
+        return empresas;
+    }
+
+    /** Las empresas ordenadas por nombre, con el que guarda el catálogo. */
+    public List<EmpresaDisponible> listado() throws Exception {
+        Properties catalogo = cargarCatalogo();
+        List<EmpresaDisponible> lista = new ArrayList<>();
+        for (String carpeta : Conexion.getEmpresasDisponibles()) {
+            lista.add(new EmpresaDisponible(carpeta, catalogo.getProperty(claveNombre(carpeta))));
+        }
+        Collections.sort(lista);
         return lista;
     }
 
     /**
-     * Crea una empresa nueva: carpeta, base de datos vacia con sus tablas
-     * y entrada en el catalogo. No cambia la empresa activa ni la
-     * conexion en curso.
+     * Creamos una empresa nueva: carpeta, base de datos vacía con sus tablas
+     * y entrada en el catálogo. No cambia la empresa abierta ni la
+     * conexión en curso.
      */
-    public static EmpresaInfo crearEmpresa(String nombre) throws Exception {
-        String slug = slugDe(nombre);
-        if (Conexion.getEmpresasDisponibles().contains(slug)) {
-            throw new IllegalArgumentException("Ya existe una empresa con esa carpeta de datos: " + slug);
+    public EmpresaDisponible alta(String nombre) throws Exception {
+        if (nombre == null || nombre.isBlank()) {
+            throw new Exception("Indique el nombre de la empresa.");
         }
-        Path destino = Conexion.rutaBaseDe(slug);
+        String carpeta = carpetaDe(nombre);
+        if (Conexion.getEmpresasDisponibles().contains(carpeta)) {
+            throw new Exception("Ya existe una empresa con ese nombre de carpeta: " + carpeta + ".");
+        }
+        Path destino = Conexion.rutaBaseDe(carpeta);
         Conexion.crearBase(destino);
 
         Properties catalogo = cargarCatalogo();
-        catalogo.setProperty(claveNombre(slug), nombre.trim());
+        catalogo.setProperty(claveNombre(carpeta), nombre.trim());
         guardarCatalogo(catalogo);
-        return new EmpresaInfo(slug, nombre.trim());
+        return new EmpresaDisponible(carpeta, nombre.trim());
     }
 
     /**
-     * Conecta con una empresa existente: la fija como activa, abre su base
-     * de datos (creando las tablas si es nueva) e inicializa la sesion con
-     * la fecha de trabajo.
+     * Quitamos una empresa que no está en uso: borramos su carpeta de datos y
+     * después la sacamos del catálogo, para que si la carpeta no se puede borrar
+     * la empresa siga en la lista con su nombre.
      */
-    public static void conectar(String slug, LocalDate fecha) throws Exception {
-        Conexion.setEmpresaActiva(slug);
+    public void baja(String carpeta) throws Exception {
+        if (carpeta.equals(Sesion.getSesion().getCarpetaEmpresa())) {
+            throw new Exception("La empresa en uso no se puede eliminar.");
+        }
+        File hija = Conexion.carpetaRaiz().resolve(carpeta).toFile();
+        if (hija.exists()) {
+            borrarCarpeta(hija);
+        }
+        Properties catalogo = cargarCatalogo();
+        catalogo.remove(claveNombre(carpeta));
+        guardarCatalogo(catalogo);
+    }
+
+    /** Abrimos la empresa: la dejamos activa, conectamos con su base y empezamos la sesión. */
+    public void abrir(String carpeta, LocalDate fecha) throws Exception {
+        Conexion.setEmpresaActiva(carpeta);
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
-        Sesion.inicializar(slug, fecha);
-        PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, slug);
+        Sesion.getSesion().iniciar(carpeta, fecha);
+        PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, carpeta);
         recordarTema();
+    }
+
+    /** Cerramos la empresa en uso, para poder volver al arranque. */
+    public void cerrar() {
+        Conexion.cerrarConexion();
+        Sesion.getSesion().terminar();
+    }
+
+    /**
+     * Registramos el nombre visible de una empresa ya existente (restaurada o
+     * rescatada sin entrada de catálogo).
+     */
+    public void registrarNombre(String carpeta, String nombre) throws Exception {
+        Properties catalogo = cargarCatalogo();
+        catalogo.setProperty(claveNombre(carpeta), nombre);
+        guardarCatalogo(catalogo);
     }
 
     /**
@@ -79,7 +120,7 @@ public final class Empresas {
      * que las pantallas y el arranque usen el de esta empresa. Si la empresa no
      * tiene tema guardado, dejamos el valor vacío y se usa el tema por defecto.
      */
-    public static void recordarTema() {
+    public void recordarTema() {
         ConfiguracionDAO configuracionDAO = new ConfiguracionDAO();
         String tema = configuracionDAO.getPreferencia(PreferenciasGlobales.TEMA);
         if (tema == null) {
@@ -89,82 +130,70 @@ public final class Empresas {
     }
 
     /**
-     * Elimina una empresa distinta de la activa: quita su entrada del catalogo
-     * y borra su carpeta de datos.
+     * Carpeta de una empresa a partir de su nombre: minúsculas, sin acentos,
+     * los espacios y símbolos se sustituyen por guiones bajos.
      */
-    public static void eliminarEmpresa(String slug) throws Exception {
-        if (slug.equals(Sesion.empresaSlug())) {
-            throw new IllegalArgumentException("La empresa activa no se puede eliminar.");
+    public static String carpetaDe(String nombre) {
+        if (nombre == null) {
+            return "empresa";
         }
-        Properties catalogo = cargarCatalogo();
-        catalogo.remove(claveNombre(slug));
-        guardarCatalogo(catalogo);
-        Path carpeta = Conexion.carpetaRaiz().resolve(slug);
-        if (Files.exists(carpeta)) {
-            borrarRecursivo(carpeta);
-        }
-    }
-
-    /**
-     * Registra el nombre visible de una empresa ya existente (restaurada o
-     * rescatada sin entrada de catalogo).
-     */
-    public static void registrarNombre(String slug, String nombre) throws IOException {
-        Properties catalogo = cargarCatalogo();
-        catalogo.setProperty(claveNombre(slug), nombre);
-        guardarCatalogo(catalogo);
-    }
-
-    /**
-     * Slug de una empresa a partir de su nombre: minusculas, sin acentos, los
-     * espacios y simbolos se sustituyen por guiones bajos.
-     */
-    public static String slugDe(String nombre) {
-        String limpio = Normalizer.normalize(nombre == null ? "" : nombre, Normalizer.Form.NFD)
+        String limpio = Normalizer.normalize(nombre, Normalizer.Form.NFD)
                 .replaceAll("\\p{M}", "")
                 .toLowerCase(Locale.ROOT)
                 .replaceAll("[^a-z0-9]+", "_")
                 .replaceAll("^_+|_+$", "");
-        return limpio.isBlank() ? "empresa" : limpio;
+        if (limpio.isBlank()) {
+            return "empresa";
+        }
+        return limpio;
     }
 
-    private static String claveNombre(String slug) {
-        return slug + ".nombre";
+    /**
+     * Borramos una carpeta con todo lo que tiene dentro. Cómo funciona: un
+     * directorio no se puede borrar si no está vacío, así que primero borramos
+     * cada cosa de dentro (y si es otra carpeta, la vaciamos llamando a este
+     * mismo método) y al final la propia carpeta.
+     */
+    private void borrarCarpeta(File carpeta) throws Exception {
+        File[] contenido = carpeta.listFiles();
+        if (contenido != null) {
+            for (File hijo : contenido) {
+                if (hijo.isDirectory()) {
+                    borrarCarpeta(hijo);
+                } else if (!hijo.delete()) {
+                    throw new Exception("No se pudo borrar " + hijo.getName() + ". ¿Está abierta la empresa?");
+                }
+            }
+        }
+        if (!carpeta.delete()) {
+            throw new Exception("No se pudo borrar la carpeta " + carpeta.getName() + ".");
+        }
     }
 
-    private static Path archivoCatalogo() {
+    private String claveNombre(String carpeta) {
+        return carpeta + ".nombre";
+    }
+
+    private Path archivoCatalogo() {
         return Conexion.carpetaRaiz().resolve(CATALOGO);
     }
 
-    private static Properties cargarCatalogo() throws IOException {
-        Properties p = new Properties();
-        Path f = archivoCatalogo();
-        if (Files.exists(f)) {
-            try (InputStream in = Files.newInputStream(f)) {
-                p.load(in);
+    private Properties cargarCatalogo() throws IOException {
+        Properties catalogo = new Properties();
+        Path fichero = archivoCatalogo();
+        if (Files.exists(fichero)) {
+            try (InputStream entrada = Files.newInputStream(fichero)) {
+                catalogo.load(entrada);
             }
         }
-        return p;
+        return catalogo;
     }
 
-    private static void guardarCatalogo(Properties p) throws IOException {
-        Path f = archivoCatalogo();
-        Files.createDirectories(f.getParent());
-        try (OutputStream out = Files.newOutputStream(f)) {
-            p.store(out, null);
-        }
-    }
-
-    private static void borrarRecursivo(Path dir) throws IOException {
-        if (Files.isDirectory(dir)) {
-            try (var stream = Files.walk(dir)) {
-                stream.sorted(Comparator.reverseOrder()).forEach(p -> {
-                    try {
-                        Files.deleteIfExists(p);
-                    } catch (IOException ignored) {
-                    }
-                });
-            }
+    private void guardarCatalogo(Properties catalogo) throws IOException {
+        Path fichero = archivoCatalogo();
+        Files.createDirectories(fichero.getParent());
+        try (OutputStream salida = Files.newOutputStream(fichero)) {
+            catalogo.store(salida, null);
         }
     }
 }

@@ -12,11 +12,14 @@ import cabofactu.modelo.negocio.sqlite.TipoRetencionDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 
 import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.dominio.Cliente;
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.Clientes;
 import cabofactu.modelo.negocio.Configuracion;
+import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Estados;
 import cabofactu.modelo.negocio.Facturas;
 import cabofactu.modelo.negocio.FacturacionMensual;
@@ -116,6 +119,34 @@ public class Modelo {
 
     public boolean clienteTieneFacturas(long id) throws Exception {
         return Clientes.getClientes().tieneFacturas(id);
+    }
+
+    public List<EmpresaDisponible> listadoEmpresas() throws Exception {
+        return Empresas.getEmpresas().listado();
+    }
+
+    public EmpresaDisponible altaEmpresa(String nombre) throws Exception {
+        return Empresas.getEmpresas().alta(nombre);
+    }
+
+    public void bajaEmpresa(String carpeta) throws Exception {
+        Empresas.getEmpresas().baja(carpeta);
+    }
+
+    public void abrirEmpresa(String carpeta, LocalDate fecha) throws Exception {
+        Empresas.getEmpresas().abrir(carpeta, fecha);
+    }
+
+    public void cerrarEmpresa() {
+        Empresas.getEmpresas().cerrar();
+    }
+
+    public List<String> datosPendientesEmpresa() {
+        return configuracion.datosPendientes();
+    }
+
+    public void comprobarDatosEmpresa() throws Exception {
+        configuracion.comprobarEmpresaCompleta();
     }
 
     public Series getSeries() {

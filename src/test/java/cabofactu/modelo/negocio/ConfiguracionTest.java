@@ -2,14 +2,24 @@ package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
+import cabofactu.modelo.negocio.sqlite.Conexion;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
+import java.nio.file.Path;
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfiguracionTest {
+
+    @TempDir
+    Path tempDir;
 
     private final Configuracion service = new Configuracion(new ConfiguracionDAO());
 
@@ -24,6 +34,25 @@ class ConfiguracionTest {
         e.setEmail("taller@ejemplo.es");
         e.setTelefono("910000000");
         return e;
+    }
+
+    @BeforeEach
+    void setUp() {
+        Conexion.setCarpetaRaiz(tempDir);
+        Empresas.getEmpresas().cerrar();
+    }
+
+    @AfterEach
+    void tearDown() {
+        Conexion.cerrarConexion();
+    }
+
+    private Configuracion conEmpresaGuardada(Empresa empresa) throws Exception {
+        Empresas.getEmpresas().alta("Prueba");
+        Empresas.getEmpresas().abrir("prueba", LocalDate.now());
+        ConfiguracionDAO dao = new ConfiguracionDAO();
+        dao.saveEmpresa(empresa);
+        return new Configuracion(dao);
     }
 
     @Test
@@ -75,5 +104,20 @@ class ConfiguracionTest {
                 List.of("Nombre / razón social", "NIF", "Dirección", "CP",
                         "Localidad", "Provincia", "Email", "Teléfono"),
                 service.datosPendientes(e));
+    }
+
+    @Test
+    void comprobarEmpresaCompletaNombraLoQueFalta() throws Exception {
+        Empresa e = completa();
+        e.setTelefono("");
+        Configuracion servicio = conEmpresaGuardada(e);
+        Exception lanzada = assertThrows(Exception.class, () -> servicio.comprobarEmpresaCompleta());
+        assertTrue(lanzada.getMessage().contains("Teléfono"));
+    }
+
+    @Test
+    void comprobarEmpresaCompletaNoLanzaConLaEmpresaCompleta() throws Exception {
+        Configuracion servicio = conEmpresaGuardada(completa());
+        servicio.comprobarEmpresaCompleta();
     }
 }

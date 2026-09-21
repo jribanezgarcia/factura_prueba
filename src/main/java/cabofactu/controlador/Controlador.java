@@ -4,10 +4,12 @@ import cabofactu.InstanciaUnica;
 import cabofactu.PreparacionDatos;
 import cabofactu.modelo.Modelo;
 import cabofactu.modelo.dominio.Cliente;
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.vista.Vista;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -99,6 +101,34 @@ public class Controlador {
 
     public boolean clienteTieneFacturas(long id) throws Exception {
         return modelo.clienteTieneFacturas(id);
+    }
+
+    public List<EmpresaDisponible> listadoEmpresas() throws Exception {
+        return modelo.listadoEmpresas();
+    }
+
+    public EmpresaDisponible altaEmpresa(String nombre) throws Exception {
+        return modelo.altaEmpresa(nombre);
+    }
+
+    public void bajaEmpresa(String carpeta) throws Exception {
+        modelo.bajaEmpresa(carpeta);
+    }
+
+    public void abrirEmpresa(String carpeta, LocalDate fecha) throws Exception {
+        modelo.abrirEmpresa(carpeta, fecha);
+    }
+
+    public void cerrarEmpresa() {
+        modelo.cerrarEmpresa();
+    }
+
+    public List<String> datosPendientesEmpresa() {
+        return modelo.datosPendientesEmpresa();
+    }
+
+    public void comprobarDatosEmpresa() throws Exception {
+        modelo.comprobarDatosEmpresa();
     }
 
     /**

@@ -11,6 +11,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.ValidacionException;
 
@@ -90,24 +91,24 @@ public class CopiaSeguridad {
             throw new IOException("No se pudo restaurar; se ha recuperado la base anterior: " + e.getMessage(), e);
         }
 
-        Empresas.recordarTema();
+        Empresas.getEmpresas().recordarTema();
         return rescate;
     }
 
-    public Empresas.EmpresaInfo restaurarComoEmpresaNueva(Path origen, String nombre)
-            throws IOException, ValidacionException {
+    public EmpresaDisponible restaurarComoEmpresaNueva(Path origen, String nombre)
+            throws Exception {
         leerResumen(origen);
 
-        Empresas.EmpresaInfo nueva = null;
+        EmpresaDisponible nueva = null;
         try {
-            nueva = Empresas.crearEmpresa(nombre);
+            nueva = Empresas.getEmpresas().alta(nombre);
 
-            Path destino = Conexion.rutaBaseDe(nueva.slug());
+            Path destino = Conexion.rutaBaseDe(nueva.getCarpeta());
             copiaSeguridadDAO.instalarComoBase(origen, destino);
         } catch (Exception e) {
             if (nueva != null) {
                 try {
-                    Empresas.eliminarEmpresa(nueva.slug());
+                    Empresas.getEmpresas().baja(nueva.getCarpeta());
                 } catch (Exception ignored) {
                 }
             }

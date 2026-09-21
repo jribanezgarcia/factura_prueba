@@ -17,6 +17,11 @@
                 <Label text="Fecha de trabajo:"/>
                 <Label fx:id="fechaTrabajo" styleClass="muted"/>
             </HBox>
+            <HBox fx:id="franjaDatosPendientes" styleClass="franja-aviso" alignment="CENTER_LEFT" spacing="12"
+                  visible="false" managed="false" maxWidth="750">
+                <Label fx:id="lblDatosPendientes" wrapText="true" prefWidth="560" HBox.hgrow="ALWAYS"/>
+                <Button onAction="#completarDatos" styleClass="primary-button, btn-suave" text="Completar datos"/>
+            </HBox>
         </VBox>
     </top>
     <center>

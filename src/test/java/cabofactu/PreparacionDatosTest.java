@@ -1,5 +1,6 @@
 package cabofactu;
 
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.sqlite.CargarDemo;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.negocio.Empresas;
@@ -24,7 +25,7 @@ class PreparacionDatosTest {
     @BeforeEach
     void setUp() {
         Conexion.setCarpetaRaiz(tempDir);
-        Conexion.cerrarConexion();
+        Empresas.getEmpresas().cerrar();
     }
 
     @AfterEach
@@ -45,9 +46,8 @@ class PreparacionDatosTest {
     @Test
     void sinEmpresasCargaLaDemoYLaDejaComoUltima() throws Exception {
         assertTrue(PreparacionDatos.cargarDemoSiNoHayEmpresas());
-        assertTrue(Empresas.listarEmpresas().stream()
-                .anyMatch(e -> e.slug().equals(CargarDemo.SLUG)));
-        assertEquals(CargarDemo.SLUG,
+        assertTrue(hayEmpresa(CargarDemo.CARPETA));
+        assertEquals(CargarDemo.CARPETA,
                 PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA));
     }
 
@@ -55,15 +55,23 @@ class PreparacionDatosTest {
     void segundaLlamadaNoDuplica() throws Exception {
         assertTrue(PreparacionDatos.cargarDemoSiNoHayEmpresas());
         assertFalse(PreparacionDatos.cargarDemoSiNoHayEmpresas());
-        assertEquals(1, Empresas.listarEmpresas().size());
+        assertEquals(1, Empresas.getEmpresas().listado().size());
     }
 
     @Test
     void conOtraEmpresaNoCargaLaDemo() throws Exception {
-        Empresas.crearEmpresa("Otra");
+        Empresas.getEmpresas().alta("Otra");
         assertFalse(PreparacionDatos.cargarDemoSiNoHayEmpresas());
-        assertEquals(1, Empresas.listarEmpresas().size());
-        assertFalse(Empresas.listarEmpresas().stream()
-                .anyMatch(e -> e.slug().equals(CargarDemo.SLUG)));
+        assertEquals(1, Empresas.getEmpresas().listado().size());
+        assertFalse(hayEmpresa(CargarDemo.CARPETA));
+    }
+
+    private boolean hayEmpresa(String carpeta) throws Exception {
+        for (EmpresaDisponible empresa : Empresas.getEmpresas().listado()) {
+            if (empresa.getCarpeta().equals(carpeta)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

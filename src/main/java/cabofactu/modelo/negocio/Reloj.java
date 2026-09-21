@@ -21,7 +21,10 @@ public class Reloj {
     }
 
     public LocalDate fechaTrabajo() {
-        LocalDate f = Sesion.fechaTrabajo();
-        return f != null ? f : hoy();
+        LocalDate fecha = Sesion.getSesion().getFechaTrabajo();
+        if (fecha == null) {
+            return hoy();
+        }
+        return fecha;
     }
 }

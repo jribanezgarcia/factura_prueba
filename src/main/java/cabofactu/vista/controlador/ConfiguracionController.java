@@ -1,12 +1,12 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Empresa;
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.ExportadorPdf;
 import cabofactu.pdf.DisposicionCabecera;
-import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Sesion;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -29,7 +29,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.image.Image;
 import javafx.scene.control.RadioButton;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -51,8 +50,8 @@ import cabofactu.vista.utilidades.GestorTemas;
 
 /**
  * Configuracion por secciones con lista lateral: Empresa, Cabecera y pie, PDF
- * y apariencia se guardan con un boton global; IVA, Retenciones, Series y
- * Empresas se administran fila a fila con sus propias acciones.
+ * y apariencia se guardan con un boton global; IVA, Retenciones y Series
+ * se administran fila a fila con sus propias acciones.
  */
 public class ConfiguracionController implements Pantalla, Initializable {
 
@@ -67,7 +66,6 @@ public class ConfiguracionController implements Pantalla, Initializable {
     private final ObservableList<TipoIva> ivas = FXCollections.observableArrayList();
     private final ObservableList<TipoRetencion> retenciones = FXCollections.observableArrayList();
     private final ObservableList<Serie> series = FXCollections.observableArrayList();
-    private final ObservableList<Empresas.EmpresaInfo> empresas = FXCollections.observableArrayList();
 
     @FXML
     private ListView<ItemSeccion> listaSecciones;
@@ -85,8 +83,6 @@ public class ConfiguracionController implements Pantalla, Initializable {
     private VBox seccionRetenciones;
     @FXML
     private VBox seccionSeries;
-    @FXML
-    private VBox seccionEmpresas;
     @FXML
     private HBox barraGuardar;
     @FXML
@@ -202,15 +198,6 @@ public class ConfiguracionController implements Pantalla, Initializable {
     @FXML
     private Label lblSerieEjemplo;
 
-    @FXML
-    private TableView<Empresas.EmpresaInfo> tablaEmpresas;
-    @FXML
-    private TableColumn<Empresas.EmpresaInfo, String> colEmpresaNombre;
-    @FXML
-    private TableColumn<Empresas.EmpresaInfo, String> colEmpresaSlug;
-    @FXML
-    private Label lblEmpresasAviso;
-
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         barraController.marcarActivo("configuracion");
@@ -228,13 +215,10 @@ public class ConfiguracionController implements Pantalla, Initializable {
             }
             lblDatosPendientes.setVisible(true);
             lblDatosPendientes.setManaged(true);
-            barraController.bloquearSalvoSalir();
-            btnVolver.setDisable(true);
         }
         cargarIvas();
         cargarRetenciones();
         cargarSeries();
-        cargarEmpresas();
         cargarPdfs();
         cablearPrevia();
         configurarSecciones();
@@ -322,9 +306,10 @@ public class ConfiguracionController implements Pantalla, Initializable {
 
     private String nombreVisibleEmpresaActiva() {
         try {
-            for (Empresas.EmpresaInfo e : Empresas.listarEmpresas()) {
-                if (e.slug().equals(Sesion.empresaSlug())) {
-                    return e.nombre();
+            String carpeta = Sesion.getSesion().getCarpetaEmpresa();
+            for (EmpresaDisponible empresa : Vista.getInstancia().getControlador().listadoEmpresas()) {
+                if (empresa.getCarpeta().equals(carpeta)) {
+                    return empresa.getNombre();
                 }
             }
         } catch (Exception ignored) {
@@ -422,7 +407,6 @@ public class ConfiguracionController implements Pantalla, Initializable {
         items.add(new ItemSeccion("IVA", seccionIva, false, false));
         items.add(new ItemSeccion("Retenciones", seccionRetenciones, false, false));
         items.add(new ItemSeccion("Series", seccionSeries, false, false));
-        items.add(new ItemSeccion("Empresas", seccionEmpresas, false, false));
         listaSecciones.getItems().setAll(items);
         listaSecciones.setCellFactory(lv -> new ListCell<>() {
             @Override
@@ -928,88 +912,16 @@ public class ConfiguracionController implements Pantalla, Initializable {
     }
 
     // ------------------------------------------------------------------
-    // Empresas
+    // Cambiar de empresa
     // ------------------------------------------------------------------
 
-    private void cargarEmpresas() {
-        colEmpresaNombre.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().nombre())));
-        colEmpresaSlug.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().slug())));
-        refrescarEmpresas();
-    }
-
-    private void refrescarEmpresas() {
-        try {
-            empresas.setAll(Empresas.listarEmpresas());
-            tablaEmpresas.setItems(empresas);
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar las empresas: " + e.getMessage());
-        }
-    }
-
+    /** Volvemos al arranque para elegir otra empresa, avisando de lo que no se haya guardado. */
     @FXML
-    private void nuevaEmpresa() {
-        TextInputDialog dialogo = new TextInputDialog();
-        dialogo.setTitle("Nueva empresa");
-        dialogo.setHeaderText("Crea una nueva empresa");
-        dialogo.setContentText("Nombre de la empresa:");
-        String nombre = dialogo.showAndWait().orElse(null);
-        if (nombre == null || nombre.isBlank()) {
-            return;
-        }
-        try {
-            Empresas.EmpresaInfo nueva = Empresas.crearEmpresa(nombre);
-            refrescarEmpresas();
-            if (Dialogos.mostrarDialogoConfirmacion("Nueva empresa",
-                    "Empresa \"" + nueva.nombre() + "\" creada (carpeta: " + nueva.slug() + ").\n\n"
-                            + "¿Quieres cambiar a ella ahora?")) {
-                empresas.stream()
-                        .filter(e -> e.slug().equals(nueva.slug()))
-                        .findFirst()
-                        .ifPresent(e -> tablaEmpresas.getSelectionModel().select(e));
-                cambiarEmpresa();
-            }
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Nueva empresa", "No se pudo crear la empresa: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void cambiarEmpresa() {
-        Empresas.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
-        if (elegida == null) {
-            Dialogos.mostrarDialogoError("Empresas", "Seleccione una empresa de la tabla.");
-            return;
-        }
-        try {
-            Empresas.conectar(elegida.slug(), Sesion.fechaTrabajo());
-            Dialogos.mostrarDialogoInformacion("Empresas", "Cambiando a \"" + elegida.nombre() + "\"...");
-            Vista.getInstancia().mostrarInicio();
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Empresas", "No se pudo cambiar de empresa: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void eliminarEmpresa() {
-        Empresas.EmpresaInfo elegida = tablaEmpresas.getSelectionModel().getSelectedItem();
-        if (elegida == null) {
-            Dialogos.mostrarDialogoError("Empresas", "Seleccione una empresa de la tabla.");
-            return;
-        }
-        if (elegida.slug().equals(Sesion.empresaSlug())) {
-            Dialogos.mostrarDialogoError("Empresas", "La empresa activa no se puede eliminar.");
-            return;
-        }
-        if (!Dialogos.mostrarDialogoConfirmacion("Eliminar empresa",
-                "¿Seguro que deseas eliminar \"" + elegida.nombre() + "\"?\n"
-                        + "Se eliminará físicamente su carpeta de datos. Esta acción no se puede deshacer.")) {
-            return;
-        }
-        try {
-            Empresas.eliminarEmpresa(elegida.slug());
-            refrescarEmpresas();
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Empresas", "No se pudo eliminar la empresa: " + e.getMessage());
+    private void cambiarDeEmpresa() {
+        if (Dialogos.mostrarDialogoConfirmacion("Cambiar de empresa",
+                "Se cerrará esta empresa y volverás a la pantalla de arranque.\n\n"
+                        + "Lo que no hayas guardado en Configuración se perderá. ¿Continuar?")) {
+            Vista.getInstancia().volverAlArranque();
         }
     }
 

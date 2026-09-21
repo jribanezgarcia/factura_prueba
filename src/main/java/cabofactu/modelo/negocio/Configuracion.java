@@ -70,6 +70,15 @@ public class Configuracion {
         return datosPendientes().isEmpty();
     }
 
+    /** Lanzamos un aviso con los datos que faltan si la empresa no está completa. */
+    public void comprobarEmpresaCompleta() throws Exception {
+        List<String> faltan = datosPendientes();
+        if (!faltan.isEmpty()) {
+            throw new Exception("Faltan datos de tu empresa: " + String.join(", ", faltan) + ".\n\n"
+                    + "Complétalos en Configuración para poder guardar facturas y exportar PDF.");
+        }
+    }
+
     private static boolean vacio(String s) {
         return s == null || s.isBlank();
     }

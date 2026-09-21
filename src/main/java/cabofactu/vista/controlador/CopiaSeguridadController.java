@@ -1,8 +1,8 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Empresa;
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.fichero.CopiaSeguridad;
-import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Sesion;
 import cabofactu.modelo.negocio.ValidacionException;
 import javafx.concurrent.Task;
@@ -210,16 +210,16 @@ public class CopiaSeguridadController implements Pantalla, Initializable {
     }
 
     private String nombreEmpresaActiva() {
-        String slug = Sesion.empresaSlug();
+        String carpeta = Sesion.getSesion().getCarpetaEmpresa();
         try {
-            for (Empresas.EmpresaInfo e : Empresas.listarEmpresas()) {
-                if (e.slug().equals(slug)) {
-                    return e.nombre();
+            for (EmpresaDisponible empresa : Vista.getInstancia().getControlador().listadoEmpresas()) {
+                if (empresa.getCarpeta().equals(carpeta)) {
+                    return empresa.getNombre();
                 }
             }
         } catch (Exception ignored) {
         }
-        return slug;
+        return carpeta;
     }
 
     @FXML
@@ -253,7 +253,7 @@ public class CopiaSeguridadController implements Pantalla, Initializable {
                     Path rescate = Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().restaurarEnEmpresaActiva(origenSeleccionado);
                     return new Object[]{"reemplazar", rescate};
                 } else {
-                    Empresas.EmpresaInfo nueva = Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().restaurarComoEmpresaNueva(origenSeleccionado, nombre);
+                    EmpresaDisponible nueva = Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().restaurarComoEmpresaNueva(origenSeleccionado, nombre);
                     return new Object[]{"nueva", nueva};
                 }
             }
@@ -269,13 +269,13 @@ public class CopiaSeguridadController implements Pantalla, Initializable {
                         "Copia restaurada. Copia de rescate guardada en:\n" + rescate);
                 Vista.getInstancia().mostrarInicio();
             } else {
-                Empresas.EmpresaInfo nueva = (Empresas.EmpresaInfo) resultado[1];
+                EmpresaDisponible nueva = (EmpresaDisponible) resultado[1];
                 lblResultadoRestauracion.setText("");
                 boolean cambiar = Dialogos.mostrarDialogoConfirmacion("Empresa creada",
-                        "Empresa \"" + nueva.nombre() + "\" creada correctamente.\n¿Quieres cambiar a ella ahora?");
+                        "Empresa \"" + nueva.getNombre() + "\" creada correctamente.\n¿Quieres cambiar a ella ahora?");
                 if (cambiar) {
                     try {
-                        Empresas.conectar(nueva.slug(), Sesion.fechaTrabajo());
+                        Vista.getInstancia().getControlador().abrirEmpresa(nueva.getCarpeta(), Sesion.getSesion().getFechaTrabajo());
                     } catch (Exception ex) {
                         Dialogos.mostrarDialogoError("Restaurar copia", "No se pudo conectar: " + ex.getMessage());
                         return;

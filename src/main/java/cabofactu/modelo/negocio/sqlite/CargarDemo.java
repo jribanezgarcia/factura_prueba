@@ -1,5 +1,6 @@
 package cabofactu.modelo.negocio.sqlite;
 
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.Empresas;
 
 import java.io.InputStream;
@@ -20,7 +21,7 @@ import cabofactu.modelo.dominio.Empresa;
  */
 public final class CargarDemo {
 
-    public static final String SLUG = "demo";
+    public static final String CARPETA = "demo";
 
     private CargarDemo() {
     }
@@ -57,9 +58,9 @@ public final class CargarDemo {
         return partes;
     }
 
-    public static Empresas.EmpresaInfo cargar() throws Exception {
-        Empresas.EmpresaInfo info = Empresas.crearEmpresa("Demo");
-        Empresas.registrarNombre(SLUG, "Empresa Demo S.L.");
+    public static EmpresaDisponible cargar() throws Exception {
+        EmpresaDisponible info = Empresas.getEmpresas().alta("Demo");
+        Empresas.getEmpresas().registrarNombre(CARPETA, "Empresa Demo S.L.");
 
         String sql;
         try (InputStream in = CargarDemo.class.getClassLoader().getResourceAsStream("db/seed_demo.sql")) {
@@ -69,7 +70,7 @@ public final class CargarDemo {
             sql = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
 
-        Conexion.setEmpresaActiva(SLUG);
+        Conexion.setEmpresaActiva(CARPETA);
         int sentencias = 0;
         try {
             Connection c = Conexion.establecerConexion();
@@ -91,9 +92,9 @@ public final class CargarDemo {
     }
 
     public static void main(String[] args) throws Exception {
-        Path carpeta = Conexion.carpetaRaiz().resolve(SLUG);
+        Path carpeta = Conexion.carpetaRaiz().resolve(CARPETA);
         if (Files.exists(carpeta)) {
-            Empresas.eliminarEmpresa(SLUG);
+            Empresas.getEmpresas().baja(CARPETA);
             if (Files.exists(carpeta)) {
                 System.out.println("No se ha podido eliminar la empresa de demostración: "
                         + "cierra la aplicación antes de cargarla.");
@@ -105,7 +106,7 @@ public final class CargarDemo {
         cargar();
 
         int facturas = 0;
-        Conexion.setEmpresaActiva(SLUG);
+        Conexion.setEmpresaActiva(CARPETA);
         try {
             Connection c = Conexion.establecerConexion();
             try (Statement st = c.createStatement();
@@ -117,6 +118,6 @@ public final class CargarDemo {
             Conexion.cerrarConexion();
         }
         System.out.println("Demostración cargada: " + facturas + " facturas en "
-                + Conexion.rutaBaseDe(SLUG) + ".");
+                + Conexion.rutaBaseDe(CARPETA) + ".");
     }
 }

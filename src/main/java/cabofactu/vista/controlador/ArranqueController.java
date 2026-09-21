@@ -1,7 +1,7 @@
 package cabofactu.vista.controlador;
 
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.sqlite.CargarDemo;
-import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.PreferenciasGlobales;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -9,15 +9,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
-import cabofactu.modelo.dominio.Empresa;
 import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.Dialogos;
@@ -26,14 +26,16 @@ import cabofactu.vista.utilidades.Dialogos;
  * Pantalla de arranque: elige la empresa, el anio del ejercicio fiscal y la
  * fecha de trabajo. Si el ejercicio es el anio en curso, la fecha de trabajo se
  * fija a hoy automaticamente; en otro caso se pide a mano dentro del ejercicio.
- * Tambien permite crear una empresa nueva desde aqui.
+ * Tambien permite crear una empresa nueva y eliminar cualquiera de la lista.
  */
 public class ArranqueController implements Pantalla, Initializable {
 
     @FXML
-    private ComboBox<Empresas.EmpresaInfo> cmbEmpresa;
+    private ComboBox<EmpresaDisponible> cmbEmpresa;
     @FXML
     private Button btnNuevaEmpresa;
+    @FXML
+    private Button btnEliminarEmpresa;
     @FXML
     private ComboBox<Integer> cmbEjercicio;
     @FXML
@@ -58,13 +60,11 @@ public class ArranqueController implements Pantalla, Initializable {
         if (demoRecienCargada) {
             Dialogos.mostrarDialogoInformacion("Bienvenido", "Se ha cargado una empresa de demostración con datos ficticios "
                     + "para que puedas probar el programa.\n\nCuando quieras trabajar con tu empresa, "
-                    + "créala con «Nueva…». Al entrar en ella tendrás que completar sus datos fiscales "
-                    + "y de contacto en Configuración. La empresa de demostración se puede eliminar "
-                    + "después desde Configuración > Empresas.");
+                    + "créala con «Nueva…». El menú te avisará de los datos fiscales y de contacto que le falten. "
+                    + "La empresa de demostración se puede eliminar desde esta misma pantalla con «Eliminar».");
         } else if (cmbEmpresa.getItems().isEmpty()) {
-            Dialogos.mostrarDialogoInformacion("Bienvenido", "Para iniciar el programa crea tu empresa con «Nueva…».\n\n"
-                    + "Al entrar en ella tendrás que completar sus datos fiscales y de contacto "
-                    + "en Configuración.");
+            Dialogos.mostrarDialogoInformacion("Bienvenido", "Para iniciar el programa crea tu empresa con «Nueva…». "
+                    + "El menú te avisará de los datos que le falten.");
         }
     }
 
@@ -73,21 +73,7 @@ public class ArranqueController implements Pantalla, Initializable {
     }
 
     private void configurarListaEmpresas() {
-        cmbEmpresa.setCellFactory(v -> new ListCell<>() {
-            @Override
-            protected void updateItem(Empresas.EmpresaInfo e, boolean vacio) {
-                super.updateItem(e, vacio);
-                setText(e == null ? null : e.nombre());
-            }
-        });
-        cmbEmpresa.setButtonCell(new ListCell<>() {
-            @Override
-            protected void updateItem(Empresas.EmpresaInfo e, boolean vacio) {
-                super.updateItem(e, vacio);
-                setText(e == null ? null : e.nombre());
-            }
-        });
-        cmbEmpresa.valueProperty().addListener((o, a, b) -> actualizarBoton());
+        cmbEmpresa.valueProperty().addListener((propiedad, anterior, nuevo) -> actualizarBoton());
     }
 
     private void configurarEjercicio() {
@@ -138,13 +124,15 @@ public class ArranqueController implements Pantalla, Initializable {
 
     private void cargarEmpresas() {
         try {
-            cmbEmpresa.getItems().setAll(Empresas.listarEmpresas());
+            List<EmpresaDisponible> empresas = Vista.getInstancia().getControlador().listadoEmpresas();
+            cmbEmpresa.getItems().setAll(empresas);
             String ultima = PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA);
             if (ultima != null) {
-                cmbEmpresa.getItems().stream()
-                        .filter(e -> e.slug().equals(ultima))
-                        .findFirst()
-                        .ifPresent(cmbEmpresa::setValue);
+                for (EmpresaDisponible empresa : empresas) {
+                    if (empresa.getCarpeta().equals(ultima)) {
+                        cmbEmpresa.setValue(empresa);
+                    }
+                }
             }
             if (cmbEmpresa.getValue() == null && !cmbEmpresa.getItems().isEmpty()) {
                 cmbEmpresa.setValue(cmbEmpresa.getItems().get(0));
@@ -154,7 +142,7 @@ public class ArranqueController implements Pantalla, Initializable {
                 lblAyudaEmpresa.setVisible(true);
                 lblAyudaEmpresa.setManaged(true);
             } else if (cmbEmpresa.getItems().size() == 1
-                    && cmbEmpresa.getItems().get(0).slug().equals(CargarDemo.SLUG)) {
+                    && cmbEmpresa.getItems().get(0).getCarpeta().equals(CargarDemo.CARPETA)) {
                 lblAyudaEmpresa.setText("Empresa de demostración con datos ficticios. Crea la tuya con «Nueva…».");
                 lblAyudaEmpresa.setVisible(true);
                 lblAyudaEmpresa.setManaged(true);
@@ -168,8 +156,11 @@ public class ArranqueController implements Pantalla, Initializable {
         }
     }
 
+    /** Activamos Entrar y Eliminar solo si hay una empresa elegida. */
     private void actualizarBoton() {
-        btnEntrar.setDisable(cmbEmpresa.getItems().isEmpty() || cmbEmpresa.getValue() == null);
+        boolean hayElegida = cmbEmpresa.getValue() != null;
+        btnEntrar.setDisable(!hayElegida);
+        btnEliminarEmpresa.setDisable(!hayElegida);
     }
 
     @FXML
@@ -178,25 +169,47 @@ public class ArranqueController implements Pantalla, Initializable {
         dialogo.setTitle("Nueva empresa");
         dialogo.setHeaderText("Crea una nueva empresa");
         dialogo.setContentText("Nombre de la empresa:");
-        String nombre = dialogo.showAndWait().orElse(null);
-        if (nombre == null || nombre.isBlank()) {
+        Optional<String> respuesta = dialogo.showAndWait();
+        if (!respuesta.isPresent()) {
+            return;
+        }
+        String nombre = respuesta.get();
+        if (nombre.isBlank()) {
             return;
         }
         try {
-            Empresas.EmpresaInfo nueva = Empresas.crearEmpresa(nombre);
+            EmpresaDisponible nueva = Vista.getInstancia().getControlador().altaEmpresa(nombre);
             cargarEmpresas();
-            cmbEmpresa.getItems().stream()
-                    .filter(e -> e.slug().equals(nueva.slug()))
-                    .findFirst()
-                    .ifPresent(cmbEmpresa::setValue);
+            cmbEmpresa.setValue(nueva);
         } catch (Exception e) {
             lblError.setText("No se pudo crear la empresa: " + e.getMessage());
         }
     }
 
     @FXML
+    private void eliminarEmpresa() {
+        EmpresaDisponible elegida = cmbEmpresa.getValue();
+        if (elegida == null) {
+            lblError.setText("Selecciona la empresa que quieres eliminar.");
+            return;
+        }
+        if (!Dialogos.mostrarDialogoConfirmacion("Eliminar empresa",
+                "¿Seguro que quieres eliminar «" + elegida.getNombre() + "»?\n\n"
+                        + "Se borrará su carpeta de datos con sus facturas, clientes y configuración. "
+                        + "No se puede deshacer: si la necesitas, haz antes una copia de seguridad.")) {
+            return;
+        }
+        try {
+            Vista.getInstancia().getControlador().bajaEmpresa(elegida.getCarpeta());
+            cargarEmpresas();
+        } catch (Exception e) {
+            lblError.setText("No se pudo eliminar la empresa: " + e.getMessage());
+        }
+    }
+
+    @FXML
     private void entrar() {
-        Empresas.EmpresaInfo elegida = cmbEmpresa.getValue();
+        EmpresaDisponible elegida = cmbEmpresa.getValue();
         LocalDate fecha = fechaTrabajo.getValue();
         if (fecha == null && cmbEjercicio.getValue() != null
                 && cmbEjercicio.getValue().equals(LocalDate.now().getYear())) {
@@ -211,7 +224,7 @@ public class ArranqueController implements Pantalla, Initializable {
             return;
         }
         try {
-            Empresas.conectar(elegida.slug(), fecha);
+            Vista.getInstancia().getControlador().abrirEmpresa(elegida.getCarpeta(), fecha);
             Stage ventanaArranque = (Stage) btnEntrar.getScene().getWindow();
             Vista.getInstancia().abrirVentanaPrincipal();
             ventanaArranque.close();

@@ -3,33 +3,41 @@ package cabofactu.modelo.negocio;
 import java.time.LocalDate;
 
 /**
- * Estado de la sesion de trabajo: empresa activa y fecha de trabajo elegidas en
- * la pantalla de arranque. La fecha de trabajo es el valor inicial de las
- * nuevas facturas y el anio de trabajo influye en los correlativos propuestos.
+ * La empresa abierta y la fecha de trabajo elegidas en el arranque. La fecha
+ * de trabajo es la inicial de las facturas nuevas.
  */
-public final class Sesion {
+public class Sesion {
 
-    private static String empresaSlug;
-    private static LocalDate fechaTrabajo;
+    private static Sesion sesion;
+    private String carpetaEmpresa;
+    private LocalDate fechaTrabajo;
 
     private Sesion() {
     }
 
-    public static void inicializar(String slug, LocalDate fecha) {
-        empresaSlug = slug;
-        fechaTrabajo = fecha;
+    public static Sesion getSesion() {
+        if (sesion == null) {
+            sesion = new Sesion();
+        }
+        return sesion;
     }
 
-    public static String empresaSlug() {
-        return empresaSlug;
+    public void iniciar(String carpetaEmpresa, LocalDate fechaTrabajo) {
+        this.carpetaEmpresa = carpetaEmpresa;
+        this.fechaTrabajo = fechaTrabajo;
     }
 
-    public static LocalDate fechaTrabajo() {
-        return fechaTrabajo;
-    }
-
-    public static void reiniciar() {
-        empresaSlug = null;
+    /** Olvidamos la empresa y la fecha: no hay ninguna empresa abierta. */
+    public void terminar() {
+        carpetaEmpresa = null;
         fechaTrabajo = null;
+    }
+
+    public String getCarpetaEmpresa() {
+        return carpetaEmpresa;
+    }
+
+    public LocalDate getFechaTrabajo() {
+        return fechaTrabajo;
     }
 }

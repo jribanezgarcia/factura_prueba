@@ -27,7 +27,7 @@
                 <VBox fx:id="seccionEmpresa" visible="false" managed="false" spacing="8"
                       styleClass="card, zona-contenido, seccion-config">
                     <Label fx:id="lblDatosPendientes" wrapText="true" visible="false" managed="false"
-                           text="Para empezar a usar el programa tienes que completar los datos de tu empresa. Rellena los campos marcados con * y pulsa «Guardar configuración»."/>
+                           text="Faltan datos de tu empresa. Hasta completarlos no podrás guardar facturas, generar las mensuales ni exportar PDF. Rellena los campos marcados con * y pulsa «Guardar configuración»."/>
                     <GridPane hgap="8" vgap="6">
                         <Label text="Nombre / razón social *"/>
                         <TextField fx:id="txtNombre" prefWidth="300" GridPane.columnIndex="1"/>
@@ -198,30 +198,12 @@
                         </HBox>
                     </FlowPane>
                 </VBox>
-                <VBox fx:id="seccionEmpresas" visible="false" managed="false" spacing="8"
-                      styleClass="card, zona-contenido, seccion-config">
-                    <TableView fx:id="tablaEmpresas" prefHeight="120" VBox.vgrow="ALWAYS">
-                        <columns>
-                            <TableColumn fx:id="colEmpresaNombre" prefWidth="240" text="Nombre"/>
-                            <TableColumn fx:id="colEmpresaSlug" prefWidth="200" text="Carpeta de datos"/>
-                        </columns>
-                        <columnResizePolicy>
-                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
-                        </columnResizePolicy>
-                    </TableView>
-                    <Label fx:id="lblEmpresasAviso" styleClass="muted"
-                           text="Al eliminar una empresa se borra físicamente su carpeta de datos. Realiza antes una copia de seguridad."/>
-                    <FlowPane hgap="8" vgap="8" styleClass="alta-rapida">
-                        <Button onAction="#nuevaEmpresa" styleClass="default-button, btn-suave" text="Nueva empresa"/>
-                        <Button onAction="#cambiarEmpresa" styleClass="primary-button, btn-suave" text="Cambiar a esta"/>
-                        <Button onAction="#eliminarEmpresa" styleClass="default-button, btn-suave" text="Eliminar"/>
-                    </FlowPane>
-                </VBox>
             </StackPane>
         </HBox>
     </center>
     <bottom>
         <HBox fx:id="barraGuardar" spacing="8" alignment="CENTER_RIGHT" styleClass="card, zona-contenido">
+            <Button onAction="#cambiarDeEmpresa" styleClass="default-button, btn-suave" text="Cambiar de empresa"/>
             <Button onAction="#guardar" styleClass="primary-button, btn-suave" text="Guardar configuración"/>
             <Button fx:id="btnVolver" onAction="#volver" styleClass="default-button, btn-suave" text="Volver"/>
         </HBox>

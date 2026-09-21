@@ -37,11 +37,11 @@ public final class PreparacionDatos {
      * @throws Exception si falla la carga
      */
     public static boolean cargarDemoSiNoHayEmpresas() throws Exception {
-        if (!Empresas.listarEmpresas().isEmpty()) {
+        if (!Empresas.getEmpresas().listado().isEmpty()) {
             return false;
         }
         CargarDemo.cargar();
-        PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, CargarDemo.SLUG);
+        PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, CargarDemo.CARPETA);
         return true;
     }
 }

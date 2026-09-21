@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.PreferenciasGlobales;
 import cabofactu.modelo.negocio.Sesion;
@@ -39,10 +40,9 @@ class CopiaSeguridadTest {
     @BeforeEach
     void setUp() throws Exception {
         Conexion.setCarpetaRaiz(tempDir);
-        Conexion.cerrarConexion();
-        Sesion.reiniciar();
-        Empresas.crearEmpresa("Pruebas Backup");
-        Empresas.conectar("pruebas_backup", LocalDate.now());
+        Empresas.getEmpresas().cerrar();
+        Empresas.getEmpresas().alta("Pruebas Backup");
+        Empresas.getEmpresas().abrir("pruebas_backup", LocalDate.now());
         servicio = new CopiaSeguridad(new CopiaSeguridadDAO(), new FacturaDAO(), Clock.systemDefaultZone());
     }
 
@@ -132,8 +132,8 @@ class CopiaSeguridadTest {
 
     @Test
     void restaurarComoEmpresaNuevaNoTocaLaActiva() throws Exception {
-        Empresas.crearEmpresa("Activa");
-        Empresas.conectar("activa", LocalDate.now());
+        Empresas.getEmpresas().alta("Activa");
+        Empresas.getEmpresas().abrir("activa", LocalDate.now());
         Conexion.establecerConexion();
         try (Statement st = Conexion.establecerConexion().createStatement()) {
             st.executeUpdate("INSERT INTO empresa (id, nombre, nif) VALUES (1, 'Activa', 'A11111119') "
@@ -146,9 +146,9 @@ class CopiaSeguridadTest {
         }
         Path copia = servicio.crearCopia(tempDir.resolve("copiasActiva"));
 
-        Empresas.EmpresaInfo nuevaInfo = servicio.restaurarComoEmpresaNueva(copia, "Nueva B");
+        EmpresaDisponible nuevaInfo = servicio.restaurarComoEmpresaNueva(copia, "Nueva B");
 
-        assertEquals("nueva_b", nuevaInfo.slug());
+        assertEquals("nueva_b", nuevaInfo.getCarpeta());
         assertTrue(Files.exists(Conexion.rutaBaseDe("nueva_b")));
 
         try (var c = DriverManager.getConnection("jdbc:sqlite:" + Conexion.rutaBaseDe("nueva_b"));
@@ -159,9 +159,9 @@ class CopiaSeguridadTest {
             assertEquals("A11111119", rs.getString("nif"));
         }
 
-        assertEquals("activa", Sesion.empresaSlug());
+        assertEquals("activa", Sesion.getSesion().getCarpetaEmpresa());
 
-        Empresas.conectar("activa", LocalDate.now());
+        Empresas.getEmpresas().abrir("activa", LocalDate.now());
         try (Statement st = Conexion.establecerConexion().createStatement();
              ResultSet rs = st.executeQuery("SELECT nombre, nif FROM empresa WHERE id=1")) {
             assertTrue(rs.next());

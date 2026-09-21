@@ -357,6 +357,9 @@ public class GenerarFacturasMensualesController {
 
     @FXML
     private void generar() {
+        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
+            return;
+        }
         Cliente cliente = comboCliente.getValue();
         if (cliente == null) {
             Dialogos.mostrarDialogoError("Generar", "Seleccione un cliente.");

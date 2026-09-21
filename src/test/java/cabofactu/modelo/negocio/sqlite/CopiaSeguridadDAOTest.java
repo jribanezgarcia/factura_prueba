@@ -29,10 +29,9 @@ class CopiaSeguridadDAOTest {
     @BeforeEach
     void setUp() throws Exception {
         Conexion.setCarpetaRaiz(tempDir);
-        Conexion.cerrarConexion();
-        Sesion.reiniciar();
-        Empresas.crearEmpresa("Pruebas Copia");
-        Empresas.conectar("pruebas_copia", LocalDate.now());
+        Empresas.getEmpresas().cerrar();
+        Empresas.getEmpresas().alta("Pruebas Copia");
+        Empresas.getEmpresas().abrir("pruebas_copia", LocalDate.now());
         repo = new CopiaSeguridadDAO();
     }
 

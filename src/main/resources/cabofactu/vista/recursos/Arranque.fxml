@@ -26,6 +26,7 @@
                 <HBox spacing="8" maxWidth="Infinity">
                     <ComboBox fx:id="cmbEmpresa" promptText="Selecciona una empresa" maxWidth="Infinity" HBox.hgrow="ALWAYS"/>
                     <Button fx:id="btnNuevaEmpresa" onAction="#nuevaEmpresa" text="Nueva..."/>
+                    <Button fx:id="btnEliminarEmpresa" onAction="#eliminarEmpresa" text="Eliminar"/>
                 </HBox>
                 <Label text="Año del ejercicio fiscal"/>
                 <ComboBox fx:id="cmbEjercicio" maxWidth="Infinity"/>

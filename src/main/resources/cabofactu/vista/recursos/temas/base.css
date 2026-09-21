@@ -416,6 +416,15 @@
     -fx-border-width: 2;
 }
 
+/* Franja del menú con los datos de empresa que faltan */
+.franja-aviso {
+    -fx-background-color: derive(-fx-accent-error, 88%);
+    -fx-border-color: -fx-accent-error;
+    -fx-border-width: 0 0 0 4;
+    -fx-background-radius: 6;
+    -fx-padding: 8 12 8 12;
+}
+
 /* Diálogos y tarjetas de confirmación */
 .dialog-card {
     -fx-background-color: -fx-base;

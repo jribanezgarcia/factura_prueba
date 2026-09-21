@@ -27,8 +27,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Especificación sin píxeles: 20 requisitos de apariencia retirados y resumidos en «Apariencia de la interfaz» (54 → 35 requisitos).
 - Esqueleto como Biblioteca8: `AppCaboFactu`, `Controlador`, `Vista` singleton, `LanzadorVentanaPrincipal`, `Pantalla`, barra en FXML y `Dialogos` como en clase.
 - Módulo de clientes: `Cliente` que se valida en sus setters (con los errorX), `Clientes` singleton con el SQL dentro (sin `ClienteDAO`), las ocho operaciones en `Controlador` y `Modelo`, la ficha en `FichaCliente.fxml` con aviso de descarte y la pantalla con el patrón de tabla + formulario. El bloque Cliente del editor pregunta antes de actualizar la ficha.
+- Módulo de empresas y menú: empresas solo en el arranque (crear, elegir y eliminar con confirmación), «Cambiar de empresa» en Configuración, sin bloqueo por datos incompletos (franja en el menú y comprobación al guardar, rectificar, generar y exportar), `Empresas` y `Sesion` singletons y `EmpresaDisponible` en lugar del `record`.
 
-Último cambio archivado: `2026-09-21-modulo-clientes`.
+Último cambio archivado: `2026-09-21-modulo-empresas-y-menu`.
 
 ## En curso
 
@@ -37,14 +38,12 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
 
-Change escrito y pendiente de aplicar: **`modulo-empresas-y-menu`** — empresas solo en el arranque (crear, elegir y eliminar), «Cambiar de empresa» en Configuración, sin bloqueo por datos incompletos (franja en el menú y comprobación al guardar, rectificar, generar y exportar), `Empresas` y `Sesion` singletons y `EmpresaDisponible` en lugar del `record`.
-
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
 ## Qué toca ahora
 
-1. Aplicar el siguiente módulo: **empresas y menú**.
-2. Después, en el orden de los módulos: configuración → facturas → editor → histórico → PDF → mensuales → copias → documentación.
+1. Aplicar el siguiente módulo: **configuración**.
+2. Después, en el orden de los módulos: facturas → editor → histórico → PDF → mensuales → copias → documentación.
 3. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
@@ -58,3 +57,5 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **Borrar un «BOM» en los CSS** se llevó el punto de `.root` en los siete temas. Sin el punto se cae la paleta de todos los temas y los tests no lo detectan; lo delata una `ClassCastException … cannot be cast to Paint` en el log de `mvn test`.
 - **Tras `new Cliente(original)`** (el constructor copia) hay que volver a aplicar los campos editados. Si no, el cambio se pierde sin avisar.
 - **OpenSpec 1.10 rechaza un `MODIFIED`** que pierde un escenario por su título. Para sustituir un escenario, conserva su título.
+- **En JavaFX el CSS manda sobre los atributos del FXML**: `base.css` fija `-fx-min-width: 80px` a los botones, así que un `minWidth` en el FXML no sirve. Para que un botón no se corte al lado de un texto que se parte en líneas, da un `prefWidth` al texto.
+- **No des por arreglada una medida sin comprobarla**: un test temporal que cargue la pantalla a 1024×768 y compare `getWidth()` con `prefWidth(-1)` lo confirma en segundos.

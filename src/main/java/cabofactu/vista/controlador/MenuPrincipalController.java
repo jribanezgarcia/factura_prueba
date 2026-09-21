@@ -6,6 +6,7 @@ import cabofactu.utilidades.LogoMarco;
 import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -14,13 +15,16 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
 import java.io.File;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.ResourceBundle;
 import cabofactu.vista.Vista;
+import cabofactu.vista.utilidades.Dialogos;
 
 /**
  * Menu principal: Nueva factura, Historico, Clientes, Configuracion, Copia de
@@ -39,12 +43,17 @@ public class MenuPrincipalController implements Pantalla, Initializable {
     private Label lblEmpresa;
     @FXML
     private Label lblEmpresaInfo;
+    @FXML
+    private HBox franjaDatosPendientes;
+    @FXML
+    private Label lblDatosPendientes;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         LocalDate f = Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo();
         fechaTrabajo.setText(Formatos.fecha(f));
         cargarEmpresa();
+        mostrarDatosPendientes();
     }
 
     @Override
@@ -129,6 +138,25 @@ public class MenuPrincipalController implements Pantalla, Initializable {
 
     @FXML
     private void configuracion() {
+        Vista.getInstancia().mostrar("Configuracion.fxml");
+    }
+
+    /** Si a la empresa le faltan datos, enseñamos la franja con lo que falta. */
+    private void mostrarDatosPendientes() {
+        try {
+            List<String> faltan = Vista.getInstancia().getControlador().datosPendientesEmpresa();
+            boolean hayQueCompletar = !faltan.isEmpty();
+            franjaDatosPendientes.setVisible(hayQueCompletar);
+            franjaDatosPendientes.setManaged(hayQueCompletar);
+            lblDatosPendientes.setText("Faltan datos de tu empresa: " + String.join(", ", faltan)
+                    + ". Hasta completarlos no podrás guardar facturas ni exportar PDF.");
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Menú", e.getMessage());
+        }
+    }
+
+    @FXML
+    void completarDatos(ActionEvent event) {
         Vista.getInstancia().mostrar("Configuracion.fxml");
     }
 

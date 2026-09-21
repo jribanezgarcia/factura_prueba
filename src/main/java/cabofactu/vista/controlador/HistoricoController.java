@@ -278,6 +278,9 @@ public class HistoricoController implements Pantalla, Initializable {
 
     @FXML
     private void exportarPdf() {
+        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
+            return;
+        }
         List<FilaHistorial> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
         if (seleccion.isEmpty()) {
             Dialogos.mostrarDialogoInformacion("Exportar PDF", "Selecciona al menos una factura del histórico.");

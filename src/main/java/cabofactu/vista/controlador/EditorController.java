@@ -1015,6 +1015,9 @@ public class EditorController implements Pantalla, Initializable {
 
     @FXML
     private boolean guardar() {
+        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
+            return false;
+        }
         marcarCamposCliente();
         Cliente cli;
         try {
@@ -1246,6 +1249,9 @@ public class EditorController implements Pantalla, Initializable {
 
     @FXML
     private void crearRectificativa() {
+        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
+            return;
+        }
         if (versionAbiertaId == null) {
             Dialogos.mostrarDialogoInformacion("Rectificativa", "Abra primero la factura a rectificar.");
             return;
@@ -1268,6 +1274,9 @@ public class EditorController implements Pantalla, Initializable {
 
     @FXML
     private void exportarPdf() {
+        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
+            return;
+        }
         if (versionAbiertaId == null) {
             Dialogos.mostrarDialogoInformacion("Exportar PDF", "Guarde primero la factura para poder exportarla.");
             return;
