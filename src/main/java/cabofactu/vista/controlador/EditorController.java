@@ -300,10 +300,6 @@ public class EditorController implements Pantalla, Initializable {
                 txtNumero.setText(vc.version().getNumero());
 
                 Cliente cli = vc.cliente();
-                if (cli == null) {
-                    cli = new Cliente();
-                    cli.setId(vc.factura().getClienteId());
-                }
                 comboCliente.setValue(cli);
                 cargarDatosCliente(cli);
 
@@ -484,7 +480,7 @@ public class EditorController implements Pantalla, Initializable {
         comboCliente.setConverter(new StringConverter<>() {
             @Override
             public String toString(Cliente c) {
-                return c == null ? "" : c.nombreNif();
+                return c == null ? "" : c.getNombreNif();
             }
 
             @Override
@@ -508,7 +504,7 @@ public class EditorController implements Pantalla, Initializable {
                 return;
             }
             try {
-                comboCliente.getItems().setAll(Vista.getInstancia().getControlador().getModelo().getClientes().buscar(texto, true));
+                comboCliente.getItems().setAll(Vista.getInstancia().getControlador().listadoClientes(texto, true));
             } catch (Exception e) {
                 Dialogos.mostrarDialogoError("Cliente", "Error al buscar clientes: " + e.getMessage());
             }
@@ -520,9 +516,9 @@ public class EditorController implements Pantalla, Initializable {
             try {
                 String texto = comboCliente.getEditor().getText();
                 if (texto == null || texto.isBlank()) {
-                    comboCliente.getItems().setAll(Vista.getInstancia().getControlador().getModelo().getClientes().listar(true));
+                    comboCliente.getItems().setAll(Vista.getInstancia().getControlador().listadoClientes(true));
                 } else {
-                    comboCliente.getItems().setAll(Vista.getInstancia().getControlador().getModelo().getClientes().buscar(texto, true));
+                    comboCliente.getItems().setAll(Vista.getInstancia().getControlador().listadoClientes(texto, true));
                 }
             } catch (Exception ex) {
                 Dialogos.mostrarDialogoError("Cliente", "Error al cargar clientes: " + ex.getMessage());
@@ -1020,7 +1016,13 @@ public class EditorController implements Pantalla, Initializable {
     @FXML
     private boolean guardar() {
         marcarCamposCliente();
-        Cliente cli = clienteDeFormulario();
+        Cliente cli;
+        try {
+            cli = clienteDeFormulario();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
+            return false;
+        }
         if (cli == null) {
             Dialogos.mostrarDialogoError("Datos del cliente", "Indique los datos del cliente.");
             return false;
@@ -1047,6 +1049,7 @@ public class EditorController implements Pantalla, Initializable {
         DatosPago dp = new DatosPago(txtFormaPago.getText() == null ? "" : txtFormaPago.getText().trim(),
                 vencimiento.getValue(),
                 txtRealizadaPor.getText() == null ? "" : txtRealizadaPor.getText().trim());
+        boolean actualizarFicha = pedirActualizarFicha(cli);
         try {
             if (facturaAbiertaId == null) {
                 Serie serie = comboSerie.getValue();
@@ -1081,6 +1084,10 @@ public class EditorController implements Pantalla, Initializable {
                 modificado = false;
                 Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
             }
+            if (actualizarFicha) {
+                Vista.getInstancia().getControlador().modificarCliente(cli);
+                clienteActual = cli;
+            }
             return true;
         } catch (ValidacionException e) {
             Dialogos.mostrarDialogoError("Guardar", e.getMessage());
@@ -1089,6 +1096,22 @@ public class EditorController implements Pantalla, Initializable {
             Dialogos.mostrarDialogoError("Guardar", "Error al guardar: " + e.getMessage());
             return false;
         }
+    }
+
+    /**
+     * Si el cliente ya existe y sus datos no son los de su ficha, preguntamos si
+     * queremos guardarlos también allí. La factura se guarda con ellos en cualquier caso.
+     */
+    private boolean pedirActualizarFicha(Cliente cli) {
+        if (cli.getId() == null || clienteActual == null) {
+            return false;
+        }
+        if (cli.tieneLosMismosDatos(clienteActual)) {
+            return false;
+        }
+        return Dialogos.mostrarDialogoConfirmacion("Datos del cliente",
+                "Has cambiado los datos de «" + clienteActual.getNombre() + "» en esta factura.\n\n"
+                        + "¿Quieres guardar también esos cambios en su ficha de cliente?");
     }
 
     private List<LineaFactura> lineasGuardables() {
@@ -1101,7 +1124,7 @@ public class EditorController implements Pantalla, Initializable {
         return out;
     }
 
-    private Cliente clienteDeFormulario() {
+    private Cliente clienteDeFormulario() throws Exception {
         String nombre = cliNombre.getText() == null ? "" : cliNombre.getText().trim();
         String nif = cliNif.getText() == null ? "" : cliNif.getText().trim();
         String dir = cliDireccion.getText() == null ? "" : cliDireccion.getText().trim();
@@ -1114,13 +1137,19 @@ public class EditorController implements Pantalla, Initializable {
         if (clienteActual == null && vacio) {
             return null;
         }
-        Cliente c = clienteActual != null ? clienteActual : new Cliente();
-        c.setNombre(nombre);
-        c.setNif(nif);
-        c.setDireccion(dir);
-        c.setCp(cp);
-        c.setLocalidad(loc);
-        c.setProvincia(prov);
+        Cliente c;
+        if (clienteActual != null) {
+            c = new Cliente(clienteActual);
+            c.setNombre(nombre);
+            c.setNif(nif);
+            c.setDireccion(dir);
+            c.setCp(cp);
+            c.setLocalidad(loc);
+            c.setProvincia(prov);
+        } else {
+            c = new Cliente(nombre, nif, dir, cp, loc, prov);
+            c.setActivo(true);
+        }
         c.setEmail(mail);
         return c;
     }

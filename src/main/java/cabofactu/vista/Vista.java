@@ -9,6 +9,7 @@ import cabofactu.vista.utilidades.GestorTemas;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 
@@ -56,6 +57,33 @@ public class Vista {
 
     public Pantalla getPantallaActual() {
         return pantallaActual;
+    }
+
+    /**
+     * Preparamos una ventana modal con el tema y el icono de la aplicación.
+     * La devolvemos sin mostrar, para que quien la abre pueda darle sus datos
+     * al controlador antes de llamar a showAndWait(). Al pulsar la X le
+     * preguntamos a la pantalla del formulario si se puede cerrar.
+     */
+    public Stage crearVentanaModal(Parent raiz, String titulo, Pantalla pantalla) {
+        Scene escena = new Scene(raiz);
+        escena.getStylesheets().setAll(GestorTemas.hojas());
+        Stage modal = new Stage();
+        modal.initModality(Modality.APPLICATION_MODAL);
+        modal.initOwner(ventana);
+        modal.setTitle(Ventanas.PREFIJO + titulo);
+        modal.setResizable(false);
+        modal.setScene(escena);
+        Ventanas.aplicarIcono(modal);
+        modal.setOnCloseRequest(evento -> pedirCierreModal(evento, pantalla));
+        return modal;
+    }
+
+    /** Si la pantalla del formulario no quiere cerrarse, anulamos el cierre. */
+    private void pedirCierreModal(WindowEvent evento, Pantalla pantalla) {
+        if (pantalla != null && !pantalla.puedeCerrar()) {
+            evento.consume();
+        }
     }
 
     /** Cambiamos la ventana donde se muestran las pantallas; todavía no tiene ninguna. */

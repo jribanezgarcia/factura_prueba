@@ -44,7 +44,7 @@ public class Estados {
         this.facturas = facturas;
     }
 
-    public void anular(long facturaId) throws ValidacionException {
+    public void anular(long facturaId) throws Exception {
         cambiarEstado(facturaId, null, EstadoFactura.ANULADA);
     }
 
@@ -73,16 +73,16 @@ public class Estados {
         return new AnulacionResultado(anuladas, yaAnuladas, fallos, errores);
     }
 
-    public void restaurar(long facturaId) throws ValidacionException {
+    public void restaurar(long facturaId) throws Exception {
         cambiarEstado(facturaId, null, EstadoFactura.EMITIDA);
     }
 
-    public void restaurarVersion(long versionId) throws ValidacionException {
+    public void restaurarVersion(long versionId) throws Exception {
         cambiarEstado(0, versionId, EstadoFactura.EMITIDA);
     }
 
     private void cambiarEstado(long facturaId, Long versionId, EstadoFactura nuevo)
-            throws ValidacionException {
+            throws Exception {
         VersionFactura base;
         long fId;
         if (versionId != null) {
@@ -122,7 +122,7 @@ public class Estados {
                     cliente, lineas,
                     new DatosPago(base.getFormaPago(), base.getVencimiento(), base.getRealizadaPor()));
             Conexion.confirmar();
-        } catch (ValidacionException | RuntimeException e) {
+        } catch (Exception e) {
             Conexion.deshacer();
             throw e;
         } finally {
@@ -136,16 +136,11 @@ public class Estados {
         return numeracion.correlativoOcupadoPorActiva(serie, f.getCorrelativo(), base.getFechaFactura());
     }
 
-    private Cliente snapshotCliente(long facturaId, VersionFactura base) {
+    private Cliente snapshotCliente(long facturaId, VersionFactura base) throws Exception {
         Factura f = facturaDAO.getById(facturaId);
-        Cliente c = new Cliente();
+        Cliente c = new Cliente(base.getCliNombre(), base.getCliNif(), base.getCliDireccion(),
+                base.getCliCp(), base.getCliLocalidad(), base.getCliProvincia());
         c.setId(f.getClienteId());
-        c.setNombre(base.getCliNombre());
-        c.setNif(base.getCliNif());
-        c.setDireccion(base.getCliDireccion());
-        c.setCp(base.getCliCp());
-        c.setLocalidad(base.getCliLocalidad());
-        c.setProvincia(base.getCliProvincia());
         c.setEmail(base.getCliEmail());
         return c;
     }

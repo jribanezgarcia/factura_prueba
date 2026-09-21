@@ -1,6 +1,5 @@
 package cabofactu.modelo;
 
-import cabofactu.modelo.negocio.sqlite.ClienteDAO;
 import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
@@ -13,7 +12,9 @@ import cabofactu.modelo.negocio.sqlite.TipoRetencionDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 
 import java.time.Clock;
+import java.util.List;
 import cabofactu.fichero.CopiaSeguridad;
+import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.negocio.Clientes;
 import cabofactu.modelo.negocio.Configuracion;
 import cabofactu.modelo.negocio.Estados;
@@ -35,7 +36,6 @@ import cabofactu.modelo.negocio.Versiones;
 public class Modelo {
 
     private final Reloj reloj;
-    private final Clientes clientes;
     private final Series series;
     private final TiposIva tiposIva;
     private final TiposRetencion tiposRetencion;
@@ -55,7 +55,6 @@ public class Modelo {
     }
 
     public Modelo(Clock clock) {
-        ClienteDAO clienteDAO = new ClienteDAO();
         SerieDAO serieDAO = new SerieDAO();
         TipoIvaDAO tipoIvaDAO = new TipoIvaDAO();
         TipoRetencionDAO tipoRetencionDAO = new TipoRetencionDAO();
@@ -68,7 +67,6 @@ public class Modelo {
         NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
 
         reloj = new Reloj(clock);
-        clientes = new Clientes(clienteDAO);
         series = new Series(serieDAO, facturaDAO, clock);
         tiposIva = new TiposIva(tipoIvaDAO);
         tiposRetencion = new TiposRetencion(tipoRetencionDAO);
@@ -76,7 +74,7 @@ public class Modelo {
 
         numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, clock);
         versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, clock);
-        facturas = new Facturas(facturaDAO, serieDAO, clienteDAO, versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, numeroDisponibleDAO, clock);
+        facturas = new Facturas(facturaDAO, serieDAO, versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, numeroDisponibleDAO, clock);
         estados = new Estados(facturaDAO, serieDAO, versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, facturas);
         rectificativas = new Rectificativas(facturas, serieDAO, tipoRetencionDAO);
         facturacionMensual = new FacturacionMensual(facturas, facturaDAO, numeracion);
@@ -88,8 +86,36 @@ public class Modelo {
         return reloj;
     }
 
-    public Clientes getClientes() {
-        return clientes;
+    public List<Cliente> listadoClientes(boolean soloActivos) throws Exception {
+        return Clientes.getClientes().listado(soloActivos);
+    }
+
+    public List<Cliente> listadoClientes(String texto, boolean soloActivos) throws Exception {
+        return Clientes.getClientes().listado(texto, soloActivos);
+    }
+
+    public Cliente buscarCliente(long id) throws Exception {
+        return Clientes.getClientes().buscar(id);
+    }
+
+    public long altaCliente(Cliente cliente) throws Exception {
+        return Clientes.getClientes().alta(cliente);
+    }
+
+    public void modificarCliente(Cliente cliente) throws Exception {
+        Clientes.getClientes().modificar(cliente);
+    }
+
+    public void bajaCliente(long id) throws Exception {
+        Clientes.getClientes().baja(id);
+    }
+
+    public void desactivarCliente(long id) throws Exception {
+        Clientes.getClientes().desactivar(id);
+    }
+
+    public boolean clienteTieneFacturas(long id) throws Exception {
+        return Clientes.getClientes().tieneFacturas(id);
     }
 
     public Series getSeries() {

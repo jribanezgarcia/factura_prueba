@@ -38,7 +38,7 @@ public class FacturacionMensual {
 
     public Resultado generar(Cliente cliente, int anio, int mesInicio, int mesFin, Serie serie, int diaMes,
                              TipoIva iva, TipoRetencion retencion, List<LineaPlantilla> plantillas)
-            throws ValidacionException {
+            throws Exception {
         return generar(cliente, anio, mesInicio, mesFin, serie, ModoDia.FIJO, diaMes,
                 iva, retencion, plantillas, false, false);
     }
@@ -46,7 +46,7 @@ public class FacturacionMensual {
     public Resultado generar(Cliente cliente, int anio, int mesInicio, int mesFin, Serie serie,
                              ModoDia diaMode, int diaFijo, TipoIva iva, TipoRetencion retencion,
                              List<LineaPlantilla> plantillas, boolean generarDuplicados, boolean usarHuecos)
-            throws ValidacionException {
+            throws Exception {
         validar(cliente, serie, iva, plantillas);
 
         List<Integer> mesesAGenerar = new ArrayList<>();
@@ -74,7 +74,7 @@ public class FacturacionMensual {
             }
             Conexion.confirmar();
             return new Resultado(generadas, omitidos);
-        } catch (ValidacionException | RuntimeException e) {
+        } catch (Exception e) {
             Conexion.deshacer();
             throw e;
         } finally {

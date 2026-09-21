@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import cabofactu.vista.controlador.FichaClienteController;
 import cabofactu.vista.controlador.GenerarFacturasMensualesController;
 
 /**
@@ -117,6 +118,29 @@ class CargaPantallasTest {
             }
         });
         await(latch, error, "GenerarFacturasMensuales.fxml");
+    }
+
+    @Test
+    void cargarFichaCliente() {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        Platform.runLater(() -> {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                        FichaClienteController.class.getResource(
+                                "/cabofactu/vista/recursos/FichaCliente.fxml"));
+                Parent root = loader.load();
+                FichaClienteController c = loader.getController();
+                assertNotNull(c, "El controller de FichaCliente.fxml no se creo");
+                c.setRegistro(null);
+                maquetarAlMinimo(root);
+            } catch (Throwable t) {
+                error.set(t);
+            } finally {
+                latch.countDown();
+            }
+        });
+        await(latch, error, "FichaCliente.fxml");
     }
 
     private void cargar(String fxml) {

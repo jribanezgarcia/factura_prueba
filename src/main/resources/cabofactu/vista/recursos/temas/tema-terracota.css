@@ -7,6 +7,7 @@
     -fx-boton-lavado: rgba(146, 116, 105, 0.10);
     -fx-control-inner-background: #FFFFFF;
     -fx-text-background-color: #3B2A22;
+    -fx-accent-error: #d32f2f;
     -fx-font-family: 'Georgia', 'Times New Roman', serif;
 }
 

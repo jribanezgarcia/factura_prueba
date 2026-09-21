@@ -51,7 +51,7 @@ public class Rectificativas {
      * blanco se genera automaticamente con el numero de la factura original.
      */
     public long crearRectificativa(long versionOrigenId, LocalDate fecha, String referencia)
-            throws ValidacionException {
+            throws Exception {
         Facturas.VersionCompleta origen = facturas.abrirVersion(versionOrigenId);
         if (origen == null) {
             throw new ValidacionException("La factura de origen no existe");
@@ -101,17 +101,14 @@ public class Rectificativas {
      * version (nunca se pierde por borrados o cambios del maestro), conservando
      * el id del maestro para que ediciones posteriores actualicen la ficha.
      */
-    private Cliente clienteDeVersion(Facturas.VersionCompleta origen) {
-        Factura f = origen.factura();
+    private Cliente clienteDeVersion(Facturas.VersionCompleta origen) throws Exception {
         VersionFactura v = origen.version();
-        Cliente c = new Cliente();
-        c.setId(f == null ? null : f.getClienteId());
-        c.setNombre(v.getCliNombre());
-        c.setNif(v.getCliNif());
-        c.setDireccion(v.getCliDireccion());
-        c.setCp(v.getCliCp());
-        c.setLocalidad(v.getCliLocalidad());
-        c.setProvincia(v.getCliProvincia());
-        return c;
+        Cliente cliente = new Cliente(v.getCliNombre(), v.getCliNif(), v.getCliDireccion(),
+                v.getCliCp(), v.getCliLocalidad(), v.getCliProvincia());
+        if (origen.factura() != null) {
+            cliente.setId(origen.factura().getClienteId());
+        }
+        cliente.setEmail(v.getCliEmail());
+        return cliente;
     }
 }

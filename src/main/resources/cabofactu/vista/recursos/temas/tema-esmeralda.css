@@ -7,6 +7,7 @@
     -fx-boton-lavado: rgba(97, 144, 128, 0.10);
     -fx-control-inner-background: #FFFFFF;
     -fx-text-background-color: #1F2937;
+    -fx-accent-error: #d32f2f;
 }
 
 .titulo { -fx-text-fill: #1F2937; }

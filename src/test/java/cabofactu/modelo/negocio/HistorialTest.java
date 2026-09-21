@@ -6,7 +6,6 @@ import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.FilaHistorial;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
-import cabofactu.modelo.negocio.sqlite.ClienteDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.HistorialDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
@@ -43,13 +42,12 @@ class HistorialTest {
 
         serieDAO = new SerieDAO();
         FacturaDAO facturaDAO = new FacturaDAO();
-        ClienteDAO clienteDAO = new ClienteDAO();
         VersionFacturaDAO versionFacturaDAO = new VersionFacturaDAO();
         LineaFacturaDAO lineaFacturaDAO = new LineaFacturaDAO();
         NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
         Numeracion numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone());
         Versiones versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone());
-        facturas = new Facturas(facturaDAO, serieDAO, clienteDAO,
+        facturas = new Facturas(facturaDAO, serieDAO,
                 versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, numeroDisponibleDAO, Clock.systemDefaultZone());
         historial = new Historial(new HistorialDAO());
     }
@@ -59,15 +57,8 @@ class HistorialTest {
         Conexion.cerrarConexion();
     }
 
-    private Cliente clientePrueba() {
-        Cliente c = new Cliente();
-        c.setNombre("Cliente Prueba");
-        c.setNif("12345678Z");
-        c.setDireccion("Calle Prueba 1");
-        c.setCp("28001");
-        c.setLocalidad("Madrid");
-        c.setProvincia("Madrid");
-        return c;
+    private Cliente clientePrueba() throws Exception {
+        return new Cliente("Cliente Prueba", "12345678Z", "Calle Prueba 1", "28001", "Madrid", "Madrid");
     }
 
     @Test

@@ -410,6 +410,12 @@
     -fx-prompt-text-fill: derive(-fx-text-background-color, -40%);
 }
 
+/* Campo con un dato incorrecto en las fichas: el borde de aviso del tema */
+.campo-error {
+    -fx-border-color: -fx-accent-error;
+    -fx-border-width: 2;
+}
+
 /* Diálogos y tarjetas de confirmación */
 .dialog-card {
     -fx-background-color: -fx-base;

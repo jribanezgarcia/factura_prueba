@@ -7,7 +7,6 @@ import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.sqlite.ClienteDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
 import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
@@ -36,7 +35,6 @@ class FacturacionMensualTest {
     Path tempDir;
 
     private SerieDAO serieDAO;
-    private ClienteDAO clienteDAO;
     private FacturaDAO facturaDAO;
     private VersionFacturaDAO versionFacturaDAO;
     private LineaFacturaDAO lineaFacturaDAO;
@@ -50,14 +48,13 @@ class FacturacionMensualTest {
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
         serieDAO = new SerieDAO();
-        clienteDAO = new ClienteDAO();
         facturaDAO = new FacturaDAO();
         versionFacturaDAO = new VersionFacturaDAO();
         lineaFacturaDAO = new LineaFacturaDAO();
         NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
         this.numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone());
         Versiones versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone());
-        facturas = new Facturas(facturaDAO, serieDAO, clienteDAO,
+        facturas = new Facturas(facturaDAO, serieDAO,
                 versionFacturaDAO, lineaFacturaDAO, versiones, this.numeracion, numeroDisponibleDAO, Clock.systemDefaultZone());
         service = new FacturacionMensual(facturas, facturaDAO, this.numeracion);
     }
@@ -79,15 +76,9 @@ class FacturacionMensualTest {
         return s;
     }
 
-    private Cliente clientePaco() throws SQLException {
-        Cliente c = new Cliente();
-        c.setNombre("Paco");
-        c.setNif("12345678Z");
-        c.setDireccion("Calle Prueba 1");
-        c.setCp("28001");
-        c.setLocalidad("Madrid");
-        c.setProvincia("Madrid");
-        c.setId(clienteDAO.insertar(c));
+    private Cliente clientePaco() throws Exception {
+        Cliente c = new Cliente("Paco", "12345678Z", "Calle Prueba 1", "28001", "Madrid", "Madrid");
+        c.setId(Clientes.getClientes().alta(c));
         return c;
     }
 
@@ -255,7 +246,7 @@ class FacturacionMensualTest {
         TipoIva iva = iva21();
 
         NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
-        Facturas serviceQueFalla = new Facturas(facturaDAO, serieDAO, clienteDAO,
+        Facturas serviceQueFalla = new Facturas(facturaDAO, serieDAO,
                 versionFacturaDAO, lineaFacturaDAO, new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone()),
                 new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone()), numeroDisponibleDAO, Clock.systemDefaultZone()) {
             private int llamadas = 0;
@@ -264,7 +255,7 @@ class FacturacionMensualTest {
             long crearFacturaSinTransaccion(Serie s, LocalDate fecha, Cliente c, List<LineaFactura> lineas,
                                             int descuento, String observaciones, String referencia,
                                             Integer correlativoPedido, DatosPago datosPago,
-                                            TipoRetencion retencion) throws ValidacionException {
+                                            TipoRetencion retencion) throws Exception {
                 llamadas++;
                 if (llamadas == 2) {
                     throw new ValidacionException("Fallo simulado en la segunda factura");
@@ -305,20 +296,6 @@ class FacturacionMensualTest {
                 .filter(v -> v.getFechaFactura().equals(LocalDate.of(2026, 4, 15)))
                 .findFirst().orElseThrow();
         assertEquals(1, facturas.factura(abril.getFacturaId()).getCorrelativo());
-    }
-
-    @Test
-    void noGeneraConClienteSinCodigoPostal() throws Exception {
-        Serie serie = serieC();
-        Cliente cliente = clientePaco();
-        cliente.setCp("");
-        TipoIva iva = iva21();
-
-        ValidacionException e = assertThrows(ValidacionException.class, () -> service.generar(cliente, 2026, 1, 3,
-                serie, 15, iva, null, List.of(plantilla("servicios", "60.00", true))));
-        assertEquals("El código postal es obligatorio.", e.getMessage());
-        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        assertEquals(0, versiones.size());
     }
 
     private LineaFactura linea(String precio) {

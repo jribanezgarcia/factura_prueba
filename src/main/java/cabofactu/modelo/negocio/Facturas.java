@@ -9,7 +9,6 @@ import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.sqlite.ClienteDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
 import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
@@ -29,7 +28,6 @@ public class Facturas {
 
     private final FacturaDAO facturaDAO;
     private final SerieDAO serieDAO;
-    private final ClienteDAO clienteDAO;
     private final VersionFacturaDAO versionFacturaDAO;
     private final LineaFacturaDAO lineaFacturaDAO;
     private final Versiones versiones;
@@ -38,13 +36,12 @@ public class Facturas {
     private final Clock clock;
 
     public Facturas(FacturaDAO facturaDAO, SerieDAO serieDAO,
-                          ClienteDAO clienteDAO, VersionFacturaDAO versionFacturaDAO,
+                          VersionFacturaDAO versionFacturaDAO,
                           LineaFacturaDAO lineaFacturaDAO, Versiones versiones,
                           Numeracion numeracion, NumeroDisponibleDAO numeroDisponibleDAO,
                           Clock clock) {
         this.facturaDAO = facturaDAO;
         this.serieDAO = serieDAO;
-        this.clienteDAO = clienteDAO;
         this.versionFacturaDAO = versionFacturaDAO;
         this.lineaFacturaDAO = lineaFacturaDAO;
         this.versiones = versiones;
@@ -59,7 +56,7 @@ public class Facturas {
      */
     public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                              int descuento, String observaciones, String referencia)
-            throws ValidacionException {
+            throws Exception {
         return crearFactura(serie, fecha, cliente, lineas, descuento, observaciones, referencia, null, null);
     }
 
@@ -70,7 +67,7 @@ public class Facturas {
      */
     public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                              int descuento, String observaciones, String referencia, Integer correlativoPedido)
-            throws ValidacionException {
+            throws Exception {
         return crearFactura(serie, fecha, cliente, lineas, descuento, observaciones, referencia,
                 correlativoPedido, null);
     }
@@ -78,7 +75,7 @@ public class Facturas {
     public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                              int descuento, String observaciones, String referencia,
                              Integer correlativoPedido, DatosPago datosPago)
-            throws ValidacionException {
+            throws Exception {
         return crearFactura(serie, fecha, cliente, lineas, descuento, observaciones, referencia,
                 correlativoPedido, datosPago, null);
     }
@@ -86,14 +83,14 @@ public class Facturas {
     public long crearFactura(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                              int descuento, String observaciones, String referencia,
                              Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
-            throws ValidacionException {
+            throws Exception {
         Conexion.iniciarTransaccion();
         try {
             long facturaId = crearFacturaSinTransaccion(serie, fecha, cliente, lineas, descuento,
                     observaciones, referencia, correlativoPedido, datosPago, retencion);
             Conexion.confirmar();
             return facturaId;
-        } catch (ValidacionException | RuntimeException e) {
+        } catch (Exception e) {
             Conexion.deshacer();
             throw e;
         } finally {
@@ -109,7 +106,7 @@ public class Facturas {
     long crearFacturaSinTransaccion(Serie serie, LocalDate fecha, Cliente cliente, List<LineaFactura> lineas,
                                     int descuento, String observaciones, String referencia,
                                      Integer correlativoPedido, DatosPago datosPago, TipoRetencion retencion)
-            throws ValidacionException {
+            throws Exception {
         ValidacionCliente.comprobar(cliente);
         validar(lineas, descuento);
         if (correlativoPedido != null && correlativoPedido < 1) {
@@ -126,7 +123,7 @@ public class Facturas {
         numeroDisponibleDAO.eliminar(serie.getId(), fecha.getYear(), correlativo);
 
         if (cliente != null && cliente.getId() == null && !isVacio(cliente)) {
-            long clienteId = clienteDAO.insertar(cliente);
+            long clienteId = Clientes.getClientes().alta(cliente);
             cliente.setId(clienteId);
         }
 
@@ -146,7 +143,7 @@ public class Facturas {
     public VersionFactura guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
                                          List<LineaFactura> lineas, int descuento,
                                          String observaciones, String referencia, DatosPago datosPago)
-            throws ValidacionException {
+            throws Exception {
         return guardarEditada(facturaId, versionAbiertaId, fecha, cliente, lineas, descuento,
                 observaciones, referencia, datosPago, false);
     }
@@ -160,18 +157,18 @@ public class Facturas {
      */
     public VersionFactura guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
                                          List<LineaFactura> lineas, int descuento,
-                                         String observaciones, String referencia, DatosPago datosPago,
-                                         boolean comoNuevaVersion)
-            throws ValidacionException {
+String observaciones, String referencia, DatosPago datosPago,
+                                          boolean comoNuevaVersion)
+            throws Exception {
         return guardarEditada(facturaId, versionAbiertaId, fecha, cliente, lineas, descuento,
                 observaciones, referencia, datosPago, comoNuevaVersion, null);
     }
 
     public VersionFactura guardarEditada(long facturaId, Long versionAbiertaId, LocalDate fecha, Cliente cliente,
                                          List<LineaFactura> lineas, int descuento,
-                                         String observaciones, String referencia, DatosPago datosPago,
-                                          boolean comoNuevaVersion, TipoRetencion retencion)
-            throws ValidacionException {
+String observaciones, String referencia, DatosPago datosPago,
+                                           boolean comoNuevaVersion, TipoRetencion retencion)
+            throws Exception {
         ValidacionCliente.comprobar(cliente);
         validar(lineas, descuento);
 
@@ -188,13 +185,10 @@ public class Facturas {
             Serie serie = serieDAO.getById(factura.getSerieId());
 
             if (cliente != null && cliente.getId() == null && !isVacio(cliente)) {
-                long clienteId = clienteDAO.insertar(cliente);
+                long clienteId = Clientes.getClientes().alta(cliente);
                 cliente.setId(clienteId);
             }
             facturaDAO.actualizarCliente(facturaId, cliente == null ? null : cliente.getId());
-            if (cliente != null && cliente.getId() != null) {
-                clienteDAO.actualizar(cliente);
-            }
 
             String numero = numeracion.formarNumero(serie, factura.getCorrelativo(), fecha);
             VersionFactura ultima = versionFacturaDAO.ultimaVersion(facturaId);
@@ -209,7 +203,7 @@ public class Facturas {
             }
             Conexion.confirmar();
             return guardada;
-        } catch (ValidacionException | RuntimeException e) {
+        } catch (Exception e) {
             Conexion.deshacer();
             throw e;
         } finally {
@@ -272,21 +266,27 @@ public class Facturas {
     public record ResumenBorrado(int versiones, int lineas) {
     }
 
-    public Cliente cliente(long clienteId) {
-        return clienteId == 0 ? null : clienteDAO.getById(clienteId);
+    public Cliente cliente(long clienteId) throws Exception {
+        if (clienteId == 0) {
+            return null;
+        }
+        return Clientes.getClientes().buscar(clienteId);
     }
 
     /**
      * Abre una version concreta con sus lineas y el cliente maestro (si existe).
      */
-    public VersionCompleta abrirVersion(long versionId) {
+    public VersionCompleta abrirVersion(long versionId) throws Exception {
         VersionFactura v = versionFacturaDAO.getById(versionId);
         if (v == null) {
             return null;
         }
         List<LineaFactura> lineas = lineaFacturaDAO.getLineas(versionId);
         Factura f = facturaDAO.getById(v.getFacturaId());
-        Cliente cliente = f == null || f.getClienteId() == null ? null : clienteDAO.getById(f.getClienteId());
+        Cliente cliente = null;
+        if (f != null && f.getClienteId() != null) {
+            cliente = Clientes.getClientes().buscar(f.getClienteId());
+        }
         return new VersionCompleta(f, v, lineas, cliente);
     }
 

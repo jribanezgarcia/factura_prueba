@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<VBox prefWidth="375" spacing="12" styleClass="card"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="cabofactu.vista.controlador.FichaClienteController">
+    <padding>
+        <Insets top="16" right="16" bottom="16" left="16"/>
+    </padding>
+    <Label fx:id="lblTitulo" styleClass="section-title"/>
+    <GridPane hgap="8" vgap="8">
+        <columnConstraints>
+            <ColumnConstraints minWidth="105"/>
+            <ColumnConstraints hgrow="ALWAYS" fillWidth="true" minWidth="200"/>
+        </columnConstraints>
+        <Label text="Nombre*" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="txtNombre" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="NIF*" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="txtNif" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="Dirección*" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <TextField fx:id="txtDireccion" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label text="CP*" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <TextField fx:id="txtCp" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <Label text="Localidad*" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
+        <TextField fx:id="txtLocalidad" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
+        <Label text="Provincia*" GridPane.columnIndex="0" GridPane.rowIndex="5"/>
+        <TextField fx:id="txtProvincia" GridPane.columnIndex="1" GridPane.rowIndex="5"/>
+        <Label text="Email" GridPane.columnIndex="0" GridPane.rowIndex="6"/>
+        <TextField fx:id="txtEmail" promptText="correo@ejemplo.es" GridPane.columnIndex="1" GridPane.rowIndex="6"/>
+        <CheckBox fx:id="chkActivo" text="Cliente activo"
+                  GridPane.columnIndex="0" GridPane.rowIndex="7" GridPane.columnSpan="2"/>
+    </GridPane>
+    <HBox spacing="8" alignment="CENTER_RIGHT">
+        <Button fx:id="btnCancelar" text="Cancelar" onAction="#cancelar" styleClass="default-button"/>
+        <Button fx:id="btnGuardar" text="Añadir" onAction="#guardar" styleClass="primary-button"/>
+    </HBox>
+</VBox>

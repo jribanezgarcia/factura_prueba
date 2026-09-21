@@ -3,10 +3,12 @@ package cabofactu.controlador;
 import cabofactu.InstanciaUnica;
 import cabofactu.PreparacionDatos;
 import cabofactu.modelo.Modelo;
+import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.vista.Vista;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Une el modelo y la vista: arranca la aplicación, prepara la carpeta de datos
@@ -65,6 +67,38 @@ public class Controlador {
     /** Cargamos la empresa de demostración si no hay ninguna; devolvemos true si se ha cargado. */
     public boolean cargarDemostracion() throws Exception {
         return PreparacionDatos.cargarDemoSiNoHayEmpresas();
+    }
+
+    public List<Cliente> listadoClientes(boolean soloActivos) throws Exception {
+        return modelo.listadoClientes(soloActivos);
+    }
+
+    public List<Cliente> listadoClientes(String texto, boolean soloActivos) throws Exception {
+        return modelo.listadoClientes(texto, soloActivos);
+    }
+
+    public Cliente buscarCliente(long id) throws Exception {
+        return modelo.buscarCliente(id);
+    }
+
+    public long altaCliente(Cliente cliente) throws Exception {
+        return modelo.altaCliente(cliente);
+    }
+
+    public void modificarCliente(Cliente cliente) throws Exception {
+        modelo.modificarCliente(cliente);
+    }
+
+    public void bajaCliente(long id) throws Exception {
+        modelo.bajaCliente(id);
+    }
+
+    public void desactivarCliente(long id) throws Exception {
+        modelo.desactivarCliente(id);
+    }
+
+    public boolean clienteTieneFacturas(long id) throws Exception {
+        return modelo.clienteTieneFacturas(id);
     }
 
     /**

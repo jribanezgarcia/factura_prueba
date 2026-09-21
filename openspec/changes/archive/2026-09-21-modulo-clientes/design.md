@@ -80,51 +80,77 @@ Los setters, en el orden `null` → `isBlank()` → `trim()` → comprobar → a
 
 ```java
 public void setNombre(String nombre) throws Exception {
-    if (nombre == null || nombre.isBlank()) {
-        throw new Exception("Indique el nombre del cliente.");
+    String error = errorNombre(nombre);
+    if (error != null) {
+        throw new Exception(error);
     }
     this.nombre = nombre.trim();
 }
 
 public void setNif(String nif) throws Exception {
-    if (nif == null || nif.isBlank()) {
-        throw new Exception("El NIF/NIE es obligatorio.");
+    String error = errorNif(nif);
+    if (error != null) {
+        throw new Exception(error);
     }
-    nif = nif.trim().toUpperCase();
-    if (!ValidadorDocumentoFiscal.formatoCorrecto(nif)) {
-        throw new Exception("Formato NIF/NIE incorrecto. Debe ser como 12345678Z (DNI), "
-                + "X1234567L (NIE) o B12345674 (CIF).");
-    }
-    if (!ValidadorDocumentoFiscal.letraCorrecta(nif)) {
-        throw new Exception("La letra no es correcta.");
-    }
-    this.nif = nif;
+    this.nif = nif.trim().toUpperCase();
 }
 
 public void setCp(String cp) throws Exception {
-    if (cp == null || cp.isBlank()) {
-        throw new Exception("El código postal es obligatorio.");
+    String error = errorCp(cp);
+    if (error != null) {
+        throw new Exception(error);
     }
-    cp = cp.trim();
-    if (!ValidadorCodigoPostal.esValido(cp)) {
-        throw new Exception("El código postal debe tener cinco dígitos y comenzar entre 01 y 52.");
-    }
-    this.cp = cp;
+    this.cp = cp.trim();
 }
 
 /** El email es opcional: si no se escribe, lo guardamos vacío. */
 public void setEmail(String email) throws Exception {
+    String error = errorEmail(email);
+    if (error != null) {
+        throw new Exception(error);
+    }
     if (email == null || email.isBlank()) {
         this.email = "";
-        return;
+    } else {
+        this.email = email.trim();
     }
-    email = email.trim();
-    if (!ValidadorEmail.esValido(email)) {
-        throw new Exception("Revise el formato del correo electrónico.");
-    }
-    this.email = email;
 }
 ```
+
+**Los comprobadores.** Cada campo tiene además un método `static` que devuelve el mensaje de error, o `null` si el dato está bien. **El setter lo usa**, así que la comprobación vive en un solo sitio; y el formulario puede preguntar campo por campo para marcarlos todos sin tener que construir el objeto:
+
+```java
+/** Decimos qué le pasa al NIF, o null si está bien. */
+public static String errorNif(String valor) {
+    if (valor == null || valor.isBlank()) {
+        return "El NIF/NIE es obligatorio.";
+    }
+    String nif = valor.trim().toUpperCase();
+    if (!ValidadorDocumentoFiscal.formatoCorrecto(nif)) {
+        return "Formato NIF/NIE incorrecto. Debe ser como 12345678Z (DNI), "
+                + "X1234567L (NIE) o B12345674 (CIF).";
+    }
+    if (!ValidadorDocumentoFiscal.letraCorrecta(nif)) {
+        return "La letra no es correcta.";
+    }
+    return null;
+}
+
+/** El email es opcional: vacío está bien. */
+public static String errorEmail(String valor) {
+    if (valor == null || valor.isBlank()) {
+        return null;
+    }
+    if (!ValidadorEmail.esValido(valor.trim())) {
+        return "Revise el formato del correo electrónico.";
+    }
+    return null;
+}
+```
+
+Los siete: `errorNombre`, `errorNif`, `errorDireccion`, `errorCp`, `errorLocalidad`, `errorProvincia` y `errorEmail`. Los cuatro de texto suelto solo comprueban que no esté vacío y devuelven su mensaje. Van juntos al final de la clase, detrás de los getters de texto.
+
+Este es **el patrón para todas las clases de datos**: `Serie`, `TipoIva`, `TipoRetencion` y `Empresa` llevarán sus `errorX` igual. Cuando el módulo 6 rehaga el Editor, `ValidacionCliente` se borrará y el bloque Cliente usará `Cliente.errorNombre(...)`, `Cliente.errorNif(...)`…
 
 `setDireccion`, `setLocalidad` y `setProvincia` son como `setNombre`, con sus mensajes: «La dirección del cliente es obligatoria.», «La localidad del cliente es obligatoria.» y «La provincia del cliente es obligatoria.». `setId(Long)` y `setActivo(boolean)` asignan sin comprobar nada.
 
@@ -209,7 +235,11 @@ public long alta(Cliente cliente) throws Exception {
         sentencia.setString(5, cliente.getLocalidad());
         sentencia.setString(6, cliente.getProvincia());
         sentencia.setString(7, cliente.getEmail());
-        sentencia.setInt(8, 1);
+        int activo = 0;
+        if (cliente.isActivo()) {
+            activo = 1;
+        }
+        sentencia.setInt(8, activo);
         int filas = sentencia.executeUpdate();
         if (filas == 0) {
             throw new Exception("No se ha podido guardar el cliente.");
@@ -413,32 +443,140 @@ private Cliente actualizarRegistro() throws Exception {
 
 `clienteDeLosCampos()` hace lo mismo con el constructor de seis datos y después el email y el activo.
 
-**Marcar el campo del error.** El setter que falla es el que da el mensaje, así que se marca por el mensaje, con un `switch` sobre el primer trozo:
+**Marcar todos los campos malos y avisar del primero.** Antes de construir nada, se pregunta campo por campo con los comprobadores de `Cliente`. Se marcan **todos** los que fallan y se avisa **del primero**, que es lo que pide la especificación:
 
 ```java
-/** Ponemos el borde rojo en el campo del que se queja el mensaje. */
-private void marcarCampoDelError(String mensaje) {
-    if (mensaje.contains("nombre")) {
-        marcar(txtNombre);
-    } else if (mensaje.contains("NIF") || mensaje.contains("letra")) {
-        marcar(txtNif);
-    } else if (mensaje.contains("dirección")) {
-        marcar(txtDireccion);
-    } else if (mensaje.contains("código postal")) {
-        marcar(txtCp);
-    } else if (mensaje.contains("localidad")) {
-        marcar(txtLocalidad);
-    } else if (mensaje.contains("provincia")) {
-        marcar(txtProvincia);
-    } else if (mensaje.contains("correo")) {
-        marcar(txtEmail);
+/**
+ * Marcamos en rojo todos los campos incorrectos y devolvemos el mensaje del
+ * primero, o null si está todo bien.
+ */
+private String marcarCamposMalos() {
+    quitarMarcas();
+    String primero = null;
+    primero = revisar(txtNombre, Cliente.errorNombre(txtNombre.getText()), primero);
+    primero = revisar(txtNif, Cliente.errorNif(txtNif.getText()), primero);
+    primero = revisar(txtDireccion, Cliente.errorDireccion(txtDireccion.getText()), primero);
+    primero = revisar(txtCp, Cliente.errorCp(txtCp.getText()), primero);
+    primero = revisar(txtLocalidad, Cliente.errorLocalidad(txtLocalidad.getText()), primero);
+    primero = revisar(txtProvincia, Cliente.errorProvincia(txtProvincia.getText()), primero);
+    primero = revisar(txtEmail, Cliente.errorEmail(txtEmail.getText()), primero);
+    return primero;
+}
+
+/** Marcamos el campo si tiene error y nos quedamos con el primer mensaje. */
+private String revisar(TextField campo, String error, String primero) {
+    if (error == null) {
+        return primero;
+    }
+    campo.getStyleClass().add("campo-error");
+    if (primero == null) {
+        return error;
+    }
+    return primero;
+}
+```
+
+Y `guardar` queda así:
+
+```java
+@FXML
+void guardar(ActionEvent event) {
+    String error = marcarCamposMalos();
+    if (error != null) {
+        Dialogos.mostrarDialogoError("Datos del cliente", error);
+        return;
+    }
+    try {
+        if (registro == null) {
+            registro = clienteDeLosCampos();
+        } else {
+            registro = actualizarRegistro();
+        }
+        cerrarVentana(event);
+    } catch (Exception e) {
+        Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
     }
 }
 ```
 
-`marcar(TextField)` añade la clase `campo-error` y `quitarMarcas()` la quita de los siete. En `temas/base.css`, `.campo-error { -fx-border-color: -fx-accent-error; -fx-border-width: 2; }` con el color de aviso que ya usa el tema, en vez del `setStyle` con el rojo escrito a mano que hay hoy.
+El `try / catch` se queda como red de seguridad: si los comprobadores dicen que todo está bien, ningún setter debería quejarse, pero si alguna vez pasara, el usuario ve el mensaje en lugar de un fallo mudo.
+
+`quitarMarcas()` quita la clase `campo-error` de los siete campos. En `temas/base.css`, `.campo-error { -fx-border-color: -fx-accent-error; -fx-border-width: 2; }` con el color de aviso que ya usa el tema, en vez del `setStyle` con el rojo escrito a mano que hay hoy.
 
 ---
+
+**Cerrar con cambios sin guardar.** Si el usuario ha escrito o cambiado algo, tanto **Cancelar** como la **X** preguntan antes de tirarlo; si no ha tocado nada, la ficha se cierra sin molestar. Es lo mismo que ya hace el Editor de facturas al salir.
+
+Para saber si se ha tocado algo, guardamos una foto de los campos al abrir y la comparamos al cerrar:
+
+```java
+/**
+ * Cómo funciona: juntamos el contenido de los campos en un solo texto. Guardamos
+ * ese texto al abrir la ficha y lo volvemos a formar al cerrarla; si no coinciden,
+ * es que el usuario ha tocado algo.
+ */
+private String fotoDeLosCampos() {
+    return txtNombre.getText() + "|" + txtNif.getText() + "|" + txtDireccion.getText() + "|"
+            + txtCp.getText() + "|" + txtLocalidad.getText() + "|" + txtProvincia.getText() + "|"
+            + txtEmail.getText() + "|" + chkActivo.isSelected();
+}
+
+/** Si hay algo escrito sin guardar, preguntamos antes de tirarlo. */
+private boolean confirmarDescartar() {
+    if (fotoInicial.equals(fotoDeLosCampos())) {
+        return true;
+    }
+    return Dialogos.mostrarDialogoConfirmacion("Ficha de cliente",
+            "Hay cambios sin guardar en la ficha del cliente.
+
+¿Quieres descartarlos?");
+}
+```
+
+`fotoInicial = fotoDeLosCampos()` se guarda al final de `setRegistro`, cuando los campos ya están rellenos. En modo añadir la foto sale con todo vacío, así que abrir y cerrar sin escribir nada no pregunta.
+
+`cancelar` empieza por ahí:
+
+```java
+@FXML
+void cancelar(ActionEvent event) {
+    if (!confirmarDescartar()) {
+        return;
+    }
+    registro = null;
+    cerrarVentana(event);
+}
+```
+
+**Y la X hace lo mismo, reutilizando `Pantalla`.** `FichaClienteController` pasa a `implements Pantalla, Initializable` y contesta a `puedeCerrar()`:
+
+```java
+@Override
+public boolean puedeCerrar() {
+    return confirmarDescartar();
+}
+```
+
+`crearVentanaModal` gana un tercer parámetro con la pantalla, y la X le pregunta:
+
+```java
+public Stage crearVentanaModal(Parent raiz, String titulo, Pantalla pantalla) {
+    ...
+    modal.setOnCloseRequest(evento -> pedirCierreModal(evento, pantalla));
+    return modal;
+}
+
+/** Si la pantalla del formulario no quiere cerrarse, anulamos el cierre. */
+private void pedirCierreModal(WindowEvent evento, Pantalla pantalla) {
+    if (pantalla != null && !pantalla.puedeCerrar()) {
+        evento.consume();
+    }
+}
+```
+
+La lambda solo llama a un método con nombre, como pide `AGENTS.md` y como ya hace `abrirVentanaPrincipal` con `pedirCierre`.
+
+Así **todos** los formularios modales de los módulos siguientes se cierran igual, con la interfaz que ya existe. `cerrarVentana` (el `hide()` de Guardar y Cancelar) no dispara `setOnCloseRequest`, así que no se pregunta dos veces.
 
 ## D6. `ClientesController`: la tabla y el formulario
 
@@ -572,6 +710,78 @@ private Cliente clienteDeVersion(Facturas.VersionCompleta origen) throws Excepti
 
 ---
 
+## D9. Preguntar antes de tocar la ficha del cliente
+
+Hoy la aplicación hace **dos cosas distintas** con los datos de cliente que se escriben dentro de una factura, y ninguna es la correcta:
+
+| Al guardar | Qué pasa con la ficha del cliente |
+|---|---|
+| Una factura **nueva** (`crearFactura`) | No se toca. El cambio solo queda dentro de la factura. |
+| Una factura **ya guardada** (`guardarEditada`) | Se sobrescribe **sin preguntar**, con un `modificar(cliente)` suelto. |
+
+A partir de ahora, en los dos casos: **la factura se guarda siempre con lo que el usuario escribió**, y la ficha del cliente solo se toca **si el usuario dice que sí**. Además de ser lo que se espera, es lo que hará falta para VeriFactu: la factura conserva para siempre los datos tal como se emitió; la ficha del cliente es otra cosa.
+
+**1. `Cliente` sabe comparar sus datos.** `equals` va por el NIF, así que no sirve para esto:
+
+```java
+/** Decimos si otro cliente tiene los mismos datos que este, sin mirar el id ni si está activo. */
+public boolean tieneLosMismosDatos(Cliente otro) {
+    if (otro == null) {
+        return false;
+    }
+    return nombre.equals(otro.getNombre())
+            && nif.equals(otro.getNif())
+            && direccion.equals(otro.getDireccion())
+            && cp.equals(otro.getCp())
+            && localidad.equals(otro.getLocalidad())
+            && provincia.equals(otro.getProvincia())
+            && email.equals(otro.getEmail());
+}
+```
+
+**2. El negocio deja de decidirlo.** En `Facturas.guardarEditada` se **quita** el bloque que pisaba la ficha:
+
+```java
+if (cliente != null && cliente.getId() != null) {
+    Clientes.getClientes().modificar(cliente);   // se borra
+}
+```
+
+Se queda el `alta` de cuando el cliente es nuevo (`getId() == null`), porque un cliente escrito a mano en la factura sí hay que crearlo, y se queda `facturaDAO.actualizarCliente`. Esto además cumple la norma de `AGENTS.md`: es la pantalla quien llama al controlador para guardar.
+
+**3. El Editor pregunta.** En `EditorController.guardar()`, después de tener el cliente del formulario y **antes** de guardar la factura, se decide si hay que preguntar:
+
+```java
+/**
+ * Si el cliente ya existe y sus datos no son los de su ficha, preguntamos si
+ * queremos guardarlos también allí. La factura se guarda con ellos en cualquier caso.
+ */
+private boolean pedirActualizarFicha(Cliente cli) {
+    if (cli.getId() == null || clienteActual == null) {
+        return false;
+    }
+    if (cli.tieneLosMismosDatos(clienteActual)) {
+        return false;
+    }
+    return Dialogos.mostrarDialogoConfirmacion("Datos del cliente",
+            "Has cambiado los datos de «" + clienteActual.getNombre() + "» en esta factura.
+
+"
+                    + "¿Quieres guardar también esos cambios en su ficha de cliente?");
+}
+```
+
+Se pregunta antes de guardar la factura para que, si la factura no llega a guardarse, la ficha no se haya tocado. Y solo **después** de que la factura se guarde bien:
+
+```java
+if (actualizarFicha) {
+    Vista.getInstancia().getControlador().modificarCliente(cli);
+    clienteActual = cli;
+}
+```
+
+`clienteActual = cli` evita que vuelva a preguntar lo mismo si se guarda otra vez sin cambiar nada más.
+
 ## D8. Tests
 
 - **Se borra** `ValidacionClienteTest` (355 líneas) y **se escribe `ClienteTest`** con lo mismo, pero contra los setters: nombre vacío, NIF vacío, NIF con formato malo, NIF con letra mala, NIF en minúsculas que se guarda en mayúsculas, CP vacío, CP de cuatro dígitos, CP que empieza por 53, localidad vacía, provincia vacía, email vacío que vale, email mal escrito, constructor copia y `equals` por NIF.
@@ -583,9 +793,9 @@ private Cliente clienteDeVersion(Facturas.VersionCompleta origen) throws Excepti
 
 ## Decisiones
 
-**1. Solo se avisa del primer dato incorrecto.** Hoy, al guardar una ficha con el NIF y el CP vacíos, se marcan los dos campos en rojo y se avisa del NIF. Con los setters, el primero que falla corta: se marca **ese** campo y se avisa de **ese** error. Es el precio de que las comprobaciones vivan en la clase de datos, y es el mismo comportamiento que tendrán todas las fichas del proyecto. Cambia un escenario de la especificación.
+**1. Los setters validan, pero los comprobadores son públicos.** Si la ficha solo tuviera los setters, el primero que falla cortaría y únicamente se podría marcar un campo. Por eso cada comprobación vive en un `errorX` `static` **que el setter usa**: la regla sigue estando en un solo sitio, nada puede construir un `Cliente` inválido, y la ficha puede preguntar por los siete campos y marcarlos todos. Se conserva el comportamiento de hoy: **todos los campos malos en rojo y el aviso del primero.**
 
-**2. `ValidacionCliente` no se borra.** La usan el Editor, la generación mensual y las rectificativas, que se rehacen en los módulos 5 y 6. Borrarla aquí obligaría a rehacer el Editor en este change. Queda duplicada la comprobación (los setters y `ValidacionCliente`) hasta el módulo 6.
+**2. `ValidacionCliente` no se borra.** La usan el Editor, la generación mensual y las rectificativas, que se rehacen en los módulos 5 y 6. Borrarla aquí obligaría a rehacer el Editor en este change. Queda duplicada la comprobación (los `errorX` de `Cliente` y `ValidacionCliente`) hasta el módulo 6, con los mismos mensajes en las dos.
 
 **3. `Clientes` es singleton y `Modelo` ya no lo construye.** `Modelo.getClientes()` desaparece porque ninguna pantalla lo necesita ya. `Facturas`, `Estados` y `Rectificativas` piden `Clientes.getClientes()` directamente, como `Estados` pide hoy `facturas`.
 
@@ -597,5 +807,4 @@ private Cliente clienteDeVersion(Facturas.VersionCompleta origen) throws Excepti
 
 - **Una fila de `cliente` incompleta deja de poder leerse.** Las columnas `nif`, `direccion`, `cp`, `localidad` y `provincia` admiten `NULL` en la tabla, y hasta hoy nada impedía guardar una fila a medias desde el Editor. A partir de ahora, `crearCliente` lanza un aviso al leerla y la pantalla de Clientes no se abre. Los dos clientes de la demostración están completos y sus NIF son válidos, así que con datos nuevos no pasa; si aparece con datos viejos, el aviso dirá qué falta y se arregla borrando la carpeta de datos, que es lo previsto.
 - **Anular o rectificar una factura vieja sin datos de cliente ahora avisa** en vez de seguir con un cliente a medias (D7). Es más correcto, pero es un cambio de comportamiento que no se ve hasta que se prueba.
-- **La comprobación del cliente queda duplicada** hasta el módulo 6 (decisión 2).
-- El bloque Cliente del Editor **sigue marcando todos los campos a la vez**, porque sigue usando `ValidacionCliente`. Durante dos o tres módulos, la ficha y el Editor avisarán distinto.
+- **La comprobación del cliente queda duplicada** hasta el módulo 6 (decisión 2): los mismos siete mensajes están en `Cliente` y en `ValidacionCliente`. Si se toca uno hay que tocar el otro. Es la razón de que el módulo 6 la borre.

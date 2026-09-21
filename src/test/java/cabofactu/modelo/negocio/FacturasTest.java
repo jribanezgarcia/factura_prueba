@@ -8,7 +8,6 @@ import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.sqlite.ClienteDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
 import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
@@ -52,13 +51,12 @@ class FacturasTest {
         Conexion.establecerConexion();
         serieDAO = new SerieDAO();
         facturaDAO = new FacturaDAO();
-        ClienteDAO clienteDAO = new ClienteDAO();
         VersionFacturaDAO versionFacturaDAO = new VersionFacturaDAO();
         lineaFacturaDAO = new LineaFacturaDAO();
         NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
         Numeracion numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone());
         versionesNegocio = new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone());
-        facturas = new Facturas(facturaDAO, serieDAO, clienteDAO,
+        facturas = new Facturas(facturaDAO, serieDAO,
                 versionFacturaDAO, lineaFacturaDAO, versionesNegocio, numeracion, numeroDisponibleDAO, Clock.systemDefaultZone());
     }
 
@@ -79,15 +77,8 @@ class FacturasTest {
         return s;
     }
 
-    private Cliente clientePrueba() {
-        Cliente c = new Cliente();
-        c.setNombre("Cliente Prueba");
-        c.setNif("12345678Z");
-        c.setDireccion("Calle Prueba 1");
-        c.setCp("28001");
-        c.setLocalidad("Madrid");
-        c.setProvincia("Madrid");
-        return c;
+    private Cliente clientePrueba() throws Exception {
+        return new Cliente("Cliente Prueba", "12345678Z", "Calle Prueba 1", "28001", "Madrid", "Madrid");
     }
 
     private LineaFactura linea(String precio) {
@@ -171,13 +162,8 @@ class FacturasTest {
     void guardaEmailClienteYDatosPagoEnLaVersion() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 21);
-        Cliente cli = new Cliente();
-        cli.setNombre("MARIA MARTAGON AVALOS");
-        cli.setNif("49122168X");
-        cli.setDireccion("Calle Prueba 1");
-        cli.setCp("28001");
-        cli.setLocalidad("Madrid");
-        cli.setProvincia("Madrid");
+        Cliente cli = new Cliente("MARIA MARTAGON AVALOS", "49122168X", "Calle Prueba 1",
+                "28001", "Madrid", "Madrid");
         cli.setEmail("maria.martagon@correo.es");
         DatosPago dp = new DatosPago("Transferencia", LocalDate.of(2026, 9, 14), "AURORA");
 
@@ -216,13 +202,7 @@ class FacturasTest {
     void anularConservaDatosPagoYEmail() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 21);
-        Cliente cli = new Cliente();
-        cli.setNombre("CLIENTE PRUEBA");
-        cli.setNif("12345678Z");
-        cli.setDireccion("Calle Prueba 1");
-        cli.setCp("28001");
-        cli.setLocalidad("Madrid");
-        cli.setProvincia("Madrid");
+        Cliente cli = new Cliente("CLIENTE PRUEBA", "12345678Z", "Calle Prueba 1", "28001", "Madrid", "Madrid");
         cli.setEmail("cliente@prueba.es");
         DatosPago dp = new DatosPago("Efectivo", null, "AURORA");
 
@@ -297,18 +277,6 @@ class FacturasTest {
         ValidacionException e = assertThrows(ValidacionException.class, () ->
                 facturas.crearFactura(c, fecha, null, List.of(linea("100.00")), 0, null, null));
         assertEquals("Indique los datos del cliente.", e.getMessage());
-        assertEquals(0, facturaDAO.contar());
-    }
-
-    @Test
-    void noCreaFacturaConLetraIncorrecta() throws Exception {
-        Serie c = serieC();
-        LocalDate fecha = LocalDate.of(2026, 8, 21);
-        Cliente cli = clientePrueba();
-        cli.setNif("12345678A");
-        ValidacionException e = assertThrows(ValidacionException.class, () ->
-                facturas.crearFactura(c, fecha, cli, List.of(linea("100.00")), 0, null, null));
-        assertEquals("La letra no es correcta.", e.getMessage());
         assertEquals(0, facturaDAO.contar());
     }
 }

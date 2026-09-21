@@ -150,12 +150,12 @@ public class GenerarFacturasMensualesController {
 
     private void cargarClientes() {
         try {
-            List<Cliente> activos = Vista.getInstancia().getControlador().getModelo().getClientes().listar(true);
+            List<Cliente> activos = Vista.getInstancia().getControlador().listadoClientes(true);
             comboCliente.getItems().setAll(activos);
             comboCliente.setConverter(new StringConverter<>() {
                 @Override
                 public String toString(Cliente c) {
-                    return c == null ? "" : c.nombreNif();
+                    return c == null ? "" : c.getNombreNif();
                 }
 
                 @Override

@@ -16,7 +16,7 @@ Clientes es el primer módulo de datos y el que fija el patrón: como salga `Cli
 - **La ficha de cliente pasa a FXML**: `FichaCliente.fxml` con su `FichaClienteController`, abierto en modo añadir con `setRegistro(null)` y en modo editar con `setRegistro(registro)`, y recogido con `getRegistro()`.
 - **`ClientesController` se rehace** con el patrón de tabla + formulario: campo `registro`, `seleccionar`, `refrescarTabla` y un `catch (Exception e)` por botón.
 - **Las columnas usan `PropertyValueFactory`** apoyadas en los getters de texto de `Cliente`.
-- **Cambia un aviso**: al guardar una ficha con varios datos mal, se marca y se avisa **del primero**, no de todos a la vez.
+- **Preguntar antes de tocar la ficha del cliente**: al guardar una factura cuyos datos de cliente difieran de los de su ficha, la aplicación pregunta si actualizarla. Hoy, una factura nueva no la toca y una factura editada la sobrescribe sin avisar.
 - **Los demás sitios que usaban `ClienteDAO`** (`Facturas`, `Estados`, `Rectificativas`) pasan por `Clientes`, sin cambiar lo que hacen.
 
 ## Capacidades
@@ -27,7 +27,7 @@ Ninguna.
 
 ### Capacidades modificadas
 
-- `invoicing`: «Clientes» deja de marcar todos los campos incorrectos a la vez y marca el primero.
+- `invoicing`: «Clientes» añade que el NIF se guarda en mayúsculas; «Búsqueda de clientes al crear factura» deja de actualizar la ficha del cliente en silencio y pasa a preguntar.
 
 ## A qué afecta
 

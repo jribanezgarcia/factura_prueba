@@ -1,6 +1,6 @@
 # CaboFactu: estado del proyecto
 
-Actualizado: **20/09/2026**
+Actualizado: **21/09/2026**
 
 Por dónde va el proyecto y qué toca ahora. Las normas de cómo se escribe el código y cómo se trabaja están en [AGENTS.md](AGENTS.md).
 
@@ -26,24 +26,24 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Tablas creadas con un único script (`db/crear_tablas.sql`), sin migraciones ni versiones de esquema.
 - Especificación sin píxeles: 20 requisitos de apariencia retirados y resumidos en «Apariencia de la interfaz» (54 → 35 requisitos).
 - Esqueleto como Biblioteca8: `AppCaboFactu`, `Controlador`, `Vista` singleton, `LanzadorVentanaPrincipal`, `Pantalla`, barra en FXML y `Dialogos` como en clase.
+- Módulo de clientes: `Cliente` que se valida en sus setters (con los errorX), `Clientes` singleton con el SQL dentro (sin `ClienteDAO`), las ocho operaciones en `Controlador` y `Modelo`, la ficha en `FichaCliente.fxml` con aviso de descarte y la pantalla con el patrón de tabla + formulario. El bloque Cliente del editor pregunta antes de actualizar la ficha.
 
-Último cambio archivado: `2026-09-20-estructura-como-biblioteca8`.
+Último cambio archivado: `2026-09-21-modulo-clientes`.
 
 ## En curso
 
-**Replanteo para simplificar todo el proyecto** (19-20/09/2026). No hay ningún change aplicándose.
+**Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
-
-Change escrito y pendiente de aplicar: **`modulo-clientes`** — segundo módulo: `Cliente` que se valida en sus setters, `Clientes` singleton con el SQL dentro (fuera `ClienteDAO`), las operaciones de cliente en `Controlador` y `Modelo`, la ficha en `FichaCliente.fxml` y la pantalla con el patrón de tabla + formulario.
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
 ## Qué toca ahora
 
-1. Escribir y aplicar los changes por módulos, en este orden: clientes → empresas y menú → configuración → facturas → editor → histórico → PDF → mensuales → copias → documentación.
-2. VeriFactu, después, en otra rama.
+1. Aplicar el siguiente módulo: **empresas y menú**.
+2. Después, en el orden de los módulos: configuración → facturas → editor → histórico → PDF → mensuales → copias → documentación.
+3. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
 
@@ -53,3 +53,6 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **En OpenSpec, un requisito `MODIFIED` reemplaza el bloque entero**: hay que copiar todos sus escenarios, aunque solo cambie una frase.
 - **No traduzcas las palabras clave de OpenSpec** (`ADDED`/`MODIFIED`/`REMOVED Requirements`, `Requirement:`, `Scenario:`, `WHEN`/`THEN`, y `## Why` y `## What Changes` del proposal): `validate` sigue diciendo «is valid» y el requisito desaparece al archivar.
 - **Los datos se van a reiniciar** mientras el programa esté en desarrollo: no hace falta migrar nada.
+- **Borrar un «BOM» en los CSS** se llevó el punto de `.root` en los siete temas. Sin el punto se cae la paleta de todos los temas y los tests no lo detectan; lo delata una `ClassCastException … cannot be cast to Paint` en el log de `mvn test`.
+- **Tras `new Cliente(original)`** (el constructor copia) hay que volver a aplicar los campos editados. Si no, el cambio se pierde sin avisar.
+- **OpenSpec 1.10 rechaza un `MODIFIED`** que pierde un escenario por su título. Para sustituir un escenario, conserva su título.
