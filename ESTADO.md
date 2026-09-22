@@ -36,9 +36,11 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
-- **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`.
+- **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`. **(22/09) Revertida F8**: una empresa sin sus datos obligatorios vuelve a bloquear (directo a Configuración, barra solo con Salir, «Cambiar de empresa» disponible).
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
+
+Change escrito y pendiente de aplicar: **`modulo-configuracion`** — vuelve el bloqueo por empresa incompleta; `Empresa`, `TipoIva` y `TipoRetencion` como `Cliente`; `Configuracion`, `TiposIva` y `TiposRetencion` singletons sin DAO; fichas modales de IVA y retención; lista lateral en el FXML sin clases internas; fuera las columnas del logo. Series se queda para el módulo de facturas.
 
 ## Qué toca ahora
 
