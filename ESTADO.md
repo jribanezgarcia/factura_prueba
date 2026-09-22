@@ -41,6 +41,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
+Change escrito y pendiente de aplicar: **`modulo-series`** — el siguiente número se calcula a partir de las facturas (fuera los dos contadores y la tabla de huecos), fuera «Reutilizar anulados», `Serie` se valida sola con `FormatoNumero` en su fichero, `Series` singleton con toda la numeración (fuera `Numeracion`, `SerieDAO` y `NumeroDisponibleDAO`) y la sección Series con ficha modal. Después irá el change de facturas sin versiones.
+
 ## Qué toca ahora
 
 1. Aplicar el siguiente módulo: **facturas (junto con las series y la numeración)**.
