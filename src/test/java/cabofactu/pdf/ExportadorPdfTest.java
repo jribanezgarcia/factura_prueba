@@ -43,16 +43,10 @@ class ExportadorPdfTest {
         return l;
     }
 
-    private Empresa empresaTexto() {
-        Empresa empresa = new Empresa();
-        empresa.setNombre("EMPRESA PRUEBA, S.C.");
-        empresa.setNif("B04444444");
+    private Empresa empresaTexto() throws Exception {
+        Empresa empresa = new Empresa("EMPRESA PRUEBA, S.C.", "12345678Z", "Avda. Alhambra nº 18", "04007",
+                "Almería", "Almería", "contacto@empresaprueba.es", "950000000");
         empresa.setActividad("Cocinas y armarios");
-        empresa.setDireccion("Avda. Alhambra nº 18");
-        empresa.setCp("04007");
-        empresa.setLocalidad("Almería");
-        empresa.setProvincia("Almería");
-        empresa.setEmail("contacto@empresaprueba.es");
         empresa.setCabeceraModo("TEXTO");
         empresa.setPieLegal("Protección de datos RGPD texto legal de prueba.");
         return empresa;
@@ -124,7 +118,7 @@ class ExportadorPdfTest {
             assertTrue(texto.contains("FECHA"));
             assertTrue(texto.contains("C-59/7"));
             assertTrue(texto.contains("14/07/2026"));
-            assertTrue(texto.contains("NIF: B04444444"));
+            assertTrue(texto.contains("NIF: 12345678Z"));
             assertTrue(texto.contains("FACTURAR A"));
             assertTrue(texto.contains("Nombre"));
             assertTrue(texto.contains("Dirección"));

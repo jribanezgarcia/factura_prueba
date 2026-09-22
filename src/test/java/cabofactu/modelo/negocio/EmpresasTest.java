@@ -22,7 +22,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import cabofactu.modelo.dominio.Serie;
-import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.SerieDAO;
 
 /**
@@ -194,10 +193,10 @@ class EmpresasTest {
         Empresas.getEmpresas().alta("Primera");
         Empresas.getEmpresas().alta("Segunda");
         Empresas.getEmpresas().abrir("primera", LocalDate.now());
-        new ConfiguracionDAO().setPreferencia(PreferenciasGlobales.TEMA, "omarchy");
+        Configuracion.getConfiguracion().guardarPreferencia(PreferenciasGlobales.TEMA, "omarchy");
         Empresas.getEmpresas().abrir("segunda", LocalDate.now());
         assertEquals("", PreferenciasGlobales.get(PreferenciasGlobales.TEMA));
-        new ConfiguracionDAO().setPreferencia(PreferenciasGlobales.TEMA, "esmeralda");
+        Configuracion.getConfiguracion().guardarPreferencia(PreferenciasGlobales.TEMA, "esmeralda");
         Empresas.getEmpresas().abrir("primera", LocalDate.now());
         assertEquals("omarchy", PreferenciasGlobales.get(PreferenciasGlobales.TEMA));
         Empresas.getEmpresas().abrir("segunda", LocalDate.now());

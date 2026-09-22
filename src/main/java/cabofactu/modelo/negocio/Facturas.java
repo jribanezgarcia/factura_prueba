@@ -333,14 +333,20 @@ String observaciones, String referencia, DatosPago datosPago,
      * porcentaje que tenia al emitirse aunque el tipo se haya cambiado
      * despues. No consulta ningun DAO.
      */
-    public static TipoRetencion retencionDeVersion(VersionFactura v) {
+    public static TipoRetencion retencionDeVersion(VersionFactura v) throws Exception {
         if (v.getTipoRetencionId() == null) {
             return null;
         }
-        TipoRetencion t = new TipoRetencion();
+        String nombre = v.getTipoRetencionNombre();
+        if (nombre == null || nombre.isBlank()) {
+            nombre = "Retención";
+        }
+        int porcentaje = 0;
+        if (v.getTipoRetencionPorcentaje() != null) {
+            porcentaje = v.getTipoRetencionPorcentaje();
+        }
+        TipoRetencion t = new TipoRetencion(nombre, porcentaje);
         t.setId(v.getTipoRetencionId());
-        t.setNombre(v.getTipoRetencionNombre() == null ? "" : v.getTipoRetencionNombre());
-        t.setPorcentaje(v.getTipoRetencionPorcentaje() != null ? v.getTipoRetencionPorcentaje() : 0);
         return t;
     }
 

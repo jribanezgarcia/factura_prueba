@@ -1,7 +1,6 @@
 package cabofactu.vista;
 
 import cabofactu.controlador.Controlador;
-import cabofactu.modelo.Modelo;
 import cabofactu.vista.controlador.ArranqueController;
 import cabofactu.vista.recursos.LocalizadorRecursos;
 import cabofactu.vista.utilidades.Botones;
@@ -25,6 +24,7 @@ public class Vista {
 
     private static final String MENU = "MenuPrincipal.fxml";
     private static final String ARRANQUE = "Arranque.fxml";
+    private static final String CONFIGURACION = "Configuracion.fxml";
 
     private static Vista instancia;
     private Controlador controlador;
@@ -98,9 +98,17 @@ public class Vista {
         LanzadorVentanaPrincipal.comenzar();
     }
 
-    /** Menú principal: se entra siempre en él, haya o no datos pendientes. */
+    /** Menú principal si la empresa está completa; si no, Configuración, que se queda bloqueada. */
     public void mostrarInicio() {
-        mostrar(MENU);
+        try {
+            if (controlador.buscarEmpresa() == null) {
+                mostrar(CONFIGURACION);
+            } else {
+                mostrar(MENU);
+            }
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Empresa", e.getMessage());
+        }
     }
 
     /** Ponemos la pantalla de arranque en esa ventana, sin mostrarla todavía. */
@@ -124,21 +132,6 @@ public class Vista {
     }
 
     /**
-     * Antes de guardar una factura, rectificar, generar las mensuales o exportar
-     * PDF, comprobamos que la empresa tiene sus datos completos. Si no, avisamos
-     * de lo que falta y devolvemos false.
-     */
-    public boolean comprobarDatosEmpresa() {
-        try {
-            controlador.comprobarDatosEmpresa();
-            return true;
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoAdvertencia("Datos de la empresa", e.getMessage());
-            return false;
-        }
-    }
-
-    /**
      * Cargamos la pantalla del FXML y la ponemos en la ventana. Si la pantalla
      * actual tiene cambios sin guardar y el usuario decide quedarse, no cambiamos
      * y devolvemos null. Si no, devolvemos su controlador, por si hay que pasarle
@@ -157,7 +150,7 @@ public class Vista {
             FXMLLoader loader = new FXMLLoader(LocalizadorRecursos.class.getResource(fxml));
             Parent raiz = loader.load();
             Scene escena = new Scene(raiz);
-            GestorTemas.aplicar(escena, controlador.getModelo());
+            GestorTemas.aplicar(escena);
             ventana.setScene(escena);
             ConfiguracionVentana configuracion = ConfiguracionVentana.para(fxml);
             if (configuracion != null) {

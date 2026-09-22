@@ -28,7 +28,7 @@ public final class ConstructorDocumentoFactura {
     private ConstructorDocumentoFactura() {
     }
 
-    public static DocumentoFactura build(Facturas.VersionCompleta vc, Empresa empresa, String colorHex) {
+    public static DocumentoFactura build(Facturas.VersionCompleta vc, Empresa empresa, String colorHex) throws Exception {
         VersionFactura v = vc.version();
         ResumenFactura resumen = Calculos.resumen(vc.lineas(), v.getDescuentoPorcentaje(),
                 Facturas.retencionDeVersion(v));

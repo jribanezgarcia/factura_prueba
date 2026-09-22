@@ -82,11 +82,9 @@ class FacturacionMensualTest {
         return c;
     }
 
-    private TipoIva iva21() {
-        TipoIva iva = new TipoIva();
+    private TipoIva iva21() throws Exception {
+        TipoIva iva = new TipoIva("IVA 21%", 21, false);
         iva.setId(1L);
-        iva.setNombre("IVA 21%");
-        iva.setPorcentaje(21);
         return iva;
     }
 
@@ -210,9 +208,7 @@ class FacturacionMensualTest {
         Serie serie = serieC();
         Cliente cliente = clientePaco();
         TipoIva iva = iva21();
-        TipoRetencion retencion = new TipoRetencion();
-        retencion.setNombre("IRPF 15%");
-        retencion.setPorcentaje(15);
+        TipoRetencion retencion = new TipoRetencion("IRPF 15%", 15);
 
         service.generar(cliente, 2026, 1, 1, serie, 15, iva, retencion,
                 List.of(plantilla("servicios", "100.00", false)));

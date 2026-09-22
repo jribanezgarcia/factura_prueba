@@ -250,7 +250,7 @@ public class EditorController implements Pantalla, Initializable {
 
     private void cargarLogo() {
         try {
-            Empresa empresa = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
+            Empresa empresa = Vista.getInstancia().getControlador().buscarEmpresa();
             String ruta = empresa.getLogoPath();
             if (ruta == null || ruta.isBlank()) {
                 LogoMarco.limpiar(logoBox);
@@ -367,7 +367,7 @@ public class EditorController implements Pantalla, Initializable {
             List<Serie> series = Vista.getInstancia().getControlador().getModelo().getSeries().listar();
             comboSerie.getItems().setAll(series);
             Serie inicial = null;
-            String ultima = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_SERIE);
+            String ultima = Vista.getInstancia().getControlador().preferencia(PREV_SERIE);
             if (ultima != null) {
                 for (Serie s : series) {
                     if (ultima.equals(s.getCodigo())) {
@@ -400,7 +400,7 @@ public class EditorController implements Pantalla, Initializable {
 
     private void cargarTiposIva() {
         try {
-            tiposIva.setAll(Vista.getInstancia().getControlador().getModelo().getTiposIva().listar(true));
+            tiposIva.setAll(Vista.getInstancia().getControlador().listadoTiposIva(true));
         } catch (Exception e) {
             tiposIva.clear();
         }
@@ -423,31 +423,32 @@ public class EditorController implements Pantalla, Initializable {
             }
             TipoIva existente = null;
             try {
-                existente = Vista.getInstancia().getControlador().getModelo().getTiposIva().getById(l.getTipoIvaId());
+                existente = Vista.getInstancia().getControlador().buscarTipoIva(l.getTipoIvaId());
             } catch (Exception ignored) {
             }
             if (existente != null) {
                 tiposIva.add(existente);
             } else {
-                TipoIva snapshot = new TipoIva();
-                snapshot.setId(l.getTipoIvaId());
-                snapshot.setNombre(l.getIvaNombre() != null ? l.getIvaNombre() : "");
-                snapshot.setPorcentaje(l.getIvaPorcentaje());
-                snapshot.setMotivoExencion(l.getIvaMotivoExencion());
-                snapshot.setEsSuplido(l.isEsSuplido());
-                snapshot.setActivo(false);
-                tiposIva.add(snapshot);
+                try {
+                    String nombreIva = l.getIvaNombre();
+                    if (nombreIva == null || nombreIva.isBlank()) {
+                        nombreIva = "Tipo de IVA";
+                    }
+                    TipoIva snapshot = new TipoIva(nombreIva, l.getIvaPorcentaje(), l.isEsSuplido());
+                    snapshot.setId(l.getTipoIvaId());
+                    snapshot.setMotivoExencion(l.getIvaMotivoExencion());
+                    snapshot.setActivo(false);
+                    tiposIva.add(snapshot);
+                } catch (Exception ignored) {
+                }
             }
         }
     }
 
     private void cargarTiposRetencion() {
         try {
-            List<TipoRetencion> activas = Vista.getInstancia().getControlador().getModelo().getTiposRetencion().listar(true);
-            TipoRetencion sin = new TipoRetencion();
-            sin.setId(null);
-            sin.setNombre("Sin retención");
-            sin.setPorcentaje(0);
+            List<TipoRetencion> activas = Vista.getInstancia().getControlador().listadoTiposRetencion(true);
+            TipoRetencion sin = new TipoRetencion("Sin retención", 0);
             tiposRetencion.setAll(sin);
             tiposRetencion.addAll(activas);
             comboRetencion.setItems(tiposRetencion);
@@ -465,13 +466,13 @@ public class EditorController implements Pantalla, Initializable {
             comboRetencion.setValue(sin);
         } catch (Exception e) {
             tiposRetencion.clear();
-            TipoRetencion sin = new TipoRetencion();
-            sin.setId(null);
-            sin.setNombre("Sin retención");
-            sin.setPorcentaje(0);
-            tiposRetencion.add(sin);
-            comboRetencion.setItems(tiposRetencion);
-            comboRetencion.setValue(sin);
+            try {
+                TipoRetencion sin = new TipoRetencion("Sin retención", 0);
+                tiposRetencion.add(sin);
+                comboRetencion.setItems(tiposRetencion);
+                comboRetencion.setValue(sin);
+            } catch (Exception ignorada) {
+            }
         }
     }
 
@@ -1015,9 +1016,6 @@ public class EditorController implements Pantalla, Initializable {
 
     @FXML
     private boolean guardar() {
-        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
-            return false;
-        }
         marcarCamposCliente();
         Cliente cli;
         try {
@@ -1249,9 +1247,6 @@ public class EditorController implements Pantalla, Initializable {
 
     @FXML
     private void crearRectificativa() {
-        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
-            return;
-        }
         if (versionAbiertaId == null) {
             Dialogos.mostrarDialogoInformacion("Rectificativa", "Abra primero la factura a rectificar.");
             return;
@@ -1274,9 +1269,6 @@ public class EditorController implements Pantalla, Initializable {
 
     @FXML
     private void exportarPdf() {
-        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
-            return;
-        }
         if (versionAbiertaId == null) {
             Dialogos.mostrarDialogoInformacion("Exportar PDF", "Guarde primero la factura para poder exportarla.");
             return;
@@ -1286,7 +1278,7 @@ public class EditorController implements Pantalla, Initializable {
             if (vc == null) {
                 return;
             }
-            Empresa empresa = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
+            Empresa empresa = Vista.getInstancia().getControlador().buscarEmpresa();
             Path sugerido = proponerDestinoPdf(vc);
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Exportar PDF");
@@ -1312,7 +1304,7 @@ public class EditorController implements Pantalla, Initializable {
                 btnExportar.setDisable(false);
                 try {
                     if (ruta.getParent() != null) {
-                        Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(PREV_EXPORT, ruta.getParent().toString());
+                        Vista.getInstancia().getControlador().guardarPreferencia(PREV_EXPORT, ruta.getParent().toString());
                     }
                 } catch (Exception ignored) {
                 }
@@ -1331,7 +1323,7 @@ public class EditorController implements Pantalla, Initializable {
 
     private String colorPdfPreferido() {
         try {
-            return Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR);
+            return Vista.getInstancia().getControlador().preferencia(ExportadorPdf.PREF_COLOR);
         } catch (Exception e) {
             return null;
         }
@@ -1340,7 +1332,7 @@ public class EditorController implements Pantalla, Initializable {
     private Path proponerDestinoPdf(Facturas.VersionCompleta vc) {
         String carpeta = "Facturas";
         try {
-            String pref = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_CARPETA);
+            String pref = Vista.getInstancia().getControlador().preferencia(PREV_CARPETA);
             if (pref != null && !pref.isBlank()) {
                 carpeta = pref;
             }
@@ -1383,12 +1375,21 @@ public class EditorController implements Pantalla, Initializable {
                 return;
             }
         }
-        TipoRetencion snapshot = new TipoRetencion();
-        snapshot.setId(id);
-        snapshot.setNombre(nz(nombre));
-        snapshot.setPorcentaje(porcentaje != null ? porcentaje : 0);
-        snapshot.setActivo(false);
-        tiposRetencion.add(snapshot);
+        try {
+            String nombreRetencion = nombre;
+            if (nombreRetencion == null || nombreRetencion.isBlank()) {
+                nombreRetencion = "Retención";
+            }
+            int pct = 0;
+            if (porcentaje != null) {
+                pct = porcentaje;
+            }
+            TipoRetencion snapshot = new TipoRetencion(nombreRetencion, pct);
+            snapshot.setId(id);
+            snapshot.setActivo(false);
+            tiposRetencion.add(snapshot);
+        } catch (Exception ignored) {
+        }
     }
 
     private void seleccionarRetencionPorId(Long id) {
@@ -1471,7 +1472,7 @@ public class EditorController implements Pantalla, Initializable {
     private void guardarSeriePreferida(Serie s) {
         try {
             if (s != null) {
-                Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(PREV_SERIE, s.getCodigo());
+                Vista.getInstancia().getControlador().guardarPreferencia(PREV_SERIE, s.getCodigo());
             }
         } catch (Exception ignored) {
         }

@@ -49,7 +49,7 @@ public class CopiaSeguridadDAO {
             Map.entry("factura_linea", List.of("id", "factura_version_id", "orden", "cantidad", "descripcion", "precio_unitario",
                     "total_base", "tipo_iva_id", "iva_nombre", "iva_porcentaje", "iva_motivo_exencion", "iva_importe", "es_suplido")),
             Map.entry("empresa", List.of("id", "nombre", "nif", "direccion", "cp", "localidad", "provincia", "actividad", "email",
-                    "telefono", "cabecera_modo", "logo_path", "logo_x", "logo_y", "logo_ancho", "logo_alto", "pie_legal")),
+                    "telefono", "cabecera_modo", "logo_path", "pie_legal")),
             Map.entry("preferencias", List.of("clave", "valor")),
             Map.entry("serie_siguiente", List.of("serie_id", "anio", "siguiente")),
             Map.entry("tipo_retencion", List.of("id", "nombre", "porcentaje", "activo")),

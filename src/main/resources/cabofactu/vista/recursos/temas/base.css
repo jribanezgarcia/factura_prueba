@@ -416,15 +416,6 @@
     -fx-border-width: 2;
 }
 
-/* Franja del menú con los datos de empresa que faltan */
-.franja-aviso {
-    -fx-background-color: derive(-fx-accent-error, 88%);
-    -fx-border-color: -fx-accent-error;
-    -fx-border-width: 0 0 0 4;
-    -fx-background-radius: 6;
-    -fx-padding: 8 12 8 12;
-}
-
 /* Diálogos y tarjetas de confirmación */
 .dialog-card {
     -fx-background-color: -fx-base;
@@ -462,33 +453,33 @@
 }
 
 .lista-secciones {
-    -fx-background-color: transparent;
-    -fx-background-insets: 0;
-    -fx-border-width: 0;
-    -fx-padding: 0;
+    -fx-spacing: 0;
 }
 
-.lista-secciones .list-cell {
+.lista-secciones .toggle-button {
     -fx-background-color: transparent;
     -fx-background-insets: 0;
     -fx-border-width: 0;
     -fx-padding: 8px 10px;
     -fx-font-size: 13px;
     -fx-text-fill: -fx-text-background-color;
+    -fx-alignment: CENTER_LEFT;
+    -fx-max-width: Infinity;
+    -fx-cursor: hand;
 }
 
-.lista-secciones .list-cell:filled:hover {
+.lista-secciones .toggle-button:hover {
     -fx-background-color: derive(-fx-accent, 90%);
     -fx-background-radius: 8px;
 }
 
-.lista-secciones .list-cell:filled:selected {
+.lista-secciones .toggle-button:selected {
     -fx-background-color: derive(-fx-accent, 84%);
     -fx-background-radius: 8px;
     -fx-text-fill: derive(-fx-accent, -35%);
 }
 
-.lista-secciones .list-cell.grupo-secciones {
+.lista-secciones .grupo-secciones {
     -fx-font-size: 12px;
     -fx-padding: 12px 4px 4px 4px;
     -fx-opacity: 0.70;

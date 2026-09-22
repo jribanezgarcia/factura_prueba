@@ -194,11 +194,15 @@ public class CopiaSeguridadController implements Pantalla, Initializable {
 
     private String obtenerNifActiva() {
         try {
-            Empresa emp = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
-            return emp == null ? "" : emp.getNif() == null ? "" : emp.getNif();
+            Empresa empresa = Vista.getInstancia().getControlador().buscarEmpresa();
+            return empresa == null ? "" : nz(empresa.getNif());
         } catch (Exception e) {
             return "";
         }
+    }
+
+    private String nz(String texto) {
+        return texto == null ? "" : texto;
     }
 
     private int contarFacturasActivas() {

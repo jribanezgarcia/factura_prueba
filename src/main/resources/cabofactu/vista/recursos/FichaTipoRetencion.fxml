@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<VBox prefWidth="375" spacing="12" styleClass="card"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="cabofactu.vista.controlador.FichaTipoRetencionController">
+    <padding>
+        <Insets top="16" right="16" bottom="16" left="16"/>
+    </padding>
+    <Label fx:id="lblTitulo" styleClass="section-title"/>
+    <GridPane hgap="8" vgap="8">
+        <columnConstraints>
+            <ColumnConstraints minWidth="105"/>
+            <ColumnConstraints hgrow="ALWAYS" fillWidth="true" minWidth="200"/>
+        </columnConstraints>
+        <Label text="Nombre*" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="txtNombre" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="Porcentaje*" GridPane.columnIndex="0" GridPane.rowIndex="1"/>
+        <TextField fx:id="txtPorcentaje" promptText="15" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <CheckBox fx:id="chkActivo" text="Tipo activo"
+                  GridPane.columnIndex="0" GridPane.rowIndex="2" GridPane.columnSpan="2"/>
+    </GridPane>
+    <Label fx:id="lblAviso" styleClass="muted" wrapText="true" visible="false" managed="false"
+           text="El porcentaje de un tipo que ya aparece en facturas no se puede modificar."/>
+    <HBox spacing="8" alignment="CENTER_RIGHT">
+        <Button fx:id="btnCancelar" text="Cancelar" onAction="#cancelar" styleClass="default-button"/>
+        <Button fx:id="btnGuardar" text="Añadir" onAction="#guardar" styleClass="primary-button"/>
+    </HBox>
+</VBox>

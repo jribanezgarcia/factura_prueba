@@ -8,38 +8,42 @@ import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.ExportadorPdf;
 import cabofactu.pdf.DisposicionCabecera;
 import cabofactu.modelo.negocio.Sesion;
-import cabofactu.utilidades.Formatos;
+import cabofactu.vista.recursos.LocalizadorRecursos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
-import javafx.scene.control.RadioButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.StringConverter;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import cabofactu.vista.Pantalla;
@@ -51,24 +55,37 @@ import cabofactu.vista.utilidades.GestorTemas;
 /**
  * Configuracion por secciones con lista lateral: Empresa, Cabecera y pie, PDF
  * y apariencia se guardan con un boton global; IVA, Retenciones y Series
- * se administran fila a fila con sus propias acciones.
+ * se administran con sus propias acciones.
  */
 public class ConfiguracionController implements Pantalla, Initializable {
 
     private static final String PREV_CARPETA = "carpeta_facturas";
     private static final String PREV_EXPORT = "ultima_carpeta_export";
 
-    private Empresa empresa = new Empresa();
-    private TipoIva ivaSeleccionado;
-    private TipoRetencion retencionSeleccionada;
+    private Empresa empresa;
+    private TipoIva ivaElegido;
+    private TipoRetencion retencionElegida;
     private Serie serieSeleccionada;
+    private boolean bloqueada;
 
     private final ObservableList<TipoIva> ivas = FXCollections.observableArrayList();
     private final ObservableList<TipoRetencion> retenciones = FXCollections.observableArrayList();
     private final ObservableList<Serie> series = FXCollections.observableArrayList();
 
     @FXML
-    private ListView<ItemSeccion> listaSecciones;
+    private ToggleGroup grupoSecciones;
+    @FXML
+    private ToggleButton btnEmpresa;
+    @FXML
+    private ToggleButton btnCabecera;
+    @FXML
+    private ToggleButton btnPdf;
+    @FXML
+    private ToggleButton btnIva;
+    @FXML
+    private ToggleButton btnRetenciones;
+    @FXML
+    private ToggleButton btnSeries;
     @FXML
     private StackPane pilaSecciones;
     @FXML
@@ -127,7 +144,6 @@ public class ConfiguracionController implements Pantalla, Initializable {
     private Label lblDatosPendientes;
     @FXML
     private Button btnVolver;
-    private boolean datosPendientes;
     @FXML
     private ComboBox<String> comboTema;
     @FXML
@@ -145,16 +161,6 @@ public class ConfiguracionController implements Pantalla, Initializable {
     private TableColumn<TipoIva, String> colIvaMotivo;
     @FXML
     private TableColumn<TipoIva, String> colIvaActivo;
-    @FXML
-    private TextField txtIvaNombre;
-    @FXML
-    private TextField txtIvaPorcentaje;
-    @FXML
-    private TextField txtIvaMotivo;
-    @FXML
-    private CheckBox chkIvaSuplido;
-    @FXML
-    private Label lblIvaAviso;
 
     @FXML
     private TableView<TipoRetencion> tablaRetenciones;
@@ -164,12 +170,6 @@ public class ConfiguracionController implements Pantalla, Initializable {
     private TableColumn<TipoRetencion, String> colRetencionPorcentaje;
     @FXML
     private TableColumn<TipoRetencion, String> colRetencionActivo;
-    @FXML
-    private TextField txtRetencionNombre;
-    @FXML
-    private TextField txtRetencionPorcentaje;
-    @FXML
-    private Label lblRetencionAviso;
 
     @FXML
     private TableView<Serie> tablaSeries;
@@ -202,45 +202,22 @@ public class ConfiguracionController implements Pantalla, Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         barraController.marcarActivo("configuracion");
         cargarTema();
-        try {
-            empresa = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
-        } catch (Exception e) {
-            empresa = new Empresa();
-        }
         cargarEmpresa();
-        datosPendientes = !Vista.getInstancia().getControlador().getModelo().getConfiguracion().datosPendientes(empresa).isEmpty();
-        if (datosPendientes) {
-            if (txtNombre.getText() == null || txtNombre.getText().isBlank()) {
-                txtNombre.setText(nombreVisibleEmpresaActiva());
-            }
-            lblDatosPendientes.setVisible(true);
-            lblDatosPendientes.setManaged(true);
-        }
+        cargarPreferenciasPdf();
         cargarIvas();
         cargarRetenciones();
         cargarSeries();
-        cargarPdfs();
         cablearPrevia();
-        configurarSecciones();
+        mostrarSeccion(seccionEmpresa, btnEmpresa, true);
     }
 
     private void cargarTema() {
-        comboTema.getItems().setAll(GestorTemas.temas());
-        comboTema.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(String tema) {
-                return tema == null ? "" : GestorTemas.etiqueta(tema);
-            }
-
-            @Override
-            public String fromString(String s) {
-                return s;
-            }
-        });
-        comboTema.setValue(GestorTemas.temaActivo());
-        comboTema.valueProperty().addListener((o, a, b) -> {
-            if (b != null) {
-                GestorTemas.seleccionar(Vista.getInstancia().getVentana().getScene(), b);
+        comboTema.getItems().setAll(GestorTemas.nombres());
+        comboTema.setValue(GestorTemas.etiqueta(GestorTemas.temaActivo()));
+        comboTema.valueProperty().addListener((propiedad, anterior, nuevo) -> {
+            if (nuevo != null) {
+                GestorTemas.seleccionar(Vista.getInstancia().getVentana().getScene(),
+                        GestorTemas.claveDe(nuevo));
             }
         });
     }
@@ -250,6 +227,21 @@ public class ConfiguracionController implements Pantalla, Initializable {
     // ------------------------------------------------------------------
 
     private void cargarEmpresa() {
+        try {
+            empresa = Vista.getInstancia().getControlador().buscarEmpresa();
+        } catch (Exception e) {
+            empresa = null;
+        }
+        if (empresa == null) {
+            bloqueada = true;
+            txtNombre.setText(nombreVisibleEmpresaActiva());
+            lblDatosPendientes.setVisible(true);
+            lblDatosPendientes.setManaged(true);
+            barraController.bloquearSalvoSalir();
+            btnVolver.setDisable(true);
+            return;
+        }
+        bloqueada = false;
         txtNombre.setText(nz(empresa.getNombre()));
         txtNif.setText(nz(empresa.getNif()));
         txtDireccion.setText(nz(empresa.getDireccion()));
@@ -261,26 +253,46 @@ public class ConfiguracionController implements Pantalla, Initializable {
         txtTelefono.setText(nz(empresa.getTelefono()));
         txtLogoPath.setText(nz(empresa.getLogoPath()));
         txtPieLegal.setText(nz(empresa.getPieLegal()));
-        if ("LOGO".equalsIgnoreCase(empresa.getCabeceraModo())) {
+        if (empresa.isCabeceraLogo()) {
             rbLogo.setSelected(true);
         } else {
             rbTexto.setSelected(true);
         }
     }
 
-    private void recogerEmpresa() {
-        empresa.setNombre(trim(txtNombre));
-        empresa.setNif(trim(txtNif));
-        empresa.setDireccion(trim(txtDireccion));
-        empresa.setCp(trim(txtCp));
-        empresa.setLocalidad(trim(txtLocalidad));
-        empresa.setProvincia(trim(txtProvincia));
-        empresa.setActividad(trim(txtActividad));
-        empresa.setEmail(trim(txtEmail));
-        empresa.setTelefono(trim(txtTelefono));
-        empresa.setCabeceraModo(rbLogo.isSelected() ? "LOGO" : "TEXTO");
-        empresa.setLogoPath(trim(txtLogoPath));
-        empresa.setPieLegal(txtPieLegal.getText());
+    private String nombreVisibleEmpresaActiva() {
+        try {
+            String carpeta = Sesion.getSesion().getCarpetaEmpresa();
+            for (EmpresaDisponible disponible : Vista.getInstancia().getControlador().listadoEmpresas()) {
+                if (disponible.getCarpeta().equals(carpeta)) {
+                    return disponible.getNombre();
+                }
+            }
+        } catch (Exception ignored) {
+        }
+        return "";
+    }
+
+    private void cargarPreferenciasPdf() {
+        try {
+            String auto = Vista.getInstancia().getControlador().preferencia(PREV_CARPETA);
+            txtCarpetaAuto.setText(nz(auto));
+            String ultima = Vista.getInstancia().getControlador().preferencia(PREV_EXPORT);
+            txtUltimaCarpeta.setText(nz(ultima));
+            colorPdf.setValue(colorGuardado(Vista.getInstancia().getControlador().preferencia(ExportadorPdf.PREF_COLOR)));
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar las carpetas de PDF: " + e.getMessage());
+        }
+    }
+
+    private Color colorGuardado(String hex) {
+        try {
+            if (hex != null && !hex.isBlank()) {
+                return Color.web(hex.trim());
+            }
+        } catch (Exception ignored) {
+        }
+        return Color.web(ExportadorPdf.COLOR_DEFECTO);
     }
 
     @FXML
@@ -304,41 +316,6 @@ public class ConfiguracionController implements Pantalla, Initializable {
         }
     }
 
-    private String nombreVisibleEmpresaActiva() {
-        try {
-            String carpeta = Sesion.getSesion().getCarpetaEmpresa();
-            for (EmpresaDisponible empresa : Vista.getInstancia().getControlador().listadoEmpresas()) {
-                if (empresa.getCarpeta().equals(carpeta)) {
-                    return empresa.getNombre();
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        return "";
-    }
-
-    private void cargarPdfs() {
-        try {
-            String auto = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_CARPETA);
-            txtCarpetaAuto.setText(nz(auto));
-            String ultima = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_EXPORT);
-            txtUltimaCarpeta.setText(nz(ultima));
-            colorPdf.setValue(colorGuardado(Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR)));
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar las carpetas de PDF: " + e.getMessage());
-        }
-    }
-
-    private Color colorGuardado(String hex) {
-        try {
-            if (hex != null && !hex.isBlank()) {
-                return Color.web(hex.trim());
-            }
-        } catch (Exception ignored) {
-        }
-        return Color.web(ExportadorPdf.COLOR_DEFECTO);
-    }
-
     @FXML
     private void seleccionarCarpetaAuto() {
         DirectoryChooser chooser = new DirectoryChooser();
@@ -350,102 +327,151 @@ public class ConfiguracionController implements Pantalla, Initializable {
     }
 
     @FXML
-    private void guardar() {
+    void guardar(ActionEvent event) {
+        String error = marcarCamposMalos();
+        if (error != null) {
+            mostrarSeccion(seccionEmpresa, btnEmpresa, true);
+            Dialogos.mostrarDialogoError("Datos de la empresa", error);
+            return;
+        }
         try {
-            recogerEmpresa();
-            List<String> faltan = Vista.getInstancia().getControlador().getModelo().getConfiguracion().datosPendientes(empresa);
-            if (!faltan.isEmpty()) {
-                Dialogos.mostrarDialogoError("Configuración",
-                        "Faltan datos obligatorios o no son válidos:\n" + String.join(", ", faltan));
-                return;
-            }
-            Vista.getInstancia().getControlador().getModelo().getConfiguracion().saveEmpresa(empresa);
-            Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
-            Color c = colorPdf.getValue();
-            String hex = String.format("#%02X%02X%02X",
-                    (int) Math.round(c.getRed() * 255),
-                    (int) Math.round(c.getGreen() * 255),
-                    (int) Math.round(c.getBlue() * 255));
-            Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(ExportadorPdf.PREF_COLOR, hex);
-            GestorTemas.guardar(Vista.getInstancia().getControlador().getModelo());
-            if (datosPendientes) {
+            Vista.getInstancia().getControlador().modificarEmpresa(empresaDeLosCampos());
+            guardarPreferenciasPdf();
+            GestorTemas.guardar();
+            if (bloqueada) {
                 Dialogos.mostrarDialogoInformacion("Configuración", "Datos de la empresa completados.");
                 Vista.getInstancia().mostrar("MenuPrincipal.fxml");
             } else {
                 Dialogos.mostrarDialogoInformacion("Configuración", "Configuración guardada.");
             }
         } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Configuración", "No se pudo guardar: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Configuración", e.getMessage());
         }
+    }
+
+    /**
+     * Marcamos en rojo todos los campos incorrectos y devolvemos el mensaje del
+     * primero, o null si está todo bien.
+     */
+    private String marcarCamposMalos() {
+        quitarMarcas();
+        String primero = null;
+        primero = revisar(txtNombre, Empresa.errorNombre(txtNombre.getText()), primero);
+        primero = revisar(txtNif, Empresa.errorNif(txtNif.getText()), primero);
+        primero = revisar(txtDireccion, Empresa.errorDireccion(txtDireccion.getText()), primero);
+        primero = revisar(txtCp, Empresa.errorCp(txtCp.getText()), primero);
+        primero = revisar(txtLocalidad, Empresa.errorLocalidad(txtLocalidad.getText()), primero);
+        primero = revisar(txtProvincia, Empresa.errorProvincia(txtProvincia.getText()), primero);
+        primero = revisar(txtEmail, Empresa.errorEmail(txtEmail.getText()), primero);
+        primero = revisar(txtTelefono, Empresa.errorTelefono(txtTelefono.getText()), primero);
+        return primero;
+    }
+
+    /** Marcamos el campo si tiene error y nos quedamos con el primer mensaje. */
+    private String revisar(TextField campo, String error, String primero) {
+        if (error == null) {
+            return primero;
+        }
+        campo.getStyleClass().add("campo-error");
+        if (primero == null) {
+            return error;
+        }
+        return primero;
+    }
+
+    private void quitarMarcas() {
+        txtNombre.getStyleClass().remove("campo-error");
+        txtNif.getStyleClass().remove("campo-error");
+        txtDireccion.getStyleClass().remove("campo-error");
+        txtCp.getStyleClass().remove("campo-error");
+        txtLocalidad.getStyleClass().remove("campo-error");
+        txtProvincia.getStyleClass().remove("campo-error");
+        txtEmail.getStyleClass().remove("campo-error");
+        txtTelefono.getStyleClass().remove("campo-error");
+    }
+
+    /** Construimos la empresa con lo que hay en los campos: ya están todos comprobados. */
+    private Empresa empresaDeLosCampos() throws Exception {
+        Empresa construida = new Empresa(
+                txtNombre.getText().trim(),
+                txtNif.getText().trim(),
+                txtDireccion.getText().trim(),
+                txtCp.getText().trim(),
+                txtLocalidad.getText().trim(),
+                txtProvincia.getText().trim(),
+                txtEmail.getText().trim(),
+                txtTelefono.getText().trim());
+        construida.setActividad(txtActividad.getText().trim());
+        if (rbLogo.isSelected()) {
+            construida.setCabeceraModo(Empresa.CABECERA_LOGO);
+        } else {
+            construida.setCabeceraModo(Empresa.CABECERA_TEXTO);
+        }
+        construida.setLogoPath(txtLogoPath.getText().trim());
+        construida.setPieLegal(txtPieLegal.getText());
+        return construida;
+    }
+
+    /** Guardamos la carpeta automática y el color del PDF. */
+    private void guardarPreferenciasPdf() throws Exception {
+        Vista.getInstancia().getControlador().guardarPreferencia(PREV_CARPETA, trim(txtCarpetaAuto));
+        Color c = colorPdf.getValue();
+        String hex = String.format("#%02X%02X%02X",
+                (int) Math.round(c.getRed() * 255),
+                (int) Math.round(c.getGreen() * 255),
+                (int) Math.round(c.getBlue() * 255));
+        Vista.getInstancia().getControlador().guardarPreferencia(ExportadorPdf.PREF_COLOR, hex);
     }
 
     // ------------------------------------------------------------------
     // Secciones laterales
     // ------------------------------------------------------------------
 
-    public static final class ItemSeccion {
-        final String texto;
-        public final Node panel;
-        public final boolean grupo;
-        final boolean guardar;
-
-        ItemSeccion(String texto, Node panel, boolean grupo, boolean guardar) {
-            this.texto = texto;
-            this.panel = panel;
-            this.grupo = grupo;
-            this.guardar = guardar;
-        }
+    @FXML
+    void verEmpresa(ActionEvent event) {
+        mostrarSeccion(seccionEmpresa, btnEmpresa, true);
     }
 
-    private void configurarSecciones() {
-        List<ItemSeccion> items = new ArrayList<>();
-        items.add(new ItemSeccion("CONFIGURACIÓN GENERAL", null, true, false));
-        items.add(new ItemSeccion("Empresa", seccionEmpresa, false, true));
-        items.add(new ItemSeccion("Cabecera y pie", seccionCabeceraPie, false, true));
-        items.add(new ItemSeccion("PDF y apariencia", seccionPdfApariencia, false, true));
-        items.add(new ItemSeccion("CATÁLOGOS", null, true, false));
-        items.add(new ItemSeccion("IVA", seccionIva, false, false));
-        items.add(new ItemSeccion("Retenciones", seccionRetenciones, false, false));
-        items.add(new ItemSeccion("Series", seccionSeries, false, false));
-        listaSecciones.getItems().setAll(items);
-        listaSecciones.setCellFactory(lv -> new ListCell<>() {
-            @Override
-            protected void updateItem(ItemSeccion item, boolean empty) {
-                super.updateItem(item, empty);
-                getStyleClass().remove("grupo-secciones");
-                if (empty || item == null) {
-                    setText(null);
-                    setGraphic(null);
-                    setDisable(false);
-                } else if (item.grupo) {
-                    setText(item.texto);
-                    setGraphic(null);
-                    getStyleClass().add("grupo-secciones");
-                    setDisable(true);
-                } else {
-                    setText(item.texto);
-                    setGraphic(null);
-                    setDisable(false);
-                }
-            }
-        });
-        listaSecciones.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> {
-            if (b != null && !b.grupo) {
-                mostrarSeccion(b);
-            }
-        });
-        listaSecciones.getSelectionModel().select(1);
+    @FXML
+    void verCabecera(ActionEvent event) {
+        mostrarSeccion(seccionCabeceraPie, btnCabecera, true);
     }
 
-    private void mostrarSeccion(ItemSeccion item) {
-        for (Node n : pilaSecciones.getChildren()) {
-            n.setVisible(false);
-            n.setManaged(false);
+    @FXML
+    void verPdf(ActionEvent event) {
+        mostrarSeccion(seccionPdfApariencia, btnPdf, true);
+    }
+
+    @FXML
+    void verIva(ActionEvent event) {
+        mostrarSeccion(seccionIva, btnIva, false);
+    }
+
+    @FXML
+    void verRetenciones(ActionEvent event) {
+        mostrarSeccion(seccionRetenciones, btnRetenciones, false);
+    }
+
+    @FXML
+    void verSeries(ActionEvent event) {
+        mostrarSeccion(seccionSeries, btnSeries, false);
+    }
+
+    /**
+     * Enseñamos una sección y ocultamos las demás. Volvemos a marcar su botón
+     * porque en un grupo de ToggleButton se puede desmarcar el que ya estaba
+     * pulsado, y entonces no quedaría ninguna sección a la vista.
+     */
+    private void mostrarSeccion(VBox seccion, ToggleButton boton, boolean conGuardar) {
+        for (Node panel : pilaSecciones.getChildren()) {
+            panel.setVisible(false);
+            panel.setManaged(false);
         }
-        item.panel.setVisible(true);
-        item.panel.setManaged(true);
-        barraGuardar.setVisible(item.guardar);
-        barraGuardar.setManaged(item.guardar);
+        seccion.setVisible(true);
+        seccion.setManaged(true);
+        boton.setSelected(true);
+        barraGuardar.setVisible(conGuardar);
+        barraGuardar.setManaged(conGuardar);
     }
 
     // ------------------------------------------------------------------
@@ -453,26 +479,20 @@ public class ConfiguracionController implements Pantalla, Initializable {
     // ------------------------------------------------------------------
 
     private void cablearPrevia() {
-        grupoCabecera.selectedToggleProperty().addListener((o, a, b) -> repintarPrevia());
-        txtLogoPath.textProperty().addListener((o, a, b) -> repintarPrevia());
-        colorPdf.valueProperty().addListener((o, a, b) -> repintarPrevia());
+        grupoCabecera.selectedToggleProperty().addListener((propiedad, anterior, nuevo) -> repintarPrevia());
+        txtNombre.textProperty().addListener((propiedad, anterior, nuevo) -> repintarPrevia());
+        txtLogoPath.textProperty().addListener((propiedad, anterior, nuevo) -> repintarPrevia());
+        colorPdf.valueProperty().addListener((propiedad, anterior, nuevo) -> repintarPrevia());
         repintarPrevia();
     }
 
+    /** Pintamos la cabecera con los datos de los campos, o el aviso si están incompletos. */
     private void repintarPrevia() {
-        Empresa e = new Empresa();
-        e.setNombre(trim(txtNombre));
-        e.setNif(trim(txtNif));
-        e.setActividad(trim(txtActividad));
-        e.setDireccion(trim(txtDireccion));
-        e.setCp(trim(txtCp));
-        e.setLocalidad(trim(txtLocalidad));
-        e.setProvincia(trim(txtProvincia));
-        e.setEmail(trim(txtEmail));
-        e.setTelefono(trim(txtTelefono));
-        e.setCabeceraModo(rbLogo.isSelected() ? "LOGO" : "TEXTO");
-        e.setLogoPath(trim(txtLogoPath));
-        previaCabecera.mostrar(e, colorPdf.getValue());
+        try {
+            previaCabecera.mostrar(empresaDeLosCampos(), colorPdf.getValue());
+        } catch (Exception e) {
+            previaCabecera.mostrar(null, colorPdf.getValue());
+        }
     }
 
     // ------------------------------------------------------------------
@@ -480,138 +500,90 @@ public class ConfiguracionController implements Pantalla, Initializable {
     // ------------------------------------------------------------------
 
     private void cargarIvas() {
-        colIvaNombre.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getNombre())));
-        colIvaPorcentaje.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().label()));
-        colIvaSuplido.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isEsSuplido() ? "Sí" : "No"));
-        colIvaMotivo.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getMotivoExencion())));
-        colIvaActivo.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isActivo() ? "Sí" : "No"));
-        tablaIva.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> seleccionarIva(b));
-        chkIvaSuplido.selectedProperty().addListener((o, a, b) ->
-                txtIvaPorcentaje.setDisable(b || (ivaSeleccionado != null && enUsoIva(ivaSeleccionado))));
+        colIvaNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        colIvaPorcentaje.setCellValueFactory(new PropertyValueFactory<>("porcentajeTexto"));
+        colIvaSuplido.setCellValueFactory(new PropertyValueFactory<>("suplidoTexto"));
+        colIvaMotivo.setCellValueFactory(new PropertyValueFactory<>("motivoExencion"));
+        colIvaActivo.setCellValueFactory(new PropertyValueFactory<>("activoTexto"));
         refrescarIvas();
     }
 
     private void refrescarIvas() {
         try {
-            ivas.setAll(Vista.getInstancia().getControlador().getModelo().getTiposIva().listar(false));
+            ivaElegido = null;
+            tablaIva.getSelectionModel().clearSelection();
+            ivas.setAll(Vista.getInstancia().getControlador().listadoTiposIva(false));
             tablaIva.setItems(ivas);
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar los tipos de IVA: " + e.getMessage());
         }
     }
 
-    private void seleccionarIva(TipoIva t) {
-        ivaSeleccionado = t;
-        if (t == null) {
-            return;
-        }
-        txtIvaNombre.setText(nz(t.getNombre()));
-        txtIvaPorcentaje.setText(t.isExento() ? "" : String.valueOf(t.getPorcentaje()));
-        txtIvaMotivo.setText(nz(t.getMotivoExencion()));
-        chkIvaSuplido.setSelected(t.isEsSuplido());
-        boolean enUso = enUsoIva(t);
-        txtIvaPorcentaje.setDisable(enUso || t.isEsSuplido());
-        lblIvaAviso.setVisible(enUso);
-        lblIvaAviso.setManaged(enUso);
-    }
-
-    private boolean enUsoIva(TipoIva t) {
-        try {
-            return t.getId() != null && Vista.getInstancia().getControlador().getModelo().getTiposIva().enUso(t.getId());
-        } catch (Exception e) {
-            return false;
+    /** Guardamos la fila elegida; con doble clic la abrimos para editarla. */
+    @FXML
+    private void seleccionarIva(MouseEvent evento) {
+        ivaElegido = tablaIva.getSelectionModel().getSelectedItem();
+        if (evento.getClickCount() == 2 && ivaElegido != null) {
+            editarIva();
         }
     }
 
     @FXML
     private void nuevoIva() {
-        ivaSeleccionado = null;
-        txtIvaNombre.clear();
-        txtIvaPorcentaje.clear();
-        txtIvaMotivo.clear();
-        chkIvaSuplido.setSelected(false);
-        txtIvaPorcentaje.setDisable(false);
-        lblIvaAviso.setVisible(false);
-        lblIvaAviso.setManaged(false);
-        txtIvaNombre.requestFocus();
+        abrirFichaIva(null, "Alta de tipo de IVA");
     }
 
     @FXML
-    private void guardarIva() {
-        String nombre = trim(txtIvaNombre);
-        if (nombre.isBlank()) {
-            Dialogos.mostrarDialogoError("IVA", "Indique el nombre del tipo de IVA.");
+    private void editarIva() {
+        if (ivaElegido == null) {
+            Dialogos.mostrarDialogoAdvertencia("IVA", "Seleccione un tipo de IVA de la tabla.");
             return;
         }
-        Integer porcentaje = null;
-        boolean suplido = chkIvaSuplido.isSelected();
-        String pct = trim(txtIvaPorcentaje);
-        if (!pct.isBlank()) {
-            try {
-                porcentaje = Integer.parseInt(pct);
-                if (porcentaje < 0 || porcentaje > 100) {
-                    throw new NumberFormatException();
-                }
-            } catch (NumberFormatException e) {
-                Dialogos.mostrarDialogoError("IVA", "El porcentaje debe ser un entero entre 0 y 100 (o dejar vacío para exento).");
+        abrirFichaIva(ivaElegido, "Datos del tipo de IVA");
+    }
+
+    @FXML
+    private void eliminarIva() {
+        if (ivaElegido == null) {
+            Dialogos.mostrarDialogoAdvertencia("IVA", "Seleccione un tipo de IVA de la tabla.");
+            return;
+        }
+        if (!Dialogos.mostrarDialogoConfirmacion("Eliminar tipo de IVA",
+                "¿Eliminar definitivamente el tipo \"" + nz(ivaElegido.getNombre()) + "\"?")) {
+            return;
+        }
+        try {
+            Vista.getInstancia().getControlador().bajaTipoIva(ivaElegido.getId());
+            refrescarIvas();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("IVA", e.getMessage());
+        }
+    }
+
+    /**
+     * Abrimos la ficha en modo añadir (registro null) o en modo editar, y
+     * esperamos a que se cierre.
+     */
+    private void abrirFichaIva(TipoIva registro, String titulo) {
+        try {
+            FXMLLoader cargador = new FXMLLoader(LocalizadorRecursos.class.getResource("FichaTipoIva.fxml"));
+            Parent raiz = cargador.load();
+            FichaTipoIvaController ficha = cargador.getController();
+            ficha.setRegistro(registro);
+            Stage modal = Vista.getInstancia().crearVentanaModal(raiz, titulo, ficha);
+            modal.showAndWait();
+            TipoIva guardado = ficha.getRegistro();
+            if (guardado == null) {
                 return;
             }
-        }
-        if (suplido) {
-            porcentaje = null;
-        }
-        if (porcentaje == null && ivaSeleccionado != null && !ivaSeleccionado.isExento()) {
-            Dialogos.mostrarDialogoError("IVA", "Un tipo ya usado en el histórico no puede pasarse a exento.");
-            return;
-        }
-        if (porcentaje != null && ivaSeleccionado != null && ivaSeleccionado.isExento()) {
-            Dialogos.mostrarDialogoError("IVA", "Un tipo de exención ya usado en el histórico no puede convertirse a porcentaje.");
-            return;
-        }
-        if (suplido && ivaSeleccionado != null && !ivaSeleccionado.isEsSuplido()) {
-            Dialogos.mostrarDialogoError("IVA", "Un tipo existente no puede convertirse a suplido.");
-            return;
-        }
-        if (!suplido && ivaSeleccionado != null && ivaSeleccionado.isEsSuplido()) {
-            Dialogos.mostrarDialogoError("IVA", "Un suplido existente no puede dejar de ser suplido.");
-            return;
-        }
-        try {
-            TipoIva t = ivaSeleccionado != null ? ivaSeleccionado : new TipoIva();
-            t.setNombre(nombre);
-            t.setPorcentaje(porcentaje);
-            t.setMotivoExencion(trim(txtIvaMotivo));
-            t.setEsSuplido(suplido);
-            if (t.getId() == null) {
-                t.setActivo(true);
-                t.setId(Vista.getInstancia().getControlador().getModelo().getTiposIva().insertar(t));
+            if (registro == null) {
+                guardado.setId(Vista.getInstancia().getControlador().altaTipoIva(guardado));
             } else {
-                Vista.getInstancia().getControlador().getModelo().getTiposIva().actualizar(t);
+                Vista.getInstancia().getControlador().modificarTipoIva(guardado);
             }
             refrescarIvas();
-            nuevoIva();
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("IVA", "No se pudo guardar: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void inactivarIva() {
-        TipoIva t = tablaIva.getSelectionModel().getSelectedItem();
-        if (t == null) {
-            Dialogos.mostrarDialogoError("IVA", "Seleccione un tipo de IVA de la tabla.");
-            return;
-        }
-        String accion = t.isActivo() ? "inactivar" : "reactivar";
-        if (!Dialogos.mostrarDialogoConfirmacion("IVA", "¿" + (t.isActivo() ? "Inactivar" : "Reactivar")
-                + " el tipo \"" + nz(t.getNombre()) + "\"?")) {
-            return;
-        }
-        try {
-            Vista.getInstancia().getControlador().getModelo().getTiposIva().setActivo(t.getId(), !t.isActivo());
-            refrescarIvas();
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("IVA", "No se pudo " + accion + ": " + e.getMessage());
         }
     }
 
@@ -620,112 +592,88 @@ public class ConfiguracionController implements Pantalla, Initializable {
     // ------------------------------------------------------------------
 
     private void cargarRetenciones() {
-        colRetencionNombre.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getNombre())));
-        colRetencionPorcentaje.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().label()));
-        colRetencionActivo.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isActivo() ? "Sí" : "No"));
-        tablaRetenciones.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> seleccionarRetencion(b));
+        colRetencionNombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        colRetencionPorcentaje.setCellValueFactory(new PropertyValueFactory<>("porcentajeTexto"));
+        colRetencionActivo.setCellValueFactory(new PropertyValueFactory<>("activoTexto"));
         refrescarRetenciones();
     }
 
     private void refrescarRetenciones() {
         try {
-            retenciones.setAll(Vista.getInstancia().getControlador().getModelo().getTiposRetencion().listar(false));
+            retencionElegida = null;
+            tablaRetenciones.getSelectionModel().clearSelection();
+            retenciones.setAll(Vista.getInstancia().getControlador().listadoTiposRetencion(false));
             tablaRetenciones.setItems(retenciones);
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar los tipos de retención: " + e.getMessage());
         }
     }
 
-    private void seleccionarRetencion(TipoRetencion t) {
-        retencionSeleccionada = t;
-        if (t == null) {
-            return;
-        }
-        txtRetencionNombre.setText(nz(t.getNombre()));
-        txtRetencionPorcentaje.setText(String.valueOf(t.getPorcentaje()));
-        boolean enUso = enUsoRetencion(t);
-        txtRetencionPorcentaje.setDisable(enUso);
-        lblRetencionAviso.setVisible(enUso);
-        lblRetencionAviso.setManaged(enUso);
-    }
-
-    private boolean enUsoRetencion(TipoRetencion t) {
-        try {
-            return t.getId() != null && Vista.getInstancia().getControlador().getModelo().getTiposRetencion().enUso(t.getId());
-        } catch (Exception e) {
-            return false;
+    /** Guardamos la fila elegida; con doble clic la abrimos para editarla. */
+    @FXML
+    private void seleccionarRetencion(MouseEvent evento) {
+        retencionElegida = tablaRetenciones.getSelectionModel().getSelectedItem();
+        if (evento.getClickCount() == 2 && retencionElegida != null) {
+            editarRetencion();
         }
     }
 
     @FXML
     private void nuevoRetencion() {
-        retencionSeleccionada = null;
-        txtRetencionNombre.clear();
-        txtRetencionPorcentaje.clear();
-        txtRetencionPorcentaje.setDisable(false);
-        lblRetencionAviso.setVisible(false);
-        lblRetencionAviso.setManaged(false);
-        txtRetencionNombre.requestFocus();
+        abrirFichaRetencion(null, "Alta de tipo de retención");
     }
 
     @FXML
-    private void guardarRetencion() {
-        String nombre = trim(txtRetencionNombre);
-        if (nombre.isBlank()) {
-            Dialogos.mostrarDialogoError("Retención", "Indique el nombre del tipo de retención.");
+    private void editarRetencion() {
+        if (retencionElegida == null) {
+            Dialogos.mostrarDialogoAdvertencia("Retención", "Seleccione un tipo de retención de la tabla.");
             return;
         }
-        int porcentaje;
+        abrirFichaRetencion(retencionElegida, "Datos del tipo de retención");
+    }
+
+    @FXML
+    private void eliminarRetencion() {
+        if (retencionElegida == null) {
+            Dialogos.mostrarDialogoAdvertencia("Retención", "Seleccione un tipo de retención de la tabla.");
+            return;
+        }
+        if (!Dialogos.mostrarDialogoConfirmacion("Eliminar tipo de retención",
+                "¿Eliminar definitivamente el tipo \"" + nz(retencionElegida.getNombre()) + "\"?")) {
+            return;
+        }
         try {
-            porcentaje = Integer.parseInt(trim(txtRetencionPorcentaje));
-            if (porcentaje < 0 || porcentaje > 100) {
-                throw new NumberFormatException();
-            }
-        } catch (NumberFormatException e) {
-            Dialogos.mostrarDialogoError("Retención", "El porcentaje debe ser un entero entre 0 y 100.");
-            return;
+            Vista.getInstancia().getControlador().bajaTipoRetencion(retencionElegida.getId());
+            refrescarRetenciones();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Retención", e.getMessage());
         }
-        if (retencionSeleccionada != null && enUsoRetencion(retencionSeleccionada)) {
-            int actual = retencionSeleccionada.getPorcentaje() != null ? retencionSeleccionada.getPorcentaje() : 0;
-            if (porcentaje != actual) {
-                Dialogos.mostrarDialogoError("Retención", "El porcentaje de un tipo ya usado en el histórico no se puede modificar.");
+    }
+
+    /**
+     * Abrimos la ficha en modo añadir (registro null) o en modo editar, y
+     * esperamos a que se cierre.
+     */
+    private void abrirFichaRetencion(TipoRetencion registro, String titulo) {
+        try {
+            FXMLLoader cargador = new FXMLLoader(LocalizadorRecursos.class.getResource("FichaTipoRetencion.fxml"));
+            Parent raiz = cargador.load();
+            FichaTipoRetencionController ficha = cargador.getController();
+            ficha.setRegistro(registro);
+            Stage modal = Vista.getInstancia().crearVentanaModal(raiz, titulo, ficha);
+            modal.showAndWait();
+            TipoRetencion guardado = ficha.getRegistro();
+            if (guardado == null) {
                 return;
             }
-        }
-        try {
-            TipoRetencion t = retencionSeleccionada != null ? retencionSeleccionada : new TipoRetencion();
-            t.setNombre(nombre);
-            t.setPorcentaje(porcentaje);
-            if (t.getId() == null) {
-                t.setActivo(true);
-                t.setId(Vista.getInstancia().getControlador().getModelo().getTiposRetencion().insertar(t));
+            if (registro == null) {
+                guardado.setId(Vista.getInstancia().getControlador().altaTipoRetencion(guardado));
             } else {
-                Vista.getInstancia().getControlador().getModelo().getTiposRetencion().actualizar(t);
+                Vista.getInstancia().getControlador().modificarTipoRetencion(guardado);
             }
             refrescarRetenciones();
-            nuevoRetencion();
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Retención", "No se pudo guardar: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void inactivarRetencion() {
-        TipoRetencion t = tablaRetenciones.getSelectionModel().getSelectedItem();
-        if (t == null) {
-            Dialogos.mostrarDialogoError("Retención", "Seleccione un tipo de retención de la tabla.");
-            return;
-        }
-        String accion = t.isActivo() ? "inactivar" : "reactivar";
-        if (!Dialogos.mostrarDialogoConfirmacion("Retención", "¿" + (t.isActivo() ? "Inactivar" : "Reactivar")
-                + " el tipo \"" + nz(t.getNombre()) + "\"?")) {
-            return;
-        }
-        try {
-            Vista.getInstancia().getControlador().getModelo().getTiposRetencion().setActivo(t.getId(), !t.isActivo());
-            refrescarRetenciones();
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Retención", "No se pudo " + accion + ": " + e.getMessage());
         }
     }
 

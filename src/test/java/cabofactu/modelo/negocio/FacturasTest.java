@@ -184,9 +184,7 @@ class FacturasTest {
     void crearFacturaConRetencionGuardaImporteYNombre() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 21);
-        TipoRetencion irpf = new TipoRetencion();
-        irpf.setNombre("IRPF 15%");
-        irpf.setPorcentaje(15);
+        TipoRetencion irpf = new TipoRetencion("IRPF 15%", 15);
 
         long facturaId = facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("1000.00")),
                 0, null, null, null, null, irpf);
@@ -222,7 +220,7 @@ class FacturasTest {
     }
 
     @Test
-    void retencionDeVersionRespetaElSnapshotAunqueCambieElCatalogo() {
+    void retencionDeVersionRespetaElSnapshotAunqueCambieElCatalogo() throws Exception {
         VersionFactura v = new VersionFactura();
         v.setTipoRetencionId(7L);
         v.setTipoRetencionNombre("IRPF profesional");
@@ -234,7 +232,7 @@ class FacturasTest {
     }
 
     @Test
-    void retencionDeVersionSinTipoDevuelveNull() {
+    void retencionDeVersionSinTipoDevuelveNull() throws Exception {
         assertNull(Facturas.retencionDeVersion(new VersionFactura()));
     }
 

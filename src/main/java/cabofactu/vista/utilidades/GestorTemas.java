@@ -1,7 +1,7 @@
 package cabofactu.vista.utilidades;
 
 import cabofactu.modelo.negocio.PreferenciasGlobales;
-import cabofactu.modelo.Modelo;
+import cabofactu.vista.Vista;
 import javafx.scene.Scene;
 
 import java.util.ArrayList;
@@ -43,11 +43,26 @@ public final class GestorTemas {
         return TEMAS.getOrDefault(tema, tema);
     }
 
+    /** Los nombres visibles de los temas, para el desplegable de Configuración. */
+    public static List<String> nombres() {
+        return new ArrayList<>(TEMAS.values());
+    }
+
+    /** La clave de un nombre visible («Negro y dorado» a `negro-dorado`). */
+    public static String claveDe(String nombre) {
+        for (Map.Entry<String, String> entrada : TEMAS.entrySet()) {
+            if (entrada.getValue().equals(nombre)) {
+                return entrada.getKey();
+            }
+        }
+        return POR_DEFECTO;
+    }
+
     public static String temaActivo() {
         return activo;
     }
 
-    public static void aplicar(Scene scene, Modelo modelo) {
+    public static void aplicar(Scene scene) {
         String tema = POR_DEFECTO;
         String guardado = PreferenciasGlobales.get(PREF_TEMA);
         if (guardado != null && TEMAS.containsKey(guardado)) {
@@ -71,8 +86,11 @@ public final class GestorTemas {
     }
 
     /** Guardamos el tema en la empresa activa y lo recordamos para el arranque. */
-    public static void guardar(Modelo modelo) {
-        modelo.getConfiguracion().setPreferencia(PREF_TEMA, activo);
+    public static void guardar() {
+        try {
+            Vista.getInstancia().getControlador().guardarPreferencia(PREF_TEMA, activo);
+        } catch (Exception ignored) {
+        }
         PreferenciasGlobales.set(PREF_TEMA, activo);
     }
 

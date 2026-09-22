@@ -124,10 +124,6 @@ CREATE TABLE IF NOT EXISTS empresa (
   telefono TEXT,
   cabecera_modo TEXT NOT NULL DEFAULT 'TEXTO',
   logo_path TEXT,
-  logo_x INTEGER NOT NULL DEFAULT 0,
-  logo_y INTEGER NOT NULL DEFAULT 0,
-  logo_ancho INTEGER,
-  logo_alto INTEGER,
   pie_legal TEXT
 );
 

@@ -17,6 +17,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import cabofactu.vista.controlador.FichaClienteController;
+import cabofactu.vista.controlador.FichaTipoIvaController;
+import cabofactu.vista.controlador.FichaTipoRetencionController;
 import cabofactu.vista.controlador.GenerarFacturasMensualesController;
 
 /**
@@ -141,6 +143,52 @@ class CargaPantallasTest {
             }
         });
         await(latch, error, "FichaCliente.fxml");
+    }
+
+    @Test
+    void cargarFichaTipoIva() {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        Platform.runLater(() -> {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                        FichaTipoIvaController.class.getResource(
+                                "/cabofactu/vista/recursos/FichaTipoIva.fxml"));
+                Parent root = loader.load();
+                FichaTipoIvaController c = loader.getController();
+                assertNotNull(c, "El controller de FichaTipoIva.fxml no se creo");
+                c.setRegistro(null);
+                maquetarAlMinimo(root);
+            } catch (Throwable t) {
+                error.set(t);
+            } finally {
+                latch.countDown();
+            }
+        });
+        await(latch, error, "FichaTipoIva.fxml");
+    }
+
+    @Test
+    void cargarFichaTipoRetencion() {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        Platform.runLater(() -> {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                        FichaTipoRetencionController.class.getResource(
+                                "/cabofactu/vista/recursos/FichaTipoRetencion.fxml"));
+                Parent root = loader.load();
+                FichaTipoRetencionController c = loader.getController();
+                assertNotNull(c, "El controller de FichaTipoRetencion.fxml no se creo");
+                c.setRegistro(null);
+                maquetarAlMinimo(root);
+            } catch (Throwable t) {
+                error.set(t);
+            } finally {
+                latch.countDown();
+            }
+        });
+        await(latch, error, "FichaTipoRetencion.fxml");
     }
 
     private void cargar(String fxml) {

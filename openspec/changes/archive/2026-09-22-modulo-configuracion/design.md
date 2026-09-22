@@ -144,6 +144,7 @@ Mismo patrón que `Clientes`: `getTiposIva()` / `getTiposRetencion()`, columnas 
 | `buscar(long id)` | Uno, o `null` |
 | `alta(TipoIva tipo)` | Inserta y devuelve el id |
 | `modificar(TipoIva tipo)` | Guarda los cambios, **tras sus guardas** |
+| `baja(long id)` | Borra el tipo, que no puede estar en ninguna factura |
 | `enUso(long id)` | `true` si lo usa alguna factura |
 
 Las guardas de `modificar` son las reglas que hoy están en `ConfiguracionController.guardarIva`, ahora en el negocio:
@@ -170,6 +171,18 @@ public void modificar(TipoIva tipo) throws Exception {
 
 `TiposRetencion.modificar` solo tiene la tercera guarda. El activo/inactivo se guarda con `modificar`, desde la casilla de la ficha: **desaparecen** `setActivo(id, activo)` y el botón «Inactivar/Activar», como en Clientes.
 
+`baja` borra con `DELETE ... WHERE id = ?` (con `if (filas == 0)`), tras su guarda:
+
+```java
+/** Borramos el tipo, que no puede aparecer en ninguna factura. */
+public void baja(long id) throws Exception {
+    if (enUso(id)) {
+        throw new Exception("El tipo ya aparece en facturas y no se puede eliminar. Desactívalo en su ficha.");
+    }
+    ...
+}
+```
+
 ---
 
 ## D5. `Controlador` y `Modelo`
@@ -180,8 +193,8 @@ Una línea cada una:
 |---|---|
 | `buscarEmpresa()`, `modificarEmpresa(Empresa)` | `Configuracion` |
 | `preferencia(String)`, `guardarPreferencia(String, String)` | `Configuracion` |
-| `listadoTiposIva(boolean)`, `buscarTipoIva(long)`, `altaTipoIva(TipoIva)`, `modificarTipoIva(TipoIva)`, `tipoIvaEnUso(long)` | `TiposIva` |
-| `listadoTiposRetencion(boolean)`, `buscarTipoRetencion(long)`, `altaTipoRetencion(TipoRetencion)`, `modificarTipoRetencion(TipoRetencion)`, `tipoRetencionEnUso(long)` | `TiposRetencion` |
+| `listadoTiposIva(boolean)`, `buscarTipoIva(long)`, `altaTipoIva(TipoIva)`, `modificarTipoIva(TipoIva)`, `bajaTipoIva(long)`, `tipoIvaEnUso(long)` | `TiposIva` |
+| `listadoTiposRetencion(boolean)`, `buscarTipoRetencion(long)`, `altaTipoRetencion(TipoRetencion)`, `modificarTipoRetencion(TipoRetencion)`, `bajaTipoRetencion(long)`, `tipoRetencionEnUso(long)` | `TiposRetencion` |
 
 **Se borran** de `Modelo` los campos y getters `getConfiguracion()`, `getTiposIva()` y `getTiposRetencion()`, y de los dos el `datosPendientesEmpresa()` y el `comprobarDatosEmpresa()` del módulo anterior. Sus pocos usos fuera de Configuración pasan a estas operaciones (D11).
 
@@ -383,9 +396,9 @@ Hoy `repintarPrevia()` fabrica una `Empresa` con `new Empresa()` y los campos ta
 
 ### IVA y retenciones
 
-La tabla se queda y las filas de alta rápida se van. Encima de cada tabla, **Nuevo** y **Editar**; doble clic para editar. Columnas con `PropertyValueFactory` sobre los getters de texto (D3).
+La tabla se queda y las filas de alta rápida se van. Debajo de cada tabla, **Nuevo**, **Editar** y **Eliminar**, como la fila de botones de Series; doble clic para editar. Columnas con `PropertyValueFactory` sobre los getters de texto (D3).
 
-Todo igual que `ClientesController`: campo `ivaElegido` con `seleccionarIva(MouseEvent)`, `nuevoIva`, `editarIva`, y `abrirFichaIva(TipoIva registro, String titulo)`, que carga el FXML, le da el registro y usa `crearVentanaModal(raiz, titulo, ficha)`. Al volver, `altaTipoIva` o `modificarTipoIva`, y se refresca la tabla. Lo mismo para retenciones.
+Todo igual que `ClientesController`: campo `ivaElegido` con `seleccionarIva(MouseEvent)`, `nuevoIva`, `editarIva`, `eliminarIva` y `abrirFichaIva(TipoIva registro, String titulo)`, que carga el FXML, le da el registro y usa `crearVentanaModal(raiz, titulo, ficha)`. Al volver, `altaTipoIva` o `modificarTipoIva`, y se refresca la tabla. `eliminarIva` pide confirmación y llama a `bajaTipoIva`; si el tipo está en uso, el aviso del negocio dice que se desactive en su ficha. Lo mismo para retenciones.
 
 **Se borran** `nuevoIva`/`guardarIva`/`inactivarIva` tal como están hoy, sus equivalentes de retenciones, `enUsoIva`, `enUsoRetencion` y los campos de las filas de alta rápida (del FXML y del controlador).
 
@@ -447,7 +460,7 @@ Todos los métodos que empiezan a lanzar `Exception` por esto se declaran `throw
 
 ## D12. Tests
 
-- **Nuevos**: `EmpresaTest` (cada obligatorio vacío falla con su mensaje, NIF/CP/email mal escritos, NIF en mayúsculas, opcionales vacíos, modo de cabecera no válido, constructor copia, cada `errorX` igual que su setter); `TipoIvaTest` y `TipoRetencionTest` (nombre vacío, porcentaje fuera de rango o no numérico, exento, suplido deja el porcentaje en `null`, getters de texto); `TiposIvaTest` y `TiposRetencionTest` contra una base temporal (alta y listado, solo activos, buscar un id que no existe, modificar, y cada guarda de `modificar`).
+- **Nuevos**: `EmpresaTest` (cada obligatorio vacío falla con su mensaje, NIF/CP/email mal escritos, NIF en mayúsculas, opcionales vacíos, modo de cabecera no válido, constructor copia, cada `errorX` igual que su setter); `TipoIvaTest` y `TipoRetencionTest` (nombre vacío, porcentaje fuera de rango o no numérico, exento, suplido deja el porcentaje en `null`, getters de texto); `TiposIvaTest` y `TiposRetencionTest` contra una base temporal (alta y listado, solo activos, buscar un id que no existe, modificar, cada guarda de `modificar`, `baja` y `baja` en uso).
 - **Se rehace** `ConfiguracionTest`: `buscarEmpresa()` devuelve `null` con la fila vacía y con un dato inválido, y la empresa tras `modificarEmpresa`; y las preferencias.
 - **Se borra** `TipoRetencionDAOTest` (sus casos pasan a `TiposRetencionTest`).
 - **Se adaptan** los que construyen `Empresa`, `TipoIva` o `TipoRetencion` con `new X()` y setters (`CalculosTest`, `FacturasTest`, `FacturacionMensualTest`, `ConstructorDocumentoFacturaTest`, `DisposicionCabeceraTest`, `ExportadorPdfTest`) y los que usaban `ConfiguracionDAO` (`CopiaSeguridadTest`, `EmpresasTest`).

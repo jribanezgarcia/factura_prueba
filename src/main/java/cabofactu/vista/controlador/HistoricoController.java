@@ -278,9 +278,6 @@ public class HistoricoController implements Pantalla, Initializable {
 
     @FXML
     private void exportarPdf() {
-        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
-            return;
-        }
         List<FilaHistorial> seleccion = new ArrayList<>(tabla.getSelectionModel().getSelectedItems());
         if (seleccion.isEmpty()) {
             Dialogos.mostrarDialogoInformacion("Exportar PDF", "Selecciona al menos una factura del histórico.");
@@ -385,7 +382,7 @@ public class HistoricoController implements Pantalla, Initializable {
             return;
         }
         btnExportarPdf.setDisable(true);
-        Empresa empresa = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
+        Empresa empresa = Vista.getInstancia().getControlador().buscarEmpresa();
         String color = colorPdfPreferido();
         Task<Void> tarea = new Task<>() {
             @Override
@@ -410,7 +407,7 @@ public class HistoricoController implements Pantalla, Initializable {
     private void generarPdfs(List<Facturas.VersionCompleta> versiones, List<Path> rutas, Path carpetaRecordar) {
         Empresa empresa;
         try {
-            empresa = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getEmpresa();
+            empresa = Vista.getInstancia().getControlador().buscarEmpresa();
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Exportar PDF", "No se pudieron leer los datos de la empresa: " + e.getMessage());
             return;
@@ -460,7 +457,7 @@ public class HistoricoController implements Pantalla, Initializable {
 
     private File carpetaExportacion() {
         try {
-            String pref = Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(PREV_EXPORT);
+            String pref = Vista.getInstancia().getControlador().preferencia(PREV_EXPORT);
             if (pref != null && !pref.isBlank()) {
                 File f = new File(pref);
                 if (f.isDirectory()) {
@@ -477,14 +474,14 @@ public class HistoricoController implements Pantalla, Initializable {
             return;
         }
         try {
-            Vista.getInstancia().getControlador().getModelo().getConfiguracion().setPreferencia(PREV_EXPORT, carpeta.toString());
+            Vista.getInstancia().getControlador().guardarPreferencia(PREV_EXPORT, carpeta.toString());
         } catch (Exception ignored) {
         }
     }
 
     private String colorPdfPreferido() {
         try {
-            return Vista.getInstancia().getControlador().getModelo().getConfiguracion().getPreferencia(ExportadorPdf.PREF_COLOR);
+            return Vista.getInstancia().getControlador().preferencia(ExportadorPdf.PREF_COLOR);
         } catch (Exception e) {
             return null;
         }

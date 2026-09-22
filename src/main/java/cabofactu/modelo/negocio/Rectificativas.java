@@ -7,7 +7,6 @@ import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.sqlite.SerieDAO;
-import cabofactu.modelo.negocio.sqlite.TipoRetencionDAO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -23,13 +22,10 @@ public class Rectificativas {
 
     private final Facturas facturas;
     private final SerieDAO serieDAO;
-    private final TipoRetencionDAO tipoRetencionDAO;
 
-    public Rectificativas(Facturas facturas, SerieDAO serieDAO,
-                                TipoRetencionDAO tipoRetencionDAO) {
+    public Rectificativas(Facturas facturas, SerieDAO serieDAO) {
         this.facturas = facturas;
         this.serieDAO = serieDAO;
-        this.tipoRetencionDAO = tipoRetencionDAO;
     }
 
     /**
@@ -75,19 +71,25 @@ public class Rectificativas {
                 null, null, retencion);
     }
 
-    private TipoRetencion retencionDeVersion(VersionFactura v) {
+    private TipoRetencion retencionDeVersion(VersionFactura v) throws Exception {
         Long trId = v.getTipoRetencionId();
         if (trId == null) {
             return null;
         }
-        TipoRetencion t = tipoRetencionDAO.getById(trId);
+        TipoRetencion t = TiposRetencion.getTiposRetencion().buscar(trId);
         if (t != null) {
             return t;
         }
-        TipoRetencion snapshot = new TipoRetencion();
+        String nombre = nzTexto(v.getTipoRetencionNombre());
+        if (nombre.isBlank()) {
+            nombre = "Retención";
+        }
+        int porcentaje = 0;
+        if (v.getTipoRetencionPorcentaje() != null) {
+            porcentaje = v.getTipoRetencionPorcentaje();
+        }
+        TipoRetencion snapshot = new TipoRetencion(nombre, porcentaje);
         snapshot.setId(trId);
-        snapshot.setNombre(nzTexto(v.getTipoRetencionNombre()));
-        snapshot.setPorcentaje(v.getTipoRetencionPorcentaje() != null ? v.getTipoRetencionPorcentaje() : 0);
         snapshot.setActivo(false);
         return snapshot;
     }

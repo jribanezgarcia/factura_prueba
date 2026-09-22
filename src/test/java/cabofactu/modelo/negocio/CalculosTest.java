@@ -129,17 +129,15 @@ class CalculosTest {
         assertEquals(new BigDecimal("100.00"), r.getTotal());
     }
 
-    private TipoRetencion retencion(int pct) {
-        TipoRetencion t = new TipoRetencion();
+    private TipoRetencion retencion(int pct) throws Exception {
+        TipoRetencion t = new TipoRetencion("IRPF " + pct + "%", pct);
         t.setId(1L);
-        t.setNombre("IRPF " + pct + "%");
-        t.setPorcentaje(pct);
         t.setActivo(true);
         return t;
     }
 
     @Test
-    void retencionSinDescuentoRestaDelTotal() {
+    void retencionSinDescuentoRestaDelTotal() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%")), 0, retencion(15));
         assertEquals(new BigDecimal("1000.00"), r.getBaseBruta());
@@ -149,7 +147,7 @@ class CalculosTest {
     }
 
     @Test
-    void retencionUsaLaBaseImponibleDescontada() {
+    void retencionUsaLaBaseImponibleDescontada() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%")), 10, retencion(19));
         assertEquals(new BigDecimal("1000.00"), r.getBaseBruta());
@@ -160,7 +158,7 @@ class CalculosTest {
     }
 
     @Test
-    void descuentoDelCienPorCienNoDaTotalNegativo() {
+    void descuentoDelCienPorCienNoDaTotalNegativo() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%")), 100, retencion(15));
         assertEquals(new BigDecimal("0.00"), r.getBaseTotal());
@@ -199,7 +197,7 @@ class CalculosTest {
     }
 
     @Test
-    void suplidoNoEntraEnBaseNiCuotaNiRetencion() {
+    void suplidoNoEntraEnBaseNiCuotaNiRetencion() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%"), suplido("250.00")), 0, retencion(15));
         assertEquals(new BigDecimal("1000.00"), r.getBaseTotal());
@@ -211,7 +209,7 @@ class CalculosTest {
     }
 
     @Test
-    void descuentoGlobalNoAfectaAlSuplido() {
+    void descuentoGlobalNoAfectaAlSuplido() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%"), suplido("250.00")), 10, retencion(15));
         assertEquals(new BigDecimal("900.00"), r.getBaseTotal());
@@ -222,7 +220,7 @@ class CalculosTest {
     }
 
     @Test
-    void sinSuplidosTotalSuplidosCeroYTotalInalterado() {
+    void sinSuplidosTotalSuplidosCeroYTotalInalterado() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%")), 10, retencion(15));
         assertEquals(0, r.getTotalSuplidos().compareTo(BigDecimal.ZERO));

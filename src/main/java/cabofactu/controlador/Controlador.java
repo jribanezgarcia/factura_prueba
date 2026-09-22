@@ -4,7 +4,10 @@ import cabofactu.InstanciaUnica;
 import cabofactu.PreparacionDatos;
 import cabofactu.modelo.Modelo;
 import cabofactu.modelo.dominio.Cliente;
+import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
+import cabofactu.modelo.dominio.TipoIva;
+import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.vista.Vista;
 
@@ -123,12 +126,68 @@ public class Controlador {
         modelo.cerrarEmpresa();
     }
 
-    public List<String> datosPendientesEmpresa() {
-        return modelo.datosPendientesEmpresa();
+    public Empresa buscarEmpresa() throws Exception {
+        return modelo.buscarEmpresa();
     }
 
-    public void comprobarDatosEmpresa() throws Exception {
-        modelo.comprobarDatosEmpresa();
+    public void modificarEmpresa(Empresa empresa) throws Exception {
+        modelo.modificarEmpresa(empresa);
+    }
+
+    public String preferencia(String clave) throws Exception {
+        return modelo.preferencia(clave);
+    }
+
+    public void guardarPreferencia(String clave, String valor) throws Exception {
+        modelo.guardarPreferencia(clave, valor);
+    }
+
+    public List<TipoIva> listadoTiposIva(boolean soloActivos) throws Exception {
+        return modelo.listadoTiposIva(soloActivos);
+    }
+
+    public TipoIva buscarTipoIva(long id) throws Exception {
+        return modelo.buscarTipoIva(id);
+    }
+
+    public long altaTipoIva(TipoIva tipo) throws Exception {
+        return modelo.altaTipoIva(tipo);
+    }
+
+    public void modificarTipoIva(TipoIva tipo) throws Exception {
+        modelo.modificarTipoIva(tipo);
+    }
+
+    public void bajaTipoIva(long id) throws Exception {
+        modelo.bajaTipoIva(id);
+    }
+
+    public boolean tipoIvaEnUso(long id) throws Exception {
+        return modelo.tipoIvaEnUso(id);
+    }
+
+    public List<TipoRetencion> listadoTiposRetencion(boolean soloActivos) throws Exception {
+        return modelo.listadoTiposRetencion(soloActivos);
+    }
+
+    public TipoRetencion buscarTipoRetencion(long id) throws Exception {
+        return modelo.buscarTipoRetencion(id);
+    }
+
+    public long altaTipoRetencion(TipoRetencion tipo) throws Exception {
+        return modelo.altaTipoRetencion(tipo);
+    }
+
+    public void modificarTipoRetencion(TipoRetencion tipo) throws Exception {
+        modelo.modificarTipoRetencion(tipo);
+    }
+
+    public void bajaTipoRetencion(long id) throws Exception {
+        modelo.bajaTipoRetencion(id);
+    }
+
+    public boolean tipoRetencionEnUso(long id) throws Exception {
+        return modelo.tipoRetencionEnUso(id);
     }
 
     /**

@@ -11,29 +11,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DisposicionCabeceraTest {
 
-    private Empresa empresaBase() {
-        Empresa empresa = new Empresa();
-        empresa.setNombre("EMPRESA PRUEBA, S.C.");
-        empresa.setNif("B04444444");
+    private Empresa empresaBase() throws Exception {
+        Empresa empresa = new Empresa("EMPRESA PRUEBA, S.C.", "12345678Z", "Calle Mayor 1", "28001",
+                "Madrid", "Madrid", "contacto@empresaprueba.es", "910000000");
         empresa.setActividad("Cocinas y armarios");
         empresa.setCabeceraModo("TEXTO");
         return empresa;
     }
 
     @Test
-    void elTamanoDelLogoEsFijo() {
+    void elTamanoDelLogoEsFijo() throws Exception {
         Empresa empresa = empresaBase();
-        empresa.setLogoAncho(120);
-        empresa.setLogoAlto(60);
         assertEquals(DisposicionCabecera.ANCHO_LOGO_FIJO, DisposicionCabecera.anchoLogoEfectivo(empresa), 0.01);
         assertEquals(DisposicionCabecera.ALTO_LOGO_FIJO, DisposicionCabecera.altoLogoEfectivo(empresa), 0.01);
     }
 
     @Test
-    void elTamanoDelLogoNoDependeDeLaEntrada() {
+    void elTamanoDelLogoNoDependeDeLaEntrada() throws Exception {
         Empresa empresa = empresaBase();
-        empresa.setLogoAncho(4000);
-        empresa.setLogoAlto(250);
         assertEquals(DisposicionCabecera.ANCHO_LOGO_FIJO, DisposicionCabecera.anchoLogoEfectivo(empresa), 0.01,
                 "Con valores absurdos el logo mantiene su caja fija");
         assertEquals(DisposicionCabecera.ALTO_LOGO_FIJO, DisposicionCabecera.altoLogoEfectivo(empresa), 0.01,
@@ -41,7 +36,7 @@ class DisposicionCabeceraTest {
     }
 
     @Test
-    void elTamanoDelLogoConCamposNulosEsFijo() {
+    void elTamanoDelLogoConCamposNulosEsFijo() throws Exception {
         Empresa empresa = empresaBase();
         assertEquals(DisposicionCabecera.ANCHO_LOGO_FIJO, DisposicionCabecera.anchoLogoEfectivo(empresa), 0.01);
         assertEquals(DisposicionCabecera.ALTO_LOGO_FIJO, DisposicionCabecera.altoLogoEfectivo(empresa), 0.01);
@@ -59,16 +54,14 @@ class DisposicionCabeceraTest {
     }
 
     @Test
-    void elAltoDeCabeceraConLogoUsaLaCajaFija() {
+    void elAltoDeCabeceraConLogoUsaLaCajaFija() throws Exception {
         Empresa empresa = empresaBase();
-        empresa.setLogoAncho(4000);
-        empresa.setLogoAlto(250);
         assertEquals(170f, DisposicionCabecera.altoCabeceraLogo(empresa, 5), 0.01,
                 "26 + caja fija (120) + 24, mayor que el bloque de informacion, sin depender de offsets");
     }
 
     @Test
-    void lineasDeEmpresaConNifDestacado() {
+    void lineasDeEmpresaConNifDestacado() throws Exception {
         Empresa empresa = empresaBase();
         empresa.setDireccion("C/ Jesús de Perceval 28");
         empresa.setCp("04006");
@@ -81,7 +74,7 @@ class DisposicionCabeceraTest {
         assertFalse(lineas.isEmpty());
         long nifs = lineas.stream().filter(l -> l.chipNif).count();
         assertEquals(1, nifs, "Debe haber una unica linea de NIF destacada");
-        assertTrue(lineas.stream().anyMatch(l -> l.chipNif && l.texto.contains("B04444444")));
+        assertTrue(lineas.stream().anyMatch(l -> l.chipNif && l.texto.contains("12345678Z")));
         assertTrue(lineas.stream().anyMatch(l -> l.texto.equals("Cocinas y armarios")));
     }
 

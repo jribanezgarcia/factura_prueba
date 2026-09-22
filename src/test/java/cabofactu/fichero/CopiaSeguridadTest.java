@@ -2,7 +2,6 @@ package cabofactu.fichero;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
-import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.Empresas;
+import cabofactu.modelo.negocio.Configuracion;
 import cabofactu.modelo.negocio.PreferenciasGlobales;
 import cabofactu.modelo.negocio.Sesion;
 import cabofactu.modelo.negocio.ValidacionException;
@@ -313,10 +313,10 @@ class CopiaSeguridadTest {
 
     @Test
     void restaurarRecuerdaElTemaDeLaCopia() throws Exception {
-        new ConfiguracionDAO().setPreferencia(PreferenciasGlobales.TEMA, "sakura");
+        Configuracion.getConfiguracion().guardarPreferencia(PreferenciasGlobales.TEMA, "sakura");
         Path copia = crearCopia();
 
-        new ConfiguracionDAO().setPreferencia(PreferenciasGlobales.TEMA, "neon");
+        Configuracion.getConfiguracion().guardarPreferencia(PreferenciasGlobales.TEMA, "neon");
         PreferenciasGlobales.set(PreferenciasGlobales.TEMA, "neon");
         servicio.restaurarEnEmpresaActiva(copia);
 

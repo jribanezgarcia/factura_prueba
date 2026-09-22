@@ -24,7 +24,7 @@ public class PreviaCabecera extends Pane {
     private static final Color GRIS = Color.rgb(120, 120, 120);
     private static final Color BORDE = Color.rgb(205, 205, 205);
 
-    private Empresa empresa = new Empresa();
+    private Empresa empresa;
     private Color acento = Color.web("#296796");
     private Image logo;
 
@@ -36,9 +36,13 @@ public class PreviaCabecera extends Pane {
     }
 
     public void mostrar(Empresa empresa, Color acento) {
-        this.empresa = empresa != null ? empresa : new Empresa();
+        this.empresa = empresa;
         this.acento = acento != null ? acento : Color.web("#296796");
-        this.logo = cargarLogo(this.empresa);
+        if (this.empresa == null) {
+            this.logo = null;
+        } else {
+            this.logo = cargarLogo(this.empresa);
+        }
         repintar();
     }
 
@@ -47,6 +51,13 @@ public class PreviaCabecera extends Pane {
         double w = getWidth() > 0 ? getWidth() : getPrefWidth();
         double h = getHeight() > 0 ? getHeight() : getPrefHeight();
         if (w <= 0 || h <= 0) {
+            return;
+        }
+        if (empresa == null) {
+            Text aviso = texto("La vista previa aparece cuando los datos de la empresa estén completos.",
+                    10, 30, 12, GRIS, false);
+            aviso.setWrappingWidth(Math.max(w - 20, 50));
+            getChildren().add(aviso);
             return;
         }
         double s = w / DisposicionCabecera.ANCHO_A4;

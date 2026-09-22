@@ -12,6 +12,7 @@
     </padding>
     <fx:define>
         <ToggleGroup fx:id="grupoCabecera"/>
+        <ToggleGroup fx:id="grupoSecciones"/>
     </fx:define>
     <top>
         <VBox spacing="4">
@@ -21,13 +22,21 @@
     </top>
     <center>
         <HBox spacing="12" styleClass="area-secciones">
-            <ListView fx:id="listaSecciones" minWidth="200" prefWidth="200" maxWidth="200"
-                      styleClass="lista-secciones"/>
+            <VBox styleClass="lista-secciones" minWidth="200" prefWidth="200" maxWidth="200">
+                <Label text="CONFIGURACIÓN GENERAL" styleClass="grupo-secciones" maxWidth="Infinity"/>
+                <ToggleButton fx:id="btnEmpresa" text="Empresa" toggleGroup="$grupoSecciones" onAction="#verEmpresa"/>
+                <ToggleButton fx:id="btnCabecera" text="Cabecera y pie" toggleGroup="$grupoSecciones" onAction="#verCabecera"/>
+                <ToggleButton fx:id="btnPdf" text="PDF y apariencia" toggleGroup="$grupoSecciones" onAction="#verPdf"/>
+                <Label text="CATÁLOGOS" styleClass="grupo-secciones" maxWidth="Infinity"/>
+                <ToggleButton fx:id="btnIva" text="IVA" toggleGroup="$grupoSecciones" onAction="#verIva"/>
+                <ToggleButton fx:id="btnRetenciones" text="Retenciones" toggleGroup="$grupoSecciones" onAction="#verRetenciones"/>
+                <ToggleButton fx:id="btnSeries" text="Series" toggleGroup="$grupoSecciones" onAction="#verSeries"/>
+            </VBox>
             <StackPane fx:id="pilaSecciones" HBox.hgrow="ALWAYS">
                 <VBox fx:id="seccionEmpresa" visible="false" managed="false" spacing="8"
                       styleClass="card, zona-contenido, seccion-config">
                     <Label fx:id="lblDatosPendientes" wrapText="true" visible="false" managed="false"
-                           text="Faltan datos de tu empresa. Hasta completarlos no podrás guardar facturas, generar las mensuales ni exportar PDF. Rellena los campos marcados con * y pulsa «Guardar configuración»."/>
+                           text="Para empezar a usar el programa completa los datos de tu empresa. Rellena los campos marcados con * y pulsa «Guardar configuración»."/>
                     <GridPane hgap="8" vgap="6">
                         <Label text="Nombre / razón social *"/>
                         <TextField fx:id="txtNombre" prefWidth="300" GridPane.columnIndex="1"/>
@@ -90,7 +99,7 @@
                 </VBox>
                 <VBox fx:id="seccionIva" visible="false" managed="false" spacing="8"
                       styleClass="card, zona-contenido, seccion-config">
-                    <TableView fx:id="tablaIva" prefHeight="120" VBox.vgrow="ALWAYS">
+                    <TableView fx:id="tablaIva" prefHeight="120" VBox.vgrow="ALWAYS" onMouseClicked="#seleccionarIva">
                         <columns>
                             <TableColumn fx:id="colIvaNombre" prefWidth="180" text="Nombre"/>
                             <TableColumn fx:id="colIvaPorcentaje" prefWidth="90" text="Tipo"/>
@@ -102,34 +111,15 @@
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                         </columnResizePolicy>
                     </TableView>
-                    <FlowPane hgap="10" vgap="8" styleClass="alta-rapida">
-                        <HBox spacing="4" alignment="CENTER_LEFT">
-                            <Label text="Nombre"/>
-                            <TextField fx:id="txtIvaNombre" prefWidth="160"/>
-                        </HBox>
-                        <HBox spacing="4" alignment="CENTER_LEFT">
-                            <Label text="Tipo (vacío = exento)"/>
-                            <TextField fx:id="txtIvaPorcentaje" prefWidth="80" promptText="21"/>
-                        </HBox>
-                        <HBox spacing="4" alignment="CENTER_LEFT">
-                            <CheckBox fx:id="chkIvaSuplido" text="Es suplido"/>
-                        </HBox>
-                        <HBox spacing="4" alignment="CENTER_LEFT">
-                            <Label text="Motivo"/>
-                            <TextField fx:id="txtIvaMotivo" prefWidth="200"/>
-                        </HBox>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <Button onAction="#nuevoIva" styleClass="default-button, btn-suave" text="Nuevo"/>
-                            <Button onAction="#guardarIva" styleClass="primary-button, btn-suave" text="Guardar"/>
-                            <Button onAction="#inactivarIva" styleClass="default-button, btn-suave" text="Inactivar/Activar"/>
-                        </HBox>
-                    </FlowPane>
-                    <Label fx:id="lblIvaAviso" styleClass="muted"
-                           text="El porcentaje de un tipo ya usado en el histórico no se puede modificar."/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Button onAction="#nuevoIva" styleClass="default-button, btn-suave" text="Nuevo"/>
+                        <Button onAction="#editarIva" styleClass="default-button, btn-suave" text="Editar"/>
+                        <Button onAction="#eliminarIva" styleClass="default-button, btn-suave" text="Eliminar"/>
+                    </HBox>
                 </VBox>
                 <VBox fx:id="seccionRetenciones" visible="false" managed="false" spacing="8"
                       styleClass="card, zona-contenido, seccion-config">
-                    <TableView fx:id="tablaRetenciones" prefHeight="120" VBox.vgrow="ALWAYS">
+                    <TableView fx:id="tablaRetenciones" prefHeight="120" VBox.vgrow="ALWAYS" onMouseClicked="#seleccionarRetencion">
                         <columns>
                             <TableColumn fx:id="colRetencionNombre" prefWidth="280" text="Nombre"/>
                             <TableColumn fx:id="colRetencionPorcentaje" prefWidth="110" text="Porcentaje"/>
@@ -139,23 +129,11 @@
                             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
                         </columnResizePolicy>
                     </TableView>
-                    <FlowPane hgap="10" vgap="8" styleClass="alta-rapida">
-                        <HBox spacing="4" alignment="CENTER_LEFT">
-                            <Label text="Nombre"/>
-                            <TextField fx:id="txtRetencionNombre" prefWidth="180"/>
-                        </HBox>
-                        <HBox spacing="4" alignment="CENTER_LEFT">
-                            <Label text="Porcentaje"/>
-                            <TextField fx:id="txtRetencionPorcentaje" prefWidth="80" promptText="19"/>
-                        </HBox>
-                        <HBox spacing="8" alignment="CENTER_LEFT">
-                            <Button onAction="#nuevoRetencion" styleClass="default-button, btn-suave" text="Nuevo"/>
-                            <Button onAction="#guardarRetencion" styleClass="primary-button, btn-suave" text="Guardar"/>
-                            <Button onAction="#inactivarRetencion" styleClass="default-button, btn-suave" text="Inactivar/Activar"/>
-                        </HBox>
-                    </FlowPane>
-                    <Label fx:id="lblRetencionAviso" styleClass="muted"
-                           text="El porcentaje de un tipo ya usado en el histórico no se puede modificar."/>
+                    <HBox spacing="8" alignment="CENTER_LEFT">
+                        <Button onAction="#nuevoRetencion" styleClass="default-button, btn-suave" text="Nuevo"/>
+                        <Button onAction="#editarRetencion" styleClass="default-button, btn-suave" text="Editar"/>
+                        <Button onAction="#eliminarRetencion" styleClass="default-button, btn-suave" text="Eliminar"/>
+                    </HBox>
                 </VBox>
                 <VBox fx:id="seccionSeries" visible="false" managed="false" spacing="8"
                       styleClass="card, zona-contenido, seccion-config">

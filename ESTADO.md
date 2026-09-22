@@ -1,6 +1,6 @@
 # CaboFactu: estado del proyecto
 
-Actualizado: **21/09/2026**
+Actualizado: **22/09/2026**
 
 Por dónde va el proyecto y qué toca ahora. Las normas de cómo se escribe el código y cómo se trabaja están en [AGENTS.md](AGENTS.md).
 
@@ -28,8 +28,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Esqueleto como Biblioteca8: `AppCaboFactu`, `Controlador`, `Vista` singleton, `LanzadorVentanaPrincipal`, `Pantalla`, barra en FXML y `Dialogos` como en clase.
 - Módulo de clientes: `Cliente` que se valida en sus setters (con los errorX), `Clientes` singleton con el SQL dentro (sin `ClienteDAO`), las ocho operaciones en `Controlador` y `Modelo`, la ficha en `FichaCliente.fxml` con aviso de descarte y la pantalla con el patrón de tabla + formulario. El bloque Cliente del editor pregunta antes de actualizar la ficha.
 - Módulo de empresas y menú: empresas solo en el arranque (crear, elegir y eliminar con confirmación), «Cambiar de empresa» en Configuración, sin bloqueo por datos incompletos (franja en el menú y comprobación al guardar, rectificar, generar y exportar), `Empresas` y `Sesion` singletons y `EmpresaDisponible` en lugar del `record`.
+- Módulo de configuración: vuelve el bloqueo por empresa incompleta; `Empresa`, `TipoIva` y `TipoRetencion` que se validan en sus setters; `Configuracion`, `TiposIva` y `TiposRetencion` singletons con el SQL dentro (sin DAO); fichas modales de IVA y retención (con eliminar); lista lateral en el FXML sin clases internas; fuera las columnas del logo. Series se queda para el módulo de facturas.
 
-Último cambio archivado: `2026-09-21-modulo-empresas-y-menu`.
+Último cambio archivado: `2026-09-22-modulo-configuracion`.
 
 ## En curso
 
@@ -40,12 +41,10 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
-Change escrito y pendiente de aplicar: **`modulo-configuracion`** — vuelve el bloqueo por empresa incompleta; `Empresa`, `TipoIva` y `TipoRetencion` como `Cliente`; `Configuracion`, `TiposIva` y `TiposRetencion` singletons sin DAO; fichas modales de IVA y retención; lista lateral en el FXML sin clases internas; fuera las columnas del logo. Series se queda para el módulo de facturas.
-
 ## Qué toca ahora
 
-1. Aplicar el siguiente módulo: **configuración**.
-2. Después, en el orden de los módulos: facturas → editor → histórico → PDF → mensuales → copias → documentación.
+1. Aplicar el siguiente módulo: **facturas (junto con las series y la numeración)**.
+2. Después, en el orden de los módulos: editor → histórico → PDF → mensuales → copias → documentación.
 3. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
@@ -61,3 +60,4 @@ Change escrito y pendiente de aplicar: **`modulo-configuracion`** — vuelve el 
 - **OpenSpec 1.10 rechaza un `MODIFIED`** que pierde un escenario por su título. Para sustituir un escenario, conserva su título.
 - **En JavaFX el CSS manda sobre los atributos del FXML**: `base.css` fija `-fx-min-width: 80px` a los botones, así que un `minWidth` en el FXML no sirve. Para que un botón no se corte al lado de un texto que se parte en líneas, da un `prefWidth` al texto.
 - **No des por arreglada una medida sin comprobarla**: un test temporal que cargue la pantalla a 1024×768 y compare `getWidth()` con `prefWidth(-1)` lo confirma en segundos.
+- **Apareció una copia suelta de un change ya archivado en `openspec/changes/`** y después desapareció su carpeta en `archive/`. Antes de commitear, mira `git status` y no hagas `git add -A` sin revisar qué entra.

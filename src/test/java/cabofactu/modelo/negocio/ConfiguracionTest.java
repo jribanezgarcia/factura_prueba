@@ -1,7 +1,6 @@
 package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.dominio.Empresa;
-import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,37 +8,27 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
-import java.time.LocalDate;
-import java.util.List;
+import java.sql.Statement;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/**
+ * Comprobamos el singleton de configuración contra una base de datos temporal:
+ * la empresa solo se lee si está completa, se guarda entera y las preferencias
+ * se guardan y se leen por su clave.
+ */
 class ConfiguracionTest {
 
     @TempDir
     Path tempDir;
 
-    private final Configuracion service = new Configuracion(new ConfiguracionDAO());
-
-    private Empresa completa() {
-        Empresa e = new Empresa();
-        e.setNombre("Talleres Ejemplo S.L.");
-        e.setNif("12345678Z");
-        e.setDireccion("Calle Mayor 1");
-        e.setCp("28001");
-        e.setLocalidad("Madrid");
-        e.setProvincia("Madrid");
-        e.setEmail("taller@ejemplo.es");
-        e.setTelefono("910000000");
-        return e;
-    }
-
     @BeforeEach
-    void setUp() {
+    void setUp() throws Exception {
         Conexion.setCarpetaRaiz(tempDir);
-        Empresas.getEmpresas().cerrar();
+        Conexion.cerrarConexion();
+        Conexion.establecerConexion();
     }
 
     @AfterEach
@@ -47,77 +36,58 @@ class ConfiguracionTest {
         Conexion.cerrarConexion();
     }
 
-    private Configuracion conEmpresaGuardada(Empresa empresa) throws Exception {
-        Empresas.getEmpresas().alta("Prueba");
-        Empresas.getEmpresas().abrir("prueba", LocalDate.now());
-        ConfiguracionDAO dao = new ConfiguracionDAO();
-        dao.saveEmpresa(empresa);
-        return new Configuracion(dao);
+    private Empresa empresaValida() throws Exception {
+        return new Empresa("Talleres Ejemplo S.L.", "12345678Z", "Calle Mayor 1", "28001",
+                "Madrid", "Madrid", "taller@ejemplo.es", "910000000");
+    }
+
+    private void ponerNifDirecto(String nif) throws Exception {
+        try (Statement st = Conexion.establecerConexion().createStatement()) {
+            st.executeUpdate("UPDATE empresa SET nif = '" + nif + "' WHERE id = 1");
+        }
     }
 
     @Test
-    void empresaVaciaDevuelveLasOchoEtiquetasEnOrden() {
-        assertEquals(
-                List.of("Nombre / razón social", "NIF", "Dirección", "CP",
-                        "Localidad", "Provincia", "Email", "Teléfono"),
-                service.datosPendientes(new Empresa()));
+    void filaVaciaDevuelveNull() throws Exception {
+        assertNull(Configuracion.getConfiguracion().buscarEmpresa());
     }
 
     @Test
-    void empresaCompletaYValidaDevuelveListaVacia() {
-        assertTrue(service.datosPendientes(completa()).isEmpty());
+    void datoNoValidoDevuelveNull() throws Exception {
+        Configuracion.getConfiguracion().modificarEmpresa(empresaValida());
+        ponerNifDirecto("MALO");
+        assertNull(Configuracion.getConfiguracion().buscarEmpresa());
     }
 
     @Test
-    void nifNoValidoDevuelveNif() {
-        Empresa e = completa();
-        e.setNif("12345678A");
-        assertEquals(List.of("NIF"), service.datosPendientes(e));
+    void modificarYBuscarDevuelvenLaEmpresa() throws Exception {
+        Empresa empresa = empresaValida();
+        empresa.setActividad("Talleres");
+        empresa.setCabeceraModo(Empresa.CABECERA_LOGO);
+        empresa.setLogoPath("/tmp/logo.png");
+        empresa.setPieLegal("Texto legal.");
+        Configuracion.getConfiguracion().modificarEmpresa(empresa);
+        Empresa leida = Configuracion.getConfiguracion().buscarEmpresa();
+        assertEquals("Talleres Ejemplo S.L.", leida.getNombre());
+        assertEquals("12345678Z", leida.getNif());
+        assertEquals("Calle Mayor 1", leida.getDireccion());
+        assertEquals("28001", leida.getCp());
+        assertEquals("Madrid", leida.getLocalidad());
+        assertEquals("Madrid", leida.getProvincia());
+        assertEquals("taller@ejemplo.es", leida.getEmail());
+        assertEquals("910000000", leida.getTelefono());
+        assertEquals("Talleres", leida.getActividad());
+        assertTrue(leida.isCabeceraLogo());
+        assertEquals("/tmp/logo.png", leida.getLogoPath());
+        assertEquals("Texto legal.", leida.getPieLegal());
     }
 
     @Test
-    void cpInexistenteDevuelveCp() {
-        Empresa e = completa();
-        e.setCp("99999");
-        assertEquals(List.of("CP"), service.datosPendientes(e));
-    }
-
-    @Test
-    void emailMalFormadoDevuelveEmail() {
-        Empresa e = completa();
-        e.setEmail("taller@ejemplo");
-        assertEquals(List.of("Email"), service.datosPendientes(e));
-    }
-
-    @Test
-    void camposConSoloEspaciosCuentanComoVacios() {
-        Empresa e = new Empresa();
-        e.setNombre("   ");
-        e.setNif("   ");
-        e.setDireccion("  ");
-        e.setCp("   ");
-        e.setLocalidad(" ");
-        e.setProvincia("  ");
-        e.setEmail("   ");
-        e.setTelefono(" ");
-        assertEquals(
-                List.of("Nombre / razón social", "NIF", "Dirección", "CP",
-                        "Localidad", "Provincia", "Email", "Teléfono"),
-                service.datosPendientes(e));
-    }
-
-    @Test
-    void comprobarEmpresaCompletaNombraLoQueFalta() throws Exception {
-        Empresa e = completa();
-        e.setTelefono("");
-        Configuracion servicio = conEmpresaGuardada(e);
-        Exception lanzada = assertThrows(Exception.class, () -> servicio.comprobarEmpresaCompleta());
-        assertTrue(lanzada.getMessage().contains("Teléfono"));
-    }
-
-    @Test
-    void comprobarEmpresaCompletaNoLanzaConLaEmpresaCompleta() throws Exception {
-        Configuracion servicio = conEmpresaGuardada(completa());
-        servicio.comprobarEmpresaCompleta();
+    void preferenciasSeGuardanYSeLeen() throws Exception {
+        assertNull(Configuracion.getConfiguracion().preferencia("tema"));
+        Configuracion.getConfiguracion().guardarPreferencia("tema", "omarchy");
+        assertEquals("omarchy", Configuracion.getConfiguracion().preferencia("tema"));
+        Configuracion.getConfiguracion().guardarPreferencia("tema", "esmeralda");
+        assertEquals("esmeralda", Configuracion.getConfiguracion().preferencia("tema"));
     }
 }

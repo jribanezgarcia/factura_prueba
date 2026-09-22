@@ -164,7 +164,7 @@ El modo normal de introducción SHALL ser con importes sin IVA: el precio unitar
 
 ### Requirement: IVA
 
-La aplicación SHALL permitir configurar tipos de IVA: tipos porcentuales e IVA exento. Para IVA exento SHALL poder indicarse un motivo o texto de exención. Cada línea SHALL poder tener un tipo de IVA diferente. Los tipos de IVA SHALL poder crearse, modificarse mientras sea seguro, marcarse como inactivos si ya se han utilizado y SHALL NOT eliminarse físicamente si forman parte del histórico. En la exportación a PDF, el resumen de la factura SHALL desglosar cada tipo de IVA por separado (base y cuota), y en el editor la aplicación SHALL mostrar la base total, el IVA total y el total general como valores separados. Los cálculos SHALL usar BigDecimal; no se permite usar double/float para importes monetarios.
+La aplicación SHALL permitir configurar tipos de IVA: tipos porcentuales e IVA exento. Para IVA exento SHALL poder indicarse un motivo o texto de exención. Cada línea SHALL poder tener un tipo de IVA diferente. Los tipos de IVA SHALL poder crearse, modificarse mientras sea seguro, marcarse como inactivos si ya se han utilizado y SHALL NOT eliminarse físicamente si forman parte del histórico. El alta y la edición de un tipo de IVA, y también de un tipo de retención, SHALL hacerse en una ficha propia que se abre desde la tabla de Configuración. El porcentaje de un tipo que ya aparece en facturas SHALL NOT poder modificarse, un tipo existente SHALL NOT poder pasar de porcentaje a exento ni al revés, y SHALL NOT poder convertirse en suplido ni dejar de serlo. En la exportación a PDF, el resumen de la factura SHALL desglosar cada tipo de IVA por separado (base y cuota), y en el editor la aplicación SHALL mostrar la base total, el IVA total y el total general como valores separados. Los cálculos SHALL usar BigDecimal; no se permite usar double/float para importes monetarios.
 
 #### Scenario: Líneas con distintos tipos de IVA
 - **WHEN** una factura tiene líneas con tipos de IVA diferentes, incluida una exenta
@@ -173,6 +173,22 @@ La aplicación SHALL permitir configurar tipos de IVA: tipos porcentuales e IVA 
 #### Scenario: Inactivar tipo de IVA usado
 - **WHEN** el usuario intenta inactivar un tipo de IVA que ya aparece en facturas del histórico
 - **THEN** el tipo pasa a inactivo, no se ofrece para nuevas facturas y el histórico se conserva intacto
+
+#### Scenario: Alta de un tipo de IVA en su ficha
+- **WHEN** el usuario pulsa Nuevo en la sección IVA de Configuración, rellena el nombre y el porcentaje y guarda la ficha
+- **THEN** el tipo aparece en la tabla y queda disponible para las facturas nuevas
+
+#### Scenario: Porcentaje bloqueado en un tipo usado
+- **WHEN** el usuario abre la ficha de un tipo de IVA o de retención que ya aparece en facturas
+- **THEN** el porcentaje se muestra pero no se puede modificar, y el resto de los datos sí
+
+#### Scenario: Eliminar un tipo sin uso
+- **WHEN** el usuario elimina un tipo de IVA o de retención que no aparece en ninguna factura y confirma
+- **THEN** el tipo desaparece de la tabla
+
+#### Scenario: Eliminar un tipo en uso
+- **WHEN** el usuario intenta eliminar un tipo de IVA o de retención que ya aparece en facturas
+- **THEN** la aplicación no lo permite y propone desactivarlo en su ficha
 
 ### Requirement: Descuento global
 
@@ -596,7 +612,7 @@ Cuando al abrir la aplicación no exista ninguna empresa, la aplicación SHALL c
 
 #### Scenario: Crear y aceptar el cambio
 - **WHEN** el usuario crea una empresa en la pantalla de arranque y entra en ella
-- **THEN** la aplicación abre el menú principal de la empresa nueva con el aviso de los datos que le faltan
+- **THEN** la aplicación abre Configuración en la sección Empresa, porque a la empresa nueva le faltan sus datos obligatorios
 
 #### Scenario: Eliminar empresa no actual
 - **WHEN** el usuario elimina una empresa en la pantalla de arranque y confirma
@@ -640,32 +656,33 @@ Cuando al abrir la aplicación no exista ninguna empresa, la aplicación SHALL c
 
 ### Requirement: Datos obligatorios de la empresa
 
-La empresa activa SHALL tener unos datos obligatorios: nombre o razón social, NIF válido, dirección, código postal válido, localidad, provincia, email válido y teléfono. Mientras falte alguno, la aplicación SHALL dejar trabajar en todas las pantallas, pero SHALL NOT permitir guardar una factura, crear una rectificativa, generar las facturas mensuales ni exportar a PDF; al intentarlo SHALL avisar de qué datos faltan.
+La aplicación SHALL exigir que la empresa activa tenga completos sus datos obligatorios antes de permitir trabajar con ella: nombre o razón social, NIF válido, dirección, código postal válido, localidad, provincia, email válido y teléfono.
 
-Al entrar en una empresa, la aplicación SHALL abrir siempre el menú principal y SHALL NOT bloquear la navegación. Si a la empresa le falta algún dato obligatorio, el menú SHALL mostrar un aviso con los datos que faltan y una acción «Completar datos» que abre Configuración en la sección Empresa; el aviso SHALL desaparecer en cuanto los datos estén completos. Si el nombre de la empresa está vacío, Configuración SHALL proponer el nombre con el que se creó.
+Al entrar en una empresa a la que le falte alguno de esos datos, sea desde la pantalla de arranque o al restaurar una copia, la aplicación SHALL abrir Configuración en la sección Empresa en lugar del menú principal, SHALL mostrar un texto que explique que para empezar a usar el programa hay que completar los datos de la empresa, y SHALL desactivar el botón de volver al menú y toda la barra de navegación salvo la opción de salir. Mientras tanto SHALL seguir disponibles todas las secciones de Configuración, el guardado de la configuración y la acción «Cambiar de empresa». Si el nombre de la empresa está vacío, SHALL proponerse el nombre con el que se creó.
 
-Los campos obligatorios de la sección Empresa SHALL marcarse con un asterisco. Guardar la configuración SHALL NOT ser posible mientras falte algún dato obligatorio o no sea válido, y la aplicación SHALL indicar cuáles son. Cuando se completan unos datos que estaban pendientes, la aplicación SHALL pasar al menú principal.
+Los campos obligatorios de la sección Empresa SHALL marcarse con un asterisco. Guardar la configuración SHALL NOT ser posible mientras falte algún dato obligatorio o no sea válido: la aplicación SHALL marcar como erróneos todos los campos incorrectos y SHALL mostrar un único aviso, el del primer dato incorrecto. Cuando se completan unos datos que estaban pendientes, la aplicación SHALL pasar al menú principal.
 
 #### Scenario: Entrar en una empresa recién creada
 - **WHEN** el usuario entra en una empresa que acaba de crear
-- **THEN** se abre el menú principal con el aviso de los datos que faltan
-- **AND** todas las pantallas se pueden abrir desde el menú y desde la barra de navegación
+- **THEN** se abre Configuración en la sección Empresa con el texto explicativo y el nombre de la empresa ya propuesto
+- **AND** la barra de navegación solo permite salir
 
 #### Scenario: Guardar con datos incompletos
 - **WHEN** el usuario pulsa Guardar configuración sin haber rellenado el teléfono y con un NIF no válido
-- **THEN** la configuración no se guarda y la aplicación indica que faltan o no son válidos NIF y Teléfono
+- **THEN** la configuración no se guarda
+- **AND** los campos NIF y Teléfono quedan marcados como erróneos y se muestra un único aviso, el del NIF
 
 #### Scenario: Completar los datos
-- **WHEN** el usuario pulsa «Completar datos» en el aviso del menú, rellena todos los datos obligatorios con valores válidos y guarda
-- **THEN** los datos se guardan y la aplicación muestra el menú principal sin el aviso
+- **WHEN** el usuario rellena todos los datos obligatorios con valores válidos y guarda
+- **THEN** los datos se guardan, la barra de navegación se habilita y la aplicación muestra el menú principal
 
 #### Scenario: Empresa existente incompleta
 - **WHEN** el usuario entra en una empresa que ya tenía facturas pero no tiene email
-- **THEN** se abre el menú principal con un aviso que indica que falta el email
+- **THEN** se abre Configuración en la sección Empresa en lugar del menú principal
 
 #### Scenario: Empresa completa
 - **WHEN** el usuario entra en una empresa con todos los datos obligatorios válidos
-- **THEN** se abre el menú principal sin ningún aviso
+- **THEN** se abre el menú principal directamente
 
 #### Scenario: No se pueden vaciar los datos de una empresa completa
 - **WHEN** el usuario borra el NIF de una empresa completa en Configuración y guarda
@@ -676,12 +693,16 @@ Los campos obligatorios de la sección Empresa SHALL marcarse con un asterisco. 
 - **THEN** se abre el menú principal directamente
 
 #### Scenario: Guardar una factura con la empresa incompleta
-- **WHEN** a la empresa le falta el teléfono y el usuario intenta guardar una factura
-- **THEN** la factura no se guarda y la aplicación avisa de que falta el teléfono
+- **WHEN** a la empresa le falta el teléfono
+- **THEN** el usuario no puede llegar al editor de facturas: la aplicación está en Configuración con la barra de navegación bloqueada
 
 #### Scenario: Exportar o generar con la empresa incompleta
-- **WHEN** a la empresa le falta algún dato obligatorio y el usuario intenta exportar a PDF, crear una rectificativa o generar las facturas mensuales
-- **THEN** la acción no se realiza y la aplicación avisa de los datos que faltan
+- **WHEN** a la empresa le falta algún dato obligatorio
+- **THEN** no se puede exportar a PDF, crear una rectificativa ni generar las facturas mensuales, porque ninguna de esas pantallas está disponible hasta completar los datos
+
+#### Scenario: Cambiar de empresa durante el bloqueo
+- **WHEN** el usuario ha entrado en una empresa incompleta por error y pulsa «Cambiar de empresa» en Configuración
+- **THEN** vuelve a la pantalla de arranque sin tener que completar los datos ni cerrar la aplicación
 
 ### Requirement: Copia de seguridad
 
@@ -815,7 +836,7 @@ El menú principal SHALL mostrar el nombre, el NIF y el logo de la empresa confi
 
 ### Requirement: Ventana
 
-La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantalla principal, en la primera ejecución y en todas las siguientes. La posición y el tamaño de la ventana SHALL seguir guardándose al cerrar la aplicación, pero SHALL NOT usarse al abrirla: la aplicación SHALL ignorar cualquier posición o tamaño guardados. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo y maximizar la ventana durante la sesión. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y las filas de alta rápida de IVA y Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) SHALL mostrarse en una ventana propia, fija y pequeña de 760x520, también centrada. Al entrar en una empresa, la aplicación SHALL abrir la ventana principal a 1024x768 y centrada con la primera pantalla, y SHALL cerrar la ventana de arranque.
+La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantalla principal, en la primera ejecución y en todas las siguientes. La posición y el tamaño de la ventana SHALL seguir guardándose al cerrar la aplicación, pero SHALL NOT usarse al abrirla: la aplicación SHALL ignorar cualquier posición o tamaño guardados. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo y maximizar la ventana durante la sesión. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y la fila de alta rápida de Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) SHALL mostrarse en una ventana propia, fija y pequeña de 760x520, también centrada. Al entrar en una empresa, la aplicación SHALL abrir la ventana principal a 1024x768 y centrada con la primera pantalla, y SHALL cerrar la ventana de arranque.
 
 #### Scenario: Primera ejecución abre a 1024x768 centrada
 - **WHEN** el usuario inicia la aplicación sin preferencias de ventana guardadas
@@ -838,8 +859,8 @@ La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantal
 - **THEN** todos los filtros siguen visibles reorganizados en varias líneas y los botones Exportar PDF, Buscar y Volver permanecen accesibles
 
 #### Scenario: Altas rápidas de IVA y Series con ventana mínima
-- **WHEN** la ventana está al mínimo 1024x768 y se abren las pestañas IVA o Series de Configuración
-- **THEN** los campos de alta se reorganizan sin cortarse y los botones Nuevo, Guardar e Inactivar/Activar (o Nuevo y Guardar en Series) permanecen visibles y agrupados
+- **WHEN** la ventana está al mínimo 1024x768 y se abren las secciones IVA, Retenciones o Series de Configuración
+- **THEN** en Series los campos de alta se reorganizan sin cortarse y sus botones permanecen visibles y agrupados, y en IVA y Retenciones los botones de la tabla se ven completos
 
 #### Scenario: Cabecera del Editor con ventana mínima
 - **WHEN** la ventana está al mínimo 1024x768 y se abre una factura

@@ -132,6 +132,14 @@ La aplicación SHALL permitir configurar tipos de IVA: tipos porcentuales e IVA 
 - **WHEN** el usuario abre la ficha de un tipo de IVA o de retención que ya aparece en facturas
 - **THEN** el porcentaje se muestra pero no se puede modificar, y el resto de los datos sí
 
+#### Scenario: Eliminar un tipo sin uso
+- **WHEN** el usuario elimina un tipo de IVA o de retención que no aparece en ninguna factura y confirma
+- **THEN** el tipo desaparece de la tabla
+
+#### Scenario: Eliminar un tipo en uso
+- **WHEN** el usuario intenta eliminar un tipo de IVA o de retención que ya aparece en facturas
+- **THEN** la aplicación no lo permite y propone desactivarlo en su ficha
+
 ### Requirement: Ventana
 
 La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantalla principal, en la primera ejecución y en todas las siguientes. La posición y el tamaño de la ventana SHALL seguir guardándose al cerrar la aplicación, pero SHALL NOT usarse al abrirla: la aplicación SHALL ignorar cualquier posición o tamaño guardados. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo y maximizar la ventana durante la sesión. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y la fila de alta rápida de Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) SHALL mostrarse en una ventana propia, fija y pequeña de 760x520, también centrada. Al entrar en una empresa, la aplicación SHALL abrir la ventana principal a 1024x768 y centrada con la primera pantalla, y SHALL cerrar la ventana de arranque.

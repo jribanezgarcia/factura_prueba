@@ -1,14 +1,11 @@
 package cabofactu.modelo;
 
-import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.HistorialDAO;
-import cabofactu.modelo.negocio.sqlite.TipoIvaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
 import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
 import cabofactu.modelo.negocio.sqlite.SerieDAO;
-import cabofactu.modelo.negocio.sqlite.TipoRetencionDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 
 import java.time.Clock;
@@ -16,7 +13,10 @@ import java.time.LocalDate;
 import java.util.List;
 import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.dominio.Cliente;
+import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
+import cabofactu.modelo.dominio.TipoIva;
+import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.Clientes;
 import cabofactu.modelo.negocio.Configuracion;
 import cabofactu.modelo.negocio.Empresas;
@@ -40,9 +40,6 @@ public class Modelo {
 
     private final Reloj reloj;
     private final Series series;
-    private final TiposIva tiposIva;
-    private final TiposRetencion tiposRetencion;
-    private final Configuracion configuracion;
 
     private final Numeracion numeracion;
     private final Versiones versiones;
@@ -59,27 +56,21 @@ public class Modelo {
 
     public Modelo(Clock clock) {
         SerieDAO serieDAO = new SerieDAO();
-        TipoIvaDAO tipoIvaDAO = new TipoIvaDAO();
-        TipoRetencionDAO tipoRetencionDAO = new TipoRetencionDAO();
         FacturaDAO facturaDAO = new FacturaDAO();
         VersionFacturaDAO versionFacturaDAO = new VersionFacturaDAO();
         LineaFacturaDAO lineaFacturaDAO = new LineaFacturaDAO();
-        ConfiguracionDAO configuracionDAO = new ConfiguracionDAO();
         CopiaSeguridadDAO copiaSeguridadDAO = new CopiaSeguridadDAO();
         HistorialDAO historialDAO = new HistorialDAO();
         NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
 
         reloj = new Reloj(clock);
         series = new Series(serieDAO, facturaDAO, clock);
-        tiposIva = new TiposIva(tipoIvaDAO);
-        tiposRetencion = new TiposRetencion(tipoRetencionDAO);
-        configuracion = new Configuracion(configuracionDAO);
 
         numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, clock);
         versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, clock);
         facturas = new Facturas(facturaDAO, serieDAO, versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, numeroDisponibleDAO, clock);
         estados = new Estados(facturaDAO, serieDAO, versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, facturas);
-        rectificativas = new Rectificativas(facturas, serieDAO, tipoRetencionDAO);
+        rectificativas = new Rectificativas(facturas, serieDAO);
         facturacionMensual = new FacturacionMensual(facturas, facturaDAO, numeracion);
         historial = new Historial(historialDAO);
         copiaSeguridad = new CopiaSeguridad(copiaSeguridadDAO, facturaDAO, clock);
@@ -141,28 +132,72 @@ public class Modelo {
         Empresas.getEmpresas().cerrar();
     }
 
-    public List<String> datosPendientesEmpresa() {
-        return configuracion.datosPendientes();
+    public Empresa buscarEmpresa() throws Exception {
+        return Configuracion.getConfiguracion().buscarEmpresa();
     }
 
-    public void comprobarDatosEmpresa() throws Exception {
-        configuracion.comprobarEmpresaCompleta();
+    public void modificarEmpresa(Empresa empresa) throws Exception {
+        Configuracion.getConfiguracion().modificarEmpresa(empresa);
+    }
+
+    public String preferencia(String clave) throws Exception {
+        return Configuracion.getConfiguracion().preferencia(clave);
+    }
+
+    public void guardarPreferencia(String clave, String valor) throws Exception {
+        Configuracion.getConfiguracion().guardarPreferencia(clave, valor);
+    }
+
+    public List<TipoIva> listadoTiposIva(boolean soloActivos) throws Exception {
+        return TiposIva.getTiposIva().listado(soloActivos);
+    }
+
+    public TipoIva buscarTipoIva(long id) throws Exception {
+        return TiposIva.getTiposIva().buscar(id);
+    }
+
+    public long altaTipoIva(TipoIva tipo) throws Exception {
+        return TiposIva.getTiposIva().alta(tipo);
+    }
+
+    public void modificarTipoIva(TipoIva tipo) throws Exception {
+        TiposIva.getTiposIva().modificar(tipo);
+    }
+
+    public void bajaTipoIva(long id) throws Exception {
+        TiposIva.getTiposIva().baja(id);
+    }
+
+    public boolean tipoIvaEnUso(long id) throws Exception {
+        return TiposIva.getTiposIva().enUso(id);
+    }
+
+    public List<TipoRetencion> listadoTiposRetencion(boolean soloActivos) throws Exception {
+        return TiposRetencion.getTiposRetencion().listado(soloActivos);
+    }
+
+    public TipoRetencion buscarTipoRetencion(long id) throws Exception {
+        return TiposRetencion.getTiposRetencion().buscar(id);
+    }
+
+    public long altaTipoRetencion(TipoRetencion tipo) throws Exception {
+        return TiposRetencion.getTiposRetencion().alta(tipo);
+    }
+
+    public void modificarTipoRetencion(TipoRetencion tipo) throws Exception {
+        TiposRetencion.getTiposRetencion().modificar(tipo);
+    }
+
+    public void bajaTipoRetencion(long id) throws Exception {
+        TiposRetencion.getTiposRetencion().baja(id);
+    }
+
+    public boolean tipoRetencionEnUso(long id) throws Exception {
+        return TiposRetencion.getTiposRetencion().enUso(id);
     }
 
     public Series getSeries() {
         return series;
-    }
-
-    public TiposIva getTiposIva() {
-        return tiposIva;
-    }
-
-    public TiposRetencion getTiposRetencion() {
-        return tiposRetencion;
-    }
-
-    public Configuracion getConfiguracion() {
-        return configuracion;
     }
 
     public Numeracion getNumeracion() {

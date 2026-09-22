@@ -2,7 +2,6 @@ package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.sqlite.Conexion;
-import cabofactu.modelo.negocio.sqlite.ConfiguracionDAO;
 
 import java.io.File;
 import java.io.IOException;
@@ -121,8 +120,11 @@ public class Empresas {
      * tiene tema guardado, dejamos el valor vacío y se usa el tema por defecto.
      */
     public void recordarTema() {
-        ConfiguracionDAO configuracionDAO = new ConfiguracionDAO();
-        String tema = configuracionDAO.getPreferencia(PreferenciasGlobales.TEMA);
+        String tema = null;
+        try {
+            tema = Configuracion.getConfiguracion().preferencia(PreferenciasGlobales.TEMA);
+        } catch (Exception ignored) {
+        }
         if (tema == null) {
             tema = "";
         }

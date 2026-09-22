@@ -20,10 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConstructorDocumentoFacturaTest {
 
-    private Empresa empresa() {
-        Empresa e = new Empresa();
-        e.setNombre("EMPRESA PRUEBA, S.C.");
-        e.setNif("B04444444");
+    private Empresa empresa() throws Exception {
+        Empresa e = new Empresa("EMPRESA PRUEBA, S.C.", "12345678Z", "Calle Mayor 1", "28001",
+                "Madrid", "Madrid", "contacto@empresaprueba.es", "910000000");
         e.setActividad("Cocinas y armarios");
         e.setCabeceraModo("TEXTO");
         e.setPieLegal("Protección de datos RGPD texto legal de prueba.");
@@ -60,13 +59,13 @@ class ConstructorDocumentoFacturaTest {
         return l;
     }
 
-    private DocumentoFactura doc(VersionFactura v, List<LineaFactura> lineas) {
+    private DocumentoFactura doc(VersionFactura v, List<LineaFactura> lineas) throws Exception {
         return ConstructorDocumentoFactura.build(
                 new Facturas.VersionCompleta(new Factura(), v, lineas, null), empresa(), "#B08D57");
     }
 
     @Test
-    void dosTiposDeIva() {
+    void dosTiposDeIva() throws Exception {
         DocumentoFactura d = doc(version(),
                 List.of(linea("CONCEPTO A", "1000.00", 21, false), linea("CONCEPTO B", "500.00", 10, false)));
         assertEquals(List.of("21,00", "10,00"),
@@ -81,7 +80,7 @@ class ConstructorDocumentoFacturaTest {
     }
 
     @Test
-    void descuentoGlobal() {
+    void descuentoGlobal() throws Exception {
         VersionFactura v = version();
         v.setDescuentoPorcentaje(10);
         DocumentoFactura d = doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
@@ -93,7 +92,7 @@ class ConstructorDocumentoFacturaTest {
     }
 
     @Test
-    void retencionDelSnapshot() {
+    void retencionDelSnapshot() throws Exception {
         VersionFactura v = version();
         v.setTipoRetencionId(1L);
         v.setTipoRetencionNombre("IRPF profesional");
@@ -105,7 +104,7 @@ class ConstructorDocumentoFacturaTest {
     }
 
     @Test
-    void suplidosYBloquePropio() {
+    void suplidosYBloquePropio() throws Exception {
         DocumentoFactura d = doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false),
                 linea("TASAS", "250.00", null, true)));
         assertTrue(d.suplidos().isPresent());
@@ -118,7 +117,7 @@ class ConstructorDocumentoFacturaTest {
     }
 
     @Test
-    void soloSuplidosTablaConSoloCabecera() {
+    void soloSuplidosTablaConSoloCabecera() throws Exception {
         DocumentoFactura d = doc(version(), List.of(linea("TASAS", "250.00", null, true)));
         assertEquals(List.of("CANT.", "DESCRIPCIÓN", "PRECIO", "IVA %", "TOTAL"),
                 d.linesTable().headers());
@@ -127,7 +126,7 @@ class ConstructorDocumentoFacturaTest {
     }
 
     @Test
-    void facturaLargaSesentaFilasOrdenadas() {
+    void facturaLargaSesentaFilasOrdenadas() throws Exception {
         List<LineaFactura> lineas = new ArrayList<>();
         for (int i = 0; i < 60; i++) {
             lineas.add(linea("LINEA " + (i + 1) + " DESCRIPCION LARGA", "100.00", 21, false));
@@ -140,7 +139,7 @@ class ConstructorDocumentoFacturaTest {
     }
 
     @Test
-    void anuladaMarcadaEnModelo() {
+    void anuladaMarcadaEnModelo() throws Exception {
         VersionFactura v = version();
         v.setEstado(EstadoFactura.ANULADA);
         assertTrue(doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false))).header().cancelled());
@@ -148,7 +147,7 @@ class ConstructorDocumentoFacturaTest {
     }
 
     @Test
-    void rotulosFijosEnModelo() {
+    void rotulosFijosEnModelo() throws Exception {
         DocumentoFactura d = doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
         assertEquals("FACTURAR A", d.clientCard().title());
         assertEquals(List.of("TIPO", "BASE IMPONIBLE", "CUOTA IVA"), d.totals().desgloseHeaders());

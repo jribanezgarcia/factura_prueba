@@ -73,4 +73,14 @@ public class BarraNavegacionController {
             }
         }
     }
+
+    /** Desactivamos todos los botones menos Salir. */
+    public void bloquearSalvoSalir() {
+        btnInicio.setDisable(true);
+        btnNueva.setDisable(true);
+        btnHistorico.setDisable(true);
+        btnClientes.setDisable(true);
+        btnConfiguracion.setDisable(true);
+        btnCopias.setDisable(true);
+    }
 }

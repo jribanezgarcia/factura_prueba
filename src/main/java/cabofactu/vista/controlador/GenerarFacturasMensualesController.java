@@ -54,7 +54,7 @@ import cabofactu.vista.Ventanas;
 import cabofactu.vista.utilidades.Dialogos;
 import cabofactu.vista.utilidades.GestorTemas;
 
-public class GenerarFacturasMensualesController {
+public class GenerarFacturasMensualesController implements Initializable {
 
     private Stage stage;
 
@@ -117,7 +117,7 @@ public class GenerarFacturasMensualesController {
             dialog.setTitle(Ventanas.PREFIJO + "Generar facturas mensuales");
             Ventanas.aplicarIcono(dialog);
             Scene scene = new Scene(root);
-            GestorTemas.aplicar(scene, Vista.getInstancia().getControlador().getModelo());
+            GestorTemas.aplicar(scene);
             dialog.setScene(scene);
             ConfiguracionVentana configuracion = ConfiguracionVentana.para("GenerarFacturasMensuales.fxml");
             if (configuracion != null) {
@@ -217,7 +217,7 @@ public class GenerarFacturasMensualesController {
 
     private void cargarIvas() {
         try {
-            comboIva.getItems().setAll(Vista.getInstancia().getControlador().getModelo().getTiposIva().listar(true));
+            comboIva.getItems().setAll(Vista.getInstancia().getControlador().listadoTiposIva(true));
             comboIva.setConverter(new StringConverter<>() {
                 @Override
                 public String toString(TipoIva t) {
@@ -236,13 +236,10 @@ public class GenerarFacturasMensualesController {
 
     private void cargarRetenciones() {
         try {
-            TipoRetencion sin = new TipoRetencion();
-            sin.setId(null);
-            sin.setNombre("Sin retención");
-            sin.setPorcentaje(0);
+            TipoRetencion sin = new TipoRetencion("Sin retención", 0);
             List<TipoRetencion> items = new ArrayList<>();
             items.add(sin);
-            items.addAll(Vista.getInstancia().getControlador().getModelo().getTiposRetencion().listar(true));
+            items.addAll(Vista.getInstancia().getControlador().listadoTiposRetencion(true));
             comboRetencion.getItems().setAll(items);
             comboRetencion.setConverter(new StringConverter<>() {
                 @Override
@@ -357,9 +354,6 @@ public class GenerarFacturasMensualesController {
 
     @FXML
     private void generar() {
-        if (!Vista.getInstancia().comprobarDatosEmpresa()) {
-            return;
-        }
         Cliente cliente = comboCliente.getValue();
         if (cliente == null) {
             Dialogos.mostrarDialogoError("Generar", "Seleccione un cliente.");
