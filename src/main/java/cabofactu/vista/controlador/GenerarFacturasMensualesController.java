@@ -171,7 +171,7 @@ public class GenerarFacturasMensualesController implements Initializable {
     private void cargarSeries() {
         try {
             List<Serie> series = new ArrayList<>();
-            for (Serie s : Vista.getInstancia().getControlador().getModelo().getSeries().listar()) {
+            for (Serie s : Vista.getInstancia().getControlador().listadoSeries()) {
                 if (!s.isEsRectificativa()) {
                     series.add(s);
                 }
@@ -432,9 +432,9 @@ public class GenerarFacturasMensualesController implements Initializable {
         boolean usarHuecos = false;
         try {
             if (mesesAGenerar > 0) {
-                List<Integer> conHuecos = Vista.getInstancia().getControlador().getModelo().getNumeracion().proponerNumeros(
+                List<Integer> conHuecos = Vista.getInstancia().getControlador().proponerNumeros(
                         serie, spinnerAnio.getValue(), mesesAGenerar, true);
-                List<Integer> sinHuecos = Vista.getInstancia().getControlador().getModelo().getNumeracion().proponerNumeros(
+                List<Integer> sinHuecos = Vista.getInstancia().getControlador().proponerNumeros(
                         serie, spinnerAnio.getValue(), mesesAGenerar, false);
                 if (!conHuecos.equals(sinHuecos)) {
                     String numeros = conHuecos.stream()

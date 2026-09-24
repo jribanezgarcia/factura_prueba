@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import cabofactu.modelo.dominio.Serie;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
+import cabofactu.modelo.dominio.FormatoNumero;
 
 /**
  * Las empresas con la API nueva: alta, listado, baja, abrir y cerrar.
@@ -94,21 +94,18 @@ class EmpresasTest {
         Empresas.getEmpresas().alta("Primera");
         Empresas.getEmpresas().abrir("primera", LocalDate.now());
         Conexion.establecerConexion();
-        SerieDAO repo = new SerieDAO();
-        Serie s = new Serie();
-        s.setCodigo("A");
-        s.setDescripcion("Serie de la primera");
-        s.setSiguienteCorrelativo(1);
-        s.setEsRectificativa(false);
-        s.setReutilizarAnulados(false);
-        long idPrimera = repo.insertar(s, LocalDate.now().getYear());
+        Serie s = new Serie("A", "Serie de la primera", FormatoNumero.MES, false);
+        long idPrimera = Series.getSeries().alta(s);
 
         Empresas.getEmpresas().alta("Segunda");
         Empresas.getEmpresas().abrir("segunda", LocalDate.now());
         Conexion.establecerConexion();
-        assertEquals(1, repo.getSiguiente(idPrimera, LocalDate.now().getYear()));
+        Serie fantasma = new Serie("A", "Serie de la primera", FormatoNumero.MES, false);
+        fantasma.setId(idPrimera);
+        assertEquals(1, Series.getSeries().siguienteCorrelativo(fantasma, LocalDate.now()));
+        assertNull(Series.getSeries().buscar(idPrimera));
         boolean encontrada = false;
-        List<Serie> series = repo.listar();
+        List<Serie> series = Series.getSeries().listado();
         for (Serie serie : series) {
             if ("Serie de la primera".equals(serie.getDescripcion())) {
                 encontrada = true;
@@ -155,20 +152,15 @@ class EmpresasTest {
         Empresas.getEmpresas().alta("Empresa A");
         Empresas.getEmpresas().abrir("empresa_a", LocalDate.now());
         Conexion.establecerConexion();
-        SerieDAO repo = new SerieDAO();
-        Serie s = new Serie();
-        s.setCodigo("A");
-        s.setDescripcion("Serie persistente");
-        s.setSiguienteCorrelativo(1);
-        s.setEsRectificativa(false);
-        s.setReutilizarAnulados(false);
-        long id = repo.insertar(s, LocalDate.now().getYear());
+        Serie s = new Serie("A", "Serie persistente", FormatoNumero.MES, false);
+        long id = Series.getSeries().alta(s);
 
         Empresas.getEmpresas().alta("Empresa B");
 
-        assertEquals(1, repo.getSiguiente(id, LocalDate.now().getYear()));
+        Serie guardada = Series.getSeries().buscar(id);
+        assertEquals(1, Series.getSeries().siguienteCorrelativo(guardada, LocalDate.now()));
         boolean encontrada = false;
-        List<Serie> series = repo.listar();
+        List<Serie> series = Series.getSeries().listado();
         for (Serie serie : series) {
             if ("Serie persistente".equals(serie.getDescripcion())) {
                 encontrada = true;

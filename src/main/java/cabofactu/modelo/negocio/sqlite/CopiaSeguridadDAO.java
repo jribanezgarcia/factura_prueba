@@ -32,13 +32,13 @@ public class CopiaSeguridadDAO {
 
     private static final List<String> TABLAS_APLICACION = List.of(
             "cliente", "serie", "tipo_iva", "factura", "factura_version",
-            "factura_linea", "empresa", "preferencias", "serie_siguiente",
-            "tipo_retencion", "numero_disponible"
+            "factura_linea", "empresa", "preferencias",
+            "tipo_retencion"
     );
 
     private static final Map<String, List<String>> COLUMNAS_APLICACION = Map.ofEntries(
             Map.entry("cliente", List.of("id", "nombre", "nif", "direccion", "cp", "localidad", "provincia", "activo", "email")),
-            Map.entry("serie", List.of("id", "codigo", "descripcion", "es_rectificativa", "siguiente_correlativo", "reutilizar_anulados", "sufijo_fecha")),
+            Map.entry("serie", List.of("id", "codigo", "descripcion", "es_rectificativa", "sufijo_fecha")),
             Map.entry("tipo_iva", List.of("id", "nombre", "porcentaje", "motivo_exencion", "activo", "es_suplido")),
             Map.entry("factura", List.of("id", "serie_id", "correlativo", "cliente_id")),
             Map.entry("factura_version", List.of("id", "factura_id", "version_num", "numero", "fecha_factura", "fecha_guardado", "estado",
@@ -51,9 +51,7 @@ public class CopiaSeguridadDAO {
             Map.entry("empresa", List.of("id", "nombre", "nif", "direccion", "cp", "localidad", "provincia", "actividad", "email",
                     "telefono", "cabecera_modo", "logo_path", "pie_legal")),
             Map.entry("preferencias", List.of("clave", "valor")),
-            Map.entry("serie_siguiente", List.of("serie_id", "anio", "siguiente")),
-            Map.entry("tipo_retencion", List.of("id", "nombre", "porcentaje", "activo")),
-            Map.entry("numero_disponible", List.of("id", "serie_id", "anio", "correlativo"))
+            Map.entry("tipo_retencion", List.of("id", "nombre", "porcentaje", "activo"))
     );
 
     /** Genera la copia de la base activa en el archivo indicado. */

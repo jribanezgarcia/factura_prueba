@@ -6,6 +6,7 @@ import cabofactu.modelo.Modelo;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
+import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.sqlite.Conexion;
@@ -188,6 +189,55 @@ public class Controlador {
 
     public boolean tipoRetencionEnUso(long id) throws Exception {
         return modelo.tipoRetencionEnUso(id);
+    }
+
+    public List<Serie> listadoSeries() throws Exception {
+        return modelo.listadoSeries();
+    }
+
+    public Serie buscarSerie(long id) throws Exception {
+        return modelo.buscarSerie(id);
+    }
+
+    public long altaSerie(Serie serie) throws Exception {
+        return modelo.altaSerie(serie);
+    }
+
+    public void modificarSerie(Serie serie) throws Exception {
+        modelo.modificarSerie(serie);
+    }
+
+    public void bajaSerie(long id) throws Exception {
+        modelo.bajaSerie(id);
+    }
+
+    public boolean serieTieneFacturas(long id) throws Exception {
+        return modelo.serieTieneFacturas(id);
+    }
+
+    public int siguienteCorrelativo(Serie serie, LocalDate fecha) throws Exception {
+        return modelo.siguienteCorrelativo(serie, fecha);
+    }
+
+    public List<Integer> huecosDeSerie(Serie serie, LocalDate fecha) throws Exception {
+        return modelo.huecosDeSerie(serie, fecha);
+    }
+
+    public List<Integer> proponerNumeros(Serie serie, int anio, int cantidad, boolean usarHuecos)
+            throws Exception {
+        return modelo.proponerNumeros(serie, anio, cantidad, usarHuecos);
+    }
+
+    public String formarNumero(Serie serie, int correlativo, LocalDate fecha) {
+        return modelo.formarNumero(serie, correlativo, fecha);
+    }
+
+    public Integer parseCorrelativo(Serie serie, String numero) {
+        return modelo.parseCorrelativo(serie, numero);
+    }
+
+    public boolean correlativoOcupado(Serie serie, int correlativo, LocalDate fecha) throws Exception {
+        return modelo.correlativoOcupado(serie, correlativo, fecha);
     }
 
     /**

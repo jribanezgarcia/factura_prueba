@@ -6,12 +6,9 @@ INSERT INTO cliente (nombre, nif, direccion, cp, localidad, provincia, activo, e
   ('Cliente Ejemplo S.L.', 'B88888888', 'Calle Irreal 10', '28000', 'Madrid', 'Madrid', 1, 'ejemplo@irreal.es'),
   ('Otro Cliente S.L.', 'B77777779', 'Avenida Ficticia 5', '08000', 'Barcelona', 'Barcelona', 1, NULL);
 
-INSERT INTO serie (codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados, sufijo_fecha) VALUES
-  ('A', 'Serie general', 0, 6, 0, 'MES'),
-  ('R', 'Rectificativas', 1, 2, 0, 'NINGUNO');
-
-INSERT INTO serie_siguiente (serie_id, anio, siguiente) VALUES (1, 2026, 6);
-INSERT INTO serie_siguiente (serie_id, anio, siguiente) VALUES (2, 2026, 2);
+INSERT INTO serie (codigo, descripcion, es_rectificativa, sufijo_fecha) VALUES
+  ('A', 'Serie general', 0, 'MES'),
+  ('R', 'Rectificativas', 1, 'NINGUNO');
 
 INSERT INTO tipo_retencion (nombre, porcentaje, activo) VALUES ('IRPF profesional', 15, 1);
 

@@ -11,8 +11,6 @@ import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 
 import java.math.BigDecimal;
@@ -27,26 +25,19 @@ import java.util.List;
 public class Facturas {
 
     private final FacturaDAO facturaDAO;
-    private final SerieDAO serieDAO;
     private final VersionFacturaDAO versionFacturaDAO;
     private final LineaFacturaDAO lineaFacturaDAO;
     private final Versiones versiones;
-    private final Numeracion numeracion;
-    private final NumeroDisponibleDAO numeroDisponibleDAO;
     private final Clock clock;
 
-    public Facturas(FacturaDAO facturaDAO, SerieDAO serieDAO,
+    public Facturas(FacturaDAO facturaDAO,
                           VersionFacturaDAO versionFacturaDAO,
                           LineaFacturaDAO lineaFacturaDAO, Versiones versiones,
-                          Numeracion numeracion, NumeroDisponibleDAO numeroDisponibleDAO,
                           Clock clock) {
         this.facturaDAO = facturaDAO;
-        this.serieDAO = serieDAO;
         this.versionFacturaDAO = versionFacturaDAO;
         this.lineaFacturaDAO = lineaFacturaDAO;
         this.versiones = versiones;
-        this.numeracion = numeracion;
-        this.numeroDisponibleDAO = numeroDisponibleDAO;
         this.clock = clock;
     }
 
@@ -115,12 +106,11 @@ public class Facturas {
 
         int correlativo = correlativoPedido != null
                 ? correlativoPedido
-                : numeracion.siguienteCorrelativo(serie, fecha);
-        if (numeracion.correlativoOcupadoPorActiva(serie, correlativo, fecha)) {
+                : Series.getSeries().siguienteCorrelativo(serie, fecha);
+        if (Series.getSeries().correlativoOcupado(serie, correlativo, fecha)) {
             throw new ValidacionException(
                     "El correlativo " + correlativo + " ya esta ocupado por una factura activa de la serie " + serie.getCodigo());
         }
-        numeroDisponibleDAO.eliminar(serie.getId(), fecha.getYear(), correlativo);
 
         if (cliente != null && cliente.getId() == null && !isVacio(cliente)) {
             long clienteId = Clientes.getClientes().alta(cliente);
@@ -130,13 +120,10 @@ public class Facturas {
         long facturaId = facturaDAO.insertar(serie.getId(), correlativo,
                 cliente == null ? null : cliente.getId());
 
-        String numero = numeracion.formarNumero(serie, correlativo, fecha);
+        String numero = Series.getSeries().formarNumero(serie, correlativo, fecha);
         versiones.crearVersion(facturaId, fecha, numero, EstadoFactura.EMITIDA,
                 descuento, observaciones, referencia, cliente, lineas, datosPago, retencion);
 
-        serieDAO.actualizarSiguiente(serie.getId(), Math.max(serie.getSiguienteCorrelativo(), correlativo + 1));
-        int nuevoAnio = Math.max(serieDAO.getSiguiente(serie.getId(), fecha.getYear()), correlativo + 1);
-        serieDAO.actualizarSiguiente(serie.getId(), fecha.getYear(), nuevoAnio);
         return facturaId;
     }
 
@@ -182,7 +169,7 @@ String observaciones, String referencia, DatosPago datosPago,
             if (estado != EstadoFactura.EMITIDA) {
                 throw new ValidacionException("Solo se pueden editar facturas en estado Emitida");
             }
-            Serie serie = serieDAO.getById(factura.getSerieId());
+            Serie serie = Series.getSeries().buscar(factura.getSerieId());
 
             if (cliente != null && cliente.getId() == null && !isVacio(cliente)) {
                 long clienteId = Clientes.getClientes().alta(cliente);
@@ -190,7 +177,7 @@ String observaciones, String referencia, DatosPago datosPago,
             }
             facturaDAO.actualizarCliente(facturaId, cliente == null ? null : cliente.getId());
 
-            String numero = numeracion.formarNumero(serie, factura.getCorrelativo(), fecha);
+            String numero = Series.getSeries().formarNumero(serie, factura.getCorrelativo(), fecha);
             VersionFactura ultima = versionFacturaDAO.ultimaVersion(facturaId);
             VersionFactura guardada;
             if (!comoNuevaVersion && versionAbiertaId != null && ultima != null
@@ -218,7 +205,14 @@ String observaciones, String referencia, DatosPago datosPago,
 
     public Serie serieDeFactura(long facturaId) {
         Factura f = facturaDAO.getById(facturaId);
-        return f == null ? null : serieDAO.getById(f.getSerieId());
+        if (f == null) {
+            return null;
+        }
+        try {
+            return Series.getSeries().buscar(f.getSerieId());
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public Factura factura(long facturaId) {
@@ -240,11 +234,6 @@ String observaciones, String referencia, DatosPago datosPago,
         if (f == null) {
             throw new ValidacionException("La factura no existe");
         }
-        Serie serie = serieDAO.getById(f.getSerieId());
-        VersionFactura ultima = versionFacturaDAO.ultimaVersion(facturaId);
-        int anio = ultima != null && ultima.getFechaFactura() != null
-                ? ultima.getFechaFactura().getYear()
-                : LocalDate.now(clock).getYear();
 
         Conexion.iniciarTransaccion();
         try {
@@ -253,7 +242,6 @@ String observaciones, String referencia, DatosPago datosPago,
             }
             versionFacturaDAO.eliminarPorFactura(facturaId);
             facturaDAO.eliminar(facturaId);
-            numeroDisponibleDAO.insertar(serie.getId(), anio, f.getCorrelativo());
             Conexion.confirmar();
         } catch (RuntimeException e) {
             Conexion.deshacer();

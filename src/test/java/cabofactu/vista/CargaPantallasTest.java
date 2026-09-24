@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import cabofactu.vista.controlador.FichaClienteController;
+import cabofactu.vista.controlador.FichaSerieController;
 import cabofactu.vista.controlador.FichaTipoIvaController;
 import cabofactu.vista.controlador.FichaTipoRetencionController;
 import cabofactu.vista.controlador.GenerarFacturasMensualesController;
@@ -166,6 +167,29 @@ class CargaPantallasTest {
             }
         });
         await(latch, error, "FichaTipoIva.fxml");
+    }
+
+    @Test
+    void cargarFichaSerie() {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        Platform.runLater(() -> {
+            try {
+                javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                        FichaSerieController.class.getResource(
+                                "/cabofactu/vista/recursos/FichaSerie.fxml"));
+                Parent root = loader.load();
+                FichaSerieController c = loader.getController();
+                assertNotNull(c, "El controller de FichaSerie.fxml no se creo");
+                c.setRegistro(null);
+                maquetarAlMinimo(root);
+            } catch (Throwable t) {
+                error.set(t);
+            } finally {
+                latch.countDown();
+            }
+        });
+        await(latch, error, "FichaSerie.fxml");
     }
 
     @Test

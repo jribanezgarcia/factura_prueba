@@ -19,7 +19,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ColorPicker;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -40,11 +39,10 @@ import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 import java.io.File;
 import java.net.URL;
-import java.util.List;
+import java.time.LocalDate;
 import java.util.ResourceBundle;
 import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
@@ -65,7 +63,7 @@ public class ConfiguracionController implements Pantalla, Initializable {
     private Empresa empresa;
     private TipoIva ivaElegido;
     private TipoRetencion retencionElegida;
-    private Serie serieSeleccionada;
+    private Serie serieElegida;
     private boolean bloqueada;
 
     private final ObservableList<TipoIva> ivas = FXCollections.observableArrayList();
@@ -180,23 +178,9 @@ public class ConfiguracionController implements Pantalla, Initializable {
     @FXML
     private TableColumn<Serie, String> colSerieRectifica;
     @FXML
+    private TableColumn<Serie, String> colSerieFormato;
+    @FXML
     private TableColumn<Serie, String> colSerieSiguiente;
-    @FXML
-    private TableColumn<Serie, String> colSerieReutilizar;
-    @FXML
-    private TextField txtSerieCodigo;
-    @FXML
-    private TextField txtSerieDescripcion;
-    @FXML
-    private CheckBox chkSerieRectifica;
-    @FXML
-    private CheckBox chkSerieReutilizar;
-    @FXML
-    private TextField txtSerieSiguiente;
-    @FXML
-    private ComboBox<Serie.SufijoFecha> comboSerieFormato;
-    @FXML
-    private Label lblSerieEjemplo;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -682,39 +666,20 @@ public class ConfiguracionController implements Pantalla, Initializable {
     // ------------------------------------------------------------------
 
     private void cargarSeries() {
-        colSerieCodigo.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getCodigo())));
-        colSerieDescripcion.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getDescripcion())));
-        colSerieRectifica.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isEsRectificativa() ? "Sí" : "No"));
-        colSerieSiguiente.setText("Siguiente (" + anioTrabajo() + ")");
-        colSerieSiguiente.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(String.valueOf(c.getValue().getSiguienteCorrelativo())));
-        colSerieReutilizar.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().isReutilizarAnulados() ? "Sí" : "No"));
-        comboSerieFormato.getItems().setAll(Serie.SufijoFecha.values());
-        comboSerieFormato.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(Serie.SufijoFecha f) {
-                if (f == null) return "";
-                return switch (f) {
-                    case MES -> "Código-Número/Mes (ej: C-56/7)";
-                    case ANIO -> "Número-Año (ej: 56-2026)";
-                    case NINGUNO -> "Solo número (ej: 56)";
-                };
-            }
-            @Override
-            public Serie.SufijoFecha fromString(String s) { return null; }
-        });
-        comboSerieFormato.valueProperty().addListener((o, a, b) -> actualizarEjemploFormato());
-        tablaSeries.getSelectionModel().selectedItemProperty().addListener((o, a, b) -> seleccionarSerie(b));
+        colSerieCodigo.setCellValueFactory(new PropertyValueFactory<>("codigoTexto"));
+        colSerieDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+        colSerieRectifica.setCellValueFactory(new PropertyValueFactory<>("rectificativaTexto"));
+        colSerieFormato.setCellValueFactory(new PropertyValueFactory<>("formatoTexto"));
+        colSerieSiguiente.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(siguienteTexto(c.getValue())));
         refrescarSeries();
     }
 
     private void refrescarSeries() {
         try {
-            List<Serie> lista = Vista.getInstancia().getControlador().getModelo().getSeries().listar();
-            int anio = anioTrabajo();
-            for (Serie s : lista) {
-                s.setSiguienteCorrelativo(Vista.getInstancia().getControlador().getModelo().getSeries().getSiguiente(s.getId(), anio));
-            }
-            series.setAll(lista);
+            serieElegida = null;
+            tablaSeries.getSelectionModel().clearSelection();
+            colSerieSiguiente.setText("Siguiente (" + anioTrabajo() + ")");
+            series.setAll(Vista.getInstancia().getControlador().listadoSeries());
             tablaSeries.setItems(series);
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Configuración", "No se pudieron cargar las series: " + e.getMessage());
@@ -725,138 +690,100 @@ public class ConfiguracionController implements Pantalla, Initializable {
         return Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo().getYear();
     }
 
-    private void seleccionarSerie(Serie s) {
-        serieSeleccionada = s;
-        if (s == null) {
-            return;
-        }
-        txtSerieCodigo.setText(nz(s.getCodigo()));
-        txtSerieDescripcion.setText(nz(s.getDescripcion()));
-        chkSerieRectifica.setSelected(s.isEsRectificativa());
-        chkSerieReutilizar.setSelected(s.isReutilizarAnulados());
-        txtSerieSiguiente.setText(String.valueOf(s.getSiguienteCorrelativo()));
-        comboSerieFormato.setValue(s.getSufijoFecha() != null ? s.getSufijoFecha() : Serie.SufijoFecha.MES);
-        actualizarEjemploFormato();
-    }
-
-    private void actualizarEjemploFormato() {
-        Serie s = serieSeleccionada != null ? serieSeleccionada : new Serie();
-        String codigo = trim(txtSerieCodigo).toUpperCase();
-        if (codigo.isBlank()) codigo = "";
-        Serie.SufijoFecha formato = comboSerieFormato.getValue() != null ? comboSerieFormato.getValue() : Serie.SufijoFecha.MES;
-        String ejemplo;
-        if (s.isEsRectificativa()) {
-            ejemplo = (codigo.isBlank() ? "" : codigo + "-") + "1";
-        } else {
-            String prefijo = codigo.isBlank() ? "" : codigo + "-";
-            ejemplo = switch (formato) {
-                case MES -> prefijo + "56/7";
-                case ANIO -> prefijo + "56-2026";
-                case NINGUNO -> prefijo + "56";
-            };
-        }
-        lblSerieEjemplo.setText("Ejemplo: " + ejemplo);
-    }
-
-    @FXML
-    private void nuevoSerie() {
-        serieSeleccionada = null;
-        txtSerieCodigo.clear();
-        txtSerieDescripcion.clear();
-        chkSerieRectifica.setSelected(false);
-        chkSerieReutilizar.setSelected(false);
-        txtSerieSiguiente.setText("1");
-        comboSerieFormato.setValue(Serie.SufijoFecha.MES);
-        actualizarEjemploFormato();
-        txtSerieCodigo.requestFocus();
-    }
-
-    @FXML
-    private void guardarSerie() {
-        String codigo = trim(txtSerieCodigo);
-        int siguiente;
+    /** El siguiente número de la serie para el año de trabajo, o vacío si no se puede calcular. */
+    private String siguienteTexto(Serie serie) {
         try {
-            siguiente = Integer.parseInt(trim(txtSerieSiguiente));
-            if (siguiente < 1) {
-                throw new NumberFormatException();
-            }
-        } catch (NumberFormatException e) {
-            Dialogos.mostrarDialogoError("Series", "El siguiente número debe ser un entero mayor o igual que 1.");
-            return;
-        }
-        try {
-            if (codigo.isBlank()) {
-                boolean otraSinCodigo = series.stream().anyMatch(x ->
-                        (x.getCodigo() == null || x.getCodigo().isBlank())
-                                && (serieSeleccionada == null || !serieSeleccionada.getId().equals(x.getId())));
-                if (otraSinCodigo) {
-                    Dialogos.mostrarDialogoError("Series", "Solo puede haber una serie sin código. Ponle un código o una descripción para distinguirla.");
-                    return;
-                }
-            } else {
-                for (Serie s : series) {
-                    if (s.getCodigo() != null && s.getCodigo().equalsIgnoreCase(codigo)
-                            && (serieSeleccionada == null || !serieSeleccionada.getId().equals(s.getId()))) {
-                        Dialogos.mostrarDialogoError("Series", "Ya existe una serie con el código \"" + codigo + "\".");
-                        return;
-                    }
-                }
-            }
-            Serie s = serieSeleccionada != null ? serieSeleccionada : new Serie();
-            s.setCodigo(codigo.isBlank() ? "" : codigo.toUpperCase());
-            s.setDescripcion(trim(txtSerieDescripcion));
-            s.setEsRectificativa(chkSerieRectifica.isSelected());
-            s.setReutilizarAnulados(chkSerieReutilizar.isSelected());
-            s.setSiguienteCorrelativo(siguiente);
-            s.setSufijoFecha(comboSerieFormato.getValue() != null ? comboSerieFormato.getValue() : Serie.SufijoFecha.MES);
-            if (s.getId() == null) {
-                s.setId(Vista.getInstancia().getControlador().getModelo().getSeries().insertar(s));
-            } else {
-                Vista.getInstancia().getControlador().getModelo().getSeries().actualizar(s);
-            }
-            int nuevoAnio = Math.max(Vista.getInstancia().getControlador().getModelo().getSeries().getSiguiente(s.getId(), anioTrabajo()), siguiente);
-            Vista.getInstancia().getControlador().getModelo().getSeries().actualizarSiguiente(s.getId(), anioTrabajo(), nuevoAnio);
-            refrescarSeries();
-            nuevoSerie();
+            LocalDate fecha = Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo();
+            return String.valueOf(Vista.getInstancia().getControlador().siguienteCorrelativo(serie, fecha));
         } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Series", "No se pudo guardar: " + e.getMessage());
+            return "";
         }
+    }
+
+    /** Guardamos la fila elegida; con doble clic la abrimos para editarla. */
+    @FXML
+    private void seleccionarSerie(MouseEvent evento) {
+        serieElegida = tablaSeries.getSelectionModel().getSelectedItem();
+        if (evento.getClickCount() == 2 && serieElegida != null) {
+            editarSerie();
+        }
+    }
+
+    @FXML
+    private void nuevaSerie() {
+        abrirFichaSerie(null, "Alta de serie");
+    }
+
+    @FXML
+    private void editarSerie() {
+        if (serieElegida == null) {
+            Dialogos.mostrarDialogoAdvertencia("Series", "Seleccione una serie de la tabla.");
+            return;
+        }
+        abrirFichaSerie(serieElegida, "Datos de la serie");
     }
 
     @FXML
     private void eliminarSerie() {
-        Serie s = tablaSeries.getSelectionModel().getSelectedItem();
-        if (s == null) {
-            Dialogos.mostrarDialogoError("Series", "Seleccione una serie de la tabla.");
+        if (serieElegida == null) {
+            Dialogos.mostrarDialogoAdvertencia("Series", "Seleccione una serie de la tabla.");
+            return;
+        }
+        if (!Dialogos.mostrarDialogoConfirmacion("Eliminar serie",
+                "¿Eliminar definitivamente la serie \"" + serieElegida.getCodigoTexto() + "\"?")) {
             return;
         }
         try {
-            if (Vista.getInstancia().getControlador().getModelo().getSeries().tieneFacturas(s.getId())) {
-                Dialogos.mostrarDialogoError("Series", "La serie \"" + codigoOBlanco(s)
-                        + "\" no puede eliminarse: tiene facturas (activas o históricas). El histórico no se elimina.");
-                return;
-            }
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Series", "No se pudo comprobar la serie: " + e.getMessage());
-            return;
-        }
-        String etiqueta = (s.getCodigo() == null || s.getCodigo().isBlank())
-                ? (s.getDescripcion() == null || s.getDescripcion().isBlank() ? "esta serie" : s.getDescripcion())
-                : s.getCodigo();
-        if (!Dialogos.mostrarDialogoConfirmacion("Eliminar serie", "¿Seguro que deseas eliminar la serie \"" + etiqueta + "\"?")) {
-            return;
-        }
-        try {
-            Vista.getInstancia().getControlador().getModelo().getSeries().eliminar(s.getId());
+            Vista.getInstancia().getControlador().bajaSerie(serieElegida.getId());
             refrescarSeries();
         } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Series", "No se pudo eliminar la serie: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Series", e.getMessage());
         }
     }
 
-    private String codigoOBlanco(Serie s) {
-        String c = s.getCodigo();
-        return (c == null || c.isBlank()) ? "(sin código)" : c;
+    /**
+     * Abrimos la ficha en modo añadir (registro null) o en modo editar, y
+     * esperamos a que se cierre. Si el guardado falla (por ejemplo, por un
+     * código duplicado), la volvemos a abrir con lo que había escrito para
+     * corregirlo sin empezar de cero.
+     */
+    private void abrirFichaSerie(Serie registro, String titulo) {
+        boolean esAlta = registro == null;
+        Serie intento = registro;
+        boolean reintentando = false;
+        while (true) {
+            Serie guardado = null;
+            try {
+                FXMLLoader cargador = new FXMLLoader(LocalizadorRecursos.class.getResource("FichaSerie.fxml"));
+                Parent raiz = cargador.load();
+                FichaSerieController ficha = cargador.getController();
+                if (reintentando) {
+                    ficha.reintentarCon(intento, esAlta);
+                } else {
+                    ficha.setRegistro(intento);
+                }
+                Stage modal = Vista.getInstancia().crearVentanaModal(raiz, titulo, ficha);
+                modal.showAndWait();
+                guardado = ficha.getRegistro();
+                if (guardado == null) {
+                    return;
+                }
+                if (esAlta) {
+                    guardado.setId(Vista.getInstancia().getControlador().altaSerie(guardado));
+                } else {
+                    Vista.getInstancia().getControlador().modificarSerie(guardado);
+                }
+                refrescarSeries();
+                return;
+            } catch (Exception e) {
+                Dialogos.mostrarDialogoError("Series", "No se pudo guardar: " + e.getMessage());
+                if (guardado == null) {
+                    return;
+                }
+                intento = guardado;
+                reintentando = true;
+            }
+        }
     }
 
     // ------------------------------------------------------------------

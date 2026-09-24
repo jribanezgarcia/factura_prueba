@@ -6,7 +6,6 @@ import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -21,19 +20,17 @@ import java.util.List;
 public class Rectificativas {
 
     private final Facturas facturas;
-    private final SerieDAO serieDAO;
 
-    public Rectificativas(Facturas facturas, SerieDAO serieDAO) {
+    public Rectificativas(Facturas facturas) {
         this.facturas = facturas;
-        this.serieDAO = serieDAO;
     }
 
     /**
      * Serie configurada como rectificativa. Si hubiera varias, se usa la
      * primera; si no existe ninguna, error.
      */
-    public Serie serieRectificativa() throws ValidacionException {
-        for (Serie s : serieDAO.listar()) {
+    public Serie serieRectificativa() throws Exception {
+        for (Serie s : Series.getSeries().listado()) {
             if (s.isEsRectificativa()) {
                 return s;
             }

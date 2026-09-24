@@ -5,12 +5,11 @@ import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,7 +18,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -34,11 +32,9 @@ class FacturacionMensualTest {
     @TempDir
     Path tempDir;
 
-    private SerieDAO serieDAO;
     private FacturaDAO facturaDAO;
     private VersionFacturaDAO versionFacturaDAO;
     private LineaFacturaDAO lineaFacturaDAO;
-    private Numeracion numeracion;
     private Facturas facturas;
     private FacturacionMensual service;
 
@@ -47,16 +43,13 @@ class FacturacionMensualTest {
         Conexion.setCarpetaRaiz(tempDir);
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
-        serieDAO = new SerieDAO();
         facturaDAO = new FacturaDAO();
         versionFacturaDAO = new VersionFacturaDAO();
         lineaFacturaDAO = new LineaFacturaDAO();
-        NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
-        this.numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone());
         Versiones versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone());
-        facturas = new Facturas(facturaDAO, serieDAO,
-                versionFacturaDAO, lineaFacturaDAO, versiones, this.numeracion, numeroDisponibleDAO, Clock.systemDefaultZone());
-        service = new FacturacionMensual(facturas, facturaDAO, this.numeracion);
+        facturas = new Facturas(facturaDAO,
+                versionFacturaDAO, lineaFacturaDAO, versiones, Clock.systemDefaultZone());
+        service = new FacturacionMensual(facturas, facturaDAO);
     }
 
     @AfterEach
@@ -64,15 +57,9 @@ class FacturacionMensualTest {
         Conexion.cerrarConexion();
     }
 
-    private Serie serieC() throws SQLException {
-        Serie s = new Serie();
-        s.setCodigo("C");
-        s.setDescripcion("Cocinas");
-        s.setEsRectificativa(false);
-        s.setSiguienteCorrelativo(1);
-        s.setReutilizarAnulados(false);
-        s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieDAO.insertar(s, LocalDate.now().getYear()));
+    private Serie serieC() throws Exception {
+        Serie s = new Serie("C", "Cocinas", FormatoNumero.MES, false);
+        s.setId(Series.getSeries().alta(s));
         return s;
     }
 
@@ -241,10 +228,9 @@ class FacturacionMensualTest {
         Cliente cliente = clientePaco();
         TipoIva iva = iva21();
 
-        NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
-        Facturas serviceQueFalla = new Facturas(facturaDAO, serieDAO,
+        Facturas serviceQueFalla = new Facturas(facturaDAO,
                 versionFacturaDAO, lineaFacturaDAO, new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone()),
-                new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone()), numeroDisponibleDAO, Clock.systemDefaultZone()) {
+                Clock.systemDefaultZone()) {
             private int llamadas = 0;
 
             @Override
@@ -261,7 +247,7 @@ class FacturacionMensualTest {
             }
         };
         FacturacionMensual servicioConFallo = new FacturacionMensual(
-                serviceQueFalla, facturaDAO, new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone()));
+                serviceQueFalla, facturaDAO);
 
         assertThrows(ValidacionException.class, () -> servicioConFallo.generar(cliente, 2026, 1, 3, serie, 15,
                 iva, null, List.of(plantilla("servicios", "60.00", false))));

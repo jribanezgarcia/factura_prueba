@@ -6,10 +6,9 @@ import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -30,7 +28,6 @@ class EstadosTest {
     @TempDir
     Path tempDir;
 
-    private SerieDAO serieDAO;
     private VersionFacturaDAO versionFacturaDAO;
     private LineaFacturaDAO lineaFacturaDAO;
     private Facturas facturas;
@@ -41,17 +38,14 @@ class EstadosTest {
         Conexion.setCarpetaRaiz(tempDir);
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
-        serieDAO = new SerieDAO();
         FacturaDAO facturaDAO = new FacturaDAO();
         versionFacturaDAO = new VersionFacturaDAO();
         lineaFacturaDAO = new LineaFacturaDAO();
-        NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
-        Numeracion numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone());
         Versiones versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone());
-        facturas = new Facturas(facturaDAO, serieDAO,
-                versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, numeroDisponibleDAO, Clock.systemDefaultZone());
-        estados = new Estados(facturaDAO, serieDAO, versionFacturaDAO,
-                lineaFacturaDAO, versiones, numeracion, facturas);
+        facturas = new Facturas(facturaDAO,
+                versionFacturaDAO, lineaFacturaDAO, versiones, Clock.systemDefaultZone());
+        estados = new Estados(facturaDAO,
+                versionFacturaDAO, lineaFacturaDAO, versiones, facturas);
     }
 
     @AfterEach
@@ -59,15 +53,9 @@ class EstadosTest {
         Conexion.cerrarConexion();
     }
 
-    private Serie serieC() throws SQLException {
-        Serie s = new Serie();
-        s.setCodigo("C");
-        s.setDescripcion("Cocinas");
-        s.setEsRectificativa(false);
-        s.setSiguienteCorrelativo(1);
-        s.setReutilizarAnulados(false);
-        s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieDAO.insertar(s, LocalDate.now().getYear()));
+    private Serie serieC() throws Exception {
+        Serie s = new Serie("C", "Cocinas", FormatoNumero.MES, false);
+        s.setId(Series.getSeries().alta(s));
         return s;
     }
 

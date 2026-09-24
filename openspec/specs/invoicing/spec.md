@@ -208,9 +208,9 @@ La factura SHALL tener un descuento general que se aplica sobre toda la factura,
 
 ### Requirement: Numeración por series
 
-La aplicación SHALL tener series de numeración. En una instalación nueva la aplicación SHALL NO crear ninguna serie por defecto: el listado de series comienza vacío y el usuario las crea a mano. Cada serie SHALL tener su propio correlativo. El correlativo SHALL ser la identidad de la factura; el componente de fecha (mes o año) SHALL recalcularse según la fecha y guardarse en cada versión. El correlativo de cada serie SHALL ser independiente por ejercicio: cada año de trabajo reinicia su propia cuenta sobre el siguiente número de ese año, sin afectar al correlativo de otros años. Las series SHALL poder crearse y configurarse desde la aplicación. La aplicación SHALL recordar la última serie utilizada y proponerla al crear la siguiente factura. El número SHALL proponerse automáticamente y poder modificarse manualmente. El número SHALL NOT consumirse hasta que la factura se guarda correctamente. Los números liberados por el borrado físico de facturas SHALL reutilizarse siempre antes de proponer un correlativo nuevo. SHALL ser configurable por serie el comportamiento con números anulados: continuar hacia delante o reutilizar números anulados; el comportamiento predeterminado SHALL ser continuar hacia delante. En Configuración → Series el usuario SHALL poder ver las series, ver el siguiente número y modificarlo.
+La aplicación SHALL tener series de numeración. En una instalación nueva la aplicación SHALL NO crear ninguna serie por defecto: el listado de series comienza vacío y el usuario las crea a mano. Cada serie SHALL tener su propio correlativo. El correlativo SHALL ser la identidad de la factura; el componente de fecha (mes o año) SHALL recalcularse según la fecha y guardarse en cada versión. El correlativo de cada serie SHALL ser independiente por ejercicio: cada año de trabajo reinicia su propia cuenta sobre el siguiente número de ese año, sin afectar al correlativo de otros años. Las series SHALL poder crearse y configurarse desde la aplicación. La aplicación SHALL recordar la última serie utilizada y proponerla al crear la siguiente factura. El número SHALL proponerse automáticamente y poder modificarse manualmente. El número SHALL NOT consumirse hasta que la factura se guarda correctamente. El siguiente correlativo de una serie SHALL calcularse a partir de sus propias facturas: el mayor correlativo usado ese año más uno, o 1 si la serie no tiene ninguna factura ese año. La aplicación SHALL NOT guardar contadores de numeración. Una factura anulada SHALL conservar su correlativo, que SHALL NOT volver a proponerse. Los correlativos que queden libres por el borrado físico de facturas SHALL ofrecerse antes de proponer un correlativo nuevo. En Configuración → Series el usuario SHALL poder ver las series y su siguiente número, que SHALL NOT poder modificarse a mano.
 
-Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\ (formato CODIGO-CORRELATIVO/MES o CORRELATIVO/MES si no hay código), \ANIO\ (formato CODIGO-CORRELATIVO-ANIO o CORRELATIVO-ANIO si no hay código) y \NINGUNO\ (formato CODIGO-CORRELATIVO o solo CORRELATIVO si no hay código). El campo \codigo\ de una serie SHALL poder estar vacío, en cuyo caso el número NO tendrá prefijo de letra; solo SHALL admitirse una serie sin código a la vez, de modo que otra serie en blanco se rechaza y se identifica la serie por su descripción. El formato predeterminado para series nuevas SHALL ser \MES\. La reutilización de números anulados y de números borrados SHALL operar dentro del mismo año: solo se reutilizan correlativos libres de ese ejercicio y solo se consideran ocupados los correlativos activos de ese ejercicio.
+Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\ (formato CODIGO-CORRELATIVO/MES o CORRELATIVO/MES si no hay código), \ANIO\ (formato CODIGO-CORRELATIVO-ANIO o CORRELATIVO-ANIO si no hay código) y \NINGUNO\ (formato CODIGO-CORRELATIVO o solo CORRELATIVO si no hay código). El campo \codigo\ de una serie SHALL poder estar vacío, en cuyo caso el número NO tendrá prefijo de letra; solo SHALL admitirse una serie sin código a la vez, de modo que otra serie en blanco se rechaza y se identifica la serie por su descripción. El formato predeterminado para series nuevas SHALL ser \MES\. Los correlativos libres SHALL buscarse dentro del mismo año: un correlativo SHALL considerarse usado cuando lo tiene una factura de esa serie y ese ejercicio, esté activa o anulada.
 
 #### Scenario: Propuesta de número con formato MES (actual)
 - **WHEN** el usuario crea una factura en la serie C con formato MES, fecha 11/08/2026 y el siguiente correlativo de 2026 es 58
@@ -274,16 +274,24 @@ Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\
 - **THEN** la aplicación impide el borrado e informa de que la serie tiene facturas y el histórico no se elimina
 
 #### Scenario: Correlativo independiente por año
-- **WHEN** la serie C tiene un siguiente correlativo 58 para 2026 y el usuario arranca con fecha de trabajo en 2025 y crea una factura
-- **THEN** la aplicación propone la primera factura de la serie C de 2025 con su correlativo propio de ese año, sin alterar el siguiente correlativo de 2026
+- **WHEN** la serie C tiene facturas hasta el correlativo 57 en 2026 y el usuario arranca con fecha de trabajo en 2025 y crea una factura
+- **THEN** la aplicación propone el correlativo 1 para 2025, porque la serie no tiene facturas de ese año, y la numeración de 2026 no cambia
 
 #### Scenario: Reutilización de números borrados
-- **WHEN** la serie C tiene en 2026 facturas activas con correlativos 1 y 3, y los correlativos 2 y 4 están registrados como disponibles tras borrar facturas
-- **THEN** al crear una factura en 2026 la aplicación propone reutilizar el correlativo 2, el menor hueco libre
+- **WHEN** la serie C tiene en 2026 facturas con los correlativos 1, 3 y 5, porque las del 2 y el 4 se borraron
+- **THEN** al crear una factura en 2026 la aplicación ofrece el correlativo 2, el menor hueco libre, o continuar con el 6
 
 #### Scenario: Reutilización de anulados limitada al año
-- **WHEN** la serie C tiene en 2025 una factura anulada con correlativo 5 y en 2026 una factura activa con correlativo 5, y la serie reutiliza números anulados
-- **THEN** al crear una factura en 2025 la aplicación propone reutilizar el correlativo 5, que está libre solo dentro del ejercicio 2025
+- **WHEN** la serie C tiene en 2025 una factura anulada con correlativo 5, el mayor de ese año, y el usuario crea otra factura en 2025
+- **THEN** la aplicación propone el correlativo 6: la factura anulada conserva el 5 y no se vuelve a ofrecer
+
+#### Scenario: El siguiente número sale de las facturas
+- **WHEN** la serie A tiene en 2026 las facturas 1, 2 y 3, y el usuario crea otra factura de 2026
+- **THEN** la aplicación propone el correlativo 4
+
+#### Scenario: Borrar la última factura libera su número
+- **WHEN** la serie A tiene en 2026 las facturas 1, 2 y 3 y el usuario borra la 3
+- **THEN** al crear otra factura de 2026 la aplicación propone el correlativo 3
 
 ### Requirement: Fecha de trabajo
 
@@ -458,7 +466,7 @@ La aplicación SHALL proporcionar los atajos Ctrl+N para Nueva factura, Ctrl+S p
 
 ### Requirement: Configuración
 
-La aplicación SHALL tener una pantalla de Configuración que permita configurar: los datos de la empresa (nombre, NIF, dirección, código postal, localidad, provincia y resto de datos necesarios para la cabecera); la cabecera del documento en dos modos, texto con datos de empresa o imagen/logo; el pie con texto legal libre configurable por el usuario; el tema de apariencia de la interfaz; los tipos de IVA; los tipos de retención de IRPF; las series (crear/configurar, ver y modificar el siguiente número, configurar la reutilización de números anulados y eliminar series sin facturas); las carpetas de PDF; el color de acento usado en los PDF exportados; y la acción «Cambiar de empresa», que vuelve a la pantalla de arranque. El color SHALL guardarse como preferencia `color_pdf`; si nunca se configura, los PDF SHALL usar arena Alcazaba (`#B08D57`), y del color elegido SHALL derivarse el resto de tonos del documento. La aplicación SHALL recordar preferencias de trabajo: última serie utilizada, última carpeta de exportación y tema de apariencia. El tema SHALL guardarse en cada empresa, igual que el color del PDF, de modo que cada empresa conserve su propio tema. Al entrar en una empresa o cambiar a otra SHALL aplicarse el tema guardado en ella y, si nunca se ha guardado ninguno, el tema biblioteca8. La pantalla de arranque, que se muestra antes de elegir empresa, SHALL usar el tema de la última empresa abierta. El tamaño y la posición de la ventana SHALL NOT recordarse: cada pantalla se abre con el tamaño que le corresponde.
+La aplicación SHALL tener una pantalla de Configuración que permita configurar: los datos de la empresa (nombre, NIF, dirección, código postal, localidad, provincia y resto de datos necesarios para la cabecera); la cabecera del documento en dos modos, texto con datos de empresa o imagen/logo; el pie con texto legal libre configurable por el usuario; el tema de apariencia de la interfaz; los tipos de IVA; los tipos de retención de IRPF; las series (crear y configurar en su ficha, ver el siguiente número y eliminar series sin facturas); las carpetas de PDF; el color de acento usado en los PDF exportados; y la acción «Cambiar de empresa», que vuelve a la pantalla de arranque. El color SHALL guardarse como preferencia `color_pdf`; si nunca se configura, los PDF SHALL usar arena Alcazaba (`#B08D57`), y del color elegido SHALL derivarse el resto de tonos del documento. La aplicación SHALL recordar preferencias de trabajo: última serie utilizada, última carpeta de exportación y tema de apariencia. El tema SHALL guardarse en cada empresa, igual que el color del PDF, de modo que cada empresa conserve su propio tema. Al entrar en una empresa o cambiar a otra SHALL aplicarse el tema guardado en ella y, si nunca se ha guardado ninguno, el tema biblioteca8. La pantalla de arranque, que se muestra antes de elegir empresa, SHALL usar el tema de la última empresa abierta. El tamaño y la posición de la ventana SHALL NOT recordarse: cada pantalla se abre con el tamaño que le corresponde.
 
 En el tamaño mínimo de ventana (1024×768), todos los campos de la sección Empresa SHALL verse completos, sin recortes por el borde derecho.
 
@@ -475,8 +483,8 @@ En el tamaño mínimo de ventana (1024×768), todos los campos de la sección Em
 - **THEN** el nuevo texto se repite en las páginas de los PDF generados
 
 #### Scenario: Modificar siguiente número
-- **WHEN** el usuario modifica el siguiente número de una serie en Configuración
-- **THEN** la próxima factura de esa serie se propone a partir del nuevo valor
+- **WHEN** el usuario abre Configuración → Series
+- **THEN** ve el siguiente número de cada serie, calculado a partir de sus facturas del año de trabajo, y no puede cambiarlo a mano
 
 #### Scenario: Cambiar el tema de la interfaz
 - **WHEN** el usuario selecciona un tema en Configuración y guarda
@@ -836,7 +844,7 @@ El menú principal SHALL mostrar el nombre, el NIF y el logo de la empresa confi
 
 ### Requirement: Ventana
 
-La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantalla principal, en la primera ejecución y en todas las siguientes. La posición y el tamaño de la ventana SHALL seguir guardándose al cerrar la aplicación, pero SHALL NOT usarse al abrirla: la aplicación SHALL ignorar cualquier posición o tamaño guardados. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo y maximizar la ventana durante la sesión. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico y la fila de alta rápida de Series en Configuración SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) SHALL mostrarse en una ventana propia, fija y pequeña de 760x520, también centrada. Al entrar en una empresa, la aplicación SHALL abrir la ventana principal a 1024x768 y centrada con la primera pantalla, y SHALL cerrar la ventana de arranque.
+La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantalla principal, en la primera ejecución y en todas las siguientes. La posición y el tamaño de la ventana SHALL seguir guardándose al cerrar la aplicación, pero SHALL NOT usarse al abrirla: la aplicación SHALL ignorar cualquier posición o tamaño guardados. El tamaño mínimo de las vistas principales SHALL ser 1024x768 y el usuario SHALL poder redimensionar hasta ese mínimo y maximizar la ventana durante la sesión. Con la ventana en su tamaño mínimo, ninguna pantalla SHALL recortar ni ocultar controles: los filtros del Histórico SHALL reorganizarse en varias líneas cuando el ancho no baste, manteniendo cada grupo de botones de acción unido, y los campos de la cabecera del Editor SHALL repartirse el ancho disponible. El arranque (selección de empresa) SHALL mostrarse en una ventana propia, fija y pequeña de 760x520, también centrada. Al entrar en una empresa, la aplicación SHALL abrir la ventana principal a 1024x768 y centrada con la primera pantalla, y SHALL cerrar la ventana de arranque.
 
 #### Scenario: Primera ejecución abre a 1024x768 centrada
 - **WHEN** el usuario inicia la aplicación sin preferencias de ventana guardadas

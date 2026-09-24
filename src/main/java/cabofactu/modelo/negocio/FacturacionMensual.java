@@ -21,13 +21,10 @@ public class FacturacionMensual {
 
     private final Facturas facturas;
     private final FacturaDAO facturaDAO;
-    private final Numeracion numeracion;
 
-    public FacturacionMensual(Facturas facturas, FacturaDAO facturaDAO,
-                                     Numeracion numeracion) {
+    public FacturacionMensual(Facturas facturas, FacturaDAO facturaDAO) {
         this.facturas = facturas;
         this.facturaDAO = facturaDAO;
-        this.numeracion = numeracion;
     }
 
     public enum ModoDia {
@@ -59,7 +56,7 @@ public class FacturacionMensual {
             mesesAGenerar.add(mes);
         }
 
-        List<Integer> numeros = numeracion.proponerNumeros(serie, anio, mesesAGenerar.size(), usarHuecos);
+        List<Integer> numeros = Series.getSeries().proponerNumeros(serie, anio, mesesAGenerar.size(), usarHuecos);
 
         Conexion.iniciarTransaccion();
         try {

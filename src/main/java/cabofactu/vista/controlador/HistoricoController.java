@@ -107,7 +107,7 @@ public class HistoricoController implements Pantalla, Initializable {
         barraController.marcarActivo("historico");
         try {
             comboSerie.getItems().add("(Todas)");
-            for (Serie s : Vista.getInstancia().getControlador().getModelo().getSeries().listar()) {
+            for (Serie s : Vista.getInstancia().getControlador().listadoSeries()) {
                 comboSerie.getItems().add(s.getCodigo());
             }
             comboSerie.setValue("(Todas)");

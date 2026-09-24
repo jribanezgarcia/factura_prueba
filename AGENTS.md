@@ -70,7 +70,7 @@ vista/controlador/      un *Controller por FXML
 - **Las pantallas llaman siempre así**: `Vista.getInstancia().getControlador().altaCliente(cliente);`
 - `Controlador` y `Modelo` **repiten cada operación** con un método de una línea, como en Biblioteca8. Nombres **verbo + entidad**: `altaCliente`, `bajaCliente`, `modificarCliente`, `buscarCliente`, `listadoClientes`, `anularFactura`…
 - Las clases de negocio son **singletons** (`Clientes.getClientes()`, `Facturas.getFacturas()`) y **llevan dentro el SQL de sus propias tablas**. No hay clases DAO.
-  - `Clientes` → `cliente`. `Facturas` → `factura`, `factura_linea`. `Series` → `serie`, `serie_siguiente`, `numero_disponible` (incluida toda la numeración). `TiposIva`, `TiposRetencion`, `Configuracion`, `Empresas`, `CopiaSeguridad`.
+  - `Clientes` → `cliente`. `Facturas` → `factura`, `factura_linea`. `Series` → `serie` (incluida toda la numeración, que se calcula a partir de las facturas). `TiposIva`, `TiposRetencion`, `Configuracion`, `Empresas`, `CopiaSeguridad`.
   - Dentro del negocio los métodos llevan solo el verbo: `alta`, `baja`, `modificar`, `buscar`, `listado`.
 - `Calculos` (fórmulas de importes) y las herramientas (`Conexion`, `Dialogos`, `Formatos`, `ValidadorNif`…) son `static` y no guardan datos propios.
 - Paquetes: `cabofactu` (App, `InstanciaUnica`, `PreparacionDatos`), `.controlador`, `.modelo`, `.modelo.dominio`, `.modelo.negocio`, `.modelo.negocio.sqlite` (`Conexion` y el script de tablas), `.vista`, `.vista.controlador`, `.vista.recursos` (`LocalizadorRecursos`), `.vista.utilidades`, `.fichero`, `.pdf`, `.utilidades`.

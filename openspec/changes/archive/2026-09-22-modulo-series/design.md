@@ -116,7 +116,7 @@ private Set<Integer> correlativosUsados(long serieId, int anio) throws Exception
             JOIN factura_version v ON v.id = (
                 SELECT v2.id FROM factura_version v2 WHERE v2.factura_id = f.id
                 ORDER BY v2.version_num DESC LIMIT 1)
-            WHERE f.serie_id = ? AND strftime('%Y', v.fecha_factura) = ?
+            WHERE f.serie_id = ? AND CAST(strftime('%Y', v.fecha_factura) AS INTEGER) = ?
             """;
     ...
 }
@@ -173,11 +173,11 @@ Una línea cada una: `listadoSeries()`, `buscarSerie(long)`, `altaSerie(Serie)`,
 
 | Campo | Notas |
 |---|---|
-| Código | Puede quedarse vacío. Se guarda en mayúsculas |
+| Código | Puede quedarse vacío, con una pista debajo que lo dice. Se guarda en mayúsculas |
 | Descripción | Opcional |
 | Formato | `ComboBox<FormatoNumero>` con los tres valores; sin traductor, porque el `enum` ya escribe su texto |
 | Rectificativa | Casilla |
-| Ejemplo | Una etiqueta debajo que se actualiza al escribir el código o cambiar el formato: «Ejemplo: C-56/7» |
+| Previsualización | Una etiqueta debajo que se actualiza al escribir el código, cambiar el formato o marcar la casilla: «Previsualización: C-56/7» |
 
 El ejemplo se calcula con `formarNumero` sobre una serie de prueba, con el correlativo 56 y la fecha 15/07/2026, para no repetir las reglas del formato en la pantalla:
 
@@ -186,13 +186,15 @@ El ejemplo se calcula con `formarNumero` sobre una serie de prueba, con el corre
 private void actualizarEjemplo() {
     try {
         Serie prueba = new Serie(txtCodigo.getText().trim(), "", comboFormato.getValue(), chkRectificativa.isSelected());
-        lblEjemplo.setText("Ejemplo: " + Vista.getInstancia().getControlador()
+        lblEjemplo.setText("Previsualización: " + Vista.getInstancia().getControlador()
                 .formarNumero(prueba, 56, LocalDate.of(2026, 7, 15)));
     } catch (Exception e) {
         lblEjemplo.setText("");
     }
 }
 ```
+
+Si el guardado falla (por ejemplo, por un código duplicado), la ficha se vuelve a abrir con lo que había escrito para corregirlo sin empezar de cero.
 
 **No hay campo «Siguiente número»**: ya no se guarda.
 

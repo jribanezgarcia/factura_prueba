@@ -6,11 +6,10 @@ import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.FilaHistorial;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.HistorialDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +29,6 @@ class HistorialTest {
     @TempDir
     Path tempDir;
 
-    private SerieDAO serieDAO;
     private Facturas facturas;
     private Historial historial;
 
@@ -40,15 +38,12 @@ class HistorialTest {
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
 
-        serieDAO = new SerieDAO();
         FacturaDAO facturaDAO = new FacturaDAO();
         VersionFacturaDAO versionFacturaDAO = new VersionFacturaDAO();
         LineaFacturaDAO lineaFacturaDAO = new LineaFacturaDAO();
-        NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
-        Numeracion numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone());
         Versiones versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone());
-        facturas = new Facturas(facturaDAO, serieDAO,
-                versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, numeroDisponibleDAO, Clock.systemDefaultZone());
+        facturas = new Facturas(facturaDAO,
+                versionFacturaDAO, lineaFacturaDAO, versiones, Clock.systemDefaultZone());
         historial = new Historial(new HistorialDAO());
     }
 
@@ -77,14 +72,8 @@ class HistorialTest {
     }
 
     private Serie serieC() throws Exception {
-        Serie s = new Serie();
-        s.setCodigo("C");
-        s.setDescripcion("Cocinas");
-        s.setEsRectificativa(false);
-        s.setSiguienteCorrelativo(1);
-        s.setReutilizarAnulados(false);
-        s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieDAO.insertar(s, LocalDate.now().getYear()));
+        Serie s = new Serie("C", "Cocinas", FormatoNumero.MES, false);
+        s.setId(Series.getSeries().alta(s));
         return s;
     }
 

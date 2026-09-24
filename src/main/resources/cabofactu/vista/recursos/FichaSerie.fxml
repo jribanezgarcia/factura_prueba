@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<VBox prefWidth="375" spacing="12" styleClass="card"
+      xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="cabofactu.vista.controlador.FichaSerieController">
+    <padding>
+        <Insets top="16" right="16" bottom="16" left="16"/>
+    </padding>
+    <Label fx:id="lblTitulo" styleClass="section-title"/>
+    <GridPane hgap="8" vgap="8">
+        <columnConstraints>
+            <ColumnConstraints minWidth="105"/>
+            <ColumnConstraints hgrow="ALWAYS" fillWidth="true" minWidth="200"/>
+        </columnConstraints>
+        <Label text="Código" GridPane.columnIndex="0" GridPane.rowIndex="0"/>
+        <TextField fx:id="txtCodigo" GridPane.columnIndex="1" GridPane.rowIndex="0"/>
+        <Label text="Puedes dejarlo en blanco: el número saldrá sin prefijo." styleClass="muted" wrapText="true"
+               GridPane.columnIndex="1" GridPane.rowIndex="1"/>
+        <Label text="Descripción" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
+        <TextField fx:id="txtDescripcion" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+        <Label text="Formato" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
+        <ComboBox fx:id="comboFormato" maxWidth="Infinity" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+        <CheckBox fx:id="chkRectificativa" text="Es de rectificativas"
+                  GridPane.columnIndex="0" GridPane.rowIndex="4" GridPane.columnSpan="2"/>
+    </GridPane>
+    <Label fx:id="lblEjemplo" styleClass="muted"/>
+    <HBox spacing="8" alignment="CENTER_RIGHT">
+        <Button fx:id="btnCancelar" text="Cancelar" onAction="#cancelar" styleClass="default-button"/>
+        <Button fx:id="btnGuardar" text="Añadir" onAction="#guardar" styleClass="primary-button"/>
+    </HBox>
+</VBox>

@@ -56,8 +56,8 @@ class CopiaSeguridadTest {
             st.executeUpdate("INSERT INTO empresa (id, nombre, nif, logo_path) "
                     + "VALUES (1, 'Pruebas Backup', 'B12345674', '') "
                     + "ON CONFLICT(id) DO UPDATE SET nombre='Pruebas Backup', nif='B12345674', logo_path=''");
-            st.executeUpdate("INSERT INTO serie (id, codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados, sufijo_fecha) "
-                    + "VALUES (1, 'C', 'Serie C', 0, 1, 0, 'MES')");
+            st.executeUpdate("INSERT INTO serie (id, codigo, descripcion, es_rectificativa, sufijo_fecha) "
+                    + "VALUES (1, 'C', 'Serie C', 0, 'MES')");
             st.executeUpdate("INSERT INTO factura (id, serie_id, correlativo) VALUES (1, 1, 1)");
             st.executeUpdate("INSERT INTO factura_version (id, factura_id, version_num, numero, fecha_factura, fecha_guardado, estado, base_total, iva_total, total) "
                     + "VALUES (1, 1, 1, 'C-1/8', '" + LocalDate.now() + "', '" + LocalDate.now() + "', 'EMITIDA', '100.00', '21.00', '121.00')");
@@ -138,8 +138,8 @@ class CopiaSeguridadTest {
         try (Statement st = Conexion.establecerConexion().createStatement()) {
             st.executeUpdate("INSERT INTO empresa (id, nombre, nif) VALUES (1, 'Activa', 'A11111119') "
                     + "ON CONFLICT(id) DO UPDATE SET nombre='Activa', nif='A11111119'");
-            st.executeUpdate("INSERT INTO serie (id, codigo, descripcion, es_rectificativa, siguiente_correlativo, reutilizar_anulados, sufijo_fecha) "
-                    + "VALUES (1, 'A', 'Serie A', 0, 1, 0, 'MES')");
+            st.executeUpdate("INSERT INTO serie (id, codigo, descripcion, es_rectificativa, sufijo_fecha) "
+                    + "VALUES (1, 'A', 'Serie A', 0, 'MES')");
             st.executeUpdate("INSERT INTO factura (id, serie_id, correlativo) VALUES (1, 1, 1)");
             st.executeUpdate("INSERT INTO factura_version (id, factura_id, version_num, numero, fecha_factura, fecha_guardado, estado, base_total, iva_total, total) "
                     + "VALUES (1, 1, 1, 'A-1', '" + LocalDate.now() + "', '" + LocalDate.now() + "', 'EMITIDA', '50.00', '10.50', '60.50')");
@@ -288,13 +288,13 @@ class CopiaSeguridadTest {
         Files.copy(copia, distinta);
         try (var c = DriverManager.getConnection("jdbc:sqlite:" + distinta);
              Statement st = c.createStatement()) {
-            st.executeUpdate("DROP TABLE numero_disponible");
-            st.executeUpdate("CREATE TABLE numero_disponible_v2 (id INTEGER PRIMARY KEY)");
+            st.executeUpdate("DROP TABLE factura_linea");
+            st.executeUpdate("CREATE TABLE factura_linea_v2 (id INTEGER PRIMARY KEY)");
         }
 
         ValidacionException e = assertThrows(
                 ValidacionException.class, () -> servicio.leerResumen(distinta));
-        assertTrue(e.getMessage().contains("numero_disponible"),
+        assertTrue(e.getMessage().contains("factura_linea"),
                 "El rechazo debe mencionar lo que falta: " + e.getMessage());
     }
 

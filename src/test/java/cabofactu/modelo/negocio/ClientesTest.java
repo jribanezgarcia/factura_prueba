@@ -2,17 +2,15 @@ package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
-import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,14 +27,11 @@ class ClientesTest {
     @TempDir
     Path tempDir;
 
-    private SerieDAO serieDAO;
-
     @BeforeEach
     void setUp() throws Exception {
         Conexion.setCarpetaRaiz(tempDir);
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
-        serieDAO = new SerieDAO();
     }
 
     @AfterEach
@@ -48,15 +43,9 @@ class ClientesTest {
         return new Cliente("Ana García", "12345678Z", "Calle Mayor 1", "28013", "Madrid", "Madrid");
     }
 
-    private Serie serieC() throws SQLException {
-        Serie s = new Serie();
-        s.setCodigo("C");
-        s.setDescripcion("Cocinas");
-        s.setEsRectificativa(false);
-        s.setSiguienteCorrelativo(1);
-        s.setReutilizarAnulados(false);
-        s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieDAO.insertar(s, LocalDate.now().getYear()));
+    private Serie serieC() throws Exception {
+        Serie s = new Serie("C", "Cocinas", FormatoNumero.MES, false);
+        s.setId(Series.getSeries().alta(s));
         return s;
     }
 

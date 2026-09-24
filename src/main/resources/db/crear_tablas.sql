@@ -15,16 +15,7 @@ CREATE TABLE IF NOT EXISTS serie (
   codigo TEXT NOT NULL UNIQUE,
   descripcion TEXT,
   es_rectificativa INTEGER NOT NULL DEFAULT 0,
-  siguiente_correlativo INTEGER NOT NULL DEFAULT 1,
-  reutilizar_anulados INTEGER NOT NULL DEFAULT 0,
   sufijo_fecha TEXT NOT NULL DEFAULT 'MES'
-);
-
-CREATE TABLE IF NOT EXISTS serie_siguiente (
-  serie_id INTEGER NOT NULL REFERENCES serie(id),
-  anio INTEGER NOT NULL,
-  siguiente INTEGER NOT NULL DEFAULT 1,
-  PRIMARY KEY (serie_id, anio)
 );
 
 CREATE TABLE IF NOT EXISTS tipo_iva (
@@ -100,16 +91,6 @@ CREATE TABLE IF NOT EXISTS factura_linea (
 );
 
 CREATE INDEX IF NOT EXISTS idx_linea_version ON factura_linea(factura_version_id, orden);
-
-CREATE TABLE IF NOT EXISTS numero_disponible (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  serie_id INTEGER NOT NULL REFERENCES serie(id),
-  anio INTEGER NOT NULL,
-  correlativo INTEGER NOT NULL,
-  UNIQUE(serie_id, anio, correlativo)
-);
-
-CREATE INDEX IF NOT EXISTS idx_numero_disp ON numero_disponible(serie_id, anio, correlativo);
 
 CREATE TABLE IF NOT EXISTS empresa (
   id INTEGER PRIMARY KEY CHECK (id = 1),

@@ -7,11 +7,10 @@ import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +19,6 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.sql.SQLException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -38,7 +36,6 @@ class FacturasTest {
     @TempDir
     Path tempDir;
 
-    private SerieDAO serieDAO;
     private Versiones versionesNegocio;
     private LineaFacturaDAO lineaFacturaDAO;
     private FacturaDAO facturaDAO;
@@ -49,15 +46,12 @@ class FacturasTest {
         Conexion.setCarpetaRaiz(tempDir);
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
-        serieDAO = new SerieDAO();
         facturaDAO = new FacturaDAO();
         VersionFacturaDAO versionFacturaDAO = new VersionFacturaDAO();
         lineaFacturaDAO = new LineaFacturaDAO();
-        NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
-        Numeracion numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone());
         versionesNegocio = new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone());
-        facturas = new Facturas(facturaDAO, serieDAO,
-                versionFacturaDAO, lineaFacturaDAO, versionesNegocio, numeracion, numeroDisponibleDAO, Clock.systemDefaultZone());
+        facturas = new Facturas(facturaDAO,
+                versionFacturaDAO, lineaFacturaDAO, versionesNegocio, Clock.systemDefaultZone());
     }
 
     @AfterEach
@@ -65,15 +59,9 @@ class FacturasTest {
         Conexion.cerrarConexion();
     }
 
-    private Serie serieC() throws SQLException {
-        Serie s = new Serie();
-        s.setCodigo("C");
-        s.setDescripcion("Cocinas");
-        s.setEsRectificativa(false);
-        s.setSiguienteCorrelativo(1);
-        s.setReutilizarAnulados(false);
-        s.setSufijoFecha(Serie.SufijoFecha.MES);
-        s.setId(serieDAO.insertar(s, LocalDate.now().getYear()));
+    private Serie serieC() throws Exception {
+        Serie s = new Serie("C", "Cocinas", FormatoNumero.MES, false);
+        s.setId(Series.getSeries().alta(s));
         return s;
     }
 
@@ -206,10 +194,8 @@ class FacturasTest {
 
         long facturaId = facturas.crearFactura(c, fecha, cli, List.of(linea("100.00")),
                 0, null, null, null, dp);
-        NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
-        Estados estados = new Estados(new FacturaDAO(), serieDAO,
-                new VersionFacturaDAO(), lineaFacturaDAO, versionesNegocio,
-                new Numeracion(serieDAO, numeroDisponibleDAO, Clock.systemDefaultZone()), facturas);
+        Estados estados = new Estados(new FacturaDAO(),
+                new VersionFacturaDAO(), lineaFacturaDAO, versionesNegocio, facturas);
         estados.anular(facturaId);
 
         VersionFactura v = versionesNegocio.ultimaVersion(facturaId);
@@ -240,7 +226,11 @@ class FacturasTest {
     void borrarFacturaEliminaRegistrosYLiberaNumero() throws Exception {
         Serie c = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 21);
+        facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("100.00")),
+                0, null, null);
         long facturaId = facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("100.00")),
+                0, null, null);
+        facturas.crearFactura(c, fecha, clientePrueba(), List.of(linea("100.00")),
                 0, null, null);
         int correlativo = facturas.factura(facturaId).getCorrelativo();
 
@@ -251,8 +241,7 @@ class FacturasTest {
         facturas.borrarFactura(facturaId);
 
         assertNull(facturas.factura(facturaId));
-        Numeracion ns = new Numeracion(serieDAO, new NumeroDisponibleDAO(), Clock.systemDefaultZone());
-        assertTrue(ns.huecosDisponibles(c, fecha).contains(correlativo));
+        assertTrue(Series.getSeries().huecos(c, fecha).contains(correlativo));
     }
 
     @Test

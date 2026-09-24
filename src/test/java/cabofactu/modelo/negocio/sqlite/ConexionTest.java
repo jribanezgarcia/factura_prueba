@@ -55,9 +55,9 @@ class ConexionTest {
                     tablas.add(rs.getString(1));
                 }
             }
-            String[] esperadas = new String[]{"cliente", "serie", "serie_siguiente", "tipo_iva",
+            String[] esperadas = new String[]{"cliente", "serie", "tipo_iva",
                     "tipo_retencion", "factura", "factura_version", "factura_linea",
-                    "numero_disponible", "empresa", "preferencias"};
+                    "empresa", "preferencias"};
             for (int i = 0; i < esperadas.length; i++) {
                 assertTrue(tablas.contains(esperadas[i]), "Falta la tabla " + esperadas[i]);
             }

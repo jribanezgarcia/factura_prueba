@@ -292,7 +292,7 @@ public class EditorController implements Pantalla, Initializable {
                 correlativoFijo = vc.factura().getCorrelativo();
                 estadoActual = Vista.getInstancia().getControlador().getModelo().getFacturas().estadoActual(facturaAbiertaId);
 
-                Serie serie = Vista.getInstancia().getControlador().getModelo().getSeries().getById(vc.factura().getSerieId());
+                Serie serie = Vista.getInstancia().getControlador().buscarSerie(vc.factura().getSerieId());
                 comboSerie.setValue(serie);
                 comboSerie.setDisable(true);
                 actualizarVisibilidadReferencia(serie);
@@ -364,7 +364,7 @@ public class EditorController implements Pantalla, Initializable {
 
     private void cargarSeries() {
         try {
-            List<Serie> series = Vista.getInstancia().getControlador().getModelo().getSeries().listar();
+            List<Serie> series = Vista.getInstancia().getControlador().listadoSeries();
             comboSerie.getItems().setAll(series);
             Serie inicial = null;
             String ultima = Vista.getInstancia().getControlador().preferencia(PREV_SERIE);
@@ -1060,9 +1060,9 @@ public class EditorController implements Pantalla, Initializable {
                 }
                 Integer hueco = pedirHueco(serie, f);
                 if (hueco != null) {
-                    txtNumero.setText(Vista.getInstancia().getControlador().getModelo().getNumeracion().formarNumero(serie, hueco, f));
+                    txtNumero.setText(Vista.getInstancia().getControlador().formarNumero(serie, hueco, f));
                 }
-                Integer corr = Vista.getInstancia().getControlador().getModelo().getNumeracion().parseCorrelativo(serie, txtNumero.getText());
+                Integer corr = Vista.getInstancia().getControlador().parseCorrelativo(serie, txtNumero.getText());
                 if (corr == null) {
                     Dialogos.mostrarDialogoError("Guardar", "El número no se ajusta al formato de la serie "
                             + serie.getCodigo() + " (p. ej. " + serie.getCodigo() + "-1).");
@@ -1342,8 +1342,16 @@ public class EditorController implements Pantalla, Initializable {
         if (!base.isAbsolute()) {
             base = Conexion.carpetaEmpresa().resolve(base);
         }
-        Serie serie = Vista.getInstancia().getControlador().getModelo().getSeries().getById(vc.factura().getSerieId());
         String nombre = Formatos.nombreArchivoPdf(vc.version().getNumero());
+        Serie serie;
+        try {
+            serie = Vista.getInstancia().getControlador().buscarSerie(vc.factura().getSerieId());
+        } catch (Exception e) {
+            serie = null;
+        }
+        if (serie == null) {
+            return base.resolve(nombre);
+        }
         return base.resolve(String.valueOf(vc.version().getFechaFactura().getYear()))
                 .resolve(serie.getCodigo())
                 .resolve(nombre);
@@ -1430,11 +1438,11 @@ public class EditorController implements Pantalla, Initializable {
             return;
         }
         if (facturaAbiertaId != null && correlativoFijo != null && f != null) {
-            txtNumero.setText(Vista.getInstancia().getControlador().getModelo().getNumeracion().formarNumero(s, correlativoFijo, f));
+            txtNumero.setText(Vista.getInstancia().getControlador().formarNumero(s, correlativoFijo, f));
         } else if (f != null) {
             try {
-                int correlativo = Vista.getInstancia().getControlador().getModelo().getNumeracion().siguienteCorrelativo(s, f);
-                txtNumero.setText(Vista.getInstancia().getControlador().getModelo().getNumeracion().formarNumero(s, correlativo, f));
+                int correlativo = Vista.getInstancia().getControlador().siguienteCorrelativo(s, f);
+                txtNumero.setText(Vista.getInstancia().getControlador().formarNumero(s, correlativo, f));
             } catch (Exception e) {
                 txtNumero.setText("");
             }
@@ -1443,12 +1451,17 @@ public class EditorController implements Pantalla, Initializable {
 
     private Integer pedirHueco(Serie serie, LocalDate fecha) {
         try {
-            List<Integer> huecos = Vista.getInstancia().getControlador().getModelo().getNumeracion().huecosDisponibles(serie, fecha);
+            List<Integer> huecos = Vista.getInstancia().getControlador().huecosDeSerie(serie, fecha);
             if (huecos.isEmpty()) {
                 return null;
             }
-            int siguiente = Vista.getInstancia().getControlador().getModelo().getNumeracion().siguienteCorrelativo(serie, fecha);
-            List<Integer> menores = huecos.stream().filter(h -> h < siguiente).toList();
+            int siguiente = Vista.getInstancia().getControlador().siguienteCorrelativo(serie, fecha);
+            List<Integer> menores = new ArrayList<>();
+            for (int hueco : huecos) {
+                if (hueco < siguiente) {
+                    menores.add(hueco);
+                }
+            }
             if (menores.isEmpty()) {
                 return null;
             }

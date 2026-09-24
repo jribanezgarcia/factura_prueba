@@ -4,8 +4,6 @@ import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.HistorialDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.NumeroDisponibleDAO;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 
 import java.time.Clock;
@@ -15,6 +13,7 @@ import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
+import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.Clientes;
@@ -25,7 +24,6 @@ import cabofactu.modelo.negocio.Facturas;
 import cabofactu.modelo.negocio.FacturacionMensual;
 import cabofactu.modelo.negocio.Historial;
 import cabofactu.modelo.negocio.TiposIva;
-import cabofactu.modelo.negocio.Numeracion;
 import cabofactu.modelo.negocio.Rectificativas;
 import cabofactu.modelo.negocio.Reloj;
 import cabofactu.modelo.negocio.TiposRetencion;
@@ -39,9 +37,7 @@ import cabofactu.modelo.negocio.Versiones;
 public class Modelo {
 
     private final Reloj reloj;
-    private final Series series;
 
-    private final Numeracion numeracion;
     private final Versiones versiones;
     private final Facturas facturas;
     private final Estados estados;
@@ -55,23 +51,19 @@ public class Modelo {
     }
 
     public Modelo(Clock clock) {
-        SerieDAO serieDAO = new SerieDAO();
         FacturaDAO facturaDAO = new FacturaDAO();
         VersionFacturaDAO versionFacturaDAO = new VersionFacturaDAO();
         LineaFacturaDAO lineaFacturaDAO = new LineaFacturaDAO();
         CopiaSeguridadDAO copiaSeguridadDAO = new CopiaSeguridadDAO();
         HistorialDAO historialDAO = new HistorialDAO();
-        NumeroDisponibleDAO numeroDisponibleDAO = new NumeroDisponibleDAO();
 
         reloj = new Reloj(clock);
-        series = new Series(serieDAO, facturaDAO, clock);
 
-        numeracion = new Numeracion(serieDAO, numeroDisponibleDAO, clock);
         versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, clock);
-        facturas = new Facturas(facturaDAO, serieDAO, versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, numeroDisponibleDAO, clock);
-        estados = new Estados(facturaDAO, serieDAO, versionFacturaDAO, lineaFacturaDAO, versiones, numeracion, facturas);
-        rectificativas = new Rectificativas(facturas, serieDAO);
-        facturacionMensual = new FacturacionMensual(facturas, facturaDAO, numeracion);
+        facturas = new Facturas(facturaDAO, versionFacturaDAO, lineaFacturaDAO, versiones, clock);
+        estados = new Estados(facturaDAO, versionFacturaDAO, lineaFacturaDAO, versiones, facturas);
+        rectificativas = new Rectificativas(facturas);
+        facturacionMensual = new FacturacionMensual(facturas, facturaDAO);
         historial = new Historial(historialDAO);
         copiaSeguridad = new CopiaSeguridad(copiaSeguridadDAO, facturaDAO, clock);
     }
@@ -196,12 +188,53 @@ public class Modelo {
         return TiposRetencion.getTiposRetencion().enUso(id);
     }
 
-    public Series getSeries() {
-        return series;
+    public List<Serie> listadoSeries() throws Exception {
+        return Series.getSeries().listado();
     }
 
-    public Numeracion getNumeracion() {
-        return numeracion;
+    public Serie buscarSerie(long id) throws Exception {
+        return Series.getSeries().buscar(id);
+    }
+
+    public long altaSerie(Serie serie) throws Exception {
+        return Series.getSeries().alta(serie);
+    }
+
+    public void modificarSerie(Serie serie) throws Exception {
+        Series.getSeries().modificar(serie);
+    }
+
+    public void bajaSerie(long id) throws Exception {
+        Series.getSeries().baja(id);
+    }
+
+    public boolean serieTieneFacturas(long id) throws Exception {
+        return Series.getSeries().tieneFacturas(id);
+    }
+
+    public int siguienteCorrelativo(Serie serie, LocalDate fecha) throws Exception {
+        return Series.getSeries().siguienteCorrelativo(serie, fecha);
+    }
+
+    public List<Integer> huecosDeSerie(Serie serie, LocalDate fecha) throws Exception {
+        return Series.getSeries().huecos(serie, fecha);
+    }
+
+    public List<Integer> proponerNumeros(Serie serie, int anio, int cantidad, boolean usarHuecos)
+            throws Exception {
+        return Series.getSeries().proponerNumeros(serie, anio, cantidad, usarHuecos);
+    }
+
+    public String formarNumero(Serie serie, int correlativo, LocalDate fecha) {
+        return Series.getSeries().formarNumero(serie, correlativo, fecha);
+    }
+
+    public Integer parseCorrelativo(Serie serie, String numero) {
+        return Series.getSeries().parseCorrelativo(serie, numero);
+    }
+
+    public boolean correlativoOcupado(Serie serie, int correlativo, LocalDate fecha) throws Exception {
+        return Series.getSeries().correlativoOcupado(serie, correlativo, fecha);
     }
 
     public Versiones getVersiones() {

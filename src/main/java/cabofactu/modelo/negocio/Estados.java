@@ -10,7 +10,6 @@ import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.SerieDAO;
 import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 
 import java.util.ArrayList;
@@ -24,23 +23,19 @@ import java.util.List;
 public class Estados {
 
     private final FacturaDAO facturaDAO;
-    private final SerieDAO serieDAO;
     private final VersionFacturaDAO versionFacturaDAO;
     private final LineaFacturaDAO lineaFacturaDAO;
     private final Versiones versiones;
-    private final Numeracion numeracion;
     private final Facturas facturas;
 
-    public Estados(FacturaDAO facturaDAO, SerieDAO serieDAO,
+    public Estados(FacturaDAO facturaDAO,
                          VersionFacturaDAO versionFacturaDAO, LineaFacturaDAO lineaFacturaDAO,
-                         Versiones versiones, Numeracion numeracion,
+                         Versiones versiones,
                          Facturas facturas) {
         this.facturaDAO = facturaDAO;
-        this.serieDAO = serieDAO;
         this.versionFacturaDAO = versionFacturaDAO;
         this.lineaFacturaDAO = lineaFacturaDAO;
         this.versiones = versiones;
-        this.numeracion = numeracion;
         this.facturas = facturas;
     }
 
@@ -130,10 +125,13 @@ public class Estados {
         }
     }
 
-    private boolean numeroOcupado(long facturaId, VersionFactura base) {
+    private boolean numeroOcupado(long facturaId, VersionFactura base) throws Exception {
         Factura f = facturaDAO.getById(facturaId);
-        Serie serie = serieDAO.getById(f.getSerieId());
-        return numeracion.correlativoOcupadoPorActiva(serie, f.getCorrelativo(), base.getFechaFactura());
+        Serie serie = Series.getSeries().buscar(f.getSerieId());
+        if (serie == null) {
+            return true;
+        }
+        return Series.getSeries().correlativoOcupado(serie, f.getCorrelativo(), base.getFechaFactura());
     }
 
     private Cliente snapshotCliente(long facturaId, VersionFactura base) throws Exception {
