@@ -42,11 +42,14 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
+Change escrito y pendiente de aplicar: **`pruebas-de-pantalla`** (24/09). Añade la tercera capa de pruebas: TestFX en modo headless, una clase de prueba por pantalla y dos pruebas de apariencia (los temas y los textos recortados). Comprobado antes de escribirlo que `testfx-junit5:4.0.18` con `openjfx-monocle:21.0.2` funciona sin ventanas y que convive con la batería de hoy si el toolkit se arranca solo desde `PruebasJavaFx` con `FxToolkit`. Va **antes** que el módulo de facturas, para que ese módulo tenga red.
+
 ## Qué toca ahora
 
-1. Aplicar el siguiente módulo: **facturas sin versiones**.
-2. Después, en el orden de los módulos: editor → histórico → PDF → mensuales → copias → documentación.
-3. VeriFactu, al final, en otra rama.
+1. Aplicar **`pruebas-de-pantalla`**.
+2. Después, el siguiente módulo: **facturas sin versiones**.
+3. Después, en el orden de los módulos: editor → histórico → PDF → mensuales → copias → documentación.
+4. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
 
