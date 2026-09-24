@@ -43,5 +43,5 @@ Ninguna. Este change **no cambia el comportamiento de la aplicación**: solo añ
 
 - **Nuevo**: `src/test/java/cabofactu/vista/PruebaDePantalla.java` (clase base) y once clases de prueba de pantalla, más `TemasTest` y `TextosCompletosTest`.
 - **Cambia**: `pom.xml` (dos dependencias de test y la configuración headless de surefire), `src/test/java/cabofactu/vista/PruebasJavaFx.java` (arranca con `FxToolkit`) y `AGENTS.md` (el apartado «Tests»).
-- **No se toca nada de `src/main`**: si una prueba de pantalla obliga a cambiar código de producción, se para y se pregunta.
+- **Un arreglo en `src/main`, y solo uno**: `FichaSerieController.reintentarCon` y su llamada en `ConfiguracionController`. Al escribir las pruebas de Series salió que, editando una serie, un fallo al guardar dejaba la ficha sin poder guardar nunca más («No se pudo guardar: null», en bucle), y que Cancelar tiraba lo escrito sin preguntar. Está en `design.md - D9`. Si cualquier otra prueba obliga a cambiar la aplicación, se para y se pregunta.
 - **Queda fuera**: JaCoCo y las pruebas de mutación, que miden pero no prueban; los diálogos nativos de Windows (`FileChooser` y `DirectoryChooser`), que ningún robot de JavaFX puede manejar; y el aspecto del PDF.

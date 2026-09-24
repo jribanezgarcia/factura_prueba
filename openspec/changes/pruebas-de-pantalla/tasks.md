@@ -1,23 +1,27 @@
-> Rutas relativas a `src/test/java/cabofactu/` salvo que se diga otra cosa. El código exacto y los criterios están en `design.md`. Se sigue `AGENTS.md` también en los tests: solo `Exception`, sin ternarios, sin `var`, sin streams, sin `::`, **sin clases dentro de clases ni clases anónimas**, sin `Optional`, siempre `import` y Javadoc corto por clase. **No se toca nada de `src/main/java` ni de `src/main/resources`**: si una prueba obliga a cambiar la aplicación, se para y se pregunta. **No tocar** el `.root` de los `temas/tema-*.css`.
+> Rutas relativas a `src/test/java/cabofactu/` salvo que se diga otra cosa. El código exacto y los criterios están en `design.md`. Se sigue `AGENTS.md` también en los tests: solo `Exception`, sin ternarios, sin `var`, sin streams, sin `::`, **sin clases dentro de clases ni clases anónimas**, sin `Optional`, siempre `import` y Javadoc corto por clase. **No se toca nada de `src/main/java` ni de `src/main/resources`**, con una única excepción ya preguntada y decidida el 24/09: la tarea 3.1a. Si alguna otra prueba obliga a cambiar la aplicación, se para y se pregunta. **No tocar** el `.root` de los `temas/tema-*.css`.
 
 ## 1. Andamiaje (no se sigue hasta que esto esté en verde)
 
-- [ ] 1.1 En `pom.xml`, las dos dependencias de test y las seis propiedades de surefire. Ver `design.md - D1`.
-- [ ] 1.2 `vista/PruebasJavaFx.java`: `arrancarFx()` con `FxToolkit.registerPrimaryStage()`, fuera el `CountDownLatch`, el `try/catch` y los imports que sobren. Ver `design.md - D2`.
-- [ ] 1.3 Prueba de humo: una clase con **una** prueba que abra `FichaSerie.fxml`, escriba `B%`, pulse «Añadir», cierre el aviso y compruebe que `txtCodigo` tiene la clase `campo-error`.
-- [ ] 1.4 `mvn test`: la prueba de humo en verde, **sin que se abra ninguna ventana ni se mueva el puntero**.
-- [ ] 1.5 `mvn test` entero: las 309 de siempre más la de humo, todas en verde en el mismo JVM. Si alguna falla por el toolkit, aplicar el plan B de `design.md - D2` (`reuseForks=false`) y dejarlo escrito aquí.
+- [x] 1.1 En `pom.xml`, las dos dependencias de test y las seis propiedades de surefire. Ver `design.md - D1`.
+- [x] 1.2 `vista/PruebasJavaFx.java`: `arrancarFx()` con `FxToolkit.registerPrimaryStage()`, fuera el `CountDownLatch`, el `try/catch` y los imports que sobren. Ver `design.md - D2`.
+- [x] 1.3 Prueba de humo: una clase con **una** prueba que abra `FichaSerie.fxml`, escriba `B%`, pulse «Añadir», cierre el aviso y compruebe que `txtCodigo` tiene la clase `campo-error`.
+- [x] 1.4 `mvn test`: la prueba de humo en verde, **sin que se abra ninguna ventana ni se mueva el puntero**.
+- [x] 1.5 `mvn test` entero: las 309 de siempre más la de humo, todas en verde en el mismo JVM. Si alguna falla por el toolkit, aplicar el plan B de `design.md - D2` (`reuseForks=false`) y dejarlo escrito aquí.
 
 > Si 1.4 o 1.5 no se pueden dejar en verde, **parar y avisar**: el resto del change depende de esto.
 
 ## 2. La clase base
 
-- [ ] 2.1 Crear `vista/PruebaDePantalla.java`: carpeta temporal, `CargarDemo.cargar()`, `abrirEmpresa(...)`, `prepararVista(...)`, y las ayudas `mostrarPantalla(String)` y `cerrarAviso()`. Ver `design.md - D3`.
-- [ ] 2.2 Pasar la prueba de humo a heredar de `PruebaDePantalla` y comprobar que sigue en verde.
+- [x] 2.1 Crear `vista/PruebaDePantalla.java`: carpeta temporal, `CargarDemo.cargar()`, `abrirEmpresa(...)`, `prepararVista(...)`, y las ayudas `mostrarPantalla(String)` y `cerrarAviso()`. Ver `design.md - D3`.
+- [x] 2.2 Pasar la prueba de humo a heredar de `PruebaDePantalla` y comprobar que sigue en verde.
+- [ ] 2.3 Quitar de `PruebaDePantalla` el `System.out.println("REPRO …")` de `pulsar()` y los dos métodos que solo existen para él (`ventanaDe` y `nombreVentana`), y el `import` de `Set`, que no se usa.
+- [ ] 2.4 Añadir `aceptarAviso()` a `PruebaDePantalla`, junto a `cerrarAviso()`, y que **ninguna prueba toque un diálogo por su cuenta**: fuera los `pulsar("Aceptar")` sueltos. Una sola forma de contestar a un aviso.
 
 ## 3. Configuración y clientes
 
-- [ ] 3.1 `vista/PantallaSeriesTest.java` con los casos de la tabla de `design.md - D5` (la prueba de humo se convierte en uno de ellos).
+- [x] 3.1 `vista/PantallaSeriesTest.java` con los casos de la tabla de `design.md - D5` (la prueba de humo se convierte en uno de ellos). 9 casos en verde; el duplicado comprueba que la ficha se reabre (Cancelar sale sin preguntar porque `reintentarCon` deja lo escrito como base).
+- [ ] 3.1a **El único arreglo en la aplicación**: `FichaSerieController.reintentarCon` y su llamada en `ConfiguracionController.abrirFichaSerie`. Ver `design.md - D9`. Arregla dos cosas: que editar una serie y fallar al guardar deje de romper el guardado, y que Cancelar vuelva a preguntar antes de tirar lo escrito.
+- [ ] 3.1b Rehacer dos casos de `PantallaSeriesTest` contra el comportamiento bueno: en `codigoRepetidoAvisaYSigueAbierta`, que Cancelar **sí** pregunte; y uno nuevo, `editarConCodigoRepetidoSeCorrigeYGuarda`, que edita la serie A, le pone el código `R`, cierra el aviso, lo corrige a `B` y comprueba que **se guarda** y que la tabla lo enseña.
 - [ ] 3.2 `vista/PantallaIvaTest.java`.
 - [ ] 3.3 `vista/PantallaRetencionesTest.java`.
 - [ ] 3.4 `vista/PantallaConfiguracionTest.java`.
@@ -47,7 +51,7 @@
 ## 7. Normas y estado
 
 - [ ] 7.1 `AGENTS.md`, apartado «Tests»: las tres capas y el arranque único. Ver `design.md - D8`.
-- [ ] 7.2 Añadir este change a «En curso» en `ESTADO.md`.
+- [x] 7.2 Añadir este change a «En curso» en `ESTADO.md`.
 
 ## 8. Repaso final
 

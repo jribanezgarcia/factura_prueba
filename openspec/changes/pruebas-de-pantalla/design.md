@@ -174,6 +174,39 @@ El apartado «Tests» pasa de «un único test de pantallas» a las tres capas, 
 - Una prueba de pantalla por pantalla, con TestFX en modo headless, que comprueba **lo que ve el usuario** y nunca los campos de dentro del controlador.
 - JavaFX se arranca en los tests **solo** desde `PruebasJavaFx`.
 
+---
+
+## D9. El único arreglo en la aplicación: el reintento de la ficha de serie
+
+Al escribir las pruebas de la sección Series salió un fallo del reintento, que se añadió en su día fuera del `tasks.md` de `modulo-series`. Cuando el guardado falla (por ejemplo, un código repetido), `abrirFichaSerie` cierra la ficha, avisa y la vuelve a abrir con `reintentarCon(intento, esAlta)` para no perder lo escrito. Pero `reintentarCon` **no recupera el `original`**, y de ahí salen dos problemas:
+
+| Qué pasa | Por qué |
+|---|---|
+| Editando una serie, tras el aviso ya no se puede guardar: sale «No se pudo guardar: null» y la ficha se reabre una y otra vez | Con `original` en `null`, `guardar()` toma el camino del alta y crea una `Serie` **sin id**. `Series.modificar` hace `buscar(serie.getId())`, que recibe un `Long` nulo en un `long`: `NullPointerException` |
+| Tras el aviso, Cancelar tira lo escrito **sin preguntar** | `reintentarCon` vuelve a tomar la foto de los campos ya rellenos, así que la ficha cree que nadie ha tocado nada |
+
+El arreglo es que el reintento reciba también la serie de partida, y que la foto se tome **antes** de volver a poner lo escrito:
+
+```java
+/**
+ * Volvemos a poner lo que había escrito para reintentar tras un fallo al
+ * guardar. La serie de partida sigue siendo la misma, y la foto inicial
+ * también: si ahora se cancela, preguntamos igual que la primera vez.
+ */
+public void reintentarCon(Serie original, Serie intento) {
+    this.registro = null;
+    this.original = original;
+    rellenar(original, original == null);
+    fotoInicial = fotoDeLosCampos();
+    rellenar(intento, original == null);
+    actualizarEjemplo();
+}
+```
+
+Y en `ConfiguracionController.abrirFichaSerie`, la llamada pasa a ser `ficha.reintentarCon(registro, intento)`, donde `registro` es lo que se recibió al abrir (null en un alta). Con eso desaparece el parámetro `esAlta`.
+
+Es el **único** sitio de `src/main` que toca este change, y entra porque no se puede escribir la prueba contra un comportamiento correcto sin arreglarlo antes. Se cubre con dos casos de `PantallaSeriesTest` (tareas 3.1a y 3.1b).
+
 ## Decisiones
 
 | Decisión | Por qué |
@@ -183,6 +216,7 @@ El apartado «Tests» pasa de «un único test de pantallas» a las tres capas, 
 | Las dos pruebas de apariencia van dentro | Son diez líneas cada una y cubren los dos únicos fallos graves que ha tenido el proyecto |
 | Capacidad nueva `testing`, sin tocar `invoicing` | Este change no cambia el comportamiento de la aplicación; meterlo en `invoicing` ensuciaría la especificación del producto |
 | TestFX y no un robot propio | Es lo que usa todo el mundo en JavaFX, y es lo único que sabe cerrar un `Alert` modal abierto con `showAndWait` |
+| Se arregla el reintento de la ficha de serie (D9), aunque este change no toque `src/main` | Decisión del usuario el 24/09, al aparecer el fallo escribiendo las pruebas: editando una serie, el reintento dejaba el guardado roto. La prueba se escribe contra el comportamiento bueno, no contra el fallo |
 
 ## Riesgos y renuncias
 
