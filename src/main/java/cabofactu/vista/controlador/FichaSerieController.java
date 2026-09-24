@@ -72,14 +72,17 @@ public class FichaSerieController implements Pantalla, Initializable {
     }
 
     /**
-     * Rellenamos con unos valores ya escritos, para reintentar tras un fallo
-     * al guardar sin perder lo que había puesto el usuario.
+     * Volvemos a poner lo que había escrito para reintentar tras un fallo al
+     * guardar. La serie de partida sigue siendo la misma, y la foto inicial
+     * también: si ahora se cancela, preguntamos igual que la primera vez.
      */
-    public void reintentarCon(Serie intento, boolean esAlta) {
+    public void reintentarCon(Serie original, Serie intento) {
         this.registro = null;
-        rellenar(intento, esAlta);
-        actualizarEjemplo();
+        this.original = original;
+        rellenar(original, original == null);
         fotoInicial = fotoDeLosCampos();
+        rellenar(intento, original == null);
+        actualizarEjemplo();
     }
 
     private void rellenar(Serie valores, boolean esAlta) {

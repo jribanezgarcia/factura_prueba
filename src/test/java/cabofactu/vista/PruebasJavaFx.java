@@ -2,17 +2,16 @@ package cabofactu.vista;
 
 import cabofactu.controlador.Controlador;
 import cabofactu.modelo.Modelo;
-import javafx.stage.Stage;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
+import javafx.stage.Stage;
+import org.testfx.api.FxToolkit;
+import org.testfx.util.WaitForAsyncUtils;
 
 /**
- * Arranca el toolkit JavaFX una unica vez por JVM, de modo que varias clases
- * de test pueden usarlo sin colisionar (Platform.startup solo puede llamarse
- * una vez). No se ejecuta Platform.exit; las ventanas se ocultan y el toolkit
- * se mantiene vivo hasta que el JVM de surefire termina.
+ * Arranca el toolkit JavaFX una unica vez por JVM, con el mismo arranque que
+ * usa TestFX, de modo que las pruebas de pantalla y las que solo cargan FXML
+ * conviven sin pisarse. No se ejecuta Platform.exit; las ventanas se ocultan
+ * y el toolkit se mantiene vivo hasta que el JVM de surefire termina.
  */
 public final class PruebasJavaFx {
 
@@ -25,16 +24,9 @@ public final class PruebasJavaFx {
         if (arrancado) {
             return;
         }
-        try {
-            CountDownLatch l = new CountDownLatch(1);
-            Platform.startup(() -> l.countDown());
-            if (!l.await(30, TimeUnit.SECONDS)) {
-                throw new IllegalStateException("El toolkit JavaFX no arranco en 30 s");
-            }
-        } catch (IllegalStateException e) {
-            // Ya arrancado por otra clase de test en el mismo JVM
-        }
+        FxToolkit.registerPrimaryStage();
         Platform.setImplicitExit(false);
+        WaitForAsyncUtils.printException = true;
         arrancado = true;
     }
 

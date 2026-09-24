@@ -758,7 +758,7 @@ public class ConfiguracionController implements Pantalla, Initializable {
                 Parent raiz = cargador.load();
                 FichaSerieController ficha = cargador.getController();
                 if (reintentando) {
-                    ficha.reintentarCon(intento, esAlta);
+                    ficha.reintentarCon(registro, intento);
                 } else {
                     ficha.setRegistro(intento);
                 }

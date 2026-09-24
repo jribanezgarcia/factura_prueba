@@ -131,9 +131,18 @@ Obligatorio en todo código nuevo o modificado, también en los tests.
 
 ## Tests
 
-- Tests del negocio y de las clases de datos, contra una base temporal.
-- Un único test de pantallas, que carga cada FXML y comprueba que no hay errores de cableado.
+Tres capas, todas con `mvn test`:
+
+- **Negocio y clases de datos**, contra una base temporal.
+- **Carga de pantallas**: un único test que abre cada FXML y comprueba que no hay errores de cableado.
+- **Pruebas de pantalla**: una clase por pantalla, con TestFX en modo headless, que maneja los controles como lo haría el usuario. Heredan de `PruebaDePantalla`, que prepara la empresa de demostración en una carpeta temporal, y contestan a los avisos con `cerrarAviso()` y `aceptarAviso()`.
+
+Y dos de apariencia: `TemasTest` comprueba que cada tema define su paleta y `TextosCompletosTest` que ningún texto se recorta con la ventana en su tamaño mínimo.
+
+- Las pruebas de pantalla comprueban **lo que ve el usuario** —textos, contenido de las tablas, controles activos o desactivados— y nunca los campos internos del controlador. Se busca por `fx:id` o por el texto del botón, nunca por coordenadas.
+- JavaFX se arranca **solo** desde `PruebasJavaFx`, que usa `FxToolkit`. Con dos formas de arrancar el toolkit en el mismo JVM, el robot deja de ver las ventanas de los avisos.
 - Sin reloj inyectado: los tests usan la fecha real y calculan lo que esperan a partir de ella.
+- Se quedan a mano, porque no hay forma de automatizarlas: los diálogos de archivos de Windows (`FileChooser` y `DirectoryChooser`), el aspecto del PDF y si una pantalla queda bien.
 
 ## Comentarios
 

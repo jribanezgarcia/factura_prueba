@@ -42,7 +42,7 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
-Change escrito y pendiente de aplicar: **`pruebas-de-pantalla`** (24/09). Añade la tercera capa de pruebas: TestFX en modo headless, una clase de prueba por pantalla y dos pruebas de apariencia (los temas y los textos recortados). Comprobado antes de escribirlo que `testfx-junit5:4.0.18` con `openjfx-monocle:21.0.2` funciona sin ventanas y que convive con la batería de hoy si el toolkit se arranca solo desde `PruebasJavaFx` con `FxToolkit`. Va **antes** que el módulo de facturas, para que ese módulo tenga red.
+Change escrito y pendiente de aplicar: **`pruebas-de-pantalla`** (24/09). Añade la tercera capa de pruebas: TestFX en modo headless, una clase de prueba por pantalla y dos pruebas de apariencia (los temas y los textos recortados). Comprobado antes de escribirlo que `testfx-junit5:4.0.18` con `openjfx-monocle:21.0.2` funciona sin ventanas y que convive con la batería de hoy si el toolkit se arranca solo desde `PruebasJavaFx` con `FxToolkit`. Va **antes** que el módulo de facturas, para que ese módulo tenga red. En curso: andamiaje, base y secciones 3, 4 y 5 hechos (Series 10, IVA 7, Retenciones 6, Configuración 4, Clientes 8, Arranque 3, Menú 3, Editor 6, Histórico 5, Mensuales 4, Copias 2; 367 pruebas en total).
 
 ## Qué toca ahora
 
@@ -66,3 +66,14 @@ Change escrito y pendiente de aplicar: **`pruebas-de-pantalla`** (24/09). Añade
 - **No des por arreglada una medida sin comprobarla**: un test temporal que cargue la pantalla a 1024×768 y compare `getWidth()` con `prefWidth(-1)` lo confirma en segundos.
 - **Apareció una copia suelta de un change ya archivado en `openspec/changes/`** y después desapareció su carpeta en `archive/`. Antes de commitear, mira `git status` y no hagas `git add -A` sin revisar qué entra.
 - **En SQLite, comparar el texto de `strftime` con un entero no devuelve filas**: en las consultas de correlativos hay que poner `CAST(strftime('%Y', ...) AS INTEGER)`, como ya hacían las consultas originales del `SerieDAO`.
+- **Tras un duplicado, la ficha de serie se reabre con `reintentarCon` y resetea su foto inicial**: Cancelar sale sin preguntar «descartar». El test lo comprueba así; no es un fallo.
+- **Los clics del robot no llegan a los botones de los avisos en headless**: cerrarlos con `ENTER` (`push`) y esperar al cierre. Los eventos lanzados durante la transición se pierden, así que hay que esperar.
+- **Las ventanas cerradas siguen saliendo en los `lookup`**: filtrar por `isShowing` leído en el hilo FX, con `lookupAll` de JavaFX (el `lookup` de TestFX fuera del hilo FX es inestable con modales). El texto de un botón se busca recorriendo `Labeled`, porque `lookupAll` solo entiende CSS.
+- **Los fx:id se repiten entre secciones ocultas**: `lookupAll` encuentra nodos de secciones con `visible=false` y el robot escribe en el vacío. Hay que subir por los padres y descartar lo que tenga un `visible=false` por encima.
+- **Tras Aceptar puede venir otro aviso encadenado sin hueco entre medias** (confirmar un borrado que falla): la espera de `contestarAviso` acepta que se cierre **o** que cambie el texto.
+- **`cliente.nif` no tiene UNIQUE**: la aplicación guarda NIF duplicados sin avisar; no hay caso de prueba para eso.
+- **La moneda lleva espacio inseparable** (`Formatos.moneda`): en los asserts, `contains("1.760,00")` en vez del texto entero.
+- **Anular crea versión**: el histórico enseña una fila por versión; tras anular hay dos filas del mismo número.
+- **`pulsar` no toca la celda-botón de un `ComboBox`**: solo las celdas de la lista abierta (viven en un `ListView`). Si no, al elegir valor se pulsa el propio desplegable.
+- **Los desplegables enseñan unas diez filas**: las celdas que hay que bajar a ver no existen para el robot; en mensuales se eligen meses de los visibles.
+- **Rectificar guarda al momento y `Guardar` abre versiones; el número solo vale al crear** (al editar se ignora) y el hueco solo sale en factura nueva. Sin editar celdas no hay líneas con contenido, así que el ocupado y el hueco no se pueden probar hasta modulo-facturas.
