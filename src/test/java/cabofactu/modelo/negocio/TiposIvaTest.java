@@ -38,12 +38,12 @@ class TiposIvaTest {
         Conexion.cerrarConexion();
     }
 
-    private TipoIva iva21() throws Exception {
-        return new TipoIva("IVA 21%", 21, false);
+    private TipoIva ivaPrueba() throws Exception {
+        return new TipoIva("IVA prueba", 21, false);
     }
 
-    private long altaIva21() throws Exception {
-        return TiposIva.getTiposIva().alta(iva21());
+    private long altaIvaPrueba() throws Exception {
+        return TiposIva.getTiposIva().alta(ivaPrueba());
     }
 
     private void usarEnFactura(long tipoId) throws Exception {
@@ -59,9 +59,9 @@ class TiposIvaTest {
 
     @Test
     void altaYListado() throws Exception {
-        long id = altaIva21();
+        long id = altaIvaPrueba();
         TipoIva guardado = TiposIva.getTiposIva().buscar(id);
-        assertEquals("IVA 21%", guardado.getNombre());
+        assertEquals("IVA prueba", guardado.getNombre());
         assertEquals(21, guardado.getPorcentaje());
         assertFalse(guardado.isEsSuplido());
         List<TipoIva> lista = TiposIva.getTiposIva().listado(false);
@@ -71,9 +71,17 @@ class TiposIvaTest {
     }
 
     @Test
+    void altaConNombreRepetidoFalla() throws Exception {
+        TipoIva repetido = new TipoIva("IVA 10%", 10, false);
+        Exception e = assertThrows(Exception.class, () -> TiposIva.getTiposIva().alta(repetido));
+        assertEquals("Ya existe un tipo de IVA con el nombre IVA 10%.", e.getMessage());
+        assertEquals(4, TiposIva.getTiposIva().listado(false).size());
+    }
+
+    @Test
     void listadoSoloActivos() throws Exception {
-        altaIva21();
-        TipoIva inactivo = iva21();
+        altaIvaPrueba();
+        TipoIva inactivo = ivaPrueba();
         inactivo.setNombre("IVA viejo");
         inactivo.setActivo(false);
         TiposIva.getTiposIva().alta(inactivo);
@@ -88,7 +96,7 @@ class TiposIvaTest {
 
     @Test
     void modificarGuardaElNombre() throws Exception {
-        long id = altaIva21();
+        long id = altaIvaPrueba();
         TipoIva tipo = TiposIva.getTiposIva().buscar(id);
         tipo.setNombre("IVA general");
         TiposIva.getTiposIva().modificar(tipo);
@@ -96,8 +104,17 @@ class TiposIvaTest {
     }
 
     @Test
+    void modificarConSuPropioNombreFunciona() throws Exception {
+        long id = altaIvaPrueba();
+        TipoIva tipo = TiposIva.getTiposIva().buscar(id);
+        tipo.setPorcentaje(10);
+        TiposIva.getTiposIva().modificar(tipo);
+        assertEquals("IVA prueba", TiposIva.getTiposIva().buscar(id).getNombre());
+    }
+
+    @Test
     void modificarInexistenteFalla() throws Exception {
-        TipoIva tipo = iva21();
+        TipoIva tipo = ivaPrueba();
         tipo.setId(9999L);
         Exception e = assertThrows(Exception.class, () -> TiposIva.getTiposIva().modificar(tipo));
         assertEquals("No se ha encontrado el tipo de IVA.", e.getMessage());
@@ -105,7 +122,7 @@ class TiposIvaTest {
 
     @Test
     void noSePuedeConvertirEnSuplido() throws Exception {
-        long id = altaIva21();
+        long id = altaIvaPrueba();
         TipoIva tipo = TiposIva.getTiposIva().buscar(id);
         tipo.setEsSuplido(true);
         Exception e = assertThrows(Exception.class, () -> TiposIva.getTiposIva().modificar(tipo));
@@ -114,7 +131,7 @@ class TiposIvaTest {
 
     @Test
     void noSePuedePasarAPorcentaje() throws Exception {
-        TipoIva exento = new TipoIva("Exento", null, false);
+        TipoIva exento = new TipoIva("Exento prueba", null, false);
         long id = TiposIva.getTiposIva().alta(exento);
         TipoIva tipo = TiposIva.getTiposIva().buscar(id);
         tipo.setPorcentaje(21);
@@ -124,7 +141,7 @@ class TiposIvaTest {
 
     @Test
     void noSePuedeCambiarElPorcentajeEnUso() throws Exception {
-        long id = altaIva21();
+        long id = altaIvaPrueba();
         usarEnFactura(id);
         assertTrue(TiposIva.getTiposIva().enUso(id));
         TipoIva tipo = TiposIva.getTiposIva().buscar(id);
@@ -136,7 +153,7 @@ class TiposIvaTest {
 
     @Test
     void porcentajeLibreSinUso() throws Exception {
-        long id = altaIva21();
+        long id = altaIvaPrueba();
         assertFalse(TiposIva.getTiposIva().enUso(id));
         TipoIva tipo = TiposIva.getTiposIva().buscar(id);
         tipo.setPorcentaje(10);
@@ -146,14 +163,14 @@ class TiposIvaTest {
 
     @Test
     void bajaEliminaElTipo() throws Exception {
-        long id = altaIva21();
+        long id = altaIvaPrueba();
         TiposIva.getTiposIva().baja(id);
         assertNull(TiposIva.getTiposIva().buscar(id));
     }
 
     @Test
     void bajaEnUsoFalla() throws Exception {
-        long id = altaIva21();
+        long id = altaIvaPrueba();
         usarEnFactura(id);
         Exception e = assertThrows(Exception.class, () -> TiposIva.getTiposIva().baja(id));
         assertEquals("El tipo ya aparece en facturas y no se puede eliminar. Desactívalo en su ficha.",

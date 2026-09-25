@@ -91,6 +91,23 @@ class PantallaRetencionesTest extends PruebaDePantalla {
     }
 
     @Test
+    void nombreRepetidoAvisaYSeMarcaEnRojo() throws Exception {
+        abrirRetenciones();
+        pulsarBoton("#seccionRetenciones", "Nuevo");
+        escribirEn("#txtNombre", "IRPF profesional");
+        escribirEn("#txtPorcentaje", "15");
+        pulsar("Añadir");
+        assertTrue(textoAviso().contains("Ya existe un tipo de retención con el nombre IRPF profesional."));
+        cerrarAviso();
+        TextField nombre = buscar("#txtNombre", TextField.class);
+        assertTrue(nombre.getStyleClass().contains("campo-error"));
+        assertEquals(1, tabla().getItems().size());
+        pulsar("Cancelar");
+        assertTrue(textoAviso().contains("descartar"));
+        aceptarAviso();
+    }
+
+    @Test
     void porcentajeVacioAvisaYSeMarcaEnRojo() throws Exception {
         abrirRetenciones();
         pulsarBoton("#seccionRetenciones", "Nuevo");

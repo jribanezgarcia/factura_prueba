@@ -63,11 +63,28 @@ public class TiposRetencion {
         }
     }
 
+    /** El tipo que tiene ese nombre, o null si no lo tiene ninguno. */
+    public TipoRetencion buscarPorNombre(String nombre) throws Exception {
+        String consulta = "SELECT id, nombre, porcentaje, activo FROM tipo_retencion WHERE nombre = ?";
+        try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(consulta)) {
+            sentencia.setString(1, nombre);
+            try (ResultSet filas = sentencia.executeQuery()) {
+                if (filas.next()) {
+                    return crearTipoRetencion(filas);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new Exception("Error SQLite: " + e.getMessage());
+        }
+    }
+
     /** Damos de alta el tipo y devolvemos el id que le ha puesto la base de datos. */
     public long alta(TipoRetencion tipo) throws Exception {
         if (tipo == null) {
             throw new Exception("Indique los datos del tipo de retención.");
         }
+        comprobarNombre(tipo);
         String insertar = "INSERT INTO tipo_retencion (nombre, porcentaje, activo) VALUES (?, ?, ?)";
         try (PreparedStatement sentencia = Conexion.establecerConexion()
                 .prepareStatement(insertar, Statement.RETURN_GENERATED_KEYS)) {
@@ -87,6 +104,10 @@ public class TiposRetencion {
 
     /** Guardamos los cambios de un tipo de retención, sin dejar cambiar lo que estropearía el histórico. */
     public void modificar(TipoRetencion tipo) throws Exception {
+        if (tipo == null) {
+            throw new Exception("Indique los datos del tipo de retención.");
+        }
+        comprobarNombre(tipo);
         TipoRetencion actual = buscar(tipo.getId());
         if (actual == null) {
             throw new Exception("No se ha encontrado el tipo de retención.");
@@ -137,6 +158,14 @@ public class TiposRetencion {
             }
         } catch (SQLException e) {
             throw new Exception("Error SQLite: " + e.getMessage());
+        }
+    }
+
+    /** Ningún otro tipo puede tener este nombre. */
+    private void comprobarNombre(TipoRetencion tipo) throws Exception {
+        TipoRetencion otro = buscarPorNombre(tipo.getNombre());
+        if (otro != null && !otro.getId().equals(tipo.getId())) {
+            throw new Exception(String.format("Ya existe un tipo de retención con el nombre %s.", otro.getNombre()));
         }
     }
 

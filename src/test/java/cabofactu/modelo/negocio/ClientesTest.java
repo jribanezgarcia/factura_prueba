@@ -16,6 +16,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -41,6 +42,10 @@ class ClientesTest {
 
     private Cliente clienteAna() throws Exception {
         return new Cliente("Ana García", "12345678Z", "Calle Mayor 1", "28013", "Madrid", "Madrid");
+    }
+
+    private Cliente clienteLuis() throws Exception {
+        return new Cliente("Luis Gómez", "87654321X", "Calle Nueva 2", "28014", "Madrid", "Madrid");
     }
 
     private Serie serieC() throws Exception {
@@ -76,12 +81,42 @@ class ClientesTest {
     }
 
     @Test
-    void modificar() throws Exception {
+    void buscarPorNifEncuentraClienteInactivo() throws Exception {
+        long id = Clientes.getClientes().alta(clienteAna());
+        Clientes.getClientes().desactivar(id);
+        Cliente encontrado = Clientes.getClientes().buscarPorNif("12345678Z");
+        assertEquals("Ana García", encontrado.getNombre());
+        assertFalse(encontrado.isActivo());
+    }
+
+    @Test
+    void altaConNifRepetidoFalla() throws Exception {
+        Clientes.getClientes().alta(clienteAna());
+        Cliente repetido = clienteLuis();
+        repetido.setNif("12345678Z");
+        Exception e = assertThrows(Exception.class, () -> Clientes.getClientes().alta(repetido));
+        assertEquals("Ya existe un cliente con el NIF 12345678Z: Ana García.", e.getMessage());
+        assertEquals(1, Clientes.getClientes().listado(false).size());
+    }
+
+    @Test
+    void modificarSinTocarElNifFunciona() throws Exception {
         long id = Clientes.getClientes().alta(clienteAna());
         Cliente guardado = Clientes.getClientes().buscar(id);
         guardado.setNombre("Ana García López");
         Clientes.getClientes().modificar(guardado);
         assertEquals("Ana García López", Clientes.getClientes().buscar(id).getNombre());
+    }
+
+    @Test
+    void modificarConNifDeOtroFalla() throws Exception {
+        Clientes.getClientes().alta(clienteAna());
+        long id = Clientes.getClientes().alta(clienteLuis());
+        Cliente guardado = Clientes.getClientes().buscar(id);
+        guardado.setNif("12345678Z");
+        Exception e = assertThrows(Exception.class, () -> Clientes.getClientes().modificar(guardado));
+        assertEquals("Ya existe un cliente con el NIF 12345678Z: Ana García.", e.getMessage());
+        assertEquals("87654321X", Clientes.getClientes().buscar(id).getNif());
     }
 
     @Test

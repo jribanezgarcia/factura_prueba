@@ -2,6 +2,7 @@ package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.vista.Pantalla;
+import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.Dialogos;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -98,11 +99,16 @@ public class FichaClienteController implements Pantalla, Initializable {
             return;
         }
         try {
+            Cliente cliente;
             if (original == null) {
-                registro = clienteDeLosCampos();
+                cliente = clienteDeLosCampos();
             } else {
-                registro = actualizarRegistro();
+                cliente = actualizarRegistro();
             }
+            if (!nifLibre(cliente)) {
+                return;
+            }
+            registro = cliente;
             cerrarVentana(event);
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
@@ -143,6 +149,33 @@ public class FichaClienteController implements Pantalla, Initializable {
         copia.setEmail(txtEmail.getText().trim());
         copia.setActivo(chkActivo.isSelected());
         return copia;
+    }
+
+    /**
+     * Miramos si otro cliente tiene ya este NIF. Si es uno dado de baja y estamos
+     * dando de alta, ofrecemos recuperarlo: el cliente pasa a llevar su id y vuelve
+     * a estar activo. Devolvemos false si no se puede guardar.
+     */
+    private boolean nifLibre(Cliente cliente) throws Exception {
+        Cliente otro = Vista.getInstancia().getControlador().buscarClientePorNif(cliente.getNif());
+        if (otro == null || otro.getId().equals(cliente.getId())) {
+            return true;
+        }
+        if (original == null && !otro.isActivo()) {
+            boolean recuperar = Dialogos.mostrarDialogoConfirmacion("Cliente dado de baja", String.format(
+                    "El cliente %s, con el NIF %s, está dado de baja.%n%n"
+                            + "¿Quieres volver a darlo de alta con los datos que acabas de escribir?",
+                    otro.getNombre(), otro.getNif()));
+            if (recuperar) {
+                cliente.setId(otro.getId());
+                cliente.setActivo(true);
+            }
+            return recuperar;
+        }
+        txtNif.getStyleClass().add("campo-error");
+        Dialogos.mostrarDialogoError("Datos del cliente", String.format(
+                "Ya existe un cliente con el NIF %s: %s.", otro.getNif(), otro.getNombre()));
+        return false;
     }
 
     /**

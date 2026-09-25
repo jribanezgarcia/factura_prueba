@@ -105,6 +105,43 @@ class PantallaClientesTest extends PruebaDePantalla {
     }
 
     @Test
+    void nifRepetidoAvisaYMantieneLaFichaAbierta() throws Exception {
+        abrirClientes();
+        pulsar("Nuevo");
+        rellenarFicha("Cliente Repetido S.L.", "B88888888");
+        pulsar("Añadir");
+        assertTrue(textoAviso().contains("Ya existe un cliente con el NIF B88888888: Cliente Ejemplo S.L."));
+        cerrarAviso();
+        TextField nif = buscar("#txtNif", TextField.class);
+        assertTrue(nif.getStyleClass().contains("campo-error"));
+        assertEquals("Cliente Repetido S.L.", buscar("#txtNombre", TextField.class).getText());
+        assertEquals(2, tabla().getItems().size());
+        pulsar("Cancelar");
+        aceptarAviso();
+    }
+
+    @Test
+    void recuperarClienteInactivoConservaSuFicha() throws Exception {
+        abrirClientes();
+        pulsarFila("Cliente Ejemplo S.L.");
+        pulsar("Eliminar");
+        assertTrue(textoAviso().contains("tiene facturas"));
+        aceptarAviso();
+        assertEquals("Inactivo", textoCelda("Cliente Ejemplo S.L.", "Estado"));
+
+        pulsar("Nuevo");
+        rellenarFicha("Cliente Ejemplo recuperado S.L.", "B88888888");
+        pulsar("Añadir");
+        assertTrue(textoAviso().contains("Cliente Ejemplo S.L."));
+        assertTrue(textoAviso().contains("volver a darlo de alta"));
+        aceptarAviso();
+
+        assertEquals(2, tabla().getItems().size());
+        assertEquals(-1, filaDe("Cliente Ejemplo S.L."));
+        assertEquals("Activo", textoCelda("Cliente Ejemplo recuperado S.L.", "Estado"));
+    }
+
+    @Test
     void nifMaloAvisaYSeMarcaEnRojo() throws Exception {
         abrirClientes();
         pulsar("Nuevo");

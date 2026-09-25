@@ -69,6 +69,15 @@ class TiposRetencionTest {
     }
 
     @Test
+    void altaConNombreRepetidoFalla() throws Exception {
+        altaIrpf15();
+        TipoRetencion repetido = new TipoRetencion("IRPF 15%", 19);
+        Exception e = assertThrows(Exception.class, () -> TiposRetencion.getTiposRetencion().alta(repetido));
+        assertEquals("Ya existe un tipo de retención con el nombre IRPF 15%.", e.getMessage());
+        assertEquals(1, TiposRetencion.getTiposRetencion().listado(false).size());
+    }
+
+    @Test
     void listadoSoloActivos() throws Exception {
         altaIrpf15();
         TipoRetencion inactiva = new TipoRetencion("Inactiva", 7);
@@ -115,7 +124,7 @@ class TiposRetencionTest {
     }
 
     @Test
-    void porcentajeLibreSinUso() throws Exception {
+    void modificarConSuPropioNombreYPorcentajeFunciona() throws Exception {
         long id = altaIrpf15();
         assertFalse(TiposRetencion.getTiposRetencion().enUso(id));
         TipoRetencion tipo = TiposRetencion.getTiposRetencion().buscar(id);

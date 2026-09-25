@@ -112,10 +112,7 @@ public class Facturas {
                     "El correlativo " + correlativo + " ya esta ocupado por una factura activa de la serie " + serie.getCodigo());
         }
 
-        if (cliente != null && cliente.getId() == null && !isVacio(cliente)) {
-            long clienteId = Clientes.getClientes().alta(cliente);
-            cliente.setId(clienteId);
-        }
+        asegurarCliente(cliente);
 
         long facturaId = facturaDAO.insertar(serie.getId(), correlativo,
                 cliente == null ? null : cliente.getId());
@@ -171,10 +168,7 @@ String observaciones, String referencia, DatosPago datosPago,
             }
             Serie serie = Series.getSeries().buscar(factura.getSerieId());
 
-            if (cliente != null && cliente.getId() == null && !isVacio(cliente)) {
-                long clienteId = Clientes.getClientes().alta(cliente);
-                cliente.setId(clienteId);
-            }
+            asegurarCliente(cliente);
             facturaDAO.actualizarCliente(facturaId, cliente == null ? null : cliente.getId());
 
             String numero = Series.getSeries().formarNumero(serie, factura.getCorrelativo(), fecha);
@@ -300,6 +294,23 @@ String observaciones, String referencia, DatosPago datosPago,
         if (descuento < 0 || descuento > 100) {
             throw new ValidacionException("El descuento debe estar entre 0 y 100");
         }
+    }
+
+    /**
+     * Si el cliente se ha escrito a mano, usamos el que ya tiene ese NIF o, si no
+     * hay ninguno, lo damos de alta. Su ficha no se toca: la factura guarda su
+     * propia copia de los datos.
+     */
+    private void asegurarCliente(Cliente cliente) throws Exception {
+        if (cliente == null || cliente.getId() != null || isVacio(cliente)) {
+            return;
+        }
+        Cliente existente = Clientes.getClientes().buscarPorNif(cliente.getNif());
+        if (existente != null) {
+            cliente.setId(existente.getId());
+            return;
+        }
+        cliente.setId(Clientes.getClientes().alta(cliente));
     }
 
     private boolean isVacio(Cliente c) {

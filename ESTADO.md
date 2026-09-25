@@ -36,6 +36,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 ## En curso
 
+- **`revision-base-de-datos`**: NIF y nombres únicos en las tablas maestras, recuperación de clientes inactivos y reutilización del cliente al facturar.
+
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.

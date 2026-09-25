@@ -109,11 +109,16 @@ public class FichaTipoIvaController implements Pantalla, Initializable {
             return;
         }
         try {
+            TipoIva tipo;
             if (original == null) {
-                registro = tipoDeLosCampos();
+                tipo = tipoDeLosCampos();
             } else {
-                registro = actualizarRegistro();
+                tipo = actualizarRegistro();
             }
+            if (!nombreLibre(tipo)) {
+                return;
+            }
+            registro = tipo;
             cerrarVentana(event);
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Datos del tipo de IVA", e.getMessage());
@@ -164,6 +169,18 @@ public class FichaTipoIvaController implements Pantalla, Initializable {
         copia.setMotivoExencion(txtMotivo.getText().trim());
         copia.setActivo(chkActivo.isSelected());
         return copia;
+    }
+
+    /** Miramos si otro tipo de IVA tiene ya este nombre. Devolvemos false si no se puede guardar. */
+    private boolean nombreLibre(TipoIva tipo) throws Exception {
+        TipoIva otro = Vista.getInstancia().getControlador().buscarTipoIvaPorNombre(tipo.getNombre());
+        if (otro == null || otro.getId().equals(tipo.getId())) {
+            return true;
+        }
+        txtNombre.getStyleClass().add("campo-error");
+        Dialogos.mostrarDialogoError("Datos del tipo de IVA", String.format(
+                "Ya existe un tipo de IVA con el nombre %s.", otro.getNombre()));
+        return false;
     }
 
     /**

@@ -24,6 +24,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/** Comprobamos la búsqueda del historial contra una base de datos temporal. */
 class HistorialTest {
 
     @TempDir
@@ -56,12 +57,16 @@ class HistorialTest {
         return new Cliente("Cliente Prueba", "12345678Z", "Calle Prueba 1", "28001", "Madrid", "Madrid");
     }
 
+    private Cliente clienteOtro() throws Exception {
+        return new Cliente("Cliente Otro", "87654321X", "Calle Prueba 2", "28002", "Madrid", "Madrid");
+    }
+
     @Test
     void buscaOrdenadoPorNumeroDeFactura() throws Exception {
         Serie c = serieC();
         facturas.crearFactura(c, LocalDate.of(2026, 9, 1), clientePrueba(),
                 List.of(linea("200.00")), 0, null, null, 2);
-        facturas.crearFactura(c, LocalDate.of(2026, 10, 1), clientePrueba(),
+        facturas.crearFactura(c, LocalDate.of(2026, 10, 1), clienteOtro(),
                 List.of(linea("100.00")), 0, null, null, 1);
 
         List<FilaHistorial> filas = historial.buscar(new FiltrosHistorial());

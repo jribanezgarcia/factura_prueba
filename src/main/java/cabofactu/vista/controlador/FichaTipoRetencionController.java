@@ -96,11 +96,16 @@ public class FichaTipoRetencionController implements Pantalla, Initializable {
             return;
         }
         try {
+            TipoRetencion tipo;
             if (original == null) {
-                registro = tipoDeLosCampos();
+                tipo = tipoDeLosCampos();
             } else {
-                registro = actualizarRegistro();
+                tipo = actualizarRegistro();
             }
+            if (!nombreLibre(tipo)) {
+                return;
+            }
+            registro = tipo;
             cerrarVentana(event);
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Datos del tipo de retención", e.getMessage());
@@ -130,6 +135,18 @@ public class FichaTipoRetencionController implements Pantalla, Initializable {
         copia.setPorcentaje(Integer.parseInt(txtPorcentaje.getText().trim()));
         copia.setActivo(chkActivo.isSelected());
         return copia;
+    }
+
+    /** Miramos si otro tipo de retención tiene ya este nombre. Devolvemos false si no se puede guardar. */
+    private boolean nombreLibre(TipoRetencion tipo) throws Exception {
+        TipoRetencion otro = Vista.getInstancia().getControlador().buscarTipoRetencionPorNombre(tipo.getNombre());
+        if (otro == null || otro.getId().equals(tipo.getId())) {
+            return true;
+        }
+        txtNombre.getStyleClass().add("campo-error");
+        Dialogos.mostrarDialogoError("Datos del tipo de retención", String.format(
+                "Ya existe un tipo de retención con el nombre %s.", otro.getNombre()));
+        return false;
     }
 
     /**

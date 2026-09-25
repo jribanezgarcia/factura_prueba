@@ -92,6 +92,23 @@ class PantallaIvaTest extends PruebaDePantalla {
     }
 
     @Test
+    void nombreRepetidoAvisaYSeMarcaEnRojo() throws Exception {
+        abrirIva();
+        pulsarBoton("#seccionIva", "Nuevo");
+        escribirEn("#txtNombre", "IVA 21%");
+        escribirEn("#txtPorcentaje", "21");
+        pulsar("Añadir");
+        assertTrue(textoAviso().contains("Ya existe un tipo de IVA con el nombre IVA 21%."));
+        cerrarAviso();
+        TextField nombre = buscar("#txtNombre", TextField.class);
+        assertTrue(nombre.getStyleClass().contains("campo-error"));
+        assertEquals(4, tabla().getItems().size());
+        pulsar("Cancelar");
+        assertTrue(textoAviso().contains("descartar"));
+        aceptarAviso();
+    }
+
+    @Test
     void porcentajeMaloAvisaYSeMarcaEnRojo() throws Exception {
         abrirIva();
         pulsarBoton("#seccionIva", "Nuevo");

@@ -1,12 +1,12 @@
 CREATE TABLE IF NOT EXISTS cliente (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   nombre TEXT NOT NULL,
-  nif TEXT,
+  nif TEXT NOT NULL UNIQUE,
   direccion TEXT,
   cp TEXT,
   localidad TEXT,
   provincia TEXT,
-  activo INTEGER NOT NULL DEFAULT 1,
+  activo INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0, 1)),
   email TEXT
 );
 
@@ -14,24 +14,24 @@ CREATE TABLE IF NOT EXISTS serie (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   codigo TEXT NOT NULL UNIQUE,
   descripcion TEXT,
-  es_rectificativa INTEGER NOT NULL DEFAULT 0,
-  sufijo_fecha TEXT NOT NULL DEFAULT 'MES'
+  es_rectificativa INTEGER NOT NULL DEFAULT 0 CHECK (es_rectificativa IN (0, 1)),
+  sufijo_fecha TEXT NOT NULL DEFAULT 'MES' CHECK (sufijo_fecha IN ('MES', 'ANIO', 'NINGUNO'))
 );
 
 CREATE TABLE IF NOT EXISTS tipo_iva (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  nombre TEXT NOT NULL,
+  nombre TEXT NOT NULL UNIQUE,
   porcentaje INTEGER,
   motivo_exencion TEXT,
-  activo INTEGER NOT NULL DEFAULT 1,
-  es_suplido INTEGER NOT NULL DEFAULT 0
+  activo INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0, 1)),
+  es_suplido INTEGER NOT NULL DEFAULT 0 CHECK (es_suplido IN (0, 1))
 );
 
 CREATE TABLE IF NOT EXISTS tipo_retencion (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  nombre TEXT NOT NULL,
+  nombre TEXT NOT NULL UNIQUE,
   porcentaje INTEGER NOT NULL,
-  activo INTEGER NOT NULL DEFAULT 1
+  activo INTEGER NOT NULL DEFAULT 1 CHECK (activo IN (0, 1))
 );
 
 CREATE TABLE IF NOT EXISTS factura (

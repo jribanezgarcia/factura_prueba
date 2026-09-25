@@ -23,6 +23,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+/** Comprobamos la anulación de facturas contra una base de datos temporal. */
 class EstadosTest {
 
     @TempDir
@@ -63,6 +64,10 @@ class EstadosTest {
         return new Cliente("Cliente Prueba", "12345678Z", "Calle Prueba 1", "28001", "Madrid", "Madrid");
     }
 
+    private Cliente clienteOtro() throws Exception {
+        return new Cliente("Cliente Otro", "87654321X", "Calle Prueba 2", "28002", "Madrid", "Madrid");
+    }
+
     private LineaFactura linea(String precio) {
         LineaFactura l = new LineaFactura();
         l.setCantidad(1);
@@ -79,7 +84,7 @@ class EstadosTest {
     void anularFacturasAnulaSoloLasEmitidas() throws Exception {
         Serie c = serieC();
         long f1 = facturas.crearFactura(c, LocalDate.of(2026, 1, 15), clientePrueba(), List.of(linea("100.00")), 0, null, null);
-        long f2 = facturas.crearFactura(c, LocalDate.of(2026, 2, 15), clientePrueba(), List.of(linea("100.00")), 0, null, null);
+        long f2 = facturas.crearFactura(c, LocalDate.of(2026, 2, 15), clienteOtro(), List.of(linea("100.00")), 0, null, null);
         estados.anular(f2);
 
         Estados.AnulacionResultado r = estados.anularFacturas(List.of(f1, f2));

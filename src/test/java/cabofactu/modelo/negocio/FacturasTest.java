@@ -31,6 +31,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Comprobamos las facturas contra una base temporal, incluidas sus versiones y líneas. */
 class FacturasTest {
 
     @TempDir
@@ -79,6 +80,20 @@ class FacturasTest {
         l.setIvaPorcentaje(21);
         l.setIvaImporte(Calculos.ivaDeBase(l.getTotalBase(), 21));
         return l;
+    }
+
+    @Test
+    void dosFacturasReutilizanElClienteEscritoAMano() throws Exception {
+        Serie serie = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 11);
+        long primeraId = facturas.crearFactura(serie, fecha, clientePrueba(), List.of(linea("100.00")),
+                0, null, null);
+        long segundaId = facturas.crearFactura(serie, fecha, clientePrueba(), List.of(linea("50.00")),
+                0, null, null);
+        List<Cliente> clientes = Clientes.getClientes().listado(false);
+        assertEquals(1, clientes.size());
+        assertEquals(clientes.get(0).getId(), facturas.factura(primeraId).getClienteId());
+        assertEquals(clientes.get(0).getId(), facturas.factura(segundaId).getClienteId());
     }
 
     @Test

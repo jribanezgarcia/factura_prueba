@@ -84,6 +84,11 @@ public class Modelo {
         return Clientes.getClientes().buscar(id);
     }
 
+    /** Buscamos el cliente que tiene ese NIF, esté activo o no. */
+    public Cliente buscarClientePorNif(String nif) throws Exception {
+        return Clientes.getClientes().buscarPorNif(nif);
+    }
+
     public long altaCliente(Cliente cliente) throws Exception {
         return Clientes.getClientes().alta(cliente);
     }
@@ -148,6 +153,11 @@ public class Modelo {
         return TiposIva.getTiposIva().buscar(id);
     }
 
+    /** Buscamos el tipo de IVA que tiene ese nombre. */
+    public TipoIva buscarTipoIvaPorNombre(String nombre) throws Exception {
+        return TiposIva.getTiposIva().buscarPorNombre(nombre);
+    }
+
     public long altaTipoIva(TipoIva tipo) throws Exception {
         return TiposIva.getTiposIva().alta(tipo);
     }
@@ -170,6 +180,11 @@ public class Modelo {
 
     public TipoRetencion buscarTipoRetencion(long id) throws Exception {
         return TiposRetencion.getTiposRetencion().buscar(id);
+    }
+
+    /** Buscamos el tipo de retención que tiene ese nombre. */
+    public TipoRetencion buscarTipoRetencionPorNombre(String nombre) throws Exception {
+        return TiposRetencion.getTiposRetencion().buscarPorNombre(nombre);
     }
 
     public long altaTipoRetencion(TipoRetencion tipo) throws Exception {

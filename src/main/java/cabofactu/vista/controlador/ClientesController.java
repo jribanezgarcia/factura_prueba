@@ -104,7 +104,12 @@ public class ClientesController implements Pantalla, Initializable {
             FichaClienteController ficha = abrirFicha(null, "Nuevo cliente");
             Cliente nuevo = ficha.getRegistro();
             if (nuevo != null) {
-                Vista.getInstancia().getControlador().altaCliente(nuevo);
+                // Si la ficha ha recuperado un cliente dado de baja, ya trae su id.
+                if (nuevo.getId() == null) {
+                    Vista.getInstancia().getControlador().altaCliente(nuevo);
+                } else {
+                    Vista.getInstancia().getControlador().modificarCliente(nuevo);
+                }
                 refrescarTabla();
             }
         } catch (Exception e) {

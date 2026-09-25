@@ -89,6 +89,23 @@ public class Clientes {
         }
     }
 
+    /** El cliente que tiene ese NIF, esté activo o no, o null si no lo tiene ninguno. */
+    public Cliente buscarPorNif(String nif) throws Exception {
+        String consulta = "SELECT id, nombre, nif, direccion, cp, localidad, provincia, email, activo "
+                + "FROM cliente WHERE nif = ?";
+        try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(consulta)) {
+            sentencia.setString(1, nif);
+            try (ResultSet filas = sentencia.executeQuery()) {
+                if (filas.next()) {
+                    return crearCliente(filas);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new Exception("Error SQLite: " + e.getMessage());
+        }
+    }
+
     /**
      * Damos de alta el cliente y devolvemos el id que le ha puesto la base
      * de datos.
@@ -97,6 +114,7 @@ public class Clientes {
         if (cliente == null) {
             throw new Exception("Indique los datos del cliente.");
         }
+        comprobarNif(cliente);
         String insertar = """
                 INSERT INTO cliente (nombre, nif, direccion, cp, localidad, provincia, email, activo)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -133,6 +151,7 @@ public class Clientes {
         if (cliente == null) {
             throw new Exception("Indique los datos del cliente.");
         }
+        comprobarNif(cliente);
         String actualizar = """
                 UPDATE cliente SET nombre = ?, nif = ?, direccion = ?, cp = ?, localidad = ?,
                 provincia = ?, email = ?, activo = ? WHERE id = ?
@@ -199,6 +218,15 @@ public class Clientes {
             }
         } catch (SQLException e) {
             throw new Exception("Error SQLite: " + e.getMessage());
+        }
+    }
+
+    /** Ningún otro cliente puede tener este NIF. Al modificar, el propio cliente no cuenta. */
+    private void comprobarNif(Cliente cliente) throws Exception {
+        Cliente otro = buscarPorNif(cliente.getNif());
+        if (otro != null && !otro.getId().equals(cliente.getId())) {
+            throw new Exception(String.format("Ya existe un cliente con el NIF %s: %s.",
+                    otro.getNif(), otro.getNombre()));
         }
     }
 

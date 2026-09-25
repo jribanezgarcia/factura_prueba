@@ -66,11 +66,29 @@ public class TiposIva {
         }
     }
 
+    /** El tipo que tiene ese nombre, o null si no lo tiene ninguno. */
+    public TipoIva buscarPorNombre(String nombre) throws Exception {
+        String consulta = "SELECT id, nombre, porcentaje, motivo_exencion, activo, es_suplido "
+                + "FROM tipo_iva WHERE nombre = ?";
+        try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(consulta)) {
+            sentencia.setString(1, nombre);
+            try (ResultSet filas = sentencia.executeQuery()) {
+                if (filas.next()) {
+                    return crearTipoIva(filas);
+                }
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new Exception("Error SQLite: " + e.getMessage());
+        }
+    }
+
     /** Damos de alta el tipo y devolvemos el id que le ha puesto la base de datos. */
     public long alta(TipoIva tipo) throws Exception {
         if (tipo == null) {
             throw new Exception("Indique los datos del tipo de IVA.");
         }
+        comprobarNombre(tipo);
         String insertar = "INSERT INTO tipo_iva (nombre, porcentaje, motivo_exencion, activo, es_suplido) "
                 + "VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement sentencia = Conexion.establecerConexion()
@@ -91,6 +109,10 @@ public class TiposIva {
 
     /** Guardamos los cambios de un tipo de IVA, sin dejar cambiar lo que estropearía el histórico. */
     public void modificar(TipoIva tipo) throws Exception {
+        if (tipo == null) {
+            throw new Exception("Indique los datos del tipo de IVA.");
+        }
+        comprobarNombre(tipo);
         TipoIva actual = buscar(tipo.getId());
         if (actual == null) {
             throw new Exception("No se ha encontrado el tipo de IVA.");
@@ -151,6 +173,14 @@ public class TiposIva {
             }
         } catch (SQLException e) {
             throw new Exception("Error SQLite: " + e.getMessage());
+        }
+    }
+
+    /** Ningún otro tipo puede tener este nombre. */
+    private void comprobarNombre(TipoIva tipo) throws Exception {
+        TipoIva otro = buscarPorNombre(tipo.getNombre());
+        if (otro != null && !otro.getId().equals(tipo.getId())) {
+            throw new Exception(String.format("Ya existe un tipo de IVA con el nombre %s.", otro.getNombre()));
         }
     }
 

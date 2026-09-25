@@ -87,6 +87,11 @@ public class Controlador {
         return modelo.buscarCliente(id);
     }
 
+    /** Buscamos el cliente que tiene ese NIF, esté activo o no. */
+    public Cliente buscarClientePorNif(String nif) throws Exception {
+        return modelo.buscarClientePorNif(nif);
+    }
+
     public long altaCliente(Cliente cliente) throws Exception {
         return modelo.altaCliente(cliente);
     }
@@ -151,6 +156,11 @@ public class Controlador {
         return modelo.buscarTipoIva(id);
     }
 
+    /** Buscamos el tipo de IVA que tiene ese nombre. */
+    public TipoIva buscarTipoIvaPorNombre(String nombre) throws Exception {
+        return modelo.buscarTipoIvaPorNombre(nombre);
+    }
+
     public long altaTipoIva(TipoIva tipo) throws Exception {
         return modelo.altaTipoIva(tipo);
     }
@@ -173,6 +183,11 @@ public class Controlador {
 
     public TipoRetencion buscarTipoRetencion(long id) throws Exception {
         return modelo.buscarTipoRetencion(id);
+    }
+
+    /** Buscamos el tipo de retención que tiene ese nombre. */
+    public TipoRetencion buscarTipoRetencionPorNombre(String nombre) throws Exception {
+        return modelo.buscarTipoRetencionPorNombre(nombre);
     }
 
     public long altaTipoRetencion(TipoRetencion tipo) throws Exception {
