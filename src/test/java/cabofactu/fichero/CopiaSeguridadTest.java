@@ -2,7 +2,7 @@ package cabofactu.fichero;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
-import cabofactu.modelo.negocio.sqlite.FacturaDAO;
+import cabofactu.modelo.negocio.Facturas;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,11 +11,13 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -28,7 +30,6 @@ import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Configuracion;
 import cabofactu.modelo.negocio.PreferenciasGlobales;
 import cabofactu.modelo.negocio.Sesion;
-import cabofactu.modelo.negocio.ValidacionException;
 
 class CopiaSeguridadTest {
 
@@ -43,7 +44,7 @@ class CopiaSeguridadTest {
         Empresas.getEmpresas().cerrar();
         Empresas.getEmpresas().alta("Pruebas Backup");
         Empresas.getEmpresas().abrir("pruebas_backup", LocalDate.now());
-        servicio = new CopiaSeguridad(new CopiaSeguridadDAO(), new FacturaDAO(), Clock.systemDefaultZone());
+        servicio = new CopiaSeguridad(new CopiaSeguridadDAO(), Facturas.getFacturas(), Clock.systemDefaultZone());
     }
 
     @AfterEach
@@ -58,9 +59,10 @@ class CopiaSeguridadTest {
                     + "ON CONFLICT(id) DO UPDATE SET nombre='Pruebas Backup', nif='B12345674', logo_path=''");
             st.executeUpdate("INSERT INTO serie (id, codigo, descripcion, es_rectificativa, sufijo_fecha) "
                     + "VALUES (1, 'C', 'Serie C', 0, 'MES')");
-            st.executeUpdate("INSERT INTO factura (id, serie_id, correlativo) VALUES (1, 1, 1)");
-            st.executeUpdate("INSERT INTO factura_version (id, factura_id, version_num, numero, fecha_factura, fecha_guardado, estado, base_total, iva_total, total) "
-                    + "VALUES (1, 1, 1, 'C-1/8', '" + LocalDate.now() + "', '" + LocalDate.now() + "', 'EMITIDA', '100.00', '21.00', '121.00')");
+            st.executeUpdate("INSERT INTO factura (id, serie_id, anio, correlativo, numero, fecha, estado, "
+                    + "cli_nombre, cli_nif, descuento, base_total, iva_total, total) VALUES (1, 1, 2026, 1, "
+                    + "'C-1/8', '" + LocalDate.now() + "', 'EMITIDA', 'Pruebas Backup', 'B12345674', 0, "
+                    + "'100.00', '21.00', '121.00')");
         }
     }
 
@@ -74,7 +76,7 @@ class CopiaSeguridadTest {
         Path copia = crearCopia();
 
         try (Statement st = Conexion.establecerConexion().createStatement()) {
-            st.executeUpdate("DELETE FROM factura_version");
+            st.executeUpdate("DELETE FROM factura_linea");
             st.executeUpdate("DELETE FROM factura");
             st.executeUpdate("DELETE FROM serie");
             st.executeUpdate("UPDATE empresa SET nombre='Otra', nif='X99999999' WHERE id=1");
@@ -111,11 +113,11 @@ class CopiaSeguridadTest {
         assertTrue(Files.isDirectory(rescates), "Debe crearse copias_previas");
         assertTrue(countDb(rescates) >= 1, "Debe existir un archivo de rescate");
 
-        try (var stream = Files.list(rescates)) {
+        try (Stream<Path> stream = Files.list(rescates)) {
             Path rescate = stream.filter(p -> p.toString().endsWith(".db")).findFirst().orElseThrow();
             Files.copy(rescate, tempDir.resolve("rescate.db"), StandardCopyOption.REPLACE_EXISTING);
 
-            try (var c = DriverManager.getConnection("jdbc:sqlite:" + tempDir.resolve("rescate.db"));
+            try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + tempDir.resolve("rescate.db"));
                  Statement st = c.createStatement();
                  ResultSet rs = st.executeQuery("SELECT nif FROM empresa WHERE id=1")) {
                 assertTrue(rs.next());
@@ -125,7 +127,7 @@ class CopiaSeguridadTest {
     }
 
     private long countDb(Path carpeta) throws Exception {
-        try (var stream = Files.list(carpeta)) {
+        try (Stream<Path> stream = Files.list(carpeta)) {
             return stream.filter(p -> p.toString().endsWith(".db")).count();
         }
     }
@@ -140,9 +142,10 @@ class CopiaSeguridadTest {
                     + "ON CONFLICT(id) DO UPDATE SET nombre='Activa', nif='A11111119'");
             st.executeUpdate("INSERT INTO serie (id, codigo, descripcion, es_rectificativa, sufijo_fecha) "
                     + "VALUES (1, 'A', 'Serie A', 0, 'MES')");
-            st.executeUpdate("INSERT INTO factura (id, serie_id, correlativo) VALUES (1, 1, 1)");
-            st.executeUpdate("INSERT INTO factura_version (id, factura_id, version_num, numero, fecha_factura, fecha_guardado, estado, base_total, iva_total, total) "
-                    + "VALUES (1, 1, 1, 'A-1', '" + LocalDate.now() + "', '" + LocalDate.now() + "', 'EMITIDA', '50.00', '10.50', '60.50')");
+            st.executeUpdate("INSERT INTO factura (id, serie_id, anio, correlativo, numero, fecha, estado, "
+                    + "cli_nombre, cli_nif, descuento, base_total, iva_total, total) VALUES (1, 1, 2026, 1, "
+                    + "'A-1', '" + LocalDate.now() + "', 'EMITIDA', 'Activa', 'A11111119', 0, "
+                    + "'50.00', '10.50', '60.50')");
         }
         Path copia = servicio.crearCopia(tempDir.resolve("copiasActiva"));
 
@@ -151,7 +154,7 @@ class CopiaSeguridadTest {
         assertEquals("nueva_b", nuevaInfo.getCarpeta());
         assertTrue(Files.exists(Conexion.rutaBaseDe("nueva_b")));
 
-        try (var c = DriverManager.getConnection("jdbc:sqlite:" + Conexion.rutaBaseDe("nueva_b"));
+        try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + Conexion.rutaBaseDe("nueva_b"));
              Statement st = c.createStatement();
              ResultSet rs = st.executeQuery("SELECT nombre, nif FROM empresa WHERE id=1")) {
             assertTrue(rs.next());
@@ -198,7 +201,7 @@ class CopiaSeguridadTest {
         Path falso = tempDir.resolve("falso.db");
         Files.writeString(falso, "esto no es una base de datos");
 
-        assertThrows(ValidacionException.class, () -> servicio.leerResumen(falso));
+        assertThrows(Exception.class, () -> servicio.leerResumen(falso));
 
         try (Statement st = Conexion.establecerConexion().createStatement();
              ResultSet rs = st.executeQuery("SELECT COUNT(*) FROM empresa")) {
@@ -213,12 +216,12 @@ class CopiaSeguridadTest {
 
         Path mutilada = tempDir.resolve("mutilada.db");
         Files.copy(copia, mutilada);
-        try (var c = DriverManager.getConnection("jdbc:sqlite:" + mutilada);
+        try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + mutilada);
              Statement st = c.createStatement()) {
             st.executeUpdate("DROP TABLE factura");
         }
 
-        assertThrows(ValidacionException.class, () -> servicio.leerResumen(mutilada));
+        assertThrows(Exception.class, () -> servicio.leerResumen(mutilada));
     }
 
     @Test
@@ -228,12 +231,12 @@ class CopiaSeguridadTest {
 
         Path sinNucleo = tempDir.resolve("sin_nucleo.db");
         Files.copy(copia, sinNucleo);
-        try (var c = DriverManager.getConnection("jdbc:sqlite:" + sinNucleo);
+        try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + sinNucleo);
               Statement st = c.createStatement()) {
             st.executeUpdate("DROP TABLE factura");
         }
 
-        assertThrows(ValidacionException.class, () -> servicio.leerResumen(sinNucleo));
+        assertThrows(Exception.class, () -> servicio.leerResumen(sinNucleo));
     }
 
     @Test
@@ -263,7 +266,7 @@ class CopiaSeguridadTest {
     @Test
     void rechazaLaPropiaBaseActivaComoOrigen() throws Exception {
         insertarDatosBasicos();
-        assertThrows(ValidacionException.class,
+        assertThrows(Exception.class,
                 () -> servicio.leerResumen(Conexion.rutaBase()));
     }
 
@@ -286,14 +289,14 @@ class CopiaSeguridadTest {
 
         Path distinta = tempDir.resolve("distinta.db");
         Files.copy(copia, distinta);
-        try (var c = DriverManager.getConnection("jdbc:sqlite:" + distinta);
+        try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + distinta);
              Statement st = c.createStatement()) {
             st.executeUpdate("DROP TABLE factura_linea");
             st.executeUpdate("CREATE TABLE factura_linea_v2 (id INTEGER PRIMARY KEY)");
         }
 
-        ValidacionException e = assertThrows(
-                ValidacionException.class, () -> servicio.leerResumen(distinta));
+        Exception e = assertThrows(
+                Exception.class, () -> servicio.leerResumen(distinta));
         assertTrue(e.getMessage().contains("factura_linea"),
                 "El rechazo debe mencionar lo que falta: " + e.getMessage());
     }

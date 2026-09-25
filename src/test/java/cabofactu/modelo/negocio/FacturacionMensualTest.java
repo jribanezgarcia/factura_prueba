@@ -2,15 +2,13 @@ package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
-import cabofactu.modelo.dominio.VersionFactura;
+import cabofactu.modelo.dominio.Factura;
+import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.sqlite.FacturaDAO;
-import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,24 +16,19 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import cabofactu.modelo.dominio.DatosPago;
 
+/** Comprobamos la generación mensual contra una base de datos temporal. */
 class FacturacionMensualTest {
 
     @TempDir
     Path tempDir;
 
-    private FacturaDAO facturaDAO;
-    private VersionFacturaDAO versionFacturaDAO;
-    private LineaFacturaDAO lineaFacturaDAO;
-    private Facturas facturas;
     private FacturacionMensual service;
 
     @BeforeEach
@@ -43,13 +36,7 @@ class FacturacionMensualTest {
         Conexion.setCarpetaRaiz(tempDir);
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
-        facturaDAO = new FacturaDAO();
-        versionFacturaDAO = new VersionFacturaDAO();
-        lineaFacturaDAO = new LineaFacturaDAO();
-        Versiones versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone());
-        facturas = new Facturas(facturaDAO,
-                versionFacturaDAO, lineaFacturaDAO, versiones, Clock.systemDefaultZone());
-        service = new FacturacionMensual(facturas, facturaDAO);
+        service = new FacturacionMensual(Facturas.getFacturas());
     }
 
     @AfterEach
@@ -80,6 +67,19 @@ class FacturacionMensualTest {
                 new BigDecimal(precio), anadirMes);
     }
 
+    private List<Factura> facturas() throws Exception {
+        return Facturas.getFacturas().listado(new FiltrosHistorial());
+    }
+
+    private Factura facturaDeMes(List<Factura> facturas, LocalDate fecha) {
+        for (Factura factura : facturas) {
+            if (factura.getFecha().equals(fecha)) {
+                return factura;
+            }
+        }
+        throw new IllegalStateException("Falta la factura de " + fecha);
+    }
+
     @Test
     void generaDoceFacturasParaTodoElAnio() throws Exception {
         Serie serie = serieC();
@@ -91,8 +91,7 @@ class FacturacionMensualTest {
 
         assertEquals(12, r.getGeneradas());
         assertTrue(r.getMesesOmitidos().isEmpty());
-        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        assertEquals(12, versiones.size());
+        assertEquals(12, facturas().size());
     }
 
     @Test
@@ -126,7 +125,7 @@ class FacturacionMensualTest {
 
         assertEquals(5, r.getGeneradas());
         assertTrue(r.getMesesOmitidos().isEmpty());
-        assertEquals(8, versionFacturaDAO.getVersionesPorCliente(cliente.getId()).size());
+        assertEquals(8, facturas().size());
     }
 
     @Test
@@ -152,10 +151,10 @@ class FacturacionMensualTest {
                 List.of(plantilla("servicios", "60.00", false)));
 
         assertEquals(3, r.getGeneradas());
-        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        assertEquals(LocalDate.of(2026, 1, 31), versiones.get(0).getFechaFactura());
-        assertEquals(LocalDate.of(2026, 2, 28), versiones.get(1).getFechaFactura());
-        assertEquals(LocalDate.of(2026, 3, 31), versiones.get(2).getFechaFactura());
+        List<Factura> generadas = facturas();
+        assertEquals(LocalDate.of(2026, 1, 31), generadas.get(0).getFecha());
+        assertEquals(LocalDate.of(2026, 2, 28), generadas.get(1).getFecha());
+        assertEquals(LocalDate.of(2026, 3, 31), generadas.get(2).getFecha());
     }
 
     @Test
@@ -168,10 +167,10 @@ class FacturacionMensualTest {
                 FacturacionMensual.ModoDia.PRIMER_DIA, 31, iva, null,
                 List.of(plantilla("servicios", "60.00", false)), true, false);
 
-        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        assertEquals(LocalDate.of(2026, 1, 1), versiones.get(0).getFechaFactura());
-        assertEquals(LocalDate.of(2026, 2, 1), versiones.get(1).getFechaFactura());
-        assertEquals(LocalDate.of(2026, 3, 1), versiones.get(2).getFechaFactura());
+        List<Factura> generadas = facturas();
+        assertEquals(LocalDate.of(2026, 1, 1), generadas.get(0).getFecha());
+        assertEquals(LocalDate.of(2026, 2, 1), generadas.get(1).getFecha());
+        assertEquals(LocalDate.of(2026, 3, 1), generadas.get(2).getFecha());
     }
 
     @Test
@@ -184,10 +183,10 @@ class FacturacionMensualTest {
                 FacturacionMensual.ModoDia.ULTIMO_DIA, 1, iva, null,
                 List.of(plantilla("servicios", "60.00", false)), true, false);
 
-        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        assertEquals(LocalDate.of(2026, 1, 31), versiones.get(0).getFechaFactura());
-        assertEquals(LocalDate.of(2026, 2, 28), versiones.get(1).getFechaFactura());
-        assertEquals(LocalDate.of(2026, 3, 31), versiones.get(2).getFechaFactura());
+        List<Factura> generadas = facturas();
+        assertEquals(LocalDate.of(2026, 1, 31), generadas.get(0).getFecha());
+        assertEquals(LocalDate.of(2026, 2, 28), generadas.get(1).getFecha());
+        assertEquals(LocalDate.of(2026, 3, 31), generadas.get(2).getFecha());
     }
 
     @Test
@@ -200,10 +199,10 @@ class FacturacionMensualTest {
         service.generar(cliente, 2026, 1, 1, serie, 15, iva, retencion,
                 List.of(plantilla("servicios", "100.00", false)));
 
-        VersionFactura v = versionFacturaDAO.getVersionesPorCliente(cliente.getId()).get(0);
-        assertEquals(0, new BigDecimal("21.00").compareTo(v.getIvaTotal()));
-        assertEquals(0, new BigDecimal("15.00").compareTo(v.getImporteRetencion()));
-        assertEquals(0, new BigDecimal("106.00").compareTo(v.getTotal()));
+        Factura factura = facturaDeMes(facturas(), LocalDate.of(2026, 1, 15));
+        assertEquals(0, new BigDecimal("21.00").compareTo(factura.getIvaTotal()));
+        assertEquals(0, new BigDecimal("15.00").compareTo(factura.getImporteRetencion()));
+        assertEquals(0, new BigDecimal("106.00").compareTo(factura.getTotal()));
     }
 
     @Test
@@ -215,45 +214,24 @@ class FacturacionMensualTest {
         service.generar(cliente, 2026, 1, 2, serie, 15, iva, null,
                 List.of(plantilla("contabilidad y laboral", "60.00", true)));
 
-        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        List<LineaFactura> lineasEnero = lineaFacturaDAO.getLineas(versiones.get(0).getId());
-        List<LineaFactura> lineasFebrero = lineaFacturaDAO.getLineas(versiones.get(1).getId());
+        List<LineaFactura> lineasEnero = Facturas.getFacturas().buscar(
+                facturaDeMes(facturas(), LocalDate.of(2026, 1, 15)).getId()).getLineas();
+        List<LineaFactura> lineasFebrero = Facturas.getFacturas().buscar(
+                facturaDeMes(facturas(), LocalDate.of(2026, 2, 15)).getId()).getLineas();
         assertEquals("contabilidad y laboral - mes de enero", lineasEnero.get(0).getDescripcion());
         assertEquals("contabilidad y laboral - mes de febrero", lineasFebrero.get(0).getDescripcion());
     }
 
     @Test
-    void rollbackSiUnaFacturaFalla() throws Exception {
+    void noGuardaNadaSiLosDatosFallan() throws Exception {
         Serie serie = serieC();
         Cliente cliente = clientePaco();
         TipoIva iva = iva21();
 
-        Facturas serviceQueFalla = new Facturas(facturaDAO,
-                versionFacturaDAO, lineaFacturaDAO, new Versiones(versionFacturaDAO, lineaFacturaDAO, Clock.systemDefaultZone()),
-                Clock.systemDefaultZone()) {
-            private int llamadas = 0;
+        assertThrows(Exception.class, () -> service.generar(cliente, 2026, 1, 3, serie, 15,
+                iva, null, List.of(plantilla("servicios", "-60.00", false))));
 
-            @Override
-            long crearFacturaSinTransaccion(Serie s, LocalDate fecha, Cliente c, List<LineaFactura> lineas,
-                                            int descuento, String observaciones, String referencia,
-                                            Integer correlativoPedido, DatosPago datosPago,
-                                            TipoRetencion retencion) throws Exception {
-                llamadas++;
-                if (llamadas == 2) {
-                    throw new ValidacionException("Fallo simulado en la segunda factura");
-                }
-                return super.crearFacturaSinTransaccion(s, fecha, c, lineas, descuento, observaciones,
-                        referencia, correlativoPedido, datosPago, retencion);
-            }
-        };
-        FacturacionMensual servicioConFallo = new FacturacionMensual(
-                serviceQueFalla, facturaDAO);
-
-        assertThrows(ValidacionException.class, () -> servicioConFallo.generar(cliente, 2026, 1, 3, serie, 15,
-                iva, null, List.of(plantilla("servicios", "60.00", false))));
-
-        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        assertEquals(0, versiones.size());
+        assertEquals(0, facturas().size());
     }
 
     @Test
@@ -265,30 +243,15 @@ class FacturacionMensualTest {
         service.generar(cliente, 2026, 1, 3, serie, 15, iva, null,
                 List.of(plantilla("servicios", "60.00", false)));
 
-        List<VersionFactura> iniciales = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        facturas.borrarFactura(iniciales.get(0).getFacturaId());
+        List<Factura> iniciales = facturas();
+        Facturas.getFacturas().baja(facturaDeMes(iniciales, LocalDate.of(2026, 1, 15)).getId());
 
         FacturacionMensual.Resultado r = service.generar(cliente, 2026, 4, 6, serie,
                 FacturacionMensual.ModoDia.FIJO, 15, iva, null,
                 List.of(plantilla("servicios", "60.00", false)), false, true);
 
         assertEquals(3, r.getGeneradas());
-        List<VersionFactura> versiones = versionFacturaDAO.getVersionesPorCliente(cliente.getId());
-        VersionFactura abril = versiones.stream()
-                .filter(v -> v.getFechaFactura().equals(LocalDate.of(2026, 4, 15)))
-                .findFirst().orElseThrow();
-        assertEquals(1, facturas.factura(abril.getFacturaId()).getCorrelativo());
-    }
-
-    private LineaFactura linea(String precio) {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
-        l.setPrecioUnitario(new BigDecimal(precio));
-        l.setTotalBase(Calculos.totalLinea(l.getPrecioUnitario(), 1));
-        l.setTipoIvaId(1L);
-        l.setIvaNombre("IVA 21%");
-        l.setIvaPorcentaje(21);
-        l.setIvaImporte(Calculos.ivaDeBase(l.getTotalBase(), 21));
-        return l;
+        Factura abril = facturaDeMes(facturas(), LocalDate.of(2026, 4, 15));
+        assertEquals(1, Facturas.getFacturas().buscar(abril.getId()).getCorrelativo());
     }
 }

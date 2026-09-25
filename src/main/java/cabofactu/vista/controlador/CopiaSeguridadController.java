@@ -4,7 +4,6 @@ import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.negocio.Sesion;
-import cabofactu.modelo.negocio.ValidacionException;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -139,9 +138,10 @@ public class CopiaSeguridadController implements Pantalla, Initializable {
             aplicarReglaNif(resumen);
         });
         t.setOnFailed(e -> {
-            String msg = t.getException() instanceof ValidacionException
-                    ? t.getException().getMessage()
-                    : "No se pudo leer la copia: " + t.getException().getMessage();
+            String msg = "No se pudo leer la copia: " + t.getException().getMessage();
+            if (t.getException() instanceof Exception) {
+                msg = t.getException().getMessage();
+            }
             Dialogos.mostrarDialogoError("Restaurar copia", msg);
             origenSeleccionado = null;
             lblOrigen.setText("(ninguna copia seleccionada)");

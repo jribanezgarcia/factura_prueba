@@ -1,10 +1,11 @@
 package cabofactu.pdf;
 
+import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.modelo.dominio.VersionFactura;
+import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.dominio.LineaFactura;
-import cabofactu.modelo.negocio.Facturas;
+import cabofactu.modelo.dominio.Serie;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.PdfPCell;
@@ -14,12 +15,13 @@ import org.junit.jupiter.api.Test;
 import java.awt.Color;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Comprobamos las tarjetas del PDF sin generar el documento entero. */
 class GeneradorPdfTest {
 
     private LineaFactura lineaArmario() {
@@ -27,29 +29,34 @@ class GeneradorPdfTest {
         l.setCantidad(1);
         l.setDescripcion("ARMARIO EMPOTRADO 248X335 4P CORREDERAS");
         l.setPrecioUnitario(new BigDecimal("3128.10"));
-        l.setTotalBase(new BigDecimal("3128.10"));
         l.setTipoIvaId(1L);
         l.setIvaNombre("IVA 21%");
         l.setIvaPorcentaje(21);
         return l;
     }
 
-    private VersionFactura versionMuestra() {
-        VersionFactura v = new VersionFactura();
-        v.setNumero("C-59/7");
-        v.setFechaFactura(LocalDate.of(2026, 7, 14));
-        v.setFechaGuardado(LocalDateTime.of(2026, 7, 14, 12, 0));
-        v.setEstado(EstadoFactura.EMITIDA);
-        v.setDescuentoPorcentaje(0);
-        v.setCliNombre("MARIA MARTAGON AVALOS");
-        v.setCliNif("49122168X");
-        v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
-        v.setCliCp("04009");
-        v.setCliLocalidad("ALMERIA");
-        v.setCliEmail("maria.martagon@correo.es");
-        v.setFormaPago("");
-        v.setRealizadaPor("");
-        return v;
+    private Factura facturaMuestra(List<LineaFactura> lineas) throws Exception {
+        Serie serie = new Serie("C", "Cocinas", FormatoNumero.MES, false);
+        Cliente cliente = new Cliente("MARIA MARTAGON AVALOS", "49122168X",
+                "C/ PROFESOR MULIAN Nº 41 1º A 6", "04009", "ALMERIA", "Almería");
+        cliente.setEmail("maria.martagon@correo.es");
+        Factura factura = new Factura(serie, LocalDate.of(2026, 7, 14), cliente);
+        factura.setNumero("C-59/7");
+        factura.setEstado(EstadoFactura.EMITIDA);
+        factura.setDescuento(0);
+        factura.setFormaPago("");
+        factura.setRealizadaPor("");
+        factura.setLineas(new ArrayList<>(lineas));
+        return factura;
+    }
+
+    private Factura facturaConPago() throws Exception {
+        Factura factura = facturaMuestra(List.of(lineaArmario()));
+        factura.getCliente().setProvincia("Almería");
+        factura.setFormaPago("Transferencia");
+        factura.setVencimiento(LocalDate.of(2026, 8, 14));
+        factura.setRealizadaPor("AURORA");
+        return factura;
     }
 
     @Test
@@ -81,31 +88,21 @@ class GeneradorPdfTest {
     }
 
     @Test
-    void alturasTarjetasDistintas() {
-        VersionFactura v = versionMuestra();
-        v.setCliNombre("MARIA MARTAGON AVALOS");
-        v.setCliNif("49122168X");
-        v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
-        v.setCliCp("04009");
-        v.setCliLocalidad("ALMERIA");
-        v.setCliProvincia("Almería");
-        v.setCliEmail("maria.martagon@correo.es");
-        v.setFormaPago("Transferencia");
-        v.setVencimiento(LocalDate.of(2026, 8, 14));
-        v.setRealizadaPor("AURORA");
-        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
+    void alturasTarjetasDistintas() throws Exception {
+        Factura factura = facturaConPago();
         GeneradorPdf renderer = new GeneradorPdf();
         EstiloPdf.Colores c = new EstiloPdf.Colores(Color.decode("#B08D57"));
         // Con OpenPDF no se puede verificar el alto dibujado sin generar PDF y analizar el stream grafico
-        PdfPTable tarjetas = renderer.tarjetas(vc, c);
+        PdfPTable tarjetas = renderer.tarjetas(factura, c);
         PdfPCell cellCliente = tarjetas.getRow(0).getCells()[0];
         PdfPCell cellPago = tarjetas.getRow(0).getCells()[2];
         assertTrue(cellCliente.getCellEvent() == null, "borde no debe estar en celda exterior cliente");
         assertTrue(cellPago.getCellEvent() == null, "borde no debe estar en celda exterior pago");
         assertTrue(cellCliente.getTable() == null, "celda debe estar en modo composite");
         assertTrue(cellPago.getTable() == null, "celda debe estar en modo composite");
-        PdfPTable cliente = renderer.tarjetaCliente(vc, c);
-        PdfPTable pago = renderer.tarjetaPago(ConstructorDocumentoFactura.paymentCard(v).orElseThrow(), c);
+        PdfPTable cliente = renderer.tarjetaCliente(factura, c);
+        assertTrue(ConstructorDocumentoFactura.paymentCard(factura).isPresent());
+        PdfPTable pago = renderer.tarjetaPago(ConstructorDocumentoFactura.paymentCard(factura).get(), c);
         assertTrue(cliente.getTableEvent() instanceof EstiloPdf.ContornoTabla, "cliente debe tener borde en tabla");
         assertTrue(pago.getTableEvent() instanceof EstiloPdf.ContornoTabla, "pago debe tener borde en tabla");
         float ancho = PageSize.A4.getWidth() - 2 * 40f;
@@ -121,31 +118,22 @@ class GeneradorPdfTest {
 
     @Test
     void invarianteD4() throws Exception {
-        VersionFactura v = versionMuestra();
-        v.setCliNombre("MARIA MARTAGON AVALOS");
-        v.setCliNif("49122168X");
-        v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
-        v.setCliCp("04009");
-        v.setCliLocalidad("ALMERIA");
-        v.setCliProvincia("Almería");
-        v.setCliEmail("maria.martagon@correo.es");
-        v.setFormaPago("Transferencia");
-        v.setVencimiento(LocalDate.of(2026, 8, 14));
-        v.setRealizadaPor("AURORA");
-        Facturas.VersionCompleta vc = new Facturas.VersionCompleta(new Factura(), v, List.of(lineaArmario()), null);
+        Factura factura = facturaConPago();
         GeneradorPdf renderer = new GeneradorPdf();
         EstiloPdf.Colores c = new EstiloPdf.Colores(Color.decode("#B08D57"));
-        PdfPTable tarjetas = renderer.tarjetas(vc, c);
+        PdfPTable tarjetas = renderer.tarjetas(factura, c);
         float ancho = PageSize.A4.getWidth() - 2 * 40f;
         tarjetas.setTotalWidth(ancho);
         tarjetas.setLockedWidth(true);
         tarjetas.calculateHeights(true);
         float altoTarjetas = tarjetas.getTotalHeight();
-        PdfPTable sinPago = renderer.tarjetasSinPago(vc, c);
+        PdfPTable sinPago = renderer.tarjetasSinPago(factura, c);
         sinPago.setTotalWidth(ancho);
         sinPago.setLockedWidth(true);
         for (PdfPCell cell : sinPago.getRow(0).getCells()) {
-            if (cell != null) cell.setFixedHeight(altoTarjetas);
+            if (cell != null) {
+                cell.setFixedHeight(altoTarjetas);
+            }
         }
         sinPago.calculateHeights(true);
         assertEquals(altoTarjetas, sinPago.getTotalHeight(), 0.5, "alto reservado debe ser igual al fijado en paginas siguientes");

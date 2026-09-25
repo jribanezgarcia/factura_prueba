@@ -101,11 +101,6 @@ class TextosCompletosTest {
     }
 
     @Test
-    void textosVersiones() {
-        revisarMostrada("Versiones.fxml");
-    }
-
-    @Test
     void textosArranque() {
         revisarMostrada("Arranque.fxml");
     }

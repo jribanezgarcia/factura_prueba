@@ -37,21 +37,12 @@ CREATE TABLE IF NOT EXISTS tipo_retencion (
 CREATE TABLE IF NOT EXISTS factura (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   serie_id INTEGER NOT NULL REFERENCES serie(id),
+  anio INTEGER NOT NULL,
   correlativo INTEGER NOT NULL,
-  cliente_id INTEGER REFERENCES cliente(id)
-);
-
-CREATE TABLE IF NOT EXISTS factura_version (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  factura_id INTEGER NOT NULL REFERENCES factura(id),
-  version_num INTEGER NOT NULL,
   numero TEXT NOT NULL,
-  fecha_factura TEXT NOT NULL,
-  fecha_guardado TEXT NOT NULL,
-  estado TEXT NOT NULL,
-  descuento_porcentaje INTEGER NOT NULL DEFAULT 0,
-  observaciones TEXT,
-  referencia_rectifica TEXT,
+  fecha TEXT NOT NULL,
+  estado TEXT NOT NULL CHECK (estado IN ('EMITIDA', 'ANULADA')),
+  cliente_id INTEGER REFERENCES cliente(id),
   cli_nombre TEXT,
   cli_nif TEXT,
   cli_direccion TEXT,
@@ -59,38 +50,38 @@ CREATE TABLE IF NOT EXISTS factura_version (
   cli_localidad TEXT,
   cli_provincia TEXT,
   cli_email TEXT,
+  descuento INTEGER NOT NULL DEFAULT 0,
+  observaciones TEXT,
+  rectifica_id INTEGER REFERENCES factura(id),
   forma_pago TEXT,
   vencimiento TEXT,
   realizada_por TEXT,
+  retencion_id INTEGER REFERENCES tipo_retencion(id),
+  retencion_nombre TEXT,
+  retencion_porcentaje INTEGER,
   base_total TEXT NOT NULL DEFAULT '0.00',
   iva_total TEXT NOT NULL DEFAULT '0.00',
-  total TEXT NOT NULL DEFAULT '0.00',
-  tipo_retencion_id INTEGER REFERENCES tipo_retencion(id),
-  tipo_retencion_nombre TEXT,
-  tipo_retencion_porcentaje INTEGER,
   importe_retencion TEXT NOT NULL DEFAULT '0.00',
-  total_suplidos TEXT NOT NULL DEFAULT '0.00'
+  total_suplidos TEXT NOT NULL DEFAULT '0.00',
+  total TEXT NOT NULL DEFAULT '0.00',
+  UNIQUE (serie_id, anio, correlativo)
 );
-
-CREATE INDEX IF NOT EXISTS idx_version_factura ON factura_version(factura_id, version_num);
 
 CREATE TABLE IF NOT EXISTS factura_linea (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  factura_version_id INTEGER NOT NULL REFERENCES factura_version(id),
+  factura_id INTEGER NOT NULL REFERENCES factura(id),
   orden INTEGER NOT NULL,
   cantidad INTEGER NOT NULL DEFAULT 1,
   descripcion TEXT,
   precio_unitario TEXT NOT NULL DEFAULT '0',
-  total_base TEXT NOT NULL DEFAULT '0.00',
   tipo_iva_id INTEGER REFERENCES tipo_iva(id),
   iva_nombre TEXT,
   iva_porcentaje INTEGER,
   iva_motivo_exencion TEXT,
-  iva_importe TEXT NOT NULL DEFAULT '0.00',
-  es_suplido INTEGER NOT NULL DEFAULT 0
+  es_suplido INTEGER NOT NULL DEFAULT 0 CHECK (es_suplido IN (0, 1))
 );
 
-CREATE INDEX IF NOT EXISTS idx_linea_version ON factura_linea(factura_version_id, orden);
+CREATE INDEX IF NOT EXISTS idx_linea_factura ON factura_linea(factura_id, orden);
 
 CREATE TABLE IF NOT EXISTS empresa (
   id INTEGER PRIMARY KEY CHECK (id = 1),

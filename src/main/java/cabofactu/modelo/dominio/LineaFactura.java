@@ -1,7 +1,13 @@
 package cabofactu.modelo.dominio;
 
+import cabofactu.modelo.negocio.Calculos;
+
 import java.math.BigDecimal;
 
+/**
+ * Una línea de factura: cantidad, descripción, precio e IVA congelado. El
+ * total de la línea no se guarda: sale siempre de la cantidad y el precio.
+ */
 public class LineaFactura {
 
     private Long id;
@@ -9,15 +15,26 @@ public class LineaFactura {
     private int cantidad = 1;
     private String descripcion;
     private BigDecimal precioUnitario = BigDecimal.ZERO;
-    private BigDecimal totalBase = BigDecimal.ZERO;
     private Long tipoIvaId;
     private String ivaNombre;
     private Integer ivaPorcentaje;
     private String ivaMotivoExencion;
-    private BigDecimal ivaImporte = BigDecimal.ZERO;
     private boolean esSuplido;
 
     public LineaFactura() {
+    }
+
+    /** Copiamos una línea entera, sin su id, para poder reutilizarla en otra factura. */
+    public LineaFactura(LineaFactura otra) {
+        setOrden(otra.getOrden());
+        setCantidad(otra.getCantidad());
+        setDescripcion(otra.getDescripcion());
+        setPrecioUnitario(otra.getPrecioUnitario());
+        setTipoIvaId(otra.getTipoIvaId());
+        setIvaNombre(otra.getIvaNombre());
+        setIvaPorcentaje(otra.getIvaPorcentaje());
+        setIvaMotivoExencion(otra.getIvaMotivoExencion());
+        setEsSuplido(otra.isEsSuplido());
     }
 
     public Long getId() {
@@ -60,12 +77,9 @@ public class LineaFactura {
         this.precioUnitario = precioUnitario;
     }
 
+    /** La base de la línea es cantidad por precio, redondeada a dos decimales. */
     public BigDecimal getTotalBase() {
-        return totalBase;
-    }
-
-    public void setTotalBase(BigDecimal totalBase) {
-        this.totalBase = totalBase;
+        return Calculos.totalLinea(precioUnitario, cantidad);
     }
 
     public Long getTipoIvaId() {
@@ -100,14 +114,7 @@ public class LineaFactura {
         this.ivaMotivoExencion = ivaMotivoExencion;
     }
 
-    public BigDecimal getIvaImporte() {
-        return ivaImporte;
-    }
-
-    public void setIvaImporte(BigDecimal ivaImporte) {
-        this.ivaImporte = ivaImporte;
-    }
-
+    /** Una línea es exenta cuando su tipo de IVA no lleva porcentaje. */
     public boolean isExenta() {
         return ivaPorcentaje == null;
     }
@@ -118,21 +125,5 @@ public class LineaFactura {
 
     public void setEsSuplido(boolean esSuplido) {
         this.esSuplido = esSuplido;
-    }
-
-    public LineaFactura copia() {
-        LineaFactura c = new LineaFactura();
-        c.setOrden(orden);
-        c.setCantidad(cantidad);
-        c.setDescripcion(descripcion);
-        c.setPrecioUnitario(precioUnitario);
-        c.setTotalBase(totalBase);
-        c.setTipoIvaId(tipoIvaId);
-        c.setIvaNombre(ivaNombre);
-        c.setIvaPorcentaje(ivaPorcentaje);
-        c.setIvaMotivoExencion(ivaMotivoExencion);
-        c.setIvaImporte(ivaImporte);
-        c.setEsSuplido(esSuplido);
-        return c;
     }
 }

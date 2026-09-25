@@ -5,7 +5,6 @@ import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.FacturacionMensual;
-import cabofactu.modelo.negocio.ValidacionException;
 import cabofactu.utilidades.Formatos;
 import javafx.beans.property.BooleanProperty;
 import javafx.fxml.FXMLLoader;
@@ -47,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 import cabofactu.vista.ConfiguracionVentana;
 import cabofactu.vista.Vista;
 import cabofactu.vista.Ventanas;
@@ -395,7 +393,7 @@ public class GenerarFacturasMensualesController implements Initializable {
         boolean generarDuplicados = false;
         List<String> duplicados = List.of();
         try {
-            duplicados = Vista.getInstancia().getControlador().getModelo().getFacturacionMensual().detectarDuplicados(
+            duplicados = Vista.getInstancia().getControlador().mensualesDuplicadas(
                     cliente, spinnerAnio.getValue(), mesInicio, mesFin);
             if (!duplicados.isEmpty()) {
                 String mensaje = "Ya existen facturas para este cliente en:\n\n"
@@ -437,9 +435,13 @@ public class GenerarFacturasMensualesController implements Initializable {
                 List<Integer> sinHuecos = Vista.getInstancia().getControlador().proponerNumeros(
                         serie, spinnerAnio.getValue(), mesesAGenerar, false);
                 if (!conHuecos.equals(sinHuecos)) {
-                    String numeros = conHuecos.stream()
-                            .map(String::valueOf)
-                            .collect(Collectors.joining(", "));
+                    StringBuilder numeros = new StringBuilder();
+                    for (int i = 0; i < conHuecos.size(); i++) {
+                        if (i > 0) {
+                            numeros.append(", ");
+                        }
+                        numeros.append(conHuecos.get(i));
+                    }
                     usarHuecos = Dialogos.mostrarDialogoConfirmacion("Huecos de numeración",
                             "Hay huecos disponibles en la numeración. ¿Quieres usarlos?\n\n"
                                     + "Números propuestos: " + numeros);
@@ -451,7 +453,7 @@ public class GenerarFacturasMensualesController implements Initializable {
         }
 
         try {
-            FacturacionMensual.Resultado r = Vista.getInstancia().getControlador().getModelo().getFacturacionMensual().generar(
+            FacturacionMensual.Resultado r = Vista.getInstancia().getControlador().generarFacturasMensuales(
                     cliente, spinnerAnio.getValue(), mesInicio, mesFin, serie,
                     diaMode, diaFijo, iva, retencion, plantillas, generarDuplicados, usarHuecos);
             StringBuilder msg = new StringBuilder();
@@ -464,8 +466,6 @@ public class GenerarFacturasMensualesController implements Initializable {
             if (stage != null) {
                 stage.close();
             }
-        } catch (ValidacionException e) {
-            Dialogos.mostrarDialogoError("Generar", e.getMessage());
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Generar", "Error al generar las facturas: " + e.getMessage());
         }

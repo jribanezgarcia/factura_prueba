@@ -2,11 +2,10 @@ package cabofactu.pdf;
 
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
-import cabofactu.modelo.dominio.VersionFactura;
+import cabofactu.modelo.dominio.Factura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.ResumenFactura;
 import cabofactu.modelo.negocio.Calculos;
-import cabofactu.modelo.negocio.Facturas;
 import cabofactu.utilidades.Formatos;
 
 import java.math.BigDecimal;
@@ -28,54 +27,56 @@ public final class ConstructorDocumentoFactura {
     private ConstructorDocumentoFactura() {
     }
 
-    public static DocumentoFactura build(Facturas.VersionCompleta vc, Empresa empresa, String colorHex) throws Exception {
-        VersionFactura v = vc.version();
-        ResumenFactura resumen = Calculos.resumen(vc.lineas(), v.getDescuentoPorcentaje(),
-                Facturas.retencionDeVersion(v));
-        List<LineaFactura> suplidos = Calculos.suplidosDe(vc.lineas());
+    public static DocumentoFactura build(Factura factura, Empresa empresa, String colorHex) throws Exception {
+        ResumenFactura resumen = Calculos.resumen(factura.getLineas(), factura.getDescuento(), factura.getRetencion());
+        List<LineaFactura> suplidos = Calculos.suplidosDe(factura.getLineas());
         return new DocumentoFactura(
-                header(v),
-                clientCard(v),
-                paymentCard(v),
-                linesTable(vc.lineas()),
+                header(factura),
+                clientCard(factura),
+                paymentCard(factura),
+                linesTable(factura.getLineas()),
                 suplidosBlock(suplidos),
-                totalsBlock(resumen, v.getDescuentoPorcentaje()),
-                observations(v),
+                totalsBlock(resumen, factura.getDescuento()),
+                observations(factura),
                 legalFooter(empresa));
     }
 
-    static DocumentoFactura.Header header(VersionFactura v) {
-        boolean corrective = v.getReferenciaRectifica() != null && !v.getReferenciaRectifica().isBlank();
+    static DocumentoFactura.Header header(Factura factura) {
+        boolean corrective = factura.getRectificaId() != null;
+        Optional<String> referencia = Optional.empty();
+        if (corrective) {
+            referencia = Optional.of(nz(factura.getRectificaNumero()));
+        }
         return new DocumentoFactura.Header(
-                nz(v.getNumero()),
-                Formatos.fecha(v.getFechaFactura()),
+                nz(factura.getNumero()),
+                Formatos.fecha(factura.getFecha()),
                 corrective,
-                corrective ? Optional.of(nz(v.getReferenciaRectifica())) : Optional.empty(),
-                v.getEstado() == EstadoFactura.ANULADA);
+                referencia,
+                factura.getEstado() == EstadoFactura.ANULADA);
     }
 
-    static DocumentoFactura.ClientCard clientCard(VersionFactura v) {
+    static DocumentoFactura.ClientCard clientCard(Factura factura) {
         List<DocumentoFactura.FieldRow> rows = new ArrayList<>();
-        if (!nz(v.getCliNombre()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("Nombre", v.getCliNombre()));
+        if (!nz(factura.getCliente().getNombre()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("Nombre", factura.getCliente().getNombre()));
         }
-        if (!nz(v.getCliNif()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("NIF", v.getCliNif()));
+        if (!nz(factura.getCliente().getNif()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("NIF", factura.getCliente().getNif()));
         }
-        if (!nz(v.getCliDireccion()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("Dirección", v.getCliDireccion()));
+        if (!nz(factura.getCliente().getDireccion()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("Dirección", factura.getCliente().getDireccion()));
         }
-        if (!nz(v.getCliCp()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("Código postal", v.getCliCp()));
+        if (!nz(factura.getCliente().getCp()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("Código postal", factura.getCliente().getCp()));
         }
-        if (!nz(v.getCliLocalidad()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("Población", v.getCliLocalidad()));
+        if (!nz(factura.getCliente().getLocalidad()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("Población", factura.getCliente().getLocalidad()));
         }
-        if (!nz(v.getCliProvincia()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("Provincia", v.getCliProvincia()));
+        if (!nz(factura.getCliente().getProvincia()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("Provincia", factura.getCliente().getProvincia()));
         }
-        if (!nz(v.getCliEmail()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("Email", v.getCliEmail()));
+        if (!nz(factura.getCliente().getEmail()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("Email", factura.getCliente().getEmail()));
         }
         return new DocumentoFactura.ClientCard("FACTURAR A", List.copyOf(rows), "—");
     }
@@ -84,24 +85,24 @@ public final class ConstructorDocumentoFactura {
         return "DATOS DE PAGO";
     }
 
-    static Optional<DocumentoFactura.PaymentCard> paymentCard(VersionFactura v) {
-        List<DocumentoFactura.FieldRow> rows = paymentRows(v);
+    static Optional<DocumentoFactura.PaymentCard> paymentCard(Factura factura) {
+        List<DocumentoFactura.FieldRow> rows = paymentRows(factura);
         if (rows.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(new DocumentoFactura.PaymentCard(paymentCardTitle(), rows));
     }
 
-    static List<DocumentoFactura.FieldRow> paymentRows(VersionFactura v) {
+    static List<DocumentoFactura.FieldRow> paymentRows(Factura factura) {
         List<DocumentoFactura.FieldRow> rows = new ArrayList<>();
-        if (!nz(v.getFormaPago()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("Forma de pago", v.getFormaPago()));
+        if (!nz(factura.getFormaPago()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("Forma de pago", factura.getFormaPago()));
         }
-        if (v.getVencimiento() != null) {
-            rows.add(new DocumentoFactura.FieldRow("Vencimiento", Formatos.fecha(v.getVencimiento())));
+        if (factura.getVencimiento() != null) {
+            rows.add(new DocumentoFactura.FieldRow("Vencimiento", Formatos.fecha(factura.getVencimiento())));
         }
-        if (!nz(v.getRealizadaPor()).isBlank()) {
-            rows.add(new DocumentoFactura.FieldRow("Realizada por", v.getRealizadaPor()));
+        if (!nz(factura.getRealizadaPor()).isBlank()) {
+            rows.add(new DocumentoFactura.FieldRow("Realizada por", factura.getRealizadaPor()));
         }
         return List.copyOf(rows);
     }
@@ -182,21 +183,25 @@ public final class ConstructorDocumentoFactura {
         String nota = "Bases netas tras el descuento comercial del " + descuento
                 + " % (−" + importePdf(r.getImporteDescuento())
                 + " s/ " + importePdf(r.getBaseBruta()) + ").";
-        String motivo = r.getGrupos().stream()
-                .filter(g -> g.isExento())
-                .map(ResumenFactura.IvaGrupo::getMotivoExencion)
-                .filter(m -> m != null && !m.isBlank())
-                .findFirst()
-                .orElse(null);
+        String motivo = null;
+        for (ResumenFactura.IvaGrupo grupo : r.getGrupos()) {
+            if (grupo.isExento() && grupo.getMotivoExencion() != null && !grupo.getMotivoExencion().isBlank()) {
+                motivo = grupo.getMotivoExencion();
+                break;
+            }
+        }
         if (motivo != null) {
             nota += " Exención " + motivo + ".";
         }
         return Optional.of(nota);
     }
 
-    static Optional<String> observations(VersionFactura v) {
-        String obs = v.getObservaciones();
-        return obs != null && !obs.isBlank() ? Optional.of(obs) : Optional.empty();
+    static Optional<String> observations(Factura factura) {
+        String obs = factura.getObservaciones();
+        if (obs != null && !obs.isBlank()) {
+            return Optional.of(obs);
+        }
+        return Optional.empty();
     }
 
     static Optional<String> legalFooter(Empresa empresa) {

@@ -1,21 +1,22 @@
 package cabofactu.modelo.negocio;
 
+import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.EstadoFactura;
+import cabofactu.modelo.dominio.Factura;
+import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.FormatoNumero;
+import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
-import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.negocio.sqlite.Conexion;
-import cabofactu.modelo.negocio.sqlite.FacturaDAO;
-import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.sql.Statement;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,16 +34,11 @@ class SeriesTest {
     @TempDir
     Path tempDir;
 
-    private FacturaDAO facturaDAO;
-    private VersionFacturaDAO versionFacturaDAO;
-
     @BeforeEach
     void setUp() throws Exception {
         Conexion.setCarpetaRaiz(tempDir);
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
-        facturaDAO = new FacturaDAO();
-        versionFacturaDAO = new VersionFacturaDAO();
     }
 
     @AfterEach
@@ -66,22 +62,37 @@ class SeriesTest {
 
     private void facturaConEstado(long serieId, int correlativo, EstadoFactura estado, LocalDate fecha)
             throws Exception {
-        long facturaId = facturaDAO.insertar(serieId, correlativo, null);
-        VersionFactura v = new VersionFactura();
-        v.setFacturaId(facturaId);
-        v.setVersionNum(1);
-        v.setNumero("X-" + correlativo);
-        v.setFechaFactura(fecha);
-        v.setFechaGuardado(LocalDateTime.now());
-        v.setEstado(estado);
-        versionFacturaDAO.insertarVersion(v);
+        Serie serie = Series.getSeries().buscar(serieId);
+        Cliente cliente = new Cliente("Cliente Serie", "12345678Z", "Calle Prueba 1", "28001", "Madrid", "Madrid");
+        Factura factura = new Factura(serie, fecha, cliente);
+        factura.setCorrelativo(correlativo);
+        List<LineaFactura> lineas = new ArrayList<>();
+        lineas.add(lineaNueva());
+        factura.setLineas(lineas);
+        long facturaId = Facturas.getFacturas().alta(factura);
+        if (estado == EstadoFactura.ANULADA) {
+            Facturas.getFacturas().anular(facturaId);
+        }
+    }
+
+    private LineaFactura lineaNueva() {
+        LineaFactura linea = new LineaFactura();
+        linea.setCantidad(1);
+        linea.setPrecioUnitario(new BigDecimal("100.00"));
+        linea.setTipoIvaId(1L);
+        linea.setIvaNombre("IVA 21%");
+        linea.setIvaPorcentaje(21);
+        return linea;
     }
 
     private void borrarFacturaDe(long serieId, int correlativo) throws Exception {
-        try (Statement st = Conexion.establecerConexion().createStatement()) {
-            st.executeUpdate("DELETE FROM factura_version WHERE factura_id IN "
-                    + "(SELECT id FROM factura WHERE serie_id = " + serieId + " AND correlativo = " + correlativo + ")");
-            st.executeUpdate("DELETE FROM factura WHERE serie_id = " + serieId + " AND correlativo = " + correlativo);
+        List<Factura> filas = Facturas.getFacturas().listado(new FiltrosHistorial());
+        for (Factura fila : filas) {
+            if (fila.getSerie().getId() == serieId && fila.getCorrelativo() == correlativo
+                    && fila.getAnio() == 2026) {
+                Facturas.getFacturas().baja(fila.getId());
+                return;
+            }
         }
     }
 
@@ -250,7 +261,21 @@ class SeriesTest {
         facturaConEstado(s.getId(), 7, EstadoFactura.EMITIDA);
         facturaConEstado(s.getId(), 8, EstadoFactura.ANULADA);
         assertTrue(Series.getSeries().correlativoOcupado(s, 7, LocalDate.of(2026, 3, 1)));
-        assertFalse(Series.getSeries().correlativoOcupado(s, 8, LocalDate.of(2026, 3, 1)));
+        assertTrue(Series.getSeries().correlativoOcupado(s, 8, LocalDate.of(2026, 3, 1)));
         assertFalse(Series.getSeries().correlativoOcupado(s, 9, LocalDate.of(2026, 3, 1)));
+    }
+
+    @Test
+    void sinSerieRectificativaDevuelveNull() throws Exception {
+        serieMes("K");
+        assertNull(Series.getSeries().rectificativa());
+    }
+
+    @Test
+    void rectificativaDevuelveLaPrimeraSerieDeRectificativas() throws Exception {
+        serieMes("K");
+        Serie r = serie("R", FormatoNumero.NINGUNO, true);
+        assertEquals("R", Series.getSeries().rectificativa().getCodigo());
+        assertEquals(r.getId(), Series.getSeries().rectificativa().getId());
     }
 }

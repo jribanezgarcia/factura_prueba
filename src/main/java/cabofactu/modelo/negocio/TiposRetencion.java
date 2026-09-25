@@ -145,9 +145,9 @@ public class TiposRetencion {
         }
     }
 
-    /** True si el tipo aparece en versiones del histórico (entonces ya no se puede tocar su porcentaje). */
+    /** True si el tipo aparece en facturas del histórico (entonces ya no se puede tocar su porcentaje). */
     public boolean enUso(long id) throws Exception {
-        String consulta = "SELECT COUNT(*) FROM factura_version WHERE tipo_retencion_id = ?";
+        String consulta = "SELECT COUNT(*) FROM factura WHERE retencion_id = ?";
         try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(consulta)) {
             sentencia.setLong(1, id);
             try (ResultSet filas = sentencia.executeQuery()) {

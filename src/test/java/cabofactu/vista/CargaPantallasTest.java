@@ -91,11 +91,6 @@ class CargaPantallasTest {
     }
 
     @Test
-    void cargarVersiones() {
-        cargar("Versiones.fxml");
-    }
-
-    @Test
     void cargarArranque() {
         cargar("Arranque.fxml");
     }

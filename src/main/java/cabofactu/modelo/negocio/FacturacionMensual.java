@@ -1,12 +1,11 @@
 package cabofactu.modelo.negocio;
 
-import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
+import cabofactu.modelo.dominio.Factura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,14 +16,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/** Generamos las facturas iguales de cada mes: una Factura por mes, todas o ninguna. */
 public class FacturacionMensual {
 
     private final Facturas facturas;
-    private final FacturaDAO facturaDAO;
 
-    public FacturacionMensual(Facturas facturas, FacturaDAO facturaDAO) {
+    public FacturacionMensual(Facturas facturas) {
         this.facturas = facturas;
-        this.facturaDAO = facturaDAO;
     }
 
     public enum ModoDia {
@@ -33,6 +31,7 @@ public class FacturacionMensual {
         ULTIMO_DIA
     }
 
+    /** Generamos las facturas de esos meses con día fijo, sin duplicados ni huecos. */
     public Resultado generar(Cliente cliente, int anio, int mesInicio, int mesFin, Serie serie, int diaMes,
                              TipoIva iva, TipoRetencion retencion, List<LineaPlantilla> plantillas)
             throws Exception {
@@ -40,6 +39,7 @@ public class FacturacionMensual {
                 iva, retencion, plantillas, false, false);
     }
 
+    /** Generamos las facturas de esos meses: las duplicadas se omiten salvo que se pidan. */
     public Resultado generar(Cliente cliente, int anio, int mesInicio, int mesFin, Serie serie,
                              ModoDia diaMode, int diaFijo, TipoIva iva, TipoRetencion retencion,
                              List<LineaPlantilla> plantillas, boolean generarDuplicados, boolean usarHuecos)
@@ -49,7 +49,7 @@ public class FacturacionMensual {
         List<Integer> mesesAGenerar = new ArrayList<>();
         List<String> omitidos = new ArrayList<>();
         for (int mes = mesInicio; mes <= mesFin; mes++) {
-            if (!generarDuplicados && facturaDAO.clienteTieneFacturaEnMes(cliente.getId(), anio, mes)) {
+            if (!generarDuplicados && facturas.clienteTieneFacturaEnMes(cliente.getId(), anio, mes)) {
                 omitidos.add(nombreMes(mes));
                 continue;
             }
@@ -57,33 +57,42 @@ public class FacturacionMensual {
         }
 
         List<Integer> numeros = Series.getSeries().proponerNumeros(serie, anio, mesesAGenerar.size(), usarHuecos);
-
-        Conexion.iniciarTransaccion();
-        try {
-            int generadas = 0;
-            for (int i = 0; i < mesesAGenerar.size(); i++) {
-                int mes = mesesAGenerar.get(i);
-                LocalDate fecha = fechaDelMes(anio, mes, diaMode, diaFijo);
-                List<LineaFactura> lineas = lineasParaMes(plantillas, mes, iva);
-                facturas.crearFacturaSinTransaccion(serie, fecha, cliente, lineas, 0, "", "",
-                        numeros.get(i), null, retencion);
-                generadas++;
-            }
-            Conexion.confirmar();
-            return new Resultado(generadas, omitidos);
-        } catch (Exception e) {
-            Conexion.deshacer();
-            throw e;
-        } finally {
-            Conexion.terminarTransaccion();
-        }
+        List<Factura> facturasAGenerar = facturasParaMeses(anio, mesesAGenerar, numeros, serie, cliente,
+                diaMode, diaFijo, iva, retencion, plantillas);
+        facturas.altaVarias(facturasAGenerar);
+        return new Resultado(mesesAGenerar.size(), omitidos);
     }
 
+    /** Construimos una Factura por mes, con su fecha, su número pedido y su retención. */
+    private List<Factura> facturasParaMeses(int anio, List<Integer> meses, List<Integer> numeros, Serie serie,
+                                           Cliente cliente, ModoDia diaMode, int diaFijo, TipoIva iva,
+                                           TipoRetencion retencion, List<LineaPlantilla> plantillas) throws Exception {
+        List<Factura> facturasAGenerar = new ArrayList<>();
+        for (int i = 0; i < meses.size(); i++) {
+            int mes = meses.get(i);
+            LocalDate fecha = fechaDelMes(anio, mes, diaMode, diaFijo);
+            Factura factura = new Factura(serie, fecha, new Cliente(cliente));
+            factura.setId(null);
+            factura.setCorrelativo(numeros.get(i));
+            factura.setDescuento(0);
+            factura.setObservaciones("");
+            factura.setLineas(lineasParaMes(plantillas, mes, iva));
+            if (retencion == null) {
+                factura.setRetencion(null);
+            } else {
+                factura.setRetencion(new TipoRetencion(retencion));
+            }
+            facturasAGenerar.add(factura);
+        }
+        return facturasAGenerar;
+    }
+
+    /** Decimos qué meses de ese rango ya tienen factura de ese cliente. */
     public List<String> detectarDuplicados(Cliente cliente, int anio, int mesInicio, int mesFin)
-            {
+            throws Exception {
         List<String> duplicados = new ArrayList<>();
         for (int mes = mesInicio; mes <= mesFin; mes++) {
-            if (facturaDAO.clienteTieneFacturaEnMes(cliente.getId(), anio, mes)) {
+            if (facturas.clienteTieneFacturaEnMes(cliente.getId(), anio, mes)) {
                 duplicados.add(nombreMes(mes));
             }
         }
@@ -91,26 +100,26 @@ public class FacturacionMensual {
     }
 
     private void validar(Cliente cliente, Serie serie, TipoIva iva, List<LineaPlantilla> plantillas)
-            throws ValidacionException {
+            throws Exception {
         if (cliente == null || cliente.getId() == null) {
-            throw new ValidacionException("Seleccione un cliente existente.");
+            throw new Exception("Seleccione un cliente existente.");
         }
         ValidacionCliente.comprobar(cliente);
         if (serie == null || serie.getId() == null) {
-            throw new ValidacionException("Seleccione una serie de numeración.");
+            throw new Exception("Seleccione una serie de numeración.");
         }
         if (iva == null || iva.getId() == null) {
-            throw new ValidacionException("Seleccione un tipo de IVA.");
+            throw new Exception("Seleccione un tipo de IVA.");
         }
         if (plantillas == null || plantillas.isEmpty()) {
-            throw new ValidacionException("Añada al menos una línea de concepto.");
+            throw new Exception("Añada al menos una línea de concepto.");
         }
         for (LineaPlantilla p : plantillas) {
             if (p.cantidad < 1) {
-                throw new ValidacionException("La cantidad de cada línea debe ser al menos 1.");
+                throw new Exception("La cantidad de cada línea debe ser al menos 1.");
             }
             if (p.precioUnitario == null || p.precioUnitario.signum() < 0) {
-                throw new ValidacionException("Los precios unitarios no pueden ser negativos.");
+                throw new Exception("Los precios unitarios no pueden ser negativos.");
             }
         }
     }
@@ -133,18 +142,19 @@ public class FacturacionMensual {
             LineaFactura l = new LineaFactura();
             l.setOrden(orden++);
             l.setCantidad(p.cantidad);
-            String desc = p.descripcion == null ? "" : p.descripcion;
+            String desc = p.descripcion;
+            if (desc == null) {
+                desc = "";
+            }
             if (p.anadirMes) {
                 desc = desc + " - mes de " + nombreMes;
             }
             l.setDescripcion(desc);
             l.setPrecioUnitario(p.precioUnitario);
-            l.setTotalBase(Calculos.totalLinea(p.precioUnitario, p.cantidad));
             l.setTipoIvaId(iva.getId());
             l.setIvaNombre(iva.getNombre());
             l.setIvaPorcentaje(iva.getPorcentaje());
             l.setIvaMotivoExencion(iva.getMotivoExencion());
-            l.setIvaImporte(Calculos.ivaDeBase(l.getTotalBase(), iva.getPorcentaje()));
             lineas.add(l);
         }
         return lineas;

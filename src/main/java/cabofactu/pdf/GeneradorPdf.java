@@ -1,7 +1,7 @@
 package cabofactu.pdf;
 
 import cabofactu.modelo.dominio.Empresa;
-import cabofactu.modelo.negocio.Facturas;
+import cabofactu.modelo.dominio.Factura;
 import com.lowagie.text.Chunk;
 import com.lowagie.text.Document;
 import com.lowagie.text.Element;
@@ -41,9 +41,9 @@ import cabofactu.modelo.dominio.Serie;
 final class GeneradorPdf {
 
 
-    void exportar(Facturas.VersionCompleta vc, Empresa empresa, OutputStream out, String colorHex) throws Exception {
+    void exportar(Factura factura, Empresa empresa, OutputStream out, String colorHex) throws Exception {
         EstiloPdf.Colores colores = new EstiloPdf.Colores(colorDe(colorHex));
-        DocumentoFactura invoice = ConstructorDocumentoFactura.build(vc, empresa, colorHex);
+        DocumentoFactura invoice = ConstructorDocumentoFactura.build(factura, empresa, colorHex);
 
         Image logo = cargarLogo(empresa);
 
@@ -52,11 +52,11 @@ final class GeneradorPdf {
         Optional<String> obs = invoice.observations();
         boolean hayObs = obs.isPresent();
 
-        PdfPTable tarjetasTabla = tarjetas(vc, colores);
+        PdfPTable tarjetasTabla = tarjetas(factura, colores);
         boolean conPago = invoice.paymentCard().isPresent();
         PdfPTable tarjetasSinPagoTabla = null;
         if (conPago) {
-            tarjetasSinPagoTabla = tarjetasSinPago(vc, colores);
+            tarjetasSinPagoTabla = tarjetasSinPago(factura, colores);
         }
         float ancho = anchoContenido();
         medir(tarjetasTabla, ancho);
@@ -170,14 +170,14 @@ final class GeneradorPdf {
     // Tarjetas bicolor
     // ------------------------------------------------------------------
 
-    PdfPTable tarjetas(Facturas.VersionCompleta vc, EstiloPdf.Colores c) {
+    PdfPTable tarjetas(Factura factura, EstiloPdf.Colores c) {
         List<String[]> pagoFilas = new ArrayList<>();
-    for (DocumentoFactura.FieldRow fila : ConstructorDocumentoFactura.paymentRows(vc.version())) {
+    for (DocumentoFactura.FieldRow fila : ConstructorDocumentoFactura.paymentRows(factura)) {
         pagoFilas.add(new String[]{fila.label(), fila.value()});
     }
         PdfPTable exterior = new PdfPTable(new float[]{49f, 2f, 49f});
         exterior.setWidthPercentage(100);
-        PdfPCell cellCliente = celdaTarjeta(tarjetaCliente(vc, c), c);
+        PdfPCell cellCliente = celdaTarjeta(tarjetaCliente(factura, c), c);
         cellCliente.setVerticalAlignment(Element.ALIGN_TOP);
         exterior.addCell(cellCliente);
         PdfPCell hueco = new PdfPCell(new Phrase(" "));
@@ -203,8 +203,8 @@ final class GeneradorPdf {
         return celula;
     }
 
-    PdfPTable tarjetaCliente(Facturas.VersionCompleta vc, EstiloPdf.Colores c) {
-        return tarjetaCliente(ConstructorDocumentoFactura.clientCard(vc.version()), c);
+    PdfPTable tarjetaCliente(Factura factura, EstiloPdf.Colores c) {
+        return tarjetaCliente(ConstructorDocumentoFactura.clientCard(factura), c);
     }
 
     private PdfPTable tarjetaCliente(DocumentoFactura.ClientCard card, EstiloPdf.Colores c) {
@@ -635,10 +635,10 @@ final class GeneradorPdf {
         return t;
     }
 
-    PdfPTable tarjetasSinPago(Facturas.VersionCompleta vc, EstiloPdf.Colores c) {
+    PdfPTable tarjetasSinPago(Factura factura, EstiloPdf.Colores c) {
         PdfPTable exterior = new PdfPTable(new float[]{49f, 2f, 49f});
         exterior.setWidthPercentage(100);
-        exterior.addCell(celdaTarjeta(tarjetaCliente(vc, c), c));
+        exterior.addCell(celdaTarjeta(tarjetaCliente(factura, c), c));
         PdfPCell hueco = new PdfPCell(new Phrase(" "));
         hueco.setBorder(Rectangle.NO_BORDER);
         hueco.setPadding(0);
@@ -675,11 +675,11 @@ final class GeneradorPdf {
         }
     }
 
-    void exportarAgrupado(List<Facturas.VersionCompleta> versiones, Empresa empresa, Path ruta, String colorHex) throws Exception {
+    void exportarAgrupado(List<Factura> facturas, Empresa empresa, Path ruta, String colorHex) throws Exception {
         List<byte[]> pdfs = new ArrayList<>();
-        for (Facturas.VersionCompleta vc : versiones) {
+        for (Factura factura : facturas) {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            exportar(vc, empresa, baos, colorHex);
+            exportar(factura, empresa, baos, colorHex);
             pdfs.add(baos.toByteArray());
         }
         concatenar(pdfs, ruta);

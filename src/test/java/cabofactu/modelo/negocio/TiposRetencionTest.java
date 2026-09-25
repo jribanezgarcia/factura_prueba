@@ -50,10 +50,10 @@ class TiposRetencionTest {
     private void usarEnFactura(long tipoId) throws Exception {
         try (Statement st = Conexion.establecerConexion().createStatement()) {
             st.executeUpdate("INSERT INTO serie (codigo, descripcion) VALUES ('C', 'Serie C')");
-            st.executeUpdate("INSERT INTO factura (serie_id, correlativo) VALUES (1, 1)");
-            st.executeUpdate("INSERT INTO factura_version (factura_id, version_num, numero, fecha_factura, "
-                    + "fecha_guardado, estado, tipo_retencion_id) VALUES (1, 1, 'C-1/8', '2026-01-01', "
-                    + "'2026-01-01', 'EMITIDA', " + tipoId + ")");
+            st.executeUpdate("INSERT INTO factura (serie_id, anio, correlativo, numero, fecha, estado, "
+                    + "cli_nombre, cli_nif, descuento, retencion_id, base_total, iva_total, total) "
+                    + "VALUES (1, 2026, 1, 'C-1/8', '2026-01-01', 'EMITIDA', 'Pruebas', 'B12345674', 0, "
+                    + tipoId + ", '100.00', '21.00', '121.00')");
         }
     }
 

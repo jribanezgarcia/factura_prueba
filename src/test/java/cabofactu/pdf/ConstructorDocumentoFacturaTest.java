@@ -1,16 +1,17 @@
 package cabofactu.pdf;
 
+import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.modelo.dominio.VersionFactura;
+import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.dominio.LineaFactura;
-import cabofactu.modelo.negocio.Facturas;
+import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.dominio.TipoRetencion;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+/** Comprobamos el documento compuesto sin generar ningún PDF. */
 class ConstructorDocumentoFacturaTest {
 
     private Empresa empresa() throws Exception {
@@ -29,22 +31,19 @@ class ConstructorDocumentoFacturaTest {
         return e;
     }
 
-    private VersionFactura version() {
-        VersionFactura v = new VersionFactura();
-        v.setNumero("C-59/7");
-        v.setFechaFactura(LocalDate.of(2026, 7, 14));
-        v.setFechaGuardado(LocalDateTime.of(2026, 7, 14, 12, 0));
-        v.setEstado(EstadoFactura.EMITIDA);
-        v.setDescuentoPorcentaje(0);
-        v.setCliNombre("MARIA MARTAGON AVALOS");
-        v.setCliNif("49122168X");
-        v.setCliDireccion("C/ PROFESOR MULIAN Nº 41 1º A 6");
-        v.setCliCp("04009");
-        v.setCliLocalidad("ALMERIA");
-        v.setCliEmail("maria.martagon@correo.es");
-        v.setFormaPago("");
-        v.setRealizadaPor("");
-        return v;
+    private Factura factura(List<LineaFactura> lineas) throws Exception {
+        Serie serie = new Serie("C", "Cocinas", FormatoNumero.MES, false);
+        Cliente cliente = new Cliente("MARIA MARTAGON AVALOS", "49122168X",
+                "C/ PROFESOR MULIAN Nº 41 1º A 6", "04009", "ALMERIA", "Almería");
+        cliente.setEmail("maria.martagon@correo.es");
+        Factura factura = new Factura(serie, LocalDate.of(2026, 7, 14), cliente);
+        factura.setNumero("C-59/7");
+        factura.setEstado(EstadoFactura.EMITIDA);
+        factura.setDescuento(0);
+        factura.setFormaPago("");
+        factura.setRealizadaPor("");
+        factura.setLineas(new ArrayList<>(lineas));
+        return factura;
     }
 
     private LineaFactura linea(String desc, String base, Integer pct, boolean suplido) {
@@ -52,24 +51,29 @@ class ConstructorDocumentoFacturaTest {
         l.setCantidad(1);
         l.setDescripcion(desc);
         l.setPrecioUnitario(new BigDecimal(base));
-        l.setTotalBase(new BigDecimal(base));
-        l.setIvaNombre(suplido ? "Suplido" : "IVA " + pct + "%");
+        if (suplido) {
+            l.setIvaNombre("Suplido");
+        } else {
+            l.setIvaNombre("IVA " + pct + "%");
+        }
         l.setIvaPorcentaje(pct);
         l.setEsSuplido(suplido);
         return l;
     }
 
-    private DocumentoFactura doc(VersionFactura v, List<LineaFactura> lineas) throws Exception {
-        return ConstructorDocumentoFactura.build(
-                new Facturas.VersionCompleta(new Factura(), v, lineas, null), empresa(), "#B08D57");
+    private DocumentoFactura doc(Factura factura) throws Exception {
+        return ConstructorDocumentoFactura.build(factura, empresa(), "#B08D57");
     }
 
     @Test
     void dosTiposDeIva() throws Exception {
-        DocumentoFactura d = doc(version(),
-                List.of(linea("CONCEPTO A", "1000.00", 21, false), linea("CONCEPTO B", "500.00", 10, false)));
-        assertEquals(List.of("21,00", "10,00"),
-                d.totals().ivaRows().stream().map(DocumentoFactura.IvaRow::type).toList());
+        DocumentoFactura d = doc(factura(List.of(linea("CONCEPTO A", "1000.00", 21, false),
+                linea("CONCEPTO B", "500.00", 10, false))));
+        List<String> tipos = new ArrayList<>();
+        for (DocumentoFactura.IvaRow fila : d.totals().ivaRows()) {
+            tipos.add(fila.type());
+        }
+        assertEquals(List.of("21,00", "10,00"), tipos);
         assertEquals("1.000,00", d.totals().ivaRows().get(0).base());
         assertEquals("210,00", d.totals().ivaRows().get(0).quota());
         assertEquals("Totales", d.totals().totalsRow().type());
@@ -81,44 +85,42 @@ class ConstructorDocumentoFacturaTest {
 
     @Test
     void descuentoGlobal() throws Exception {
-        VersionFactura v = version();
-        v.setDescuentoPorcentaje(10);
-        DocumentoFactura d = doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        Factura factura = factura(List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        factura.setDescuento(10);
+        DocumentoFactura d = doc(factura);
         assertEquals("2.815,29", d.totals().totalsRow().base());
         assertEquals("591,21", d.totals().totalsRow().quota());
         assertTrue(d.totals().discountNote().isPresent());
-        assertTrue(d.totals().discountNote().orElseThrow().contains("10 %"));
-        assertTrue(d.totals().discountNote().orElseThrow().contains("312,81"));
+        assertTrue(d.totals().discountNote().get().contains("10 %"));
+        assertTrue(d.totals().discountNote().get().contains("312,81"));
     }
 
     @Test
     void retencionDelSnapshot() throws Exception {
-        VersionFactura v = version();
-        v.setTipoRetencionId(1L);
-        v.setTipoRetencionNombre("IRPF profesional");
-        v.setTipoRetencionPorcentaje(15);
-        DocumentoFactura d = doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        Factura factura = factura(List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        factura.setRetencion(new TipoRetencion("IRPF profesional", 15));
+        DocumentoFactura d = doc(factura);
         assertTrue(d.totals().liquidation().retention().isPresent());
-        assertEquals("IRPF profesional 15 %", d.totals().liquidation().retention().orElseThrow().label());
-        assertTrue(d.totals().liquidation().retention().orElseThrow().amount().contains("469,22"));
+        assertEquals("IRPF profesional 15 %", d.totals().liquidation().retention().get().label());
+        assertTrue(d.totals().liquidation().retention().get().amount().contains("469,22"));
     }
 
     @Test
     void suplidosYBloquePropio() throws Exception {
-        DocumentoFactura d = doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false),
-                linea("TASAS", "250.00", null, true)));
+        DocumentoFactura d = doc(factura(List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false),
+                linea("TASAS", "250.00", null, true))));
         assertTrue(d.suplidos().isPresent());
-        assertEquals(List.of("SUPLIDOS", "IMPORTE"), d.suplidos().orElseThrow().headers());
-        assertEquals(1, d.suplidos().orElseThrow().rows().size());
-        assertEquals("TASAS", d.suplidos().orElseThrow().rows().get(0).description());
-        assertEquals("250,00", d.suplidos().orElseThrow().rows().get(0).amount());
-        assertTrue(d.suplidos().orElseThrow().note().contains("No sujetos a IVA ni a retención"));
+        assertEquals(List.of("SUPLIDOS", "IMPORTE"), d.suplidos().get().headers());
+        assertEquals(1, d.suplidos().get().rows().size());
+        assertEquals("TASAS", d.suplidos().get().rows().get(0).description());
+        assertEquals("250,00", d.suplidos().get().rows().get(0).amount());
+        assertTrue(d.suplidos().get().note().contains("No sujetos a IVA ni a retención"));
         assertTrue(d.totals().liquidation().suplidos().isPresent());
     }
 
     @Test
     void soloSuplidosTablaConSoloCabecera() throws Exception {
-        DocumentoFactura d = doc(version(), List.of(linea("TASAS", "250.00", null, true)));
+        DocumentoFactura d = doc(factura(List.of(linea("TASAS", "250.00", null, true))));
         assertEquals(List.of("CANT.", "DESCRIPCIÓN", "PRECIO", "IVA %", "TOTAL"),
                 d.linesTable().headers());
         assertTrue(d.linesTable().rows().isEmpty());
@@ -131,7 +133,7 @@ class ConstructorDocumentoFacturaTest {
         for (int i = 0; i < 60; i++) {
             lineas.add(linea("LINEA " + (i + 1) + " DESCRIPCION LARGA", "100.00", 21, false));
         }
-        DocumentoFactura d = doc(version(), lineas);
+        DocumentoFactura d = doc(factura(lineas));
         assertEquals(60, d.linesTable().rows().size());
         assertTrue(d.linesTable().rows().get(0).description().startsWith("LINEA 1 "));
         assertTrue(d.linesTable().rows().get(59).description().startsWith("LINEA 60 "));
@@ -140,15 +142,15 @@ class ConstructorDocumentoFacturaTest {
 
     @Test
     void anuladaMarcadaEnModelo() throws Exception {
-        VersionFactura v = version();
-        v.setEstado(EstadoFactura.ANULADA);
-        assertTrue(doc(v, List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false))).header().cancelled());
-        assertFalse(doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false))).header().cancelled());
+        Factura anulada = factura(List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        anulada.setEstado(EstadoFactura.ANULADA);
+        assertTrue(doc(anulada).header().cancelled());
+        assertFalse(doc(factura(List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)))).header().cancelled());
     }
 
     @Test
     void rotulosFijosEnModelo() throws Exception {
-        DocumentoFactura d = doc(version(), List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false)));
+        DocumentoFactura d = doc(factura(List.of(linea("ARMARIO EMPOTRADO", "3128.10", 21, false))));
         assertEquals("FACTURAR A", d.clientCard().title());
         assertEquals(List.of("TIPO", "BASE IMPONIBLE", "CUOTA IVA"), d.totals().desgloseHeaders());
         assertEquals("LIQUIDACIÓN", d.totals().liquidation().title());

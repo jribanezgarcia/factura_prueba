@@ -200,20 +200,9 @@ public class Series {
     /**
      * Correlativos que ya tiene alguna factura de esa serie en ese año, anuladas
      * incluidas: una factura anulada conserva su número para siempre.
-     *
-     * Cómo funciona: el año sale de la fecha de la última versión de cada factura.
-     * Cuando las facturas dejen de tener versiones, esta consulta será de una sola tabla.
-     * El CAST es necesario: sin él, comparar el texto del año con el número no
-     * devuelve ninguna fila.
      */
     private Set<Integer> correlativosUsados(long serieId, int anio) throws Exception {
-        String consulta = """
-                SELECT f.correlativo FROM factura f
-                JOIN factura_version v ON v.id = (
-                    SELECT v2.id FROM factura_version v2 WHERE v2.factura_id = f.id
-                    ORDER BY v2.version_num DESC LIMIT 1)
-                WHERE f.serie_id = ? AND CAST(strftime('%Y', v.fecha_factura) AS INTEGER) = ?
-                """;
+        String consulta = "SELECT correlativo FROM factura WHERE serie_id = ? AND anio = ?";
         Set<Integer> usados = new HashSet<>();
         try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(consulta)) {
             sentencia.setLong(1, serieId);
@@ -227,36 +216,6 @@ public class Series {
             throw new Exception("Error SQLite: " + e.getMessage());
         }
         return usados;
-    }
-
-    /**
-     * Correlativos que tiene alguna factura activa de esa serie en ese año.
-     *
-     * Cómo funciona: igual que los usados, pero solo con la última versión en
-     * estado EMITIDA. Es lo que mira el restaurar de una factura anulada.
-     */
-    private Set<Integer> correlativosActivos(long serieId, int anio) throws Exception {
-        String consulta = """
-                SELECT f.correlativo FROM factura f
-                JOIN factura_version v ON v.id = (
-                    SELECT v2.id FROM factura_version v2 WHERE v2.factura_id = f.id
-                    ORDER BY v2.version_num DESC LIMIT 1)
-                WHERE f.serie_id = ? AND v.estado = 'EMITIDA'
-                    AND CAST(strftime('%Y', v.fecha_factura) AS INTEGER) = ?
-                """;
-        Set<Integer> activos = new HashSet<>();
-        try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(consulta)) {
-            sentencia.setLong(1, serieId);
-            sentencia.setInt(2, anio);
-            try (ResultSet filas = sentencia.executeQuery()) {
-                while (filas.next()) {
-                    activos.add(filas.getInt(1));
-                }
-            }
-        } catch (SQLException e) {
-            throw new Exception("Error SQLite: " + e.getMessage());
-        }
-        return activos;
     }
 
     /** El siguiente correlativo de la serie en el año de esa fecha: el mayor usado más uno. */
@@ -416,9 +375,19 @@ public class Series {
         }
     }
 
-    /** True si ese correlativo lo tiene una factura activa de la serie en el año de la fecha. */
+    /** La primera serie marcada como de rectificativas, o null si no hay ninguna. */
+    public Serie rectificativa() throws Exception {
+        for (Serie serie : listado()) {
+            if (serie.isEsRectificativa()) {
+                return serie;
+            }
+        }
+        return null;
+    }
+
+    /** True si ese correlativo lo tiene cualquier factura de la serie en el año de la fecha, activa o anulada. */
     public boolean correlativoOcupado(Serie serie, int correlativo, LocalDate fecha) throws Exception {
-        return correlativosActivos(serie.getId(), anioDe(fecha)).contains(correlativo);
+        return correlativosUsados(serie.getId(), anioDe(fecha)).contains(correlativo);
     }
 
     private int anioDe(LocalDate fecha) {

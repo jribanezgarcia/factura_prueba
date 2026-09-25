@@ -2,7 +2,7 @@ package cabofactu.fichero;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
-import cabofactu.modelo.negocio.sqlite.FacturaDAO;
+import cabofactu.modelo.negocio.Facturas;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,7 +13,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.negocio.Empresas;
-import cabofactu.modelo.negocio.ValidacionException;
 
 /**
  * Copias de seguridad de la base de datos mediante copia consistente en
@@ -22,12 +21,12 @@ import cabofactu.modelo.negocio.ValidacionException;
 public class CopiaSeguridad {
 
     private final CopiaSeguridadDAO copiaSeguridadDAO;
-    private final FacturaDAO facturaDAO;
+    private final Facturas facturas;
     private final Clock clock;
 
-    public CopiaSeguridad(CopiaSeguridadDAO copiaSeguridadDAO, FacturaDAO facturaDAO, Clock clock) {
+    public CopiaSeguridad(CopiaSeguridadDAO copiaSeguridadDAO, Facturas facturas, Clock clock) {
         this.copiaSeguridadDAO = copiaSeguridadDAO;
-        this.facturaDAO = facturaDAO;
+        this.facturas = facturas;
         this.clock = clock;
     }
 
@@ -68,17 +67,17 @@ public class CopiaSeguridad {
         }
     }
 
-    public ResumenCopia leerResumen(Path origen) throws ValidacionException {
+    public ResumenCopia leerResumen(Path origen) throws Exception {
         if (origen == null || !Files.isRegularFile(origen) || !Files.isReadable(origen)) {
-            throw new ValidacionException("El archivo seleccionado no es un archivo legible.");
+            throw new Exception("El archivo seleccionado no es un archivo legible.");
         }
         if (origen.toAbsolutePath().normalize().equals(Conexion.rutaBase().toAbsolutePath().normalize())) {
-            throw new ValidacionException("No se puede usar la propia base activa como origen de restauración.");
+            throw new Exception("No se puede usar la propia base activa como origen de restauración.");
         }
         return copiaSeguridadDAO.leerResumen(origen);
     }
 
-    public Path restaurarEnEmpresaActiva(Path origen) throws IOException, ValidacionException {
+    public Path restaurarEnEmpresaActiva(Path origen) throws IOException, Exception {
         leerResumen(origen);
 
         Path carpetaRescate = Conexion.carpetaEmpresa().resolve("copias_previas");
@@ -119,7 +118,7 @@ public class CopiaSeguridad {
     }
 
     /** Facturas de la empresa activa, para la regla de restauración. */
-    public int facturasEmpresaActiva() {
-        return facturaDAO.contar();
+    public int facturasEmpresaActiva() throws Exception {
+        return facturas.contar();
     }
 }

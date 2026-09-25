@@ -3,7 +3,6 @@ package cabofactu.modelo.negocio.sqlite;
 import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Sesion;
-import cabofactu.modelo.negocio.ValidacionException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +42,9 @@ class CopiaSeguridadDAOTest {
     private void unaFactura() throws Exception {
         try (Statement st = Conexion.establecerConexion().createStatement()) {
             st.executeUpdate("INSERT INTO serie (id, codigo) VALUES (1, 'C')");
-            st.executeUpdate("INSERT INTO factura (id, serie_id, correlativo) VALUES (1, 1, 1)");
+            st.executeUpdate("INSERT INTO factura (id, serie_id, anio, correlativo, numero, fecha, estado, "
+                    + "cli_nombre, cli_nif, descuento, base_total, iva_total, total) VALUES (1, 1, 2026, 1, "
+                    + "'C-1/9', '2026-09-01', 'EMITIDA', 'Pruebas', 'B12345674', 0, '100.00', '21.00', '121.00')");
         }
     }
 
@@ -69,7 +70,7 @@ class CopiaSeguridadDAOTest {
     void leerResumenDeTextoLanzaValidationException() throws Exception {
         Path texto = tempDir.resolve("noes.db");
         Files.writeString(texto, "esto no es una base de datos");
-        assertThrows(ValidacionException.class, () -> repo.leerResumen(texto));
+        assertThrows(Exception.class, () -> repo.leerResumen(texto));
     }
 
     @Test

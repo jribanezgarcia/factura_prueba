@@ -44,6 +44,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
+**`modulo-facturas`** (en curso): una fila por factura (`factura` y `factura_linea`, sin `factura_version`), `Factura` entera con su serie, su cliente, sus líneas y su retención dentro, `Facturas` singleton con todo el SQL y pantallas adaptadas sin versiones.
+
 ## Qué toca ahora
 
 1. **`modulo-facturas`** (facturas sin versiones).

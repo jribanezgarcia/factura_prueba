@@ -15,7 +15,7 @@ public final class ValidacionCliente {
     private ValidacionCliente() {
     }
 
-    /** Pedimos el nombre siempre, aunque la factura lo repita en la versión. */
+    /** Pedimos el nombre siempre, aunque la factura guarde su propia copia. */
     public static String errorNombre(String valor) {
         if (vacio(valor)) {
             return "Indique el nombre del cliente.";
@@ -85,9 +85,9 @@ public final class ValidacionCliente {
      * orden: nombre, NIF, dirección, código postal, localidad, provincia
      * y email. Sin cliente no hay factura.
      */
-    public static void comprobar(Cliente cliente) throws ValidacionException {
+    public static void comprobar(Cliente cliente) throws Exception {
         if (cliente == null) {
-            throw new ValidacionException("Indique los datos del cliente.");
+            throw new Exception("Indique los datos del cliente.");
         }
         String error = errorNombre(cliente.getNombre());
         if (error == null) {
@@ -109,7 +109,7 @@ public final class ValidacionCliente {
             error = errorEmail(cliente.getEmail());
         }
         if (error != null) {
-            throw new ValidacionException(error);
+            throw new Exception(error);
         }
     }
 

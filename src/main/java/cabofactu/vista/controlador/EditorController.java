@@ -2,10 +2,8 @@ package cabofactu.vista.controlador;
 
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
-import cabofactu.modelo.dominio.DatosPago;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
-import cabofactu.modelo.dominio.VersionFactura;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.ResumenFactura;
 import cabofactu.modelo.dominio.Serie;
@@ -13,8 +11,6 @@ import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.ExportadorPdf;
 import cabofactu.modelo.negocio.Calculos;
-import cabofactu.modelo.negocio.Facturas;
-import cabofactu.modelo.negocio.ValidacionException;
 import cabofactu.modelo.negocio.ValidacionCliente;
 import cabofactu.utilidades.Formatos;
 import cabofactu.utilidades.LogoMarco;
@@ -68,14 +64,12 @@ import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.CambiosSinGuardar;
 import cabofactu.vista.utilidades.Dialogos;
-import cabofactu.vista.utilidades.ModoGuardarVersion;
 
 /**
- * Editor de factura completo (6.2-6.6, 7.x, 8.1): cabecera con serie, fecha,
- * numero propuesto/editable y cliente buscable; tabla de lineas editable con
- * flujo Enter y Supr; recalculado precio-total con o sin IVA; descuento
- * general y desglose por tipos de IVA; observaciones; validaciones al guardar;
- * estados Emitida/Anulada; creacion de rectificativas y exportacion a PDF.
+ * Editor de factura: cabecera con serie, fecha, número y cliente; tabla de
+ * líneas editable; descuento general y desglose por tipos de IVA;
+ * observaciones; validaciones al guardar; estados Emitida/Anulada; creación
+ * de rectificativas y exportación a PDF.
  */
 public class EditorController implements Pantalla, Initializable {
 
@@ -88,7 +82,6 @@ public class EditorController implements Pantalla, Initializable {
     private boolean modificado;
     private boolean cargando;
     private Long facturaAbiertaId;
-    private Long versionAbiertaId;
     private Integer correlativoFijo;
     private EstadoFactura estadoActual;
     private Cliente clienteActual;
@@ -212,8 +205,6 @@ public class EditorController implements Pantalla, Initializable {
     @FXML
     private Button btnEliminarLinea;
     @FXML
-    private Button btnVersiones;
-    @FXML
     private Button btnRectificativa;
 
     @Override
@@ -275,49 +266,51 @@ public class EditorController implements Pantalla, Initializable {
         }
     }
 
-    /**
-     * Carga la version indicada en el editor (para ver, editar o exportar).
-     */
-    public void cargarVersion(long versionId) {
+    /** Cargamos la factura indicada en el editor, para verla, editarla o exportarla. */
+    public void cargarFactura(long facturaId) {
         try {
-            Facturas.VersionCompleta vc = Vista.getInstancia().getControlador().getModelo().getFacturas().abrirVersion(versionId);
-            if (vc == null) {
-                Dialogos.mostrarDialogoError("Factura", "No se pudo abrir la versión.");
+            Factura factura = Vista.getInstancia().getControlador().buscarFactura(facturaId);
+            if (factura == null) {
+                Dialogos.mostrarDialogoError("Factura", "No se pudo abrir la factura.");
                 return;
             }
             cargando = true;
             try {
-                facturaAbiertaId = vc.factura().getId();
-                versionAbiertaId = versionId;
-                correlativoFijo = vc.factura().getCorrelativo();
-                estadoActual = Vista.getInstancia().getControlador().getModelo().getFacturas().estadoActual(facturaAbiertaId);
+                facturaAbiertaId = factura.getId();
+                correlativoFijo = factura.getCorrelativo();
+                estadoActual = factura.getEstado();
 
-                Serie serie = Vista.getInstancia().getControlador().buscarSerie(vc.factura().getSerieId());
+                Serie serie = factura.getSerie();
                 comboSerie.setValue(serie);
                 comboSerie.setDisable(true);
                 actualizarVisibilidadReferencia(serie);
-                fecha.setValue(vc.version().getFechaFactura());
-                txtNumero.setText(vc.version().getNumero());
+                fecha.setValue(factura.getFecha());
+                txtNumero.setText(factura.getNumero());
 
-                Cliente cli = vc.cliente();
+                Cliente cli = factura.getCliente();
                 comboCliente.setValue(cli);
                 cargarDatosCliente(cli);
 
-                lineas.setAll(vc.lineas());
+                lineas.setAll(factura.getLineas());
                 asegurarTiposIvaEnLista(lineas);
-                descuento = vc.version().getDescuentoPorcentaje();
+                descuento = factura.getDescuento();
                 txtDescuento.setText(String.valueOf(descuento));
-                asegurarRetencionEnLista(vc.version().getTipoRetencionId(),
-                        vc.version().getTipoRetencionNombre(), vc.version().getTipoRetencionPorcentaje());
-                seleccionarRetencionPorId(vc.version().getTipoRetencionId());
-                txtObservaciones.setText(nz(vc.version().getObservaciones()));
-                txtReferencia.setText(nz(vc.version().getReferenciaRectifica()));
-                txtFormaPago.setText(nz(vc.version().getFormaPago()));
-                vencimiento.setValue(vc.version().getVencimiento());
-                txtRealizadaPor.setText(nz(vc.version().getRealizadaPor()));
+                if (factura.getRetencion() == null) {
+                    asegurarRetencionEnLista(null, null, null);
+                    seleccionarRetencionPorId(null);
+                } else {
+                    asegurarRetencionEnLista(factura.getRetencion().getId(), factura.getRetencion().getNombre(),
+                            factura.getRetencion().getPorcentaje());
+                    seleccionarRetencionPorId(factura.getRetencion().getId());
+                }
+                txtObservaciones.setText(nz(factura.getObservaciones()));
+                txtReferencia.setText(nz(factura.getRectificaNumero()));
+                txtReferencia.setEditable(false);
+                txtFormaPago.setText(nz(factura.getFormaPago()));
+                vencimiento.setValue(factura.getVencimiento());
+                txtRealizadaPor.setText(nz(factura.getRealizadaPor()));
 
-                lblTitulo.setText("Factura " + vc.version().getNumero()
-                        + " (v" + vc.version().getVersionNum() + ")");
+                lblTitulo.setText("Factura " + factura.getNumero());
                 lblEstado.setVisible(estadoActual == EstadoFactura.ANULADA);
                 lblEstado.setManaged(estadoActual == EstadoFactura.ANULADA);
                 setEditable(estadoActual == EstadoFactura.EMITIDA);
@@ -327,20 +320,6 @@ public class EditorController implements Pantalla, Initializable {
                 cargando = false;
             }
             actualizarResumen();
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Factura", "Error al abrir la factura: " + e.getMessage());
-        }
-    }
-
-    /** Carga la ultima version (estado actual) de la factura. */
-    public void cargarFactura(long facturaId) {
-        try {
-            VersionFactura v = Vista.getInstancia().getControlador().getModelo().getVersiones().ultimaVersion(facturaId);
-            if (v == null) {
-                Dialogos.mostrarDialogoError("Factura", "No se pudo abrir la factura.");
-                return;
-            }
-            cargarVersion(v.getId());
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Factura", "Error al abrir la factura: " + e.getMessage());
         }
@@ -833,29 +812,19 @@ public class EditorController implements Pantalla, Initializable {
     // Recálculo por tipo de cambio (6.4)
     private void aplicarCantidad(LineaFactura l, int v) {
         l.setCantidad(v);
-        BigDecimal total = Calculos.totalLinea(l.getPrecioUnitario(), v);
-        l.setTotalBase(total);
-        l.setIvaImporte(Calculos.ivaDeBase(total, l.getIvaPorcentaje()));
         marcarModificado();
     }
 
     private void aplicarPrecio(LineaFactura l, BigDecimal v) {
         l.setPrecioUnitario(v);
-        BigDecimal total = Calculos.totalLinea(v, l.getCantidad());
-        l.setTotalBase(total);
-        l.setIvaImporte(Calculos.ivaDeBase(total, l.getIvaPorcentaje()));
         marcarModificado();
     }
 
     private void aplicarTotal(LineaFactura l, BigDecimal t) {
         if (chkTotalConIva.isSelected()) {
-            Calculos.ResultadoConIva r = Calculos.calcularDesdeTotalConIva(t, l.getIvaPorcentaje());
-            l.setTotalBase(r.base());
-            l.setIvaImporte(r.iva());
-            l.setPrecioUnitario(Calculos.precioDesdeTotal(r.base(), l.getCantidad()));
+            BigDecimal base = Calculos.baseDesdeTotalConIva(t, l.getIvaPorcentaje());
+            l.setPrecioUnitario(Calculos.precioDesdeTotal(base, l.getCantidad()));
         } else {
-            l.setTotalBase(t);
-            l.setIvaImporte(Calculos.ivaDeBase(t, l.getIvaPorcentaje()));
             l.setPrecioUnitario(Calculos.precioDesdeTotal(t, l.getCantidad()));
         }
         marcarModificado();
@@ -867,7 +836,6 @@ public class EditorController implements Pantalla, Initializable {
         l.setIvaPorcentaje(t.getPorcentaje());
         l.setIvaMotivoExencion(t.getMotivoExencion());
         l.setEsSuplido(t.isEsSuplido());
-        l.setIvaImporte(Calculos.ivaDeBase(l.getTotalBase(), t.getPorcentaje()));
         marcarModificado();
     }
 
@@ -1046,10 +1014,8 @@ public class EditorController implements Pantalla, Initializable {
             return false;
         }
         String obs = txtObservaciones.getText();
-        String ref = txtReferencia.getText();
-        DatosPago dp = new DatosPago(txtFormaPago.getText() == null ? "" : txtFormaPago.getText().trim(),
-                vencimiento.getValue(),
-                txtRealizadaPor.getText() == null ? "" : txtRealizadaPor.getText().trim());
+        String formaPago = txtFormaPago.getText().trim();
+        String realizadaPor = txtRealizadaPor.getText().trim();
         boolean actualizarFicha = pedirActualizarFicha(cli);
         try {
             if (facturaAbiertaId == null) {
@@ -1068,21 +1034,39 @@ public class EditorController implements Pantalla, Initializable {
                             + serie.getCodigo() + " (p. ej. " + serie.getCodigo() + "-1).");
                     return false;
                 }
-                long id = Vista.getInstancia().getControlador().getModelo().getFacturas().crearFactura(serie, f, cli, lis, descuento, obs, ref, corr, dp, retencionActual);
+                Factura nueva = new Factura(serie, f, cli);
+                nueva.setCorrelativo(corr);
+                nueva.setDescuento(descuento);
+                nueva.setObservaciones(obs);
+                nueva.setFormaPago(formaPago);
+                nueva.setVencimiento(vencimiento.getValue());
+                nueva.setRealizadaPor(realizadaPor);
+                nueva.setRetencion(retencionActual);
+                nueva.setLineas(lis);
+                long id = Vista.getInstancia().getControlador().altaFactura(nueva);
                 guardarSeriePreferida(serie);
                 cargarFactura(id);
                 Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
             } else {
-                ModoGuardarVersion modo = Dialogos.mostrarDialogoModoGuardarVersion();
-                if (modo == ModoGuardarVersion.CANCELAR) {
+                Factura factura = Vista.getInstancia().getControlador().buscarFactura(facturaAbiertaId);
+                if (factura == null) {
+                    Dialogos.mostrarDialogoError("Guardar", "No se ha encontrado la factura.");
                     return false;
                 }
-                VersionFactura v = Vista.getInstancia().getControlador().getModelo().getFacturas().guardarEditada(facturaAbiertaId, versionAbiertaId,
-                        f, cli, lis, descuento, obs, ref, dp,
-                        modo == ModoGuardarVersion.NUEVA_VERSION, retencionActual);
-                txtNumero.setText(v.getNumero());
-                lblTitulo.setText("Factura " + v.getNumero() + " (v" + v.getVersionNum() + ")");
-                modificado = false;
+                factura.setFecha(f);
+                factura.setCliente(cli);
+                factura.setDescuento(descuento);
+                factura.setObservaciones(obs);
+                factura.setFormaPago(formaPago);
+                factura.setVencimiento(vencimiento.getValue());
+                factura.setRealizadaPor(realizadaPor);
+                factura.setRetencion(retencionActual);
+                factura.setLineas(lis);
+                if (!Dialogos.mostrarDialogoConfirmacion("Guardar factura", String.format("¿Guardar los cambios de la factura %s?%n%nLa factura ya emitida se sobrescribirá.", factura.getNumero()))) {
+                    return false;
+                }
+                Vista.getInstancia().getControlador().modificarFactura(factura);
+                cargarFactura(facturaAbiertaId);
                 Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
             }
             if (actualizarFicha) {
@@ -1090,9 +1074,6 @@ public class EditorController implements Pantalla, Initializable {
                 clienteActual = cli;
             }
             return true;
-        } catch (ValidacionException e) {
-            Dialogos.mostrarDialogoError("Guardar", e.getMessage());
-            return false;
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Guardar", "Error al guardar: " + e.getMessage());
             return false;
@@ -1167,9 +1148,13 @@ public class EditorController implements Pantalla, Initializable {
         btnAnular.setManaged(emitida);
         btnRestaurar.setVisible(anulada);
         btnRestaurar.setManaged(anulada);
-        lblTitulo.setMaxWidth(anulada ? 130 : 200);
-        btnExportar.setDisable(versionAbiertaId == null);
-        btnVersiones.setDisable(!abierta);
+        if (anulada) {
+            lblTitulo.setMaxWidth(130);
+        } else {
+            lblTitulo.setMaxWidth(200);
+        }
+        txtNumero.setDisable(abierta);
+        btnExportar.setDisable(!abierta);
         btnRectificativa.setDisable(!abierta);
     }
 
@@ -1211,15 +1196,13 @@ public class EditorController implements Pantalla, Initializable {
             return;
         }
         if (!Dialogos.mostrarDialogoConfirmacion("Anular factura",
-                "¿Anular la factura? Se creará una nueva versión con estado Anulada.")) {
+                "¿Anular la factura?")) {
             return;
         }
         try {
-            Vista.getInstancia().getControlador().getModelo().getEstados().anular(facturaAbiertaId);
+            Vista.getInstancia().getControlador().anularFactura(facturaAbiertaId);
             Dialogos.mostrarDialogoInformacion("Anular", "Factura anulada.");
             cargarFactura(facturaAbiertaId);
-        } catch (ValidacionException e) {
-            Dialogos.mostrarDialogoError("Anular", e.getMessage());
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Anular", "Error al anular: " + e.getMessage());
         }
@@ -1231,15 +1214,13 @@ public class EditorController implements Pantalla, Initializable {
             return;
         }
         if (!Dialogos.mostrarDialogoConfirmacion("Restaurar factura",
-                "¿Restaurar la factura a estado Emitida? Se creará una nueva versión.")) {
+                "¿Restaurar la factura a estado Emitida?")) {
             return;
         }
         try {
-            Vista.getInstancia().getControlador().getModelo().getEstados().restaurar(facturaAbiertaId);
+            Vista.getInstancia().getControlador().restaurarFactura(facturaAbiertaId);
             Dialogos.mostrarDialogoInformacion("Restaurar", "Factura restaurada.");
             cargarFactura(facturaAbiertaId);
-        } catch (ValidacionException e) {
-            Dialogos.mostrarDialogoError("Restaurar", e.getMessage());
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Restaurar", "Error al restaurar: " + e.getMessage());
         }
@@ -1247,7 +1228,7 @@ public class EditorController implements Pantalla, Initializable {
 
     @FXML
     private void crearRectificativa() {
-        if (versionAbiertaId == null) {
+        if (facturaAbiertaId == null) {
             Dialogos.mostrarDialogoInformacion("Rectificativa", "Abra primero la factura a rectificar.");
             return;
         }
@@ -1256,12 +1237,10 @@ public class EditorController implements Pantalla, Initializable {
             return;
         }
         try {
-            long nueva = Vista.getInstancia().getControlador().getModelo().getRectificativas().crearRectificativa(versionAbiertaId,
-                    Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo(), null);
+            long nueva = Vista.getInstancia().getControlador().rectificarFactura(facturaAbiertaId,
+                    Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo());
             cargarFactura(nueva);
-            Dialogos.mostrarDialogoInformacion("Rectificativa", "Rectificativa creada. Puede editar la referencia antes de guardar.");
-        } catch (ValidacionException e) {
-            Dialogos.mostrarDialogoError("Rectificativa", e.getMessage());
+            Dialogos.mostrarDialogoInformacion("Rectificativa", "Rectificativa creada.");
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Rectificativa", "Error al crear la rectificativa: " + e.getMessage());
         }
@@ -1269,17 +1248,17 @@ public class EditorController implements Pantalla, Initializable {
 
     @FXML
     private void exportarPdf() {
-        if (versionAbiertaId == null) {
+        if (facturaAbiertaId == null) {
             Dialogos.mostrarDialogoInformacion("Exportar PDF", "Guarde primero la factura para poder exportarla.");
             return;
         }
         try {
-            Facturas.VersionCompleta vc = Vista.getInstancia().getControlador().getModelo().getFacturas().abrirVersion(versionAbiertaId);
-            if (vc == null) {
+            Factura factura = Vista.getInstancia().getControlador().buscarFactura(facturaAbiertaId);
+            if (factura == null) {
                 return;
             }
             Empresa empresa = Vista.getInstancia().getControlador().buscarEmpresa();
-            Path sugerido = proponerDestinoPdf(vc);
+            Path sugerido = proponerDestinoPdf(factura);
             FileChooser chooser = new FileChooser();
             chooser.setTitle("Exportar PDF");
             if (sugerido.getParent() != null && sugerido.getParent().toFile().exists()) {
@@ -1296,7 +1275,7 @@ public class EditorController implements Pantalla, Initializable {
             Task<Path> t = new Task<>() {
                 @Override
                 protected Path call() throws Exception {
-                    new ExportadorPdf().exportar(vc, empresa, ruta, colorPdf);
+                    new ExportadorPdf().exportar(factura, empresa, ruta, colorPdf);
                     return ruta;
                 }
             };
@@ -1329,7 +1308,7 @@ public class EditorController implements Pantalla, Initializable {
         }
     }
 
-    private Path proponerDestinoPdf(Facturas.VersionCompleta vc) {
+    private Path proponerDestinoPdf(Factura factura) {
         String carpeta = "Facturas";
         try {
             String pref = Vista.getInstancia().getControlador().preferencia(PREV_CARPETA);
@@ -1342,32 +1321,14 @@ public class EditorController implements Pantalla, Initializable {
         if (!base.isAbsolute()) {
             base = Conexion.carpetaEmpresa().resolve(base);
         }
-        String nombre = Formatos.nombreArchivoPdf(vc.version().getNumero());
-        Serie serie;
-        try {
-            serie = Vista.getInstancia().getControlador().buscarSerie(vc.factura().getSerieId());
-        } catch (Exception e) {
-            serie = null;
-        }
+        String nombre = Formatos.nombreArchivoPdf(factura.getNumero());
+        Serie serie = factura.getSerie();
         if (serie == null) {
             return base.resolve(nombre);
         }
-        return base.resolve(String.valueOf(vc.version().getFechaFactura().getYear()))
+        return base.resolve(String.valueOf(factura.getFecha().getYear()))
                 .resolve(serie.getCodigo())
                 .resolve(nombre);
-    }
-
-    @FXML
-    private void verVersiones() {
-        if (facturaAbiertaId == null) {
-            Dialogos.mostrarDialogoInformacion("Versiones", "Guarde primero la factura para tener versiones.");
-            return;
-        }
-        VersionesController vc = (VersionesController) Vista.getInstancia().mostrar("Versiones.fxml");
-        if (vc == null) {
-            return;
-        }
-        vc.cargarFactura(facturaAbiertaId);
     }
 
     // ------------------------------------------------------------------

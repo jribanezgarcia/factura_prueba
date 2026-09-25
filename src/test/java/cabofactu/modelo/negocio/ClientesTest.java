@@ -2,15 +2,19 @@ package cabofactu.modelo.negocio;
 
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Serie;
+import cabofactu.modelo.dominio.Factura;
 import cabofactu.modelo.dominio.FormatoNumero;
+import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.negocio.sqlite.Conexion;
-import cabofactu.modelo.negocio.sqlite.FacturaDAO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import java.math.BigDecimal;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -141,7 +145,18 @@ class ClientesTest {
         long clienteId = Clientes.getClientes().alta(clienteAna());
         assertFalse(Clientes.getClientes().tieneFacturas(clienteId));
         Serie s = serieC();
-        new FacturaDAO().insertar(s.getId(), 1, clienteId);
+        Cliente cliente = Clientes.getClientes().buscar(clienteId);
+        Factura factura = new Factura(s, LocalDate.of(2026, 9, 1), cliente);
+        LineaFactura linea = new LineaFactura();
+        linea.setCantidad(1);
+        linea.setPrecioUnitario(new BigDecimal("100.00"));
+        linea.setTipoIvaId(1L);
+        linea.setIvaNombre("IVA 21%");
+        linea.setIvaPorcentaje(21);
+        List<LineaFactura> lineas = new ArrayList<>();
+        lineas.add(linea);
+        factura.setLineas(lineas);
+        Facturas.getFacturas().alta(factura);
         assertTrue(Clientes.getClientes().tieneFacturas(clienteId));
     }
 

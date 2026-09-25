@@ -156,6 +156,6 @@ Y dos de apariencia: `TemasTest` comprueba que cada tema define su paleta y `Tex
 
 ## Transición
 
-El código de hoy **no** cumple estas normas: tiene DAO, excepciones propias, versiones de factura y clases de datos sin validar. El esqueleto (AppCaboFactu, Controlador, Vista y pantallas) ya las cumple. Estas normas describen **adónde vamos**, y el proyecto se rehace módulo a módulo (ver `ESTADO.md`).
+El código de hoy **no** cumple estas normas del todo: queda el DAO de las copias (`CopiaSeguridadDAO`) y `DatosException` de `Conexion`. El esqueleto (AppCaboFactu, Controlador, Vista y pantallas) ya las cumple. Estas normas describen **adónde vamos**, y el proyecto se rehace módulo a módulo (ver `ESTADO.md`).
 
 Mientras tanto: en cada change se hace **solo** lo que pide su `tasks.md`, y **ningún código nuevo o modificado puede introducir algo que estas normas prohíben**. Antes de dar un change por terminado, busca en los ficheros tocados `record`, `? :`, `var`, `::`, `.stream()`, clases anónimas y nombres completos de clase: no debe haberse añadido ninguno.

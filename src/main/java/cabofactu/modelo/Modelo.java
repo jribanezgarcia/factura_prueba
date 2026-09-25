@@ -1,10 +1,6 @@
 package cabofactu.modelo;
 
 import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
-import cabofactu.modelo.negocio.sqlite.FacturaDAO;
-import cabofactu.modelo.negocio.sqlite.HistorialDAO;
-import cabofactu.modelo.negocio.sqlite.LineaFacturaDAO;
-import cabofactu.modelo.negocio.sqlite.VersionFacturaDAO;
 
 import java.time.Clock;
 import java.time.LocalDate;
@@ -13,37 +9,30 @@ import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
+import cabofactu.modelo.dominio.Factura;
+import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.Clientes;
 import cabofactu.modelo.negocio.Configuracion;
 import cabofactu.modelo.negocio.Empresas;
-import cabofactu.modelo.negocio.Estados;
 import cabofactu.modelo.negocio.Facturas;
 import cabofactu.modelo.negocio.FacturacionMensual;
-import cabofactu.modelo.negocio.Historial;
-import cabofactu.modelo.negocio.TiposIva;
-import cabofactu.modelo.negocio.Rectificativas;
 import cabofactu.modelo.negocio.Reloj;
 import cabofactu.modelo.negocio.TiposRetencion;
+import cabofactu.modelo.negocio.TiposIva;
 import cabofactu.modelo.negocio.Series;
-import cabofactu.modelo.negocio.Versiones;
 
 /**
- * Contenedor de dependencias construido una sola vez en el arranque.
- * Los DAO y las reglas se inyectan a mano por constructor.
+ * Puerta de entrada única al negocio: cada operación delega en su singleton
+ * con una sola línea.
  */
 public class Modelo {
 
     private final Reloj reloj;
 
-    private final Versiones versiones;
-    private final Facturas facturas;
-    private final Estados estados;
-    private final Rectificativas rectificativas;
     private final FacturacionMensual facturacionMensual;
-    private final Historial historial;
     private final CopiaSeguridad copiaSeguridad;
 
     public Modelo() {
@@ -51,21 +40,9 @@ public class Modelo {
     }
 
     public Modelo(Clock clock) {
-        FacturaDAO facturaDAO = new FacturaDAO();
-        VersionFacturaDAO versionFacturaDAO = new VersionFacturaDAO();
-        LineaFacturaDAO lineaFacturaDAO = new LineaFacturaDAO();
-        CopiaSeguridadDAO copiaSeguridadDAO = new CopiaSeguridadDAO();
-        HistorialDAO historialDAO = new HistorialDAO();
-
         reloj = new Reloj(clock);
-
-        versiones = new Versiones(versionFacturaDAO, lineaFacturaDAO, clock);
-        facturas = new Facturas(facturaDAO, versionFacturaDAO, lineaFacturaDAO, versiones, clock);
-        estados = new Estados(facturaDAO, versionFacturaDAO, lineaFacturaDAO, versiones, facturas);
-        rectificativas = new Rectificativas(facturas);
-        facturacionMensual = new FacturacionMensual(facturas, facturaDAO);
-        historial = new Historial(historialDAO);
-        copiaSeguridad = new CopiaSeguridad(copiaSeguridadDAO, facturaDAO, clock);
+        facturacionMensual = new FacturacionMensual(Facturas.getFacturas());
+        copiaSeguridad = new CopiaSeguridad(new CopiaSeguridadDAO(), Facturas.getFacturas(), clock);
     }
 
     public Reloj getReloj() {
@@ -252,28 +229,53 @@ public class Modelo {
         return Series.getSeries().correlativoOcupado(serie, correlativo, fecha);
     }
 
-    public Versiones getVersiones() {
-        return versiones;
+    public long altaFactura(Factura factura) throws Exception {
+        return Facturas.getFacturas().alta(factura);
     }
 
-    public Facturas getFacturas() {
-        return facturas;
+    public void modificarFactura(Factura factura) throws Exception {
+        Facturas.getFacturas().modificar(factura);
     }
 
-    public Estados getEstados() {
-        return estados;
+    public void bajaFactura(long id) throws Exception {
+        Facturas.getFacturas().baja(id);
     }
 
-    public Rectificativas getRectificativas() {
-        return rectificativas;
+    public Factura buscarFactura(long id) throws Exception {
+        return Facturas.getFacturas().buscar(id);
     }
 
-    public FacturacionMensual getFacturacionMensual() {
-        return facturacionMensual;
+    public List<Factura> listadoFacturas(FiltrosHistorial filtros) throws Exception {
+        return Facturas.getFacturas().listado(filtros);
     }
 
-    public Historial getHistorial() {
-        return historial;
+    public void anularFactura(long id) throws Exception {
+        Facturas.getFacturas().anular(id);
+    }
+
+    public void restaurarFactura(long id) throws Exception {
+        Facturas.getFacturas().restaurar(id);
+    }
+
+    public long rectificarFactura(long facturaId, LocalDate fecha) throws Exception {
+        return Facturas.getFacturas().rectificar(facturaId, fecha);
+    }
+
+    public int numeroDeLineasFactura(long id) throws Exception {
+        return Facturas.getFacturas().numeroDeLineas(id);
+    }
+
+    public FacturacionMensual.Resultado generarFacturasMensuales(Cliente cliente, int anio, int mesInicio,
+            int mesFin, Serie serie, FacturacionMensual.ModoDia diaMode, int diaFijo, TipoIva iva,
+            TipoRetencion retencion, List<FacturacionMensual.LineaPlantilla> plantillas,
+            boolean generarDuplicados, boolean usarHuecos) throws Exception {
+        return facturacionMensual.generar(cliente, anio, mesInicio, mesFin, serie, diaMode, diaFijo,
+                iva, retencion, plantillas, generarDuplicados, usarHuecos);
+    }
+
+    public List<String> mensualesDuplicadas(Cliente cliente, int anio, int mesInicio, int mesFin)
+            throws Exception {
+        return facturacionMensual.detectarDuplicados(cliente, anio, mesInicio, mesFin);
     }
 
     public CopiaSeguridad getCopiaSeguridad() {

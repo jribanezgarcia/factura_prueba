@@ -38,7 +38,10 @@ public final class Calculos {
     }
 
     public static BigDecimal round2(BigDecimal v) {
-        return v == null ? BigDecimal.ZERO : v.setScale(SCALE, RoundingMode.HALF_UP);
+        if (v == null) {
+            return BigDecimal.ZERO;
+        }
+        return v.setScale(SCALE, RoundingMode.HALF_UP);
     }
 
     public static BigDecimal totalLinea(BigDecimal precio, int cantidad) {
@@ -55,7 +58,7 @@ public final class Calculos {
      * calculada y le suma la cuota.
      */
     public static BigDecimal totalConIva(LineaFactura l) {
-        BigDecimal base = l.getTotalBase() == null ? BigDecimal.ZERO : l.getTotalBase();
+        BigDecimal base = totalLinea(l.getPrecioUnitario(), l.getCantidad());
         if (l.isExenta() || l.getIvaPorcentaje() == null || l.getIvaPorcentaje() == 0) {
             return base;
         }
@@ -68,10 +71,16 @@ public final class Calculos {
      * clasificando igual aunque el tipo se haya cambiado despues.
      */
     public static List<LineaFactura> suplidosDe(List<LineaFactura> lineas) {
+        List<LineaFactura> suplidos = new ArrayList<>();
         if (lineas == null) {
-            return List.of();
+            return suplidos;
         }
-        return lineas.stream().filter(LineaFactura::isEsSuplido).toList();
+        for (LineaFactura linea : lineas) {
+            if (linea.isEsSuplido()) {
+                suplidos.add(linea);
+            }
+        }
+        return suplidos;
     }
 
     public static BigDecimal precioDesdeTotal(BigDecimal total, int cantidad) {
@@ -88,22 +97,16 @@ public final class Calculos {
         return round2(base.multiply(BigDecimal.valueOf(porcentaje)).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP));
     }
 
-    /**
-     * Entrada de total final con IVA incluido. Calcula hacia atras base e IVA.
-     */
-    public static ResultadoConIva calcularDesdeTotalConIva(BigDecimal totalConIva, Integer porcentaje) {
+    /** Entrada de total final con IVA incluido: calculamos hacia atrás su base. */
+    public static BigDecimal baseDesdeTotalConIva(BigDecimal totalConIva, Integer porcentaje) {
         if (totalConIva == null) {
             totalConIva = BigDecimal.ZERO;
         }
-        BigDecimal base;
         if (porcentaje == null) {
-            base = round2(totalConIva);
-        } else {
-            BigDecimal factor = CIEN.add(BigDecimal.valueOf(porcentaje)).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP);
-            base = totalConIva.divide(factor, SCALE, RoundingMode.HALF_UP);
+            return round2(totalConIva);
         }
-        BigDecimal iva = totalConIva.subtract(base);
-        return new ResultadoConIva(base, iva);
+        BigDecimal factor = CIEN.add(BigDecimal.valueOf(porcentaje)).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP);
+        return totalConIva.divide(factor, SCALE, RoundingMode.HALF_UP);
     }
 
     /**
@@ -119,101 +122,160 @@ public final class Calculos {
      * por tipo de IVA y retencion de IRPF aplicada sobre la base imponible.
      */
     public static ResumenFactura resumen(List<LineaFactura> lineas, int descuento, TipoRetencion retencion) {
-        BigDecimal factor = CIEN.subtract(BigDecimal.valueOf(descuento)).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP);
-
-        Map<ClaveIva, BigDecimal> bases = new LinkedHashMap<>();
-        Map<ClaveIva, BigDecimal> cuotasSinDescuento = new LinkedHashMap<>();
-        BigDecimal baseTotalSinDescuento = BigDecimal.ZERO;
-        BigDecimal totalSuplidos = BigDecimal.ZERO;
-
-        if (lineas != null) {
-            for (LineaFactura l : lineas) {
-                if (l.isEsSuplido()) {
-                    totalSuplidos = totalSuplidos.add(nz(l.getTotalBase()));
-                    continue;
-                }
-                ClaveIva clave = new ClaveIva(l.getIvaNombre(), l.getIvaPorcentaje(), l.getIvaMotivoExencion());
-                bases.merge(clave, nz(l.getTotalBase()), BigDecimal::add);
-                cuotasSinDescuento.merge(clave, nz(l.getIvaImporte()), BigDecimal::add);
-                baseTotalSinDescuento = baseTotalSinDescuento.add(nz(l.getTotalBase()));
-            }
-        }
-
-        BigDecimal baseTotalDescontada = round2(baseTotalSinDescuento.multiply(factor));
+        BigDecimal factor = factorDescuento(descuento);
+        Map<String, BigDecimal> bases = basesPorClave(lineas);
+        BigDecimal baseTotalDescontada = round2(sumarBases(bases).multiply(factor));
+        List<ResumenFactura.IvaGrupo> grupos = gruposDescontados(bases, factor);
+        ajustarCentimos(grupos, baseTotalDescontada);
 
         ResumenFactura resumen = new ResumenFactura();
         resumen.setDescuentoPorcentaje(descuento);
         resumen.setBaseTotal(baseTotalDescontada);
-        resumen.setBaseBruta(round2(baseTotalSinDescuento));
-        resumen.setImporteDescuento(round2(baseTotalSinDescuento.subtract(baseTotalDescontada)));
-
-        List<ResumenFactura.IvaGrupo> grupos = new ArrayList<>();
-        List<BigDecimal> basesDescontadas = new ArrayList<>();
-
-        for (Map.Entry<ClaveIva, BigDecimal> e : bases.entrySet()) {
-            ClaveIva clave = e.getKey();
-            BigDecimal baseDescontada = round2(e.getValue().multiply(factor));
-            basesDescontadas.add(baseDescontada);
-
-            ResumenFactura.IvaGrupo g = new ResumenFactura.IvaGrupo();
-            g.setNombre(clave.nombre);
-            g.setPorcentaje(clave.porcentaje);
-            g.setMotivoExencion(clave.motivo);
-            g.setBase(baseDescontada);
-            g.setBaseBruta(round2(e.getValue()));
-            grupos.add(g);
-        }
-
-        // Ajuste de centimos: la suma de bases descontadas debe cuadrar con el total base descontado.
-        BigDecimal suma = basesDescontadas.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-        BigDecimal diferencia = baseTotalDescontada.subtract(suma);
-        if (diferencia.compareTo(BigDecimal.ZERO) != 0 && !grupos.isEmpty()) {
-            int idx = indiceMayorBase(basesDescontadas);
-            grupos.get(idx).setBase(round2(grupos.get(idx).getBase().add(diferencia)));
-        }
-
-        BigDecimal ivaTotal = BigDecimal.ZERO;
-        for (ResumenFactura.IvaGrupo g : grupos) {
-            BigDecimal cuota = ivaDeBase(g.getBase(), g.getPorcentaje());
-            g.setCuota(cuota);
-            ivaTotal = ivaTotal.add(cuota);
-        }
-        ivaTotal = round2(ivaTotal);
-
-        BigDecimal importeRetencion = BigDecimal.ZERO;
-        if (retencion != null && retencion.getPorcentaje() != null) {
-            importeRetencion = round2(baseTotalDescontada.multiply(BigDecimal.valueOf(retencion.getPorcentaje())).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP));
-            resumen.setTipoRetencionId(retencion.getId());
-            resumen.setNombreRetencion(retencion.getNombre());
-            resumen.setPorcentajeRetencion(retencion.getPorcentaje());
-        }
-        resumen.setImporteRetencion(importeRetencion);
-        resumen.setIvaTotal(ivaTotal);
-        resumen.setTotalSuplidos(round2(totalSuplidos));
-        resumen.setTotal(round2(baseTotalDescontada.add(ivaTotal).subtract(importeRetencion).add(resumen.getTotalSuplidos())));
+        resumen.setBaseBruta(round2(sumarBases(bases)));
+        resumen.setImporteDescuento(round2(sumarBases(bases).subtract(baseTotalDescontada)));
+        resumen.setIvaTotal(sumarCuotas(grupos));
+        resumen.setTotalSuplidos(round2(totalSuplidos(lineas)));
+        ponerRetencion(resumen, retencion, baseTotalDescontada);
+        resumen.setTotal(round2(baseTotalDescontada.add(resumen.getIvaTotal())
+                .subtract(resumen.getImporteRetencion()).add(resumen.getTotalSuplidos())));
         resumen.getGrupos().addAll(grupos);
         return resumen;
     }
 
-    private static int indiceMayorBase(List<BigDecimal> bases) {
-        int idx = 0;
-        BigDecimal max = bases.isEmpty() ? BigDecimal.ZERO : bases.get(0);
-        for (int i = 1; i < bases.size(); i++) {
-            if (bases.get(i).compareTo(max) > 0) {
-                max = bases.get(i);
-                idx = i;
+    /** El factor que deja el descuento global: 1 con descuento 0 y 0 con descuento 100. */
+    private static BigDecimal factorDescuento(int descuento) {
+        return CIEN.subtract(BigDecimal.valueOf(descuento)).divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP);
+    }
+
+    /** Sumamos las bases sin suplidos por su clave de IVA, conservando su orden. */
+    private static Map<String, BigDecimal> basesPorClave(List<LineaFactura> lineas) {
+        Map<String, BigDecimal> bases = new LinkedHashMap<>();
+        if (lineas == null) {
+            return bases;
+        }
+        for (LineaFactura linea : lineas) {
+            if (linea.isEsSuplido()) {
+                continue;
+            }
+            String clave = claveIva(linea);
+            BigDecimal base = totalLinea(linea.getPrecioUnitario(), linea.getCantidad());
+            BigDecimal acumulada = bases.get(clave);
+            if (acumulada == null) {
+                bases.put(clave, base);
+            } else {
+                bases.put(clave, acumulada.add(base));
             }
         }
-        return idx;
+        return bases;
     }
 
-    private static BigDecimal nz(BigDecimal v) {
-        return v == null ? BigDecimal.ZERO : v;
+    /** Sumamos todas las bases agrupadas. */
+    private static BigDecimal sumarBases(Map<String, BigDecimal> bases) {
+        BigDecimal suma = BigDecimal.ZERO;
+        for (BigDecimal base : bases.values()) {
+            suma = suma.add(base);
+        }
+        return suma;
     }
 
-    public record ResultadoConIva(BigDecimal base, BigDecimal iva) {
+    /** Sumamos aparte los suplidos: solo entran en el total de la factura. */
+    private static BigDecimal totalSuplidos(List<LineaFactura> lineas) {
+        BigDecimal suma = BigDecimal.ZERO;
+        if (lineas == null) {
+            return suma;
+        }
+        for (LineaFactura linea : lineas) {
+            if (linea.isEsSuplido()) {
+                suma = suma.add(totalLinea(linea.getPrecioUnitario(), linea.getCantidad()));
+            }
+        }
+        return suma;
     }
 
-    private record ClaveIva(String nombre, Integer porcentaje, String motivo) {
+    /** Pasamos cada base agrupada a su grupo de IVA, ya con el descuento aplicado. */
+    private static List<ResumenFactura.IvaGrupo> gruposDescontados(Map<String, BigDecimal> bases, BigDecimal factor) {
+        List<ResumenFactura.IvaGrupo> grupos = new ArrayList<>();
+        for (Map.Entry<String, BigDecimal> entrada : bases.entrySet()) {
+            String[] partes = entrada.getKey().split("\\|", -1);
+            String nombre = partes[0];
+            Integer porcentaje = null;
+            if (partes.length > 1 && !partes[1].isEmpty()) {
+                porcentaje = Integer.valueOf(partes[1]);
+            }
+            String motivo = "";
+            if (partes.length > 2) {
+                motivo = partes[2];
+            }
+            ResumenFactura.IvaGrupo grupo = new ResumenFactura.IvaGrupo();
+            grupo.setNombre(nombre);
+            grupo.setPorcentaje(porcentaje);
+            grupo.setMotivoExencion(motivo);
+            grupo.setBase(round2(entrada.getValue().multiply(factor)));
+            grupo.setBaseBruta(round2(entrada.getValue()));
+            grupos.add(grupo);
+        }
+        return grupos;
+    }
+
+    /** Ajustamos los céntimos en la mayor base para que las bases sumen el total. */
+    private static void ajustarCentimos(List<ResumenFactura.IvaGrupo> grupos, BigDecimal baseTotalDescontada) {
+        BigDecimal suma = BigDecimal.ZERO;
+        for (ResumenFactura.IvaGrupo grupo : grupos) {
+            suma = suma.add(grupo.getBase());
+        }
+        BigDecimal diferencia = baseTotalDescontada.subtract(suma);
+        if (diferencia.compareTo(BigDecimal.ZERO) == 0 || grupos.isEmpty()) {
+            return;
+        }
+        int indice = 0;
+        BigDecimal mayor = grupos.get(0).getBase();
+        for (int i = 1; i < grupos.size(); i++) {
+            if (grupos.get(i).getBase().compareTo(mayor) > 0) {
+                mayor = grupos.get(i).getBase();
+                indice = i;
+            }
+        }
+        grupos.get(indice).setBase(round2(grupos.get(indice).getBase().add(diferencia)));
+    }
+
+    /** Calculamos cada cuota sobre su base descontada y sumamos el IVA total. */
+    private static BigDecimal sumarCuotas(List<ResumenFactura.IvaGrupo> grupos) {
+        BigDecimal ivaTotal = BigDecimal.ZERO;
+        for (ResumenFactura.IvaGrupo grupo : grupos) {
+            BigDecimal cuota = ivaDeBase(grupo.getBase(), grupo.getPorcentaje());
+            grupo.setCuota(cuota);
+            ivaTotal = ivaTotal.add(cuota);
+        }
+        return round2(ivaTotal);
+    }
+
+    /** Guardamos la retención elegida y su importe sobre la base imponible. */
+    private static void ponerRetencion(ResumenFactura resumen, TipoRetencion retencion, BigDecimal base) {
+        BigDecimal importe = BigDecimal.ZERO;
+        if (retencion != null && retencion.getPorcentaje() != null) {
+            importe = round2(base.multiply(BigDecimal.valueOf(retencion.getPorcentaje()))
+                    .divide(CIEN, PRECISION_INTERNA, RoundingMode.HALF_UP));
+            resumen.setTipoRetencionId(retencion.getId());
+            resumen.setNombreRetencion(retencion.getNombre());
+            resumen.setPorcentajeRetencion(retencion.getPorcentaje());
+        }
+        resumen.setImporteRetencion(importe);
+    }
+
+    /** La clave de un grupo de IVA: nombre, porcentaje y motivo, separados por barras. */
+    private static String claveIva(LineaFactura linea) {
+        String nombre = linea.getIvaNombre();
+        if (nombre == null) {
+            nombre = "";
+        }
+        String porcentaje = "";
+        if (linea.getIvaPorcentaje() != null) {
+            porcentaje = String.valueOf(linea.getIvaPorcentaje());
+        }
+        String motivo = linea.getIvaMotivoExencion();
+        if (motivo == null) {
+            motivo = "";
+        }
+        return nombre + "|" + porcentaje + "|" + motivo;
     }
 }

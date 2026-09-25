@@ -1,22 +1,24 @@
 package cabofactu.vista;
 
-import cabofactu.modelo.dominio.FilaHistorial;
+import cabofactu.modelo.dominio.Factura;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * El editor como lo ve el usuario: el número propuesto, los totales, el
- * guardado con sus avisos, el número ocupado, el hueco y la salida con
- * cambios. Sin editar celdas: esa parte se reescribe en modulo-facturas.
+ * guardado con sus avisos y la salida con cambios. Cada factura es una sola:
+ * guardar una emitida pregunta y la sobrescribe.
  */
 class PantallaEditorTest extends PruebaDePantalla {
 
@@ -49,14 +51,18 @@ class PantallaEditorTest extends PruebaDePantalla {
         pulsar("Buscar");
     }
 
+    private int filasHistorico() throws Exception {
+        return buscar("#tabla", TableView.class).getItems().size();
+    }
+
     private Node filaNodoHistorico(String numero) throws Exception {
         for (Node nodo : nodosVisibles("#tabla .table-row-cell")) {
             if (nodo instanceof TableRow) {
                 TableRow<?> fila = (TableRow<?>) nodo;
                 Object dato = fila.getItem();
-                if (dato instanceof FilaHistorial) {
-                    FilaHistorial filaHistorial = (FilaHistorial) dato;
-                    if (filaHistorial.getNumero().equals(numero)) {
+                if (dato instanceof Factura) {
+                    Factura factura = (Factura) dato;
+                    if (factura.getNumero().equals(numero)) {
                         return nodo;
                     }
                 }
@@ -76,7 +82,7 @@ class PantallaEditorTest extends PruebaDePantalla {
         assertEquals("Nueva factura", buscar("#lblTitulo", Label.class).getText());
         LocalDate hoy = LocalDate.now();
         int siguiente = 1;
-        if (hoy.getYear() == 2026 && hoy.getMonthValue() == 9) {
+        if (hoy.getYear() == 2026) {
             siguiente = 6;
         }
         assertEquals(String.format("A-%d/%d", siguiente, hoy.getMonthValue()), numero());
@@ -110,18 +116,33 @@ class PantallaEditorTest extends PruebaDePantalla {
     }
 
     @Test
-    void rectificarCreaYGuarda() throws Exception {
+    void rectificarCreaRectificativaConReferencia() throws Exception {
         abrirHistorico();
         abrirFactura("A-2/9");
         pulsar("Rectificar");
         assertTrue(textoAviso().contains("Rectificativa creada"));
         cerrarAviso();
         assertEquals("R-2", numero());
+        assertEquals("A-2/9", buscar("#txtReferencia", TextField.class).getText());
+        assertFalse(buscar("#txtReferencia", TextField.class).isEditable());
+        assertTrue(buscar("#txtNumero", TextField.class).isDisabled());
+    }
+
+    @Test
+    void guardarEmitidaPreguntaYSobrescribe() throws Exception {
+        abrirHistorico();
+        abrirFactura("A-2/9");
+        asentarVentanas();
+        TextArea observaciones = buscar("#txtObservaciones", TextArea.class);
+        clickOn(observaciones);
+        write("observación de prueba");
         pulsar("Guardar");
+        assertTrue(textoAviso().contains("ya emitida se sobrescribirá"));
         aceptarAviso();
         assertTrue(textoAviso().contains("Factura guardada."));
         cerrarAviso();
-        assertEquals("R-2", numero());
+        abrirHistorico();
+        assertEquals(6, filasHistorico());
     }
 
     @Test

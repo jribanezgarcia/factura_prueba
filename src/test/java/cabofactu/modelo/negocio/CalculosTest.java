@@ -17,11 +17,9 @@ class CalculosTest {
         LineaFactura l = new LineaFactura();
         l.setCantidad(cantidad);
         l.setPrecioUnitario(new BigDecimal(precio));
-        l.setTotalBase(Calculos.totalLinea(l.getPrecioUnitario(), cantidad));
         l.setIvaPorcentaje(pct);
         l.setIvaNombre(nombre);
         l.setIvaMotivoExencion(motivo);
-        l.setIvaImporte(Calculos.ivaDeBase(l.getTotalBase(), pct));
         return l;
     }
 
@@ -30,7 +28,12 @@ class CalculosTest {
     }
 
     private ResumenFactura.IvaGrupo grupo(ResumenFactura r, String nombre) {
-        return r.getGrupos().stream().filter(g -> nombre.equals(g.getNombre())).findFirst().orElseThrow();
+        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+            if (nombre.equals(g.getNombre())) {
+                return g;
+            }
+        }
+        throw new IllegalStateException("Falta el grupo " + nombre);
     }
 
     @Test
@@ -95,9 +98,19 @@ class CalculosTest {
 
     @Test
     void entradaConIvaCalculaBaseHaciaAtras() {
-        Calculos.ResultadoConIva r = Calculos.calcularDesdeTotalConIva(new BigDecimal("121.00"), 21);
-        assertEquals(new BigDecimal("100.00"), r.base());
-        assertEquals(new BigDecimal("21.00"), r.iva());
+        assertEquals(new BigDecimal("100.00"), Calculos.baseDesdeTotalConIva(new BigDecimal("121.00"), 21));
+    }
+
+    @Test
+    void precioCalculadoHaciaAtrasVuelveAlTotal() {
+        comprobarIdaYVuelta(new BigDecimal("100.00"), 3);
+        comprobarIdaYVuelta(new BigDecimal("0.01"), 7);
+        comprobarIdaYVuelta(new BigDecimal("1234.56"), 9);
+    }
+
+    private void comprobarIdaYVuelta(BigDecimal total, int cantidad) {
+        BigDecimal precio = Calculos.precioDesdeTotal(total, cantidad);
+        assertEquals(0, total.compareTo(Calculos.totalLinea(precio, cantidad)));
     }
 
     @Test
@@ -110,8 +123,10 @@ class CalculosTest {
     void ajusteDeCentimosEnLaMayorBase() {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1.01", 21, "IVA 21%"), linea(1, "1.01", 10, "IVA 10%")), 33);
-        BigDecimal suma = r.getGrupos().stream().map(ResumenFactura.IvaGrupo::getBase)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        BigDecimal suma = BigDecimal.ZERO;
+        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+            suma = suma.add(g.getBase());
+        }
         assertEquals(r.getBaseTotal(), suma);
         assertEquals(new BigDecimal("0.67"), grupo(r, "IVA 21%").getBase());
         assertEquals(new BigDecimal("0.68"), grupo(r, "IVA 10%").getBase());
@@ -179,7 +194,6 @@ class CalculosTest {
         LineaFactura l = new LineaFactura();
         l.setCantidad(1);
         l.setPrecioUnitario(new BigDecimal(importe));
-        l.setTotalBase(new BigDecimal(importe));
         l.setIvaNombre("Suplido");
         l.setIvaPorcentaje(null);
         l.setEsSuplido(true);
@@ -205,7 +219,9 @@ class CalculosTest {
         assertEquals(new BigDecimal("150.00"), r.getImporteRetencion());
         assertEquals(new BigDecimal("250.00"), r.getTotalSuplidos());
         assertEquals(new BigDecimal("1310.00"), r.getTotal());
-        assertTrue(r.getGrupos().stream().noneMatch(g -> "Suplido".equals(g.getNombre())));
+        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+            assertTrue(!"Suplido".equals(g.getNombre()));
+        }
     }
 
     @Test
@@ -261,7 +277,9 @@ class CalculosTest {
         List<LineaFactura> suplidos = Calculos.suplidosDe(
                 List.of(suplido("120.00"), suplido("80.00")));
         assertEquals(2, suplidos.size());
-        assertTrue(suplidos.stream().allMatch(LineaFactura::isEsSuplido));
+        for (LineaFactura suplido : suplidos) {
+            assertTrue(suplido.isEsSuplido());
+        }
     }
 
     @Test

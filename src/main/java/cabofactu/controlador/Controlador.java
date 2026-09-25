@@ -6,9 +6,12 @@ import cabofactu.modelo.Modelo;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
+import cabofactu.modelo.dominio.Factura;
+import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
+import cabofactu.modelo.negocio.FacturacionMensual;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.vista.Vista;
 
@@ -253,6 +256,55 @@ public class Controlador {
 
     public boolean correlativoOcupado(Serie serie, int correlativo, LocalDate fecha) throws Exception {
         return modelo.correlativoOcupado(serie, correlativo, fecha);
+    }
+
+    public long altaFactura(Factura factura) throws Exception {
+        return modelo.altaFactura(factura);
+    }
+
+    public void modificarFactura(Factura factura) throws Exception {
+        modelo.modificarFactura(factura);
+    }
+
+    public void bajaFactura(long id) throws Exception {
+        modelo.bajaFactura(id);
+    }
+
+    public Factura buscarFactura(long id) throws Exception {
+        return modelo.buscarFactura(id);
+    }
+
+    public List<Factura> listadoFacturas(FiltrosHistorial filtros) throws Exception {
+        return modelo.listadoFacturas(filtros);
+    }
+
+    public void anularFactura(long id) throws Exception {
+        modelo.anularFactura(id);
+    }
+
+    public void restaurarFactura(long id) throws Exception {
+        modelo.restaurarFactura(id);
+    }
+
+    public long rectificarFactura(long facturaId, LocalDate fecha) throws Exception {
+        return modelo.rectificarFactura(facturaId, fecha);
+    }
+
+    public int numeroDeLineasFactura(long id) throws Exception {
+        return modelo.numeroDeLineasFactura(id);
+    }
+
+    public FacturacionMensual.Resultado generarFacturasMensuales(Cliente cliente, int anio, int mesInicio,
+            int mesFin, Serie serie, FacturacionMensual.ModoDia diaMode, int diaFijo, TipoIva iva,
+            TipoRetencion retencion, List<FacturacionMensual.LineaPlantilla> plantillas,
+            boolean generarDuplicados, boolean usarHuecos) throws Exception {
+        return modelo.generarFacturasMensuales(cliente, anio, mesInicio, mesFin, serie, diaMode, diaFijo,
+                iva, retencion, plantillas, generarDuplicados, usarHuecos);
+    }
+
+    public List<String> mensualesDuplicadas(Cliente cliente, int anio, int mesInicio, int mesFin)
+            throws Exception {
+        return modelo.mensualesDuplicadas(cliente, anio, mesInicio, mesFin);
     }
 
     /**

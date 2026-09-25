@@ -88,28 +88,6 @@ public final class Dialogos {
         return CambiosSinGuardar.CANCELAR;
     }
 
-    public static ModoGuardarVersion mostrarDialogoModoGuardarVersion() {
-        Alert aviso = new Alert(Alert.AlertType.CONFIRMATION);
-        aviso.setTitle("Guardar cambios");
-        aviso.setHeaderText("La factura ya está guardada");
-        aviso.setContentText("¿Cómo desea guardar los cambios?");
-        ButtonType sobrescribir = new ButtonType("Sobrescribir versión actual", ButtonBar.ButtonData.YES);
-        ButtonType nueva = new ButtonType("Guardar como nueva versión", ButtonBar.ButtonData.NO);
-        ButtonType cancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
-        aviso.getButtonTypes().setAll(sobrescribir, nueva, cancelar);
-        aviso.setGraphic(icono(Alert.AlertType.CONFIRMATION));
-        aplicarTema(aviso.getDialogPane());
-        iconoVentana(aviso);
-        aviso.showAndWait();
-        if (aviso.getResult() == sobrescribir) {
-            return ModoGuardarVersion.SOBRESCRIBIR;
-        }
-        if (aviso.getResult() == nueva) {
-            return ModoGuardarVersion.NUEVA_VERSION;
-        }
-        return ModoGuardarVersion.CANCELAR;
-    }
-
     /**
      * Ponemos el mensaje en una etiqueta propia en vez de setContentText,
      * porque JavaFX calcula el alto del aviso sin contar el margen de la

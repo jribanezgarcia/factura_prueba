@@ -1,7 +1,6 @@
 package cabofactu.modelo.negocio.sqlite;
 
 import cabofactu.fichero.CopiaSeguridad;
-import cabofactu.modelo.negocio.ValidacionException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,12 +25,12 @@ import java.util.Set;
 public class CopiaSeguridadDAO {
 
     private static final List<String> TABLAS_NUCLEO = List.of(
-            "cliente", "serie", "tipo_iva", "factura", "factura_version",
+            "cliente", "serie", "tipo_iva", "factura",
             "factura_linea", "empresa", "preferencias"
     );
 
     private static final List<String> TABLAS_APLICACION = List.of(
-            "cliente", "serie", "tipo_iva", "factura", "factura_version",
+            "cliente", "serie", "tipo_iva", "factura",
             "factura_linea", "empresa", "preferencias",
             "tipo_retencion"
     );
@@ -40,14 +39,13 @@ public class CopiaSeguridadDAO {
             Map.entry("cliente", List.of("id", "nombre", "nif", "direccion", "cp", "localidad", "provincia", "activo", "email")),
             Map.entry("serie", List.of("id", "codigo", "descripcion", "es_rectificativa", "sufijo_fecha")),
             Map.entry("tipo_iva", List.of("id", "nombre", "porcentaje", "motivo_exencion", "activo", "es_suplido")),
-            Map.entry("factura", List.of("id", "serie_id", "correlativo", "cliente_id")),
-            Map.entry("factura_version", List.of("id", "factura_id", "version_num", "numero", "fecha_factura", "fecha_guardado", "estado",
-                    "descuento_porcentaje", "observaciones", "referencia_rectifica", "cli_nombre", "cli_nif", "cli_direccion",
-                    "cli_cp", "cli_localidad", "cli_provincia", "base_total", "iva_total", "total", "cli_email", "forma_pago",
-                    "vencimiento", "realizada_por", "tipo_retencion_id", "importe_retencion", "tipo_retencion_nombre", "tipo_retencion_porcentaje",
-                    "total_suplidos")),
-            Map.entry("factura_linea", List.of("id", "factura_version_id", "orden", "cantidad", "descripcion", "precio_unitario",
-                    "total_base", "tipo_iva_id", "iva_nombre", "iva_porcentaje", "iva_motivo_exencion", "iva_importe", "es_suplido")),
+            Map.entry("factura", List.of("id", "serie_id", "anio", "correlativo", "numero", "fecha", "estado",
+                    "cliente_id", "cli_nombre", "cli_nif", "cli_direccion", "cli_cp", "cli_localidad",
+                    "cli_provincia", "cli_email", "descuento", "observaciones", "rectifica_id", "forma_pago",
+                    "vencimiento", "realizada_por", "retencion_id", "retencion_nombre", "retencion_porcentaje",
+                    "base_total", "iva_total", "importe_retencion", "total_suplidos", "total")),
+            Map.entry("factura_linea", List.of("id", "factura_id", "orden", "cantidad", "descripcion", "precio_unitario",
+                    "tipo_iva_id", "iva_nombre", "iva_porcentaje", "iva_motivo_exencion", "es_suplido")),
             Map.entry("empresa", List.of("id", "nombre", "nif", "direccion", "cp", "localidad", "provincia", "actividad", "email",
                     "telefono", "cabecera_modo", "logo_path", "pie_legal")),
             Map.entry("preferencias", List.of("clave", "valor")),
@@ -65,12 +63,12 @@ public class CopiaSeguridadDAO {
     }
 
     /** Lee y comprueba una copia, devolviendo su resumen. */
-    public CopiaSeguridad.ResumenCopia leerResumen(Path origen) throws ValidacionException {
+    public CopiaSeguridad.ResumenCopia leerResumen(Path origen) throws Exception {
         try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + origen)) {
             try (Statement st = c.createStatement();
                  ResultSet rs = st.executeQuery("PRAGMA quick_check")) {
                 if (rs.next() && !"ok".equals(rs.getString(1))) {
-                    throw new ValidacionException("El archivo no es una base de datos SQLite válida.");
+                    throw new Exception("El archivo no es una base de datos SQLite válida.");
                 }
             }
 
@@ -78,7 +76,7 @@ public class CopiaSeguridadDAO {
 
             List<String> faltantes = elementosFaltantes(c);
             if (!faltantes.isEmpty()) {
-                throw new ValidacionException("La copia no contiene "
+                throw new Exception("La copia no contiene "
                         + String.join(", ", faltantes) + ".");
             }
             String nombre = "";
@@ -102,7 +100,7 @@ public class CopiaSeguridadDAO {
 
             LocalDate ultimaFecha = null;
             try (Statement st = c.createStatement();
-                 ResultSet rs = st.executeQuery("SELECT MAX(fecha_factura) FROM factura_version")) {
+                 ResultSet rs = st.executeQuery("SELECT MAX(fecha) FROM factura")) {
                 if (rs.next()) {
                     String fecha = rs.getString(1);
                     if (fecha != null && !fecha.isBlank()) {
@@ -116,7 +114,7 @@ public class CopiaSeguridadDAO {
             return new CopiaSeguridad.ResumenCopia(nombre, nif, logoPath, logoExiste,
                     numFacturas, ultimaFecha);
         } catch (SQLException e) {
-            throw new ValidacionException("No se pudo leer la copia: " + e.getMessage());
+            throw new Exception("No se pudo leer la copia: " + e.getMessage());
         }
     }
 
@@ -144,13 +142,13 @@ public class CopiaSeguridadDAO {
         Files.deleteIfExists(carpeta.resolve(base + "-shm"));
     }
 
-    private static void comprobarTablasNucleo(Connection c) throws SQLException, ValidacionException {
+    private static void comprobarTablasNucleo(Connection c) throws SQLException, Exception {
         for (String tabla : TABLAS_NUCLEO) {
             try (Statement st = c.createStatement();
                  ResultSet rs = st.executeQuery(
                          "SELECT name FROM sqlite_master WHERE type='table' AND name='" + tabla + "'")) {
                 if (!rs.next()) {
-                    throw new ValidacionException("Falta la tabla '" + tabla + "' en la copia.");
+                    throw new Exception("Falta la tabla '" + tabla + "' en la copia.");
                 }
             }
         }

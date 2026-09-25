@@ -1,7 +1,7 @@
 package cabofactu.vista;
 
 import cabofactu.modelo.dominio.EstadoFactura;
-import cabofactu.modelo.dominio.FilaHistorial;
+import cabofactu.modelo.dominio.Factura;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -15,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * El histórico como lo ve el usuario: la búsqueda con sus filtros, la
- * apertura con doble clic, y el anulado y el borrado con sus avisos.
+ * apertura con doble clic, y el anulado y el borrado con sus avisos. Cada
+ * factura sale una sola vez, aunque se haya editado o anulado.
  */
 class PantallaHistoricoTest extends PruebaDePantalla {
 
@@ -30,7 +31,7 @@ class PantallaHistoricoTest extends PruebaDePantalla {
     }
 
     private int filaDe(String numero) throws Exception {
-        TableView<FilaHistorial> tabla = buscar("#tabla", TableView.class);
+        TableView<Factura> tabla = buscar("#tabla", TableView.class);
         for (int i = 0; i < tabla.getItems().size(); i++) {
             if (tabla.getItems().get(i).getNumero().equals(numero)) {
                 return i;
@@ -44,9 +45,9 @@ class PantallaHistoricoTest extends PruebaDePantalla {
             if (nodo instanceof TableRow) {
                 TableRow<?> fila = (TableRow<?>) nodo;
                 Object dato = fila.getItem();
-                if (dato instanceof FilaHistorial) {
-                    FilaHistorial filaHistorial = (FilaHistorial) dato;
-                    if (filaHistorial.getNumero().equals(numero)) {
+                if (dato instanceof Factura) {
+                    Factura factura = (Factura) dato;
+                    if (factura.getNumero().equals(numero)) {
                         return nodo;
                     }
                 }
@@ -104,14 +105,14 @@ class PantallaHistoricoTest extends PruebaDePantalla {
         assertTrue(textoAviso().contains("Anuladas: 1"));
         cerrarAviso();
         pulsar("Buscar");
-        assertEquals(7, filas());
-        assertTrue(hayVersionAnulada("A-3/9"));
+        assertEquals(6, filas());
+        assertTrue(hayAnulada("A-3/9"));
     }
 
-    private boolean hayVersionAnulada(String numero) throws Exception {
-        TableView<FilaHistorial> tabla = buscar("#tabla", TableView.class);
+    private boolean hayAnulada(String numero) throws Exception {
+        TableView<Factura> tabla = buscar("#tabla", TableView.class);
         for (int i = 0; i < tabla.getItems().size(); i++) {
-            FilaHistorial fila = tabla.getItems().get(i);
+            Factura fila = tabla.getItems().get(i);
             if (fila.getNumero().equals(numero) && fila.getEstado() == EstadoFactura.ANULADA) {
                 return true;
             }
@@ -135,10 +136,25 @@ class PantallaHistoricoTest extends PruebaDePantalla {
     }
 
     @Test
+    void borrarRectificadaAvisa() throws Exception {
+        abrirHistorico();
+        pulsar("Buscar");
+        clickOn(filaNodo("A-1/9"));
+        pulsar("Eliminar");
+        assertTrue(textoAviso().contains("físicamente"));
+        aceptarAviso();
+        assertTrue(textoAviso().contains("tiene la rectificativa R-1 y no se puede borrar"));
+        cerrarAviso();
+        pulsar("Buscar");
+        assertEquals(6, filas());
+        assertTrue(filaDe("A-1/9") >= 0);
+    }
+
+    @Test
     void dobleClicAbreEditor() throws Exception {
         abrirHistorico();
         pulsar("Buscar");
         doubleClickOn(filaNodo("A-1/9"));
-        assertEquals("Factura A-1/9 (v1)", buscar("#lblTitulo", Label.class).getText());
+        assertEquals("Factura A-1/9", buscar("#lblTitulo", Label.class).getText());
     }
 }
