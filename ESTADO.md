@@ -1,6 +1,6 @@
 # CaboFactu: estado del proyecto
 
-Actualizado: **22/09/2026**
+Actualizado: **25/09/2026**
 
 Por dónde va el proyecto y qué toca ahora. Las normas de cómo se escribe el código y cómo se trabaja están en [AGENTS.md](AGENTS.md).
 
@@ -30,8 +30,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Módulo de empresas y menú: empresas solo en el arranque (crear, elegir y eliminar con confirmación), «Cambiar de empresa» en Configuración, sin bloqueo por datos incompletos (franja en el menú y comprobación al guardar, rectificar, generar y exportar), `Empresas` y `Sesion` singletons y `EmpresaDisponible` en lugar del `record`.
 - Módulo de configuración: vuelve el bloqueo por empresa incompleta; `Empresa`, `TipoIva` y `TipoRetencion` que se validan en sus setters; `Configuracion`, `TiposIva` y `TiposRetencion` singletons con el SQL dentro (sin DAO); fichas modales de IVA y retención (con eliminar); lista lateral en el FXML sin clases internas; fuera las columnas del logo. Series se queda para el módulo de facturas.
 - Módulo de series: el siguiente número se calcula a partir de las facturas (fuera los dos contadores y la tabla de huecos), fuera «Reutilizar anulados», `Serie` que se valida en sus setters con `FormatoNumero` en su fichero, `Series` singleton con toda la numeración (fuera `Numeracion`, `SerieDAO` y `NumeroDisponibleDAO`) y la sección Series con ficha modal.
+- Módulo de pruebas: la tercera capa, TestFX en modo headless, una clase de prueba por pantalla (heredan de `PruebaDePantalla`, que prepara la empresa de demostración en una carpeta temporal) y dos pruebas de apariencia (`TemasTest` y `TextosCompletosTest`). El toolkit se arranca solo desde `PruebasJavaFx`. En total 381 pruebas; la batería completa, ~4:21 con `mvn test`. La columna del histórico queda como «Base» para que quepa en la ventana mínima.
 
-Último cambio archivado: `2026-09-22-modulo-series`.
+Último cambio archivado: `2026-09-25-pruebas-de-pantalla`.
 
 ## En curso
 
@@ -42,12 +43,10 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
-Change escrito y pendiente de aplicar: **`pruebas-de-pantalla`** (24/09). Añade la tercera capa de pruebas: TestFX en modo headless, una clase de prueba por pantalla y dos pruebas de apariencia (los temas y los textos recortados). Comprobado antes de escribirlo que `testfx-junit5:4.0.18` con `openjfx-monocle:21.0.2` funciona sin ventanas y que convive con la batería de hoy si el toolkit se arranca solo desde `PruebasJavaFx` con `FxToolkit`. Va **antes** que el módulo de facturas, para que ese módulo tenga red. En curso: andamiaje, base y secciones 3, 4 y 5 hechos (Series 10, IVA 7, Retenciones 6, Configuración 4, Clientes 8, Arranque 3, Menú 3, Editor 6, Histórico 5, Mensuales 4, Copias 2; 367 pruebas en total).
-
 ## Qué toca ahora
 
-1. Aplicar **`pruebas-de-pantalla`**.
-2. Después, el siguiente módulo: **facturas sin versiones**.
+1. Aplicar **`revision-base-de-datos`**.
+2. Después, **`modulo-facturas`** (facturas sin versiones).
 3. Después, en el orden de los módulos: editor → histórico → PDF → mensuales → copias → documentación.
 4. VeriFactu, al final, en otra rama.
 
