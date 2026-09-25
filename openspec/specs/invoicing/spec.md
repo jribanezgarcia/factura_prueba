@@ -13,6 +13,8 @@ Los datos del cliente SHALL comprobarse al intentar guardar, y no al abandonar u
 
 Un cliente sin facturas asociadas SHALL poder eliminarse físicamente. Un cliente con facturas asociadas SHALL NOT poder eliminarse físicamente y SHALL poder marcarse como inactivo. Un cliente inactivo SHALL NOT aparecer normalmente al crear nuevas facturas, SHALL seguir apareciendo en el histórico y sus facturas SHALL seguir siendo consultables.
 
+El NIF SHALL ser único: dos clientes SHALL NOT tener el mismo NIF, estén activos o inactivos, y la base de datos SHALL impedirlo. Al dar de alta un cliente con el NIF de otro cliente activo, o al modificar un cliente poniéndole el NIF de otro, la aplicación SHALL NOT guardarlo, SHALL marcar el NIF como erróneo y SHALL avisar indicando a qué cliente pertenece. Al dar de alta un cliente con el NIF de un cliente inactivo, la aplicación SHALL ofrecer recuperarlo: si el usuario acepta, ese cliente SHALL volver a estar activo con los datos recién escritos y SHALL conservar sus facturas; si no acepta, SHALL NOT guardarse nada y la ficha SHALL seguir abierta. Al guardar una factura con un cliente escrito a mano cuyo NIF ya pertenece a un cliente de la lista, la factura SHALL asociarse a ese cliente, SHALL NOT crearse otro y la ficha del cliente SHALL NOT modificarse.
+
 #### Scenario: NIF inválido al alta o edición de cliente
 - **WHEN** el usuario escribe un NIF, un código postal o un email incorrectos en la ficha de cliente o en el editor y abandona el campo mediante Tab, Enter o haciendo clic en otro control
 - **THEN** no se muestra ningún aviso ni se marca el campo
@@ -75,6 +77,21 @@ Un cliente sin facturas asociadas SHALL poder eliminarse físicamente. Un client
 #### Scenario: Cliente inactivo en histórico
 - **WHEN** el usuario busca en el histórico facturas de un cliente inactivo
 - **THEN** las facturas aparecen y son consultables
+
+#### Scenario: NIF de otro cliente
+- **WHEN** el usuario intenta guardar un cliente con el NIF `B88888888`, que ya tiene el cliente activo «Cliente Ejemplo S.L.»
+- **THEN** la aplicación no guarda el cliente
+- **AND** el NIF queda marcado como erróneo y el aviso dice «Ya existe un cliente con el NIF B88888888: Cliente Ejemplo S.L.»
+
+#### Scenario: NIF de un cliente dado de baja
+- **WHEN** el usuario da de alta un cliente con el NIF de un cliente inactivo
+- **THEN** la aplicación pregunta si quiere volver a darlo de alta con los datos que acaba de escribir
+- **AND** si acepta, ese cliente vuelve a estar activo con esos datos y conserva sus facturas, sin que se cree un cliente nuevo
+
+#### Scenario: Factura con un cliente escrito a mano que ya existe
+- **WHEN** el usuario guarda una factura escribiendo a mano los datos de un cliente cuyo NIF ya está en la lista
+- **THEN** la factura queda asociada a ese cliente y no se crea otro
+- **AND** la ficha del cliente no cambia, y la factura conserva los datos tal como se escribieron
 
 ### Requirement: Búsqueda de clientes al crear factura
 
@@ -164,7 +181,7 @@ El modo normal de introducción SHALL ser con importes sin IVA: el precio unitar
 
 ### Requirement: IVA
 
-La aplicación SHALL permitir configurar tipos de IVA: tipos porcentuales e IVA exento. Para IVA exento SHALL poder indicarse un motivo o texto de exención. Cada línea SHALL poder tener un tipo de IVA diferente. Los tipos de IVA SHALL poder crearse, modificarse mientras sea seguro, marcarse como inactivos si ya se han utilizado y SHALL NOT eliminarse físicamente si forman parte del histórico. El alta y la edición de un tipo de IVA, y también de un tipo de retención, SHALL hacerse en una ficha propia que se abre desde la tabla de Configuración. El porcentaje de un tipo que ya aparece en facturas SHALL NOT poder modificarse, un tipo existente SHALL NOT poder pasar de porcentaje a exento ni al revés, y SHALL NOT poder convertirse en suplido ni dejar de serlo. En la exportación a PDF, el resumen de la factura SHALL desglosar cada tipo de IVA por separado (base y cuota), y en el editor la aplicación SHALL mostrar la base total, el IVA total y el total general como valores separados. Los cálculos SHALL usar BigDecimal; no se permite usar double/float para importes monetarios.
+La aplicación SHALL permitir configurar tipos de IVA: tipos porcentuales e IVA exento. Para IVA exento SHALL poder indicarse un motivo o texto de exención. Cada línea SHALL poder tener un tipo de IVA diferente. Los tipos de IVA SHALL poder crearse, modificarse mientras sea seguro, marcarse como inactivos si ya se han utilizado y SHALL NOT eliminarse físicamente si forman parte del histórico. El alta y la edición de un tipo de IVA, y también de un tipo de retención, SHALL hacerse en una ficha propia que se abre desde la tabla de Configuración. El nombre de un tipo de IVA SHALL ser único entre los tipos de IVA, y el de un tipo de retención entre los tipos de retención; la base de datos SHALL impedir los repetidos, y al intentar guardar un nombre que ya tiene otro tipo la aplicación SHALL NOT guardarlo, SHALL marcar el nombre como erróneo y SHALL avisar. El porcentaje de un tipo que ya aparece en facturas SHALL NOT poder modificarse, un tipo existente SHALL NOT poder pasar de porcentaje a exento ni al revés, y SHALL NOT poder convertirse en suplido ni dejar de serlo. En la exportación a PDF, el resumen de la factura SHALL desglosar cada tipo de IVA por separado (base y cuota), y en el editor la aplicación SHALL mostrar la base total, el IVA total y el total general como valores separados. Los cálculos SHALL usar BigDecimal; no se permite usar double/float para importes monetarios.
 
 #### Scenario: Líneas con distintos tipos de IVA
 - **WHEN** una factura tiene líneas con tipos de IVA diferentes, incluida una exenta
@@ -189,6 +206,11 @@ La aplicación SHALL permitir configurar tipos de IVA: tipos porcentuales e IVA 
 #### Scenario: Eliminar un tipo en uso
 - **WHEN** el usuario intenta eliminar un tipo de IVA o de retención que ya aparece en facturas
 - **THEN** la aplicación no lo permite y propone desactivarlo en su ficha
+
+#### Scenario: Nombre de tipo repetido
+- **WHEN** el usuario intenta guardar un tipo de IVA con el nombre «IVA 21%», que ya tiene otro tipo de IVA
+- **THEN** la aplicación no lo guarda
+- **AND** el nombre queda marcado como erróneo y el aviso dice «Ya existe un tipo de IVA con el nombre IVA 21%.»
 
 ### Requirement: Descuento global
 

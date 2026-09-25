@@ -31,12 +31,11 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Módulo de configuración: vuelve el bloqueo por empresa incompleta; `Empresa`, `TipoIva` y `TipoRetencion` que se validan en sus setters; `Configuracion`, `TiposIva` y `TiposRetencion` singletons con el SQL dentro (sin DAO); fichas modales de IVA y retención (con eliminar); lista lateral en el FXML sin clases internas; fuera las columnas del logo. Series se queda para el módulo de facturas.
 - Módulo de series: el siguiente número se calcula a partir de las facturas (fuera los dos contadores y la tabla de huecos), fuera «Reutilizar anulados», `Serie` que se valida en sus setters con `FormatoNumero` en su fichero, `Series` singleton con toda la numeración (fuera `Numeracion`, `SerieDAO` y `NumeroDisponibleDAO`) y la sección Series con ficha modal.
 - Módulo de pruebas: la tercera capa, TestFX en modo headless, una clase de prueba por pantalla (heredan de `PruebaDePantalla`, que prepara la empresa de demostración en una carpeta temporal) y dos pruebas de apariencia (`TemasTest` y `TextosCompletosTest`). El toolkit se arranca solo desde `PruebasJavaFx`. En total 381 pruebas; la batería completa, ~4:21 con `mvn test`. La columna del histórico queda como «Base» para que quepa en la ventana mínima.
+- Revisión de la base de datos: NIF y nombres únicos en las tablas maestras, recuperación de clientes inactivos y reutilización del cliente al facturar.
 
-Último cambio archivado: `2026-09-25-pruebas-de-pantalla`.
+Último cambio archivado: `2026-09-25-revision-base-de-datos`.
 
 ## En curso
-
-- **`revision-base-de-datos`**: NIF y nombres únicos en las tablas maestras, recuperación de clientes inactivos y reutilización del cliente al facturar.
 
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
@@ -47,10 +46,9 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 
 ## Qué toca ahora
 
-1. Aplicar **`revision-base-de-datos`**.
-2. Después, **`modulo-facturas`** (facturas sin versiones).
-3. Después, en el orden de los módulos: editor → histórico → PDF → mensuales → copias → documentación.
-4. VeriFactu, al final, en otra rama.
+1. **`modulo-facturas`** (facturas sin versiones).
+2. Después, en el orden de los módulos: editor → histórico → PDF → mensuales → copias → documentación.
+3. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
 
@@ -71,7 +69,7 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **Las ventanas cerradas siguen saliendo en los `lookup`**: filtrar por `isShowing` leído en el hilo FX, con `lookupAll` de JavaFX (el `lookup` de TestFX fuera del hilo FX es inestable con modales). El texto de un botón se busca recorriendo `Labeled`, porque `lookupAll` solo entiende CSS.
 - **Los fx:id se repiten entre secciones ocultas**: `lookupAll` encuentra nodos de secciones con `visible=false` y el robot escribe en el vacío. Hay que subir por los padres y descartar lo que tenga un `visible=false` por encima.
 - **Tras Aceptar puede venir otro aviso encadenado sin hueco entre medias** (confirmar un borrado que falla): la espera de `contestarAviso` acepta que se cierre **o** que cambie el texto.
-- **`cliente.nif` no tiene UNIQUE**: la aplicación guarda NIF duplicados sin avisar; no hay caso de prueba para eso.
+- Tras cambiar crear_tablas.sql hay que borrar %APPDATA%\Facturacion: las tablas se crean con CREATE TABLE IF NOT EXISTS y las bases que ya existen no reciben los cambios.
 - **La moneda lleva espacio inseparable** (`Formatos.moneda`): en los asserts, `contains("1.760,00")` en vez del texto entero.
 - **Anular crea versión**: el histórico enseña una fila por versión; tras anular hay dos filas del mismo número.
 - **`pulsar` no toca la celda-botón de un `ComboBox`**: solo las celdas de la lista abierta (viven en un `ListView`). Si no, al elegir valor se pulsa el propio desplegable.
