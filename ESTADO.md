@@ -32,8 +32,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Módulo de series: el siguiente número se calcula a partir de las facturas (fuera los dos contadores y la tabla de huecos), fuera «Reutilizar anulados», `Serie` que se valida en sus setters con `FormatoNumero` en su fichero, `Series` singleton con toda la numeración (fuera `Numeracion`, `SerieDAO` y `NumeroDisponibleDAO`) y la sección Series con ficha modal.
 - Módulo de pruebas: la tercera capa, TestFX en modo headless, una clase de prueba por pantalla (heredan de `PruebaDePantalla`, que prepara la empresa de demostración en una carpeta temporal) y dos pruebas de apariencia (`TemasTest` y `TextosCompletosTest`). El toolkit se arranca solo desde `PruebasJavaFx`. En total 381 pruebas; la batería completa, ~4:21 con `mvn test`. La columna del histórico queda como «Base» para que quepa en la ventana mínima.
 - Revisión de la base de datos: NIF y nombres únicos en las tablas maestras, recuperación de clientes inactivos y reutilización del cliente al facturar.
+- Módulo de facturas: una fila por factura, sin versiones, sin DAO de facturas y sin `ValidacionException`; 403 pruebas en unos 5 min.
 
-Último cambio archivado: `2026-09-25-revision-base-de-datos`.
+Último cambio archivado: `2026-09-25-modulo-facturas`.
 
 ## En curso
 
@@ -44,12 +45,10 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
-**`modulo-facturas`** (en curso): una fila por factura (`factura` y `factura_linea`, sin `factura_version`), `Factura` entera con su serie, su cliente, sus líneas y su retención dentro, `Facturas` singleton con todo el SQL y pantallas adaptadas sin versiones.
-
 ## Qué toca ahora
 
-1. **`modulo-facturas`** (facturas sin versiones).
-2. Después, en el orden de los módulos: editor → histórico → PDF → mensuales → copias → documentación.
+1. **`modulo-editor`**.
+2. Después, en el orden de los módulos: histórico → PDF → mensuales → copias → documentación.
 3. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
@@ -77,3 +76,6 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **`pulsar` no toca la celda-botón de un `ComboBox`**: solo las celdas de la lista abierta (viven en un `ListView`). Si no, al elegir valor se pulsa el propio desplegable.
 - **Los desplegables enseñan unas diez filas**: las celdas que hay que bajar a ver no existen para el robot; en mensuales se eligen meses de los visibles.
 - **Rectificar guarda al momento y `Guardar` abre versiones; el número solo vale al crear** (al editar se ignora) y el hueco solo sale en factura nueva. Sin editar celdas no hay líneas con contenido, así que el ocupado y el hueco no se pueden probar hasta modulo-facturas.
+- **OpenSpec no deja quitar ni renombrar un escenario en un `MODIFIED`** (tampoco `REMOVED` + `ADDED` con el mismo título). Para eso: `REMOVED` del requisito y `ADDED` con otro título.
+- **Con `UNIQUE (serie_id, anio, correlativo)` un número tampoco se puede repetir aunque la factura que lo tiene esté anulada.**
+- **Tras modulo-facturas, las bases y las copias de seguridad anteriores no valen**: hay que borrar `%APPDATA%\Facturacion`.

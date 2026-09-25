@@ -29,7 +29,7 @@ La exportación a PDF SHALL incluir una fila de retención en el resumen de tota
 - **WHEN** el usuario exporta a PDF una factura con base 1.000,00 €, IVA 21 % y retención del 15 %
 - **THEN** el PDF muestra la retención como una fila propia y el total es 1.060,00 €
 
-### Requirement: Exportación a PDF
+### Requirement: Exportación de facturas a PDF
 
 La aplicación SHALL exportar facturas a PDF en A4 vertical con el diseño aprobado inspirado en el documento Excel de la empresa:
 
@@ -58,9 +58,9 @@ El resto se mantiene como estaba: descripciones largas ajustadas automáticament
 - **WHEN** el usuario exporta una factura anulada
 - **THEN** el PDF muestra la marca `ANULADA` de forma destacada
 
-#### Scenario: Exportar versión concreta
-- **WHEN** el usuario exporta una versión concreta del histórico
-- **THEN** el PDF refleja exactamente los datos de esa versión
+#### Scenario: Exportar una factura del histórico
+- **WHEN** el usuario exporta una factura desde el histórico
+- **THEN** el PDF refleja exactamente los datos de esa factura
 
 #### Scenario: Nombres de archivo
 - **WHEN** el usuario exporta la factura C-59/8
@@ -336,7 +336,7 @@ Toda consulta que hoy resuelva la capa de exportación por su cuenta SHALL trasl
 
 #### Scenario: La exportación no deriva la retención
 - **WHEN** se exporta una factura con retención
-- **THEN** el importe y el porcentaje de la retención provienen de la versión de factura ya resuelta por la capa de servicio
+- **THEN** el importe y el porcentaje de la retención provienen de la factura ya resuelta por la capa de servicio
 - **AND** la capa de exportación no vuelve a buscar el tipo de retención por su cuenta
 
 #### Scenario: La exportación no calcula el total de una línea
@@ -356,7 +356,7 @@ Toda consulta que hoy resuelva la capa de exportación por su cuenta SHALL trasl
 
 ### Requirement: Composición del documento verificable sin PDF
 
-La composición del documento de factura SHALL ser verificable sin generar ningún PDF: a partir de los mismos datos de entrada (versión de factura, empresa y color) SHALL poder obtenerse el contenido ya compuesto —textos, rótulos y filas— como datos, antes de dibujarlo.
+La composición del documento de factura SHALL ser verificable sin generar ningún PDF: a partir de los mismos datos de entrada (factura, empresa y color) SHALL poder obtenerse el contenido ya compuesto —textos, rótulos y filas— como datos, antes de dibujarlo.
 
 Ese contenido SHALL NOT incluir paginación, alturas ni coordenadas: en qué página cae cada cosa depende de cómo se reparta el texto al dibujar, y se decide al componer el PDF, no antes.
 

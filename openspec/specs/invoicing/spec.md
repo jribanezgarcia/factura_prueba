@@ -125,15 +125,15 @@ Al crear o editar una factura, el usuario SHALL poder buscar un cliente por nomb
 
 ### Requirement: Facturas normales
 
-La aplicación SHALL permitir crear y editar facturas normales con número, fecha, cliente, líneas, descuento general, IVA, observaciones, totales y tres datos de pago opcionales: forma de pago, fecha de vencimiento y realizada por. Estos datos de pago SHALL quedar guardados en la versión de la factura y SHALL aparecer en el PDF solo cuando estén rellenos. La fecha de la factura SHALL ser editable mediante un selector/calendario. La introducción de líneas SHALL ser similar a trabajar con una hoja de cálculo.
+La aplicación SHALL permitir crear y editar facturas normales con número, fecha, cliente, líneas, descuento general, IVA, observaciones, totales y tres datos de pago opcionales: forma de pago, fecha de vencimiento y realizada por. Estos datos de pago SHALL quedar guardados en la factura y SHALL aparecer en el PDF solo cuando estén rellenos. Una factura SHALL ser una sola: editarla la sobrescribe, sin guardar versiones anteriores. Al guardar una factura ya emitida, la aplicación SHALL pedir confirmación antes de sobrescribirla. La fecha de la factura SHALL ser editable mediante un selector/calendario. La introducción de líneas SHALL ser similar a trabajar con una hoja de cálculo.
 
 #### Scenario: Crear factura con datos completos
 - **WHEN** el usuario crea una factura con cliente, líneas, descuento, IVA y observaciones y la guarda
 - **THEN** la factura se almacena con su número definitivo y aparece en el histórico
 
 #### Scenario: Editar factura emitida
-- **WHEN** el usuario modifica la versión actual de una factura en estado Emitida y guarda
-- **THEN** tras la confirmación, la versión actual se sobrescribe con los cambios
+- **WHEN** el usuario modifica una factura en estado Emitida y pulsa Guardar
+- **THEN** la aplicación pide confirmación y, tras aceptar, la factura se sobrescribe con los cambios, sin crear otra
 
 #### Scenario: Datos de pago opcionales
 - **WHEN** el usuario guarda una factura dejando vacíos forma de pago, vencimiento y realizada por
@@ -228,9 +228,9 @@ La factura SHALL tener un descuento general que se aplica sobre toda la factura,
 - **WHEN** el usuario crea una nueva factura
 - **THEN** el descuento general empieza en 0%
 
-### Requirement: Numeración por series
+### Requirement: Numeración de facturas por series
 
-La aplicación SHALL tener series de numeración. En una instalación nueva la aplicación SHALL NO crear ninguna serie por defecto: el listado de series comienza vacío y el usuario las crea a mano. Cada serie SHALL tener su propio correlativo. El correlativo SHALL ser la identidad de la factura; el componente de fecha (mes o año) SHALL recalcularse según la fecha y guardarse en cada versión. El correlativo de cada serie SHALL ser independiente por ejercicio: cada año de trabajo reinicia su propia cuenta sobre el siguiente número de ese año, sin afectar al correlativo de otros años. Las series SHALL poder crearse y configurarse desde la aplicación. La aplicación SHALL recordar la última serie utilizada y proponerla al crear la siguiente factura. El número SHALL proponerse automáticamente y poder modificarse manualmente. El número SHALL NOT consumirse hasta que la factura se guarda correctamente. El siguiente correlativo de una serie SHALL calcularse a partir de sus propias facturas: el mayor correlativo usado ese año más uno, o 1 si la serie no tiene ninguna factura ese año. La aplicación SHALL NOT guardar contadores de numeración. Una factura anulada SHALL conservar su correlativo, que SHALL NOT volver a proponerse. Los correlativos que queden libres por el borrado físico de facturas SHALL ofrecerse antes de proponer un correlativo nuevo. En Configuración → Series el usuario SHALL poder ver las series y su siguiente número, que SHALL NOT poder modificarse a mano.
+La aplicación SHALL tener series de numeración. En una instalación nueva la aplicación SHALL NO crear ninguna serie por defecto: el listado de series comienza vacío y el usuario las crea a mano. Cada serie SHALL tener su propio correlativo. El correlativo SHALL ser la identidad de la factura; el componente de fecha (mes o año) SHALL recalcularse según la fecha y guardarse con la factura. Al editar una factura ya emitida, su fecha SHALL poder cambiar dentro del mismo año, pero SHALL NOT pasar a otro año: la factura se queda siempre en la numeración de su año. La base de datos SHALL impedir que dos facturas de la misma serie y el mismo año tengan el mismo correlativo. El correlativo de cada serie SHALL ser independiente por ejercicio: cada año de trabajo reinicia su propia cuenta sobre el siguiente número de ese año, sin afectar al correlativo de otros años. Las series SHALL poder crearse y configurarse desde la aplicación. La aplicación SHALL recordar la última serie utilizada y proponerla al crear la siguiente factura. El número SHALL proponerse automáticamente y poder modificarse manualmente. El número SHALL NOT consumirse hasta que la factura se guarda correctamente. El siguiente correlativo de una serie SHALL calcularse a partir de sus propias facturas: el mayor correlativo usado ese año más uno, o 1 si la serie no tiene ninguna factura ese año. La aplicación SHALL NOT guardar contadores de numeración. Una factura anulada SHALL conservar su correlativo, que SHALL NOT volver a proponerse. Los correlativos que queden libres por el borrado físico de facturas SHALL ofrecerse antes de proponer un correlativo nuevo. En Configuración → Series el usuario SHALL poder ver las series y su siguiente número, que SHALL NOT poder modificarse a mano.
 
 Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\ (formato CODIGO-CORRELATIVO/MES o CORRELATIVO/MES si no hay código), \ANIO\ (formato CODIGO-CORRELATIVO-ANIO o CORRELATIVO-ANIO si no hay código) y \NINGUNO\ (formato CODIGO-CORRELATIVO o solo CORRELATIVO si no hay código). El campo \codigo\ de una serie SHALL poder estar vacío, en cuyo caso el número NO tendrá prefijo de letra; solo SHALL admitirse una serie sin código a la vez, de modo que otra serie en blanco se rechaza y se identifica la serie por su descripción. El formato predeterminado para series nuevas SHALL ser \MES\. Los correlativos libres SHALL buscarse dentro del mismo año: un correlativo SHALL considerarse usado cuando lo tiene una factura de esa serie y ese ejercicio, esté activa o anulada.
 
@@ -259,20 +259,16 @@ Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\
 - **THEN** el número se guarda con el mes correspondiente a la nueva fecha (p. ej. \C-59/8\) y el correlativo no cambia
 
 #### Scenario: El año sigue a la fecha con formato ANIO
-- **WHEN** el usuario cambia la fecha de la factura de 2026 a 2027 y la guarda con formato ANIO
-- **THEN** el número se guarda con el año correspondiente a la nueva fecha (p. ej. \56-2027\) y el correlativo no cambia
+- **WHEN** el usuario crea una factura con fecha de 2027 en una serie con formato ANIO
+- **THEN** el número lleva el año de esa fecha (p. ej. \1-2027\)
 
 #### Scenario: Número manual duplicado
-- **WHEN** el usuario introduce manualmente un número que ya pertenece a una factura activa de la misma serie
+- **WHEN** el usuario introduce manualmente un número que ya tiene otra factura de la misma serie y el mismo año, esté activa o anulada
 - **THEN** la aplicación impide guardar e informa del conflicto
 
 #### Scenario: El número no se consume al abandonar
 - **WHEN** el usuario cancela una factura sin guardarla
 - **THEN** el número propuesto no queda consumido y el siguiente correlativo permanece
-
-#### Scenario: Anulada sin restaurar por número ocupado
-- **WHEN** el usuario intenta restaurar una factura anulada cuyo número está ocupado por otra factura activa de la misma serie y año
-- **THEN** la aplicación impide la restauración e informa del motivo
 
 #### Scenario: Configurar formato de serie
 - **WHEN** el usuario crea o edita una serie en Configuración y cambia el formato
@@ -315,6 +311,11 @@ Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\
 - **WHEN** la serie A tiene en 2026 las facturas 1, 2 y 3 y el usuario borra la 3
 - **THEN** al crear otra factura de 2026 la aplicación propone el correlativo 3
 
+#### Scenario: Una factura emitida no cambia de año
+- **WHEN** el usuario edita una factura emitida de 2026, le pone una fecha de 2027 y guarda
+- **THEN** la factura no se guarda
+- **AND** la aplicación avisa «Una factura emitida no puede cambiar de año. Si es de otro año, anúlala y crea una nueva.»
+
 ### Requirement: Fecha de trabajo
 
 La fecha de trabajo SHALL fijarse en la pantalla de arranque de la aplicación junto con la selección de la empresa y el año del ejercicio fiscal. El usuario SHALL elegir el año del ejercicio en la pantalla de arranque. La fecha de trabajo define el mes y el año utilizados para la numeración de las nuevas facturas (formatos MES y ANIO) y SHALL usarse como valor inicial de la fecha de las nuevas facturas. Si el ejercicio elegido es el año en curso, la fecha de trabajo SHALL fijarse automáticamente a la fecha del sistema (no editable); si el ejercicio es otro año, la fecha de trabajo SHALL pedirse a mano y solo SHALL admitirse dentro de ese ejercicio. La fecha de trabajo SHALL poder cambiarse solo al arrancar de la aplicación. Al cambiar la fecha de una factura dentro del editor, el mes del número propuesto SHALL actualizarse automáticamente.
@@ -335,62 +336,37 @@ La fecha de trabajo SHALL fijarse en la pantalla de arranque de la aplicación j
 - **WHEN** el usuario arranca con fecha de trabajo 15/07/2025 y crea facturas en series con formato MES y formato ANIO
 - **THEN** los números propuestos usan el mes 7 en el formato MES y el año 2025 en el formato ANIO
 
-### Requirement: Versionado
-
-Las facturas emitidas SHALL poder editarse. Si se edita la versión más reciente de una factura, al guardar la aplicación SHALL ofrecer dos caminos tras pedir confirmación: sobrescribir esa versión en su lugar manteniendo el mismo número de versión, o crear una nueva versión (vN+1) a partir de los datos editados dejando la versión más reciente intacta. Si se edita una versión anterior, al guardar SHALL crearse una nueva versión (vN+1) a partir de esa versión sin modificar la versión histórica. Cada versión SHALL guardar todos los datos completos de la factura, la fecha de factura y la fecha/hora en que se creó la versión. No SHALL ser necesario guardar un resumen de diferencias. Cualquier versión SHALL poder abrirse. Las versiones anteriores a la más reciente SHALL NOT modificarse nunca. Anular y restaurar una factura SHALL también crear una nueva versión.
-
-#### Scenario: Guardar sobrescribe la versión actual
-- **WHEN** el usuario modifica la última versión de una factura emitida, guarda y confirma la sobrescritura
-- **THEN** la versión actual se sobrescribe con los cambios y el número de versión permanece
-
-#### Scenario: Guardar como nueva versión
-- **WHEN** el usuario modifica la última versión de una factura emitida y elige «Guardar como nueva versión»
-- **THEN** se crea una nueva versión (vN+1) con los cambios y la versión anterior permanece intacta
-- **AND** ambas versiones aparecen en el Histórico como filas independientes y pueden exportarse por separado
-
-#### Scenario: Cancelar el guardado
-- **WHEN** el usuario modifica la última versión y cancela el diálogo de guardado
-- **THEN** no se crea ni se modifica ninguna versión
-
-#### Scenario: Editar una versión anterior
-- **WHEN** el usuario abre la versión v1 de una factura, la modifica y guarda
-- **THEN** se crea una nueva versión a partir de v1 y la versión v1 no se modifica
-
-#### Scenario: Anular genera versión
-- **WHEN** el usuario anula una factura
-- **THEN** se crea una nueva versión que refleja el estado Anulada
-
 ### Requirement: Estados de factura
 
-Una factura SHALL tener uno de dos estados: Emitida o Anulada. No SHALL existir estado Borrador en la V1. Una factura Emitida SHALL poder editarse. Una factura Anulada SHALL NOT poder editarse, SHALL poder consultarse, SHALL poder exportarse a PDF y SHALL poder restaurarse a Emitida. Anular y restaurar SHALL requerir confirmación. La restauración de una versión emitida anterior de una factura anulada SHALL crear una nueva versión Emitida.
+Una factura SHALL tener uno de dos estados: Emitida o Anulada. No SHALL existir estado Borrador en la V1. Una factura Emitida SHALL poder editarse. Una factura Anulada SHALL NOT poder editarse, SHALL poder consultarse, SHALL poder exportarse a PDF y SHALL poder restaurarse a Emitida. Anular y restaurar SHALL requerir confirmación. Restaurar una factura anulada SHALL devolverla al estado Emitida, conservando su número.
 
 #### Scenario: Consultar factura anulada
 - **WHEN** el usuario abre una factura anulada
 - **THEN** la factura se muestra en modo consulta, sin permitir edición, y aparece marcada como anulada
 
 #### Scenario: Restaurar factura anulada
-- **WHEN** el usuario confirma la restauración de una factura anulada cuyo número está libre
-- **THEN** se crea una nueva versión en estado Emitida
+- **WHEN** el usuario confirma la restauración de una factura anulada
+- **THEN** la factura vuelve al estado Emitida con su mismo número
 
 ### Requirement: Rectificativas
 
-La aplicación SHALL permitir crear facturas rectificativas usando la serie independiente R (`R-1`, `R-2`, ...), que no distinguen entre cocina y puerta. Las rectificativas SHALL crearse desde una factura existente; no SHALL existir una opción independiente de "Nueva rectificativa" en el menú principal. Al crear una rectificativa SHALL copiarse los datos de la factura original: cliente, líneas, cantidades, descripciones, precios, IVA, descuento y observaciones. La rectificativa SHALL indicar qué factura rectifica mediante una referencia que se genera automáticamente y puede modificarse manualmente. La fecha de una rectificativa SHALL inicializarse con la fecha de trabajo actual y poder cambiarse. Una rectificativa SHALL poder ser parcial o total. Una rectificativa SHALL poder rectificar a otra rectificativa.
+La aplicación SHALL permitir crear facturas rectificativas usando la serie independiente R (`R-1`, `R-2`, ...), que no distinguen entre cocina y puerta. Las rectificativas SHALL crearse desde una factura existente; no SHALL existir una opción independiente de "Nueva rectificativa" en el menú principal. Al crear una rectificativa SHALL copiarse los datos de la factura original: cliente, líneas, cantidades, descripciones, precios, IVA, descuento y observaciones. La rectificativa SHALL indicar qué factura rectifica apuntando a ella: la referencia que se muestra y se imprime SHALL ser siempre el número de la factura original y SHALL NOT poder modificarse manualmente. La fecha de una rectificativa SHALL inicializarse con la fecha de trabajo actual y poder cambiarse. Una rectificativa SHALL poder ser parcial o total. Una rectificativa SHALL poder rectificar a otra rectificativa.
 
 #### Scenario: Crear rectificativa desde factura
 - **WHEN** el usuario crea una rectificativa desde una factura C-59/8
 - **THEN** se crea una factura en la serie R con los datos copiados y la referencia a C-59/8 generada automáticamente
 
 #### Scenario: Modificar referencia
-- **WHEN** el usuario modifica manualmente la referencia de la rectificativa
-- **THEN** la aplicación guarda la referencia indicada
+- **WHEN** el usuario abre una rectificativa para editarla
+- **THEN** la referencia muestra el número de la factura original y no se puede modificar
 
-### Requirement: Histórico
+### Requirement: Histórico de facturas
 
-La aplicación SHALL tener un histórico de facturas que muestre cada versión como una fila independiente. El histórico SHALL permitir buscar por serie, cliente/razón social, NIF, fecha desde/hasta, importe desde/hasta y estado, combinando los filtros entre sí. La búsqueda SHALL ejecutarse mediante un botón "Buscar", no en tiempo real. Los resultados SHALL ordenarse por número de factura. Las columnas SHALL ser: fecha, número, versión, cliente, NIF, base, IVA, total y estado. Al seleccionar una fila SHALL poder abrirse esa factura/versión. La tabla SHALL permitir seleccionar varias filas a la vez. El histórico SHALL ofrecer exportar directamente a PDF las filas seleccionadas sin necesidad de abrir la factura: con una selección se generará un único PDF preguntando dónde guardarlo; con varias selecciones se elegirá una carpeta de destino y se generarán todos los PDF en esa carpeta con sus nombres propuestos, informando al finalizar del resultado de cada generación.
+La aplicación SHALL tener un histórico de facturas que muestre cada factura en una sola fila, con sus datos actuales. El histórico SHALL permitir buscar por serie, cliente/razón social, NIF, fecha desde/hasta, importe desde/hasta y estado, combinando los filtros entre sí. La búsqueda SHALL ejecutarse mediante un botón "Buscar", no en tiempo real. Los resultados SHALL ordenarse por número de factura. Las columnas SHALL ser: fecha, número, cliente, NIF, base, IVA, total y estado. Al seleccionar una fila SHALL poder abrirse esa factura. La tabla SHALL permitir seleccionar varias filas a la vez. El histórico SHALL ofrecer exportar directamente a PDF las filas seleccionadas sin necesidad de abrir la factura: con una selección se generará un único PDF preguntando dónde guardarlo; con varias selecciones se elegirá una carpeta de destino y se generarán todos los PDF en esa carpeta con sus nombres propuestos, informando al finalizar del resultado de cada generación.
 
 #### Scenario: Búsqueda combinando filtros
 - **WHEN** el usuario establece una serie, un cliente y un rango de fechas y pulsa Buscar
-- **THEN** se muestran todas las versiones de facturas que cumplen los tres filtros
+- **THEN** se muestran todas las facturas que cumplen los tres filtros
 
 #### Scenario: Búsqueda sin límites de importe
 - **WHEN** el usuario deja vacíos los campos de importe desde y hasta y pulsa Buscar
@@ -398,27 +374,31 @@ La aplicación SHALL tener un histórico de facturas que muestre cada versión c
 
 #### Scenario: Apertura desde el histórico
 - **WHEN** el usuario selecciona una fila del histórico
-- **THEN** se abre la factura en la versión correspondiente
+- **THEN** se abre esa factura en el editor
 
 #### Scenario: Selección múltiple en la tabla
 
 - **WHEN** el usuario mantiene Ctrl o Shift mientras hace clic sobre filas del histórico
 - **THEN** quedan seleccionadas simultáneamente todas las filas marcadas
 
-#### Scenario: Exportar una versión seleccionada
+#### Scenario: Exportar una factura seleccionada
 
 - **WHEN** el usuario selecciona una única fila del histórico y pulsa Exportar PDF
 - **THEN** la aplicación propone guardar un PDF con el nombre propuesto para esa factura y lo genera sin abrir el editor
 
-#### Scenario: Exportar varias versiones en lote
+#### Scenario: Exportar varias facturas en lote
 
 - **WHEN** el usuario selecciona varias filas del histórico y pulsa Exportar PDF
 - **THEN** la aplicación pide una carpeta de destino una sola vez y genera en ella un PDF por cada fila seleccionada con su nombre propuesto
 - **AND** al terminar informa cuántos PDF se generaron correctamente y cuáles fallaron
 
+#### Scenario: Una fila por factura
+- **WHEN** una factura se ha editado varias veces o se ha anulado
+- **THEN** aparece en el histórico una sola vez, con sus datos actuales y su estado
+
 ### Requirement: Menú y navegación
 
-La aplicación SHALL tener un menú principal con las opciones Nueva factura, Facturar mes, Histórico, Clientes, Configuración, Copia de seguridad y Salir. Cada opción SHALL nombrar la misma acción que el botón que la ejecuta en el resto de la aplicación. Cuando el ancho de una barra de iconos no permita mostrar el nombre completo, el botón SHALL poder usar una forma breve de ese nombre y SHALL llevar el nombre completo en su tooltip; SHALL NOT usar un nombre distinto. Dentro de una factura SHALL existir una barra superior con Guardar, Exportar, Versiones, Rectificar, Anular o Restaurar según el estado, Nueva y Volver. En todas las pantallas salvo el menú principal SHALL existir una barra de navegación superior que permita acceder a Menú principal, Nueva factura, Histórico, Clientes, Configuración, Copia de seguridad y Salir.
+La aplicación SHALL tener un menú principal con las opciones Nueva factura, Facturar mes, Histórico, Clientes, Configuración, Copia de seguridad y Salir. Cada opción SHALL nombrar la misma acción que el botón que la ejecuta en el resto de la aplicación. Cuando el ancho de una barra de iconos no permita mostrar el nombre completo, el botón SHALL poder usar una forma breve de ese nombre y SHALL llevar el nombre completo en su tooltip; SHALL NOT usar un nombre distinto. Dentro de una factura SHALL existir una barra superior con Guardar, Exportar, Rectificar, Anular o Restaurar según el estado, Nueva y Volver. En todas las pantallas salvo el menú principal SHALL existir una barra de navegación superior que permita acceder a Menú principal, Nueva factura, Histórico, Clientes, Configuración, Copia de seguridad y Salir.
 
 Cada botón de la barra de navegación SHALL mostrar un icono y, **debajo de él, una etiqueta de texto** con el nombre de su destino, de modo que la función de cada botón se reconozca sin necesidad de posar el puntero. La etiqueta visible SHALL ser breve y el tooltip SHALL conservar el nombre completo del destino. El texto SHALL usar, en cada tema de apariencia, un color legible sobre el fondo propio de la barra de navegación.
 
@@ -458,7 +438,7 @@ Solo SHALL tenerse una factura abierta a la vez. No SHALL existir la opción "Nu
 
 Si hay cambios sin guardar, la aplicación SHALL ofrecer tres opciones: Guardar y volver/salir, Descartar cambios y volver/salir, y Cancelar. Si no hay cambios, la aplicación SHALL permitir salir normalmente.
 
-La confirmación SHALL pedirse ante **cualquier** navegación que abandone una vista con cambios sin guardar, no solo al pulsar Volver o al cerrar la aplicación: los botones de la barra de navegación, las entradas del menú principal y la apertura de una factura desde el Histórico o desde Versiones SHALL pasar por la misma confirmación. Si el usuario cancela, la aplicación SHALL permanecer en la vista actual sin cambiar de pantalla.
+La confirmación SHALL pedirse ante **cualquier** navegación que abandone una vista con cambios sin guardar, no solo al pulsar Volver o al cerrar la aplicación: los botones de la barra de navegación, las entradas del menú principal y la apertura de una factura desde el Histórico SHALL pasar por la misma confirmación. Si el usuario cancela, la aplicación SHALL permanecer en la vista actual sin cambiar de pantalla.
 
 La confirmación SHALL mostrarse **una sola vez** por cada gesto del usuario.
 
@@ -484,7 +464,7 @@ La aplicación SHALL proporcionar los atajos Ctrl+N para Nueva factura, Ctrl+S p
 
 #### Scenario: Guardar con atajo
 - **WHEN** el usuario pulsa Ctrl+S en una factura abierta
-- **THEN** la factura se guarda, sobrescribiendo la versión actual o creando una nueva versión según corresponda
+- **THEN** la factura se guarda igual que con el botón Guardar, pidiendo confirmación si ya estaba emitida
 
 ### Requirement: Configuración
 
@@ -564,7 +544,7 @@ La pantalla de Configuración SHALL organizarse en secciones navegables desde un
 
 ### Requirement: Retención de IRPF
 
-La aplicación SHALL permitir aplicar una retención de IRPF a las facturas. La empresa SHALL poder configurar una lista de tipos de retención (nombre y porcentaje), gestionada de forma similar a los tipos de IVA. Cada factura SHALL poder seleccionar un tipo de retención configurado o ninguno. La retención SHALL calcularse sobre la **base imponible** de la factura, es decir, sobre la misma base sobre la que se calcula el IVA, después de aplicar el descuento global. El total de la factura SHALL ser `Base − Descuento + IVA − Retención`. La retención seleccionada y su importe SHALL guardarse en cada versión de la factura. Si no se selecciona ningún tipo de retención, el comportamiento SHALL ser el actual: `Total = Base − Descuento + IVA`. El total de una factura SHALL NOT ser negativo por efecto de la retención.
+La aplicación SHALL permitir aplicar una retención de IRPF a las facturas. La empresa SHALL poder configurar una lista de tipos de retención (nombre y porcentaje), gestionada de forma similar a los tipos de IVA. Cada factura SHALL poder seleccionar un tipo de retención configurado o ninguno. La retención SHALL calcularse sobre la **base imponible** de la factura, es decir, sobre la misma base sobre la que se calcula el IVA, después de aplicar el descuento global. El total de la factura SHALL ser `Base − Descuento + IVA − Retención`. La retención seleccionada y su importe SHALL guardarse con la factura. Si no se selecciona ningún tipo de retención, el comportamiento SHALL ser el actual: `Total = Base − Descuento + IVA`. El total de una factura SHALL NOT ser negativo por efecto de la retención.
 
 #### Scenario: Factura con retención del 15%
 - **WHEN** el usuario crea una factura con base 1.000,00 €, descuento 0 %, IVA 21 % y selecciona una retención del 15 %
@@ -592,11 +572,11 @@ La aplicación SHALL permitir aplicar una retención de IRPF a las facturas. La 
 
 ### Requirement: Retención en histórico
 
-El histórico de facturas SHALL mostrar el importe de retención de cada versión en una columna propia. Cuando una factura no tiene retención, la columna SHALL mostrar un valor vacío o cero según el criterio de la interfaz.
+El histórico de facturas SHALL mostrar el importe de retención de cada factura en una columna propia. Cuando una factura no tiene retención, la columna SHALL mostrar un valor vacío o cero según el criterio de la interfaz.
 
 #### Scenario: Histórico con retención
 - **WHEN** el usuario busca en el histórico facturas con y sin retención
-- **THEN** la columna de retención muestra el importe correspondiente a cada versión
+- **THEN** la columna de retención muestra el importe correspondiente a cada factura
 
 ### Requirement: Retención en rectificativas
 
@@ -611,7 +591,7 @@ Al crear una rectificativa desde una factura, la aplicación SHALL copiar el tip
 La aplicación SHALL guardar los datos de cada empresa en una base de datos SQLite local dedicada ubicada en una carpeta de datos de la aplicación, separada de la instalación. Cada empresa SHALL tener su propia base de datos: los datos de una empresa SHALL NOT mezclarse con los de otra. La aplicación SHALL ser la vía normal para modificar los datos. La base de datos de la empresa activa SHALL contener su histórico completo y su configuración de empresa. Las operaciones importantes de persistencia SHALL ser transaccionales con confirmación y reversión correctas. No SHALL eliminarse físicamente datos históricos que hayan sido utilizados. La aplicación SHALL ejecutarse como una única instancia a la vez.
 
 #### Scenario: Guardado transaccional
-- **WHEN** el usuario guarda una factura con sus líneas y su versión
+- **WHEN** el usuario guarda una factura con sus líneas
 - **THEN** la operación se confirma de forma atómica o se revierte por completo si falla
 
 #### Scenario: Segunda instancia
@@ -914,7 +894,7 @@ La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus v
 - **THEN** esa ventana muestra el mismo icono de aplicación en su barra de título y en la barra de tareas de Windows
 
 #### Scenario: Título de la ventana principal por pantalla
-- **WHEN** el usuario navega entre las pantallas de la aplicación (Menú Principal, Histórico, Configuración, Editor, Clientes, Versiones o Copias)
+- **WHEN** el usuario navega entre las pantallas de la aplicación (Menú Principal, Histórico, Configuración, Editor, Clientes o Copias)
 - **THEN** la ventana principal se titula «CaboFactu® <nombre de la pantalla actual>»
 - **AND** la ventana de arranque, que es una ventana propia, se titula «CaboFactu® Seleccion de empresa»
 
@@ -983,7 +963,7 @@ La aplicación SHALL permitir generar múltiples facturas mensuales para un úni
 
 ### Requirement: Anulación y borrado de facturas desde el histórico
 
-La aplicación SHALL permitir anular y borrar facturas directamente desde la pantalla de histórico. El usuario SHALL poder seleccionar una o varias facturas (independientemente de su estado o tipo). La acción **Anular** SHALL cambiar el estado de la factura a `ANULADA` y conservar el registro. La acción **Borrar** SHALL eliminar físicamente la factura, sus versiones y sus líneas de la base de datos; antes de borrar, el sistema SHALL advertir al usuario del número de versiones y líneas que se eliminarán y SHALL pedir confirmación. Al borrar una factura, su número SHALL quedar registrado como disponible para poder reutilizarse al crear la siguiente factura de la misma serie y año. El sistema SHALL mostrar un resumen con el resultado de la operación y SHALL refrescar la tabla del histórico.
+La aplicación SHALL permitir anular y borrar facturas directamente desde la pantalla de histórico. El usuario SHALL poder seleccionar una o varias facturas (independientemente de su estado o tipo). La acción **Anular** SHALL cambiar el estado de la factura a `ANULADA` y conservar el registro. La acción **Borrar** SHALL eliminar físicamente la factura y sus líneas de la base de datos; antes de borrar, el sistema SHALL advertir al usuario del número de líneas que se eliminarán y SHALL pedir confirmación. Una factura que tiene alguna rectificativa SHALL NOT poder borrarse, y la aplicación SHALL avisar indicando qué rectificativa la corrige. Anular SHALL cambiar el estado de la misma factura, sin crear otra fila. Al borrar una factura, su número SHALL quedar registrado como disponible para poder reutilizarse al crear la siguiente factura de la misma serie y año. El sistema SHALL mostrar un resumen con el resultado de la operación y SHALL refrescar la tabla del histórico.
 
 #### Scenario: Anular una factura desde el histórico
 - **WHEN** el usuario selecciona una factura emitida y pulsa "Anular"
@@ -992,7 +972,7 @@ La aplicación SHALL permitir anular y borrar facturas directamente desde la pan
 
 #### Scenario: Borrar una factura desde el histórico
 - **WHEN** el usuario selecciona una factura y pulsa "Borrar"
-- **THEN** el sistema muestra un aviso con las versiones y líneas que se eliminarán
+- **THEN** el sistema muestra un aviso con las líneas que se eliminarán
 - **AND** tras confirmar, la factura desaparece de la base de datos y su número queda disponible
 
 #### Scenario: Menú contextual del histórico
@@ -1002,6 +982,11 @@ La aplicación SHALL permitir anular y borrar facturas directamente desde la pan
 #### Scenario: Resumen tras anular varias facturas
 - **WHEN** el usuario anula una selección que incluye facturas emitidas y facturas ya anuladas
 - **THEN** se muestra un resumen con las anuladas y las ya anuladas
+
+#### Scenario: Borrar una factura rectificada
+- **WHEN** el usuario intenta borrar la factura A-1/9, que tiene la rectificativa R-1
+- **THEN** la factura no se borra
+- **AND** la aplicación avisa de que la corrige la rectificativa R-1
 
 ### Requirement: Desglose de totales por tipo de IVA
 
@@ -1049,7 +1034,7 @@ Una línea de suplido SHALL NOT formar parte de la base imponible, SHALL NOT gen
 
 Las líneas de suplido SHALL NOT aparecer en el desglose por tipo de IVA, que solo describe operaciones sujetas.
 
-El total de suplidos SHALL guardarse en la versión de la factura, de modo que reabrir una factura antigua muestre los mismos importes.
+El total de suplidos SHALL guardarse con la factura, de modo que reabrir una factura antigua muestre los mismos importes.
 
 #### Scenario: Factura con suplido
 - **WHEN** el usuario factura una línea de 1.000,00 € al 21 % y una línea de suplido de 250,00 €, con retención del 15 %
