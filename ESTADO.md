@@ -79,3 +79,4 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **OpenSpec no deja quitar ni renombrar un escenario en un `MODIFIED`** (tampoco `REMOVED` + `ADDED` con el mismo título). Para eso: `REMOVED` del requisito y `ADDED` con otro título.
 - **Con `UNIQUE (serie_id, anio, correlativo)` un número tampoco se puede repetir aunque la factura que lo tiene esté anulada.**
 - **Tras modulo-facturas, las bases y las copias de seguridad anteriores no valen**: hay que borrar `%APPDATA%\Facturacion`.
+- **La sincronización al archivar puede dejarse líneas del delta sin aplicar aunque las cifras cuadren** (pasó en modulo-facturas). Después de archivar, compara cada requisito modificado o añadido con su bloque del delta, no solo el recuento.

@@ -1,7 +1,7 @@
 # invoicing Specification
 
 ## Purpose
-Sistema de facturación de escritorio para Windows, local y de un único usuario, que permite crear, editar, versionar, buscar y exportar a PDF facturas y rectificativas, sustituyendo el proceso manual en hoja de cálculo.
+Sistema de facturación de escritorio para Windows, local y de un único usuario, que permite crear, editar, buscar y exportar a PDF facturas y rectificativas, sustituyendo el proceso manual en hoja de cálculo.
 
 ## Requirements
 
@@ -1024,7 +1024,7 @@ El editor y el PDF SHALL partir del mismo cálculo y SHALL mostrar los mismos im
 > Recrea «Suplidos» sin sus parrafos de PDF ni su escenario de PDF («El
 > suplido tiene su propio bloque en el PDF»), que estan en «Suplidos en el PDF»
 > de `pdf-rendering`. El título es nuevo porque lo que queda no es solo fiscal:
-> incluye como se introduce un suplido y que su total se guarda en la version.
+> incluye como se introduce un suplido y que su total se guarda con la factura.
 
 La aplicación SHALL permitir facturar suplidos: gastos pagados por cuenta del cliente que no forman parte de la contraprestación.
 
