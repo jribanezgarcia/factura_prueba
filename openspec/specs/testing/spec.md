@@ -2,7 +2,7 @@
 
 ## Purpose
 
-TBD ... Update Purpose after archive
+Cómo se comprueba automáticamente la aplicación: las capas de pruebas que se ejecutan con `mvn test`, lo que vigila cada una y lo que se queda para comprobar a mano.
 
 ## Requirements
 
