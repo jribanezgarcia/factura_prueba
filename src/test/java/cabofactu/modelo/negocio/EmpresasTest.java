@@ -201,6 +201,6 @@ class EmpresasTest {
         Empresas.getEmpresas().abrir("activa", LocalDate.now());
         Empresas.getEmpresas().cerrar();
         assertNull(Sesion.getSesion().getCarpetaEmpresa());
-        assertNull(Sesion.getSesion().getFechaTrabajo());
+        assertEquals(LocalDate.now(), Sesion.getSesion().getFechaTrabajo());
     }
 }

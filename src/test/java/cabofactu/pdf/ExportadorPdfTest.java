@@ -32,11 +32,9 @@ class ExportadorPdfTest {
     @TempDir
     Path tempDir;
 
-    private LineaFactura lineaArmario() {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
+    private LineaFactura lineaArmario() throws Exception {
+        LineaFactura l = new LineaFactura(1, new BigDecimal("3128.10"));
         l.setDescripcion("ARMARIO EMPOTRADO 248X335 4P CORREDERAS");
-        l.setPrecioUnitario(new BigDecimal("3128.10"));
         l.setTipoIvaId(1L);
         l.setIvaNombre("IVA 21%");
         l.setIvaPorcentaje(21);
@@ -79,11 +77,9 @@ class ExportadorPdfTest {
         return new TipoRetencion("IRPF profesional", 15);
     }
 
-    private LineaFactura linea(String base, Integer porcentaje) {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
+    private LineaFactura linea(String base, Integer porcentaje) throws Exception {
+        LineaFactura l = new LineaFactura(1, new BigDecimal(base));
         l.setDescripcion("CONCEPTO " + porcentaje + "%");
-        l.setPrecioUnitario(new BigDecimal(base));
         l.setIvaNombre("IVA " + porcentaje + "%");
         l.setIvaPorcentaje(porcentaje);
         return l;
@@ -310,10 +306,8 @@ class ExportadorPdfTest {
 
     @Test
     void suplidosAparecenEntreRetencionYTotal() throws Exception {
-        LineaFactura suplido = new LineaFactura();
-        suplido.setCantidad(1);
+        LineaFactura suplido = new LineaFactura(1, new BigDecimal("250.00"));
         suplido.setDescripcion("TASAS");
-        suplido.setPrecioUnitario(new BigDecimal("250.00"));
         suplido.setIvaNombre("Suplido");
         suplido.setIvaPorcentaje(null);
         suplido.setEsSuplido(true);
@@ -336,22 +330,18 @@ class ExportadorPdfTest {
         }
     }
 
-    private LineaFactura lineaExenta(String descripcion, String base) {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
+    private LineaFactura lineaExenta(String descripcion, String base) throws Exception {
+        LineaFactura l = new LineaFactura(1, new BigDecimal(base));
         l.setDescripcion(descripcion);
-        l.setPrecioUnitario(new BigDecimal(base));
         l.setIvaNombre("Exento");
         l.setIvaPorcentaje(null);
         l.setIvaMotivoExencion("Art. 20.1");
         return l;
     }
 
-    private LineaFactura lineaSuplido(String descripcion, String importe) {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
+    private LineaFactura lineaSuplido(String descripcion, String importe) throws Exception {
+        LineaFactura l = new LineaFactura(1, new BigDecimal(importe));
         l.setDescripcion(descripcion);
-        l.setPrecioUnitario(new BigDecimal(importe));
         l.setIvaNombre("Suplido");
         l.setIvaPorcentaje(null);
         l.setEsSuplido(true);
@@ -546,7 +536,7 @@ class ExportadorPdfTest {
         }
     }
 
-    private List<LineaFactura> lineasN(int n) {
+    private List<LineaFactura> lineasN(int n) throws Exception {
         List<LineaFactura> out = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             out.add(lineaArmario());

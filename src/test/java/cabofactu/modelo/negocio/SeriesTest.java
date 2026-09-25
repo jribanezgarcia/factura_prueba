@@ -75,10 +75,8 @@ class SeriesTest {
         }
     }
 
-    private LineaFactura lineaNueva() {
-        LineaFactura linea = new LineaFactura();
-        linea.setCantidad(1);
-        linea.setPrecioUnitario(new BigDecimal("100.00"));
+    private LineaFactura lineaNueva() throws Exception {
+        LineaFactura linea = new LineaFactura(1, new BigDecimal("100.00"));
         linea.setTipoIvaId(1L);
         linea.setIvaNombre("IVA 21%");
         linea.setIvaPorcentaje(21);

@@ -41,6 +41,7 @@ import javafx.util.StringConverter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
+import java.time.LocalDate;
 import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
@@ -257,7 +258,7 @@ public class GenerarFacturasMensualesController implements Initializable {
     }
 
     private void configurarSpinners() {
-        int anioActual = Vista.getInstancia().getControlador().getModelo().getReloj().hoy().getYear();
+        int anioActual = LocalDate.now().getYear();
         spinnerAnio.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(anioActual - 5, anioActual + 10, anioActual));
         spinnerDia.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 31, 15));
         spinnerDia.setEditable(true);

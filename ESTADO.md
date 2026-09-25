@@ -38,6 +38,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 ## En curso
 
+**`modulo-editor`** (25/09/2026): rehace el editor de facturas (cliente por NIF con aviso de cliente nuevo, número libre al guardar, descripción de tres renglones) y elimina `ValidacionCliente`, `Reloj`, `ResumenFactura.IvaGrupo` y el constructor vacío de `LineaFactura`.
+
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
 - El análisis y las decisiones están en `borrador_changes/analisis-desde-cero.md`.
@@ -72,10 +74,8 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **Tras Aceptar puede venir otro aviso encadenado sin hueco entre medias** (confirmar un borrado que falla): la espera de `contestarAviso` acepta que se cierre **o** que cambie el texto.
 - Tras cambiar crear_tablas.sql hay que borrar %APPDATA%\Facturacion: las tablas se crean con CREATE TABLE IF NOT EXISTS y las bases que ya existen no reciben los cambios.
 - **La moneda lleva espacio inseparable** (`Formatos.moneda`): en los asserts, `contains("1.760,00")` en vez del texto entero.
-- **Anular crea versión**: el histórico enseña una fila por versión; tras anular hay dos filas del mismo número.
 - **`pulsar` no toca la celda-botón de un `ComboBox`**: solo las celdas de la lista abierta (viven en un `ListView`). Si no, al elegir valor se pulsa el propio desplegable.
 - **Los desplegables enseñan unas diez filas**: las celdas que hay que bajar a ver no existen para el robot; en mensuales se eligen meses de los visibles.
-- **Rectificar guarda al momento y `Guardar` abre versiones; el número solo vale al crear** (al editar se ignora) y el hueco solo sale en factura nueva. Sin editar celdas no hay líneas con contenido, así que el ocupado y el hueco no se pueden probar hasta modulo-facturas.
 - **OpenSpec no deja quitar ni renombrar un escenario en un `MODIFIED`** (tampoco `REMOVED` + `ADDED` con el mismo título). Para eso: `REMOVED` del requisito y `ADDED` con otro título.
 - **Con `UNIQUE (serie_id, anio, correlativo)` un número tampoco se puede repetir aunque la factura que lo tiene esté anulada.**
 - **Tras modulo-facturas, las bases y las copias de seguridad anteriores no valen**: hay que borrar `%APPDATA%\Facturacion`.

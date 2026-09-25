@@ -147,9 +147,7 @@ class ClientesTest {
         Serie s = serieC();
         Cliente cliente = Clientes.getClientes().buscar(clienteId);
         Factura factura = new Factura(s, LocalDate.of(2026, 9, 1), cliente);
-        LineaFactura linea = new LineaFactura();
-        linea.setCantidad(1);
-        linea.setPrecioUnitario(new BigDecimal("100.00"));
+        LineaFactura linea = new LineaFactura(1, new BigDecimal("100.00"));
         linea.setTipoIvaId(1L);
         linea.setIvaNombre("IVA 21%");
         linea.setIvaPorcentaje(21);

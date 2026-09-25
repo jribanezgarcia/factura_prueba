@@ -687,13 +687,13 @@ public class ConfiguracionController implements Pantalla, Initializable {
     }
 
     private int anioTrabajo() {
-        return Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo().getYear();
+        return Vista.getInstancia().getControlador().fechaTrabajo().getYear();
     }
 
     /** El siguiente número de la serie para el año de trabajo, o vacío si no se puede calcular. */
     private String siguienteTexto(Serie serie) {
         try {
-            LocalDate fecha = Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo();
+            LocalDate fecha = Vista.getInstancia().getControlador().fechaTrabajo();
             return String.valueOf(Vista.getInstancia().getControlador().siguienteCorrelativo(serie, fecha));
         } catch (Exception e) {
             return "";

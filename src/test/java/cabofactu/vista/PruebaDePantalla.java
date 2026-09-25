@@ -15,6 +15,9 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Labeled;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.stage.Stage;
@@ -329,6 +332,142 @@ class PruebaDePantalla extends ApplicationTest {
         // medias, así que seguimos tanto si se cierra como si cambia el texto.
         WaitForAsyncUtils.waitFor(30, TimeUnit.SECONDS, () -> !hayAviso()
                 || !textoAvisoSinEsperar().equals(texto));
+    }
+
+    /**
+     * Cerramos el aviso pulsando su botón de cancelar, con la tecla Esc, y
+     * esperamos a que se cierre o a que cambie el texto por otro aviso.
+     */
+    protected void cancelarAviso() throws Exception {
+        WaitForAsyncUtils.waitFor(30, TimeUnit.SECONDS, () -> hayAviso());
+        String texto = textoAvisoSinEsperar();
+        clickOn(buscar(".dialog-pane", DialogPane.class));
+        push(KeyCode.ESCAPE);
+        WaitForAsyncUtils.waitFor(30, TimeUnit.SECONDS, () -> !hayAviso()
+                || !textoAvisoSinEsperar().equals(texto));
+    }
+
+    /**
+     * Escribimos en una celda de la tabla de líneas como lo haría el usuario:
+     * pulsamos la celda, Enter para abrirla, escribimos y Enter para aplicar y
+     * saltar. La columna se pide por su fx:id.
+     */
+    protected void escribirEnCelda(int fila, String columna, String texto) throws Exception {
+        asentarVentanas();
+        if (!editandoCeldaEn(fila, columna)) {
+            Node celda = buscarCeldaLinea(fila, columna);
+            clickOn(celda);
+            push(KeyCode.ENTER);
+            if (!editandoCelda()) {
+                doubleClickOn(celda);
+                push(KeyCode.ENTER);
+            }
+        }
+        write(texto);
+        push(KeyCode.ENTER);
+    }
+
+    private boolean editandoCeldaEn(int fila, String columna) throws Exception {
+        FutureTask<Boolean> tarea = new FutureTask<>(() -> hayEdicionEn(fila, columna));
+        Platform.runLater(tarea);
+        return tarea.get(30, TimeUnit.SECONDS);
+    }
+
+    private static Boolean hayEdicionEn(int fila, String columna) {
+        String id = columna;
+        if (id.startsWith("#")) {
+            id = id.substring(1);
+        }
+        for (Window abierta : new ArrayList<>(Window.getWindows())) {
+            if (!abierta.isShowing() || abierta.getScene() == null
+                    || abierta.getScene().getRoot() == null) {
+                continue;
+            }
+            for (Node nodo : abierta.getScene().getRoot().lookupAll("#tablaLineas")) {
+                if (nodo instanceof TableView && seVe(nodo)) {
+                    TableView<?> tabla = (TableView<?>) nodo;
+                    if (tabla.getEditingCell() == null) {
+                        return false;
+                    }
+                    if (tabla.getEditingCell().getRow() != fila) {
+                        return false;
+                    }
+                    TableColumn<?, ?> col = tabla.getEditingCell().getTableColumn();
+                    if (col == null || !id.equals(col.getId())) {
+                        return false;
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private Node buscarCeldaLinea(int fila, String columna) throws Exception {
+        FutureTask<Node> tarea = new FutureTask<>(() -> celdaLinea(fila, columna));
+        Platform.runLater(tarea);
+        return tarea.get(30, TimeUnit.SECONDS);
+    }
+
+    private static Node celdaLinea(int fila, String columna) {
+        String id = columna;
+        if (id.startsWith("#")) {
+            id = id.substring(1);
+        }
+        for (Window abierta : new ArrayList<>(Window.getWindows())) {
+            if (!abierta.isShowing() || abierta.getScene() == null
+                    || abierta.getScene().getRoot() == null) {
+                continue;
+            }
+            for (Node nodo : abierta.getScene().getRoot().lookupAll("#tablaLineas .table-cell")) {
+                if (!(nodo instanceof TableCell)) {
+                    continue;
+                }
+                TableCell<?, ?> celda = (TableCell<?, ?>) nodo;
+                if (celda.getIndex() != fila) {
+                    continue;
+                }
+                TableColumn<?, ?> tablaColumna = celda.getTableColumn();
+                if (tablaColumna == null) {
+                    continue;
+                }
+                if (id.equals(tablaColumna.getId()) && seVe(nodo)) {
+                    return nodo;
+                }
+            }
+        }
+        throw new AssertionError("No se encontró la celda " + fila + " " + columna);
+    }
+
+    private static TableView<?> buscarTablaLineas(Window abierta) {
+        for (Node nodo : abierta.getScene().getRoot().lookupAll("#tablaLineas")) {
+            if (nodo instanceof TableView && seVe(nodo)) {
+                return (TableView<?>) nodo;
+            }
+        }
+        return null;
+    }
+
+    private boolean editandoCelda() throws Exception {
+        FutureTask<Boolean> tarea = new FutureTask<>(() -> hayEdicion());
+        Platform.runLater(tarea);
+        return tarea.get(30, TimeUnit.SECONDS);
+    }
+
+    private static Boolean hayEdicion() {
+        for (Window abierta : new ArrayList<>(Window.getWindows())) {
+            if (!abierta.isShowing() || abierta.getScene() == null
+                    || abierta.getScene().getRoot() == null) {
+                continue;
+            }
+            for (Node nodo : abierta.getScene().getRoot().lookupAll("#tablaLineas")) {
+                if (nodo instanceof TableView && seVe(nodo)) {
+                    TableView<?> tabla = (TableView<?>) nodo;
+                    return tabla.getEditingCell() != null;
+                }
+            }
+        }
+        return false;
     }
 
     private boolean hayAviso() throws Exception {

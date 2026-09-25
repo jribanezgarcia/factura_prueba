@@ -153,7 +153,7 @@ public class Factura {
 
     public void setCliente(Cliente cliente) throws Exception {
         if (cliente == null) {
-            throw new Exception("Indique el cliente de la factura.");
+            throw new Exception("Indique los datos del cliente.");
         }
         this.cliente = cliente;
     }

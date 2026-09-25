@@ -38,6 +38,9 @@ public class Sesion {
     }
 
     public LocalDate getFechaTrabajo() {
+        if (fechaTrabajo == null) {
+            return LocalDate.now();
+        }
         return fechaTrabajo;
     }
 }

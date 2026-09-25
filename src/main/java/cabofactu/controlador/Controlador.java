@@ -307,6 +307,10 @@ public class Controlador {
         return modelo.mensualesDuplicadas(cliente, anio, mesInicio, mesFin);
     }
 
+    public LocalDate fechaTrabajo() {
+        return modelo.fechaTrabajo();
+    }
+
     /**
      * Damos el modelo mientras quedan pantallas por rehacer. Cuando todas llamen
      * a las operaciones del controlador, este método desaparece.

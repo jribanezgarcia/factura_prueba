@@ -60,10 +60,8 @@ class FacturasTest {
         return new Cliente("Cliente Prueba", "12345678Z", "Calle Prueba 1", "28001", "Madrid", "Madrid");
     }
 
-    private LineaFactura linea(String precio) {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
-        l.setPrecioUnitario(new BigDecimal(precio));
+    private LineaFactura linea(String precio) throws Exception {
+        LineaFactura l = new LineaFactura(1, new BigDecimal(precio));
         l.setTipoIvaId(1L);
         l.setIvaNombre("IVA 21%");
         l.setIvaPorcentaje(21);
@@ -462,7 +460,18 @@ class FacturasTest {
         Serie serie = serieC();
         LocalDate fecha = LocalDate.of(2026, 8, 21);
         Exception e = assertThrows(Exception.class, () -> new Factura(serie, fecha, null));
-        assertEquals("Indique el cliente de la factura.", e.getMessage());
+        assertEquals("Indique los datos del cliente.", e.getMessage());
+        assertEquals(0, Facturas.getFacturas().contar());
+    }
+
+    @Test
+    void guardarSinClienteAvisa() throws Exception {
+        Serie serie = serieC();
+        LocalDate fecha = LocalDate.of(2026, 8, 21);
+        Factura factura = new Factura(serie, fecha, clientePrueba());
+        factura.setLineas(List.of(linea("100.00")));
+        Exception e = assertThrows(Exception.class, () -> factura.setCliente(null));
+        assertEquals("Indique los datos del cliente.", e.getMessage());
         assertEquals(0, Facturas.getFacturas().contar());
     }
 }

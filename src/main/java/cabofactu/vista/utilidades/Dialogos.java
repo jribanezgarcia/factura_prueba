@@ -1,6 +1,7 @@
 package cabofactu.vista.utilidades;
 
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.DialogPane;
@@ -64,6 +65,29 @@ public final class Dialogos {
         iconoVentana(aviso);
         aviso.showAndWait();
         return aviso.getResult() == aceptar;
+    }
+
+    /**
+     * Preguntamos si usar el número libre o continuar con el propuesto. Cerrar
+     * el aviso es continuar con el propuesto.
+     */
+    public static boolean mostrarDialogoNumeroLibre(String libre, String propuesto) {
+        ButtonType usar = new ButtonType("Usar " + libre, ButtonBar.ButtonData.OK_DONE);
+        ButtonType continuar = new ButtonType("Continuar con " + propuesto, ButtonBar.ButtonData.CANCEL_CLOSE);
+        Alert aviso = new Alert(Alert.AlertType.CONFIRMATION, "", usar, continuar);
+        aviso.setTitle("Número de factura");
+        aviso.setHeaderText(null);
+        ponerMensaje(aviso, String.format("El número %s está libre.%n%n¿Quieres usarlo o continuar con el %s?",
+                libre, propuesto));
+        aviso.setGraphic(icono(Alert.AlertType.CONFIRMATION));
+        aplicarTema(aviso.getDialogPane());
+        iconoVentana(aviso);
+        Button botonUsar = (Button) aviso.getDialogPane().lookupButton(usar);
+        if (botonUsar != null) {
+            botonUsar.setDefaultButton(true);
+        }
+        aviso.showAndWait();
+        return aviso.getResult() == usar;
     }
 
     public static CambiosSinGuardar mostrarDialogoCambiosSinGuardar() {

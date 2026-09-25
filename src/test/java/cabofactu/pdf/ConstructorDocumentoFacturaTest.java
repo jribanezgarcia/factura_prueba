@@ -46,11 +46,9 @@ class ConstructorDocumentoFacturaTest {
         return factura;
     }
 
-    private LineaFactura linea(String desc, String base, Integer pct, boolean suplido) {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
+    private LineaFactura linea(String desc, String base, Integer pct, boolean suplido) throws Exception {
+        LineaFactura l = new LineaFactura(1, new BigDecimal(base));
         l.setDescripcion(desc);
-        l.setPrecioUnitario(new BigDecimal(base));
         if (suplido) {
             l.setIvaNombre("Suplido");
         } else {

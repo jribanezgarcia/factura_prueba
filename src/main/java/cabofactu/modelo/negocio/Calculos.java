@@ -1,5 +1,6 @@
 package cabofactu.modelo.negocio;
 
+import cabofactu.modelo.dominio.GrupoIva;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.ResumenFactura;
 import cabofactu.modelo.dominio.TipoRetencion;
@@ -125,7 +126,7 @@ public final class Calculos {
         BigDecimal factor = factorDescuento(descuento);
         Map<String, BigDecimal> bases = basesPorClave(lineas);
         BigDecimal baseTotalDescontada = round2(sumarBases(bases).multiply(factor));
-        List<ResumenFactura.IvaGrupo> grupos = gruposDescontados(bases, factor);
+        List<GrupoIva> grupos = gruposDescontados(bases, factor);
         ajustarCentimos(grupos, baseTotalDescontada);
 
         ResumenFactura resumen = new ResumenFactura();
@@ -193,8 +194,8 @@ public final class Calculos {
     }
 
     /** Pasamos cada base agrupada a su grupo de IVA, ya con el descuento aplicado. */
-    private static List<ResumenFactura.IvaGrupo> gruposDescontados(Map<String, BigDecimal> bases, BigDecimal factor) {
-        List<ResumenFactura.IvaGrupo> grupos = new ArrayList<>();
+    private static List<GrupoIva> gruposDescontados(Map<String, BigDecimal> bases, BigDecimal factor) {
+        List<GrupoIva> grupos = new ArrayList<>();
         for (Map.Entry<String, BigDecimal> entrada : bases.entrySet()) {
             String[] partes = entrada.getKey().split("\\|", -1);
             String nombre = partes[0];
@@ -206,10 +207,7 @@ public final class Calculos {
             if (partes.length > 2) {
                 motivo = partes[2];
             }
-            ResumenFactura.IvaGrupo grupo = new ResumenFactura.IvaGrupo();
-            grupo.setNombre(nombre);
-            grupo.setPorcentaje(porcentaje);
-            grupo.setMotivoExencion(motivo);
+            GrupoIva grupo = new GrupoIva(nombre, porcentaje, motivo);
             grupo.setBase(round2(entrada.getValue().multiply(factor)));
             grupo.setBaseBruta(round2(entrada.getValue()));
             grupos.add(grupo);
@@ -218,9 +216,9 @@ public final class Calculos {
     }
 
     /** Ajustamos los céntimos en la mayor base para que las bases sumen el total. */
-    private static void ajustarCentimos(List<ResumenFactura.IvaGrupo> grupos, BigDecimal baseTotalDescontada) {
+    private static void ajustarCentimos(List<GrupoIva> grupos, BigDecimal baseTotalDescontada) {
         BigDecimal suma = BigDecimal.ZERO;
-        for (ResumenFactura.IvaGrupo grupo : grupos) {
+        for (GrupoIva grupo : grupos) {
             suma = suma.add(grupo.getBase());
         }
         BigDecimal diferencia = baseTotalDescontada.subtract(suma);
@@ -239,9 +237,9 @@ public final class Calculos {
     }
 
     /** Calculamos cada cuota sobre su base descontada y sumamos el IVA total. */
-    private static BigDecimal sumarCuotas(List<ResumenFactura.IvaGrupo> grupos) {
+    private static BigDecimal sumarCuotas(List<GrupoIva> grupos) {
         BigDecimal ivaTotal = BigDecimal.ZERO;
-        for (ResumenFactura.IvaGrupo grupo : grupos) {
+        for (GrupoIva grupo : grupos) {
             BigDecimal cuota = ivaDeBase(grupo.getBase(), grupo.getPorcentaje());
             grupo.setCuota(cuota);
             ivaTotal = ivaTotal.add(cuota);

@@ -19,7 +19,7 @@ import cabofactu.modelo.negocio.Configuracion;
 import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Facturas;
 import cabofactu.modelo.negocio.FacturacionMensual;
-import cabofactu.modelo.negocio.Reloj;
+import cabofactu.modelo.negocio.Sesion;
 import cabofactu.modelo.negocio.TiposRetencion;
 import cabofactu.modelo.negocio.TiposIva;
 import cabofactu.modelo.negocio.Series;
@@ -30,8 +30,6 @@ import cabofactu.modelo.negocio.Series;
  */
 public class Modelo {
 
-    private final Reloj reloj;
-
     private final FacturacionMensual facturacionMensual;
     private final CopiaSeguridad copiaSeguridad;
 
@@ -40,13 +38,12 @@ public class Modelo {
     }
 
     public Modelo(Clock clock) {
-        reloj = new Reloj(clock);
         facturacionMensual = new FacturacionMensual(Facturas.getFacturas());
         copiaSeguridad = new CopiaSeguridad(new CopiaSeguridadDAO(), Facturas.getFacturas(), clock);
     }
 
-    public Reloj getReloj() {
-        return reloj;
+    public LocalDate fechaTrabajo() {
+        return Sesion.getSesion().getFechaTrabajo();
     }
 
     public List<Cliente> listadoClientes(boolean soloActivos) throws Exception {

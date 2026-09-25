@@ -1,5 +1,6 @@
 package cabofactu.modelo.negocio;
 
+import cabofactu.modelo.dominio.GrupoIva;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.ResumenFactura;
 import cabofactu.modelo.dominio.TipoRetencion;
@@ -13,22 +14,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class CalculosTest {
 
-    private LineaFactura linea(int cantidad, String precio, Integer pct, String nombre, String motivo) {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(cantidad);
-        l.setPrecioUnitario(new BigDecimal(precio));
+    private LineaFactura linea(int cantidad, String precio, Integer pct, String nombre, String motivo) throws Exception {
+        LineaFactura l = new LineaFactura(cantidad, new BigDecimal(precio));
         l.setIvaPorcentaje(pct);
         l.setIvaNombre(nombre);
         l.setIvaMotivoExencion(motivo);
         return l;
     }
 
-    private LineaFactura linea(int cantidad, String precio, Integer pct, String nombre) {
+    private LineaFactura linea(int cantidad, String precio, Integer pct, String nombre) throws Exception {
         return linea(cantidad, precio, pct, nombre, null);
     }
 
-    private ResumenFactura.IvaGrupo grupo(ResumenFactura r, String nombre) {
-        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+    private GrupoIva grupo(ResumenFactura r, String nombre) {
+        for (GrupoIva g : r.getGrupos()) {
             if (nombre.equals(g.getNombre())) {
                 return g;
             }
@@ -37,7 +36,7 @@ class CalculosTest {
     }
 
     @Test
-    void descuentoConUnSoloTipoDeIva() {
+    void descuentoConUnSoloTipoDeIva() throws Exception {
         ResumenFactura r = Calculos.resumen(List.of(linea(1, "100.00", 21, "IVA 21%")), 10);
         assertEquals(new BigDecimal("90.00"), r.getBaseTotal());
         assertEquals(new BigDecimal("18.90"), r.getIvaTotal());
@@ -45,7 +44,7 @@ class CalculosTest {
     }
 
     @Test
-    void variosTiposDeIvaSinDescuento() {
+    void variosTiposDeIvaSinDescuento() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "100.00", 21, "IVA 21%"), linea(1, "50.00", 10, "IVA 10%")), 0);
         assertEquals(new BigDecimal("100.00"), grupo(r, "IVA 21%").getBase());
@@ -56,7 +55,7 @@ class CalculosTest {
     }
 
     @Test
-    void descuentoConVariosTiposDeIvaReparteBases() {
+    void descuentoConVariosTiposDeIvaReparteBases() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "100.00", 21, "IVA 21%"), linea(1, "50.00", 10, "IVA 10%")), 10);
         assertEquals(new BigDecimal("90.00"), grupo(r, "IVA 21%").getBase());
@@ -68,7 +67,7 @@ class CalculosTest {
     }
 
     @Test
-    void sinDescuentoBrutaIgualDescontada() {
+    void sinDescuentoBrutaIgualDescontada() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "100.00", 21, "IVA 21%")), 0);
         assertEquals(new BigDecimal("100.00"), r.getBaseBruta());
@@ -77,7 +76,7 @@ class CalculosTest {
     }
 
     @Test
-    void descuentoDiezPorCientoSobreMilCuadra() {
+    void descuentoDiezPorCientoSobreMilCuadra() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%")), 10);
         assertEquals(new BigDecimal("1000.00"), r.getBaseBruta());
@@ -88,7 +87,7 @@ class CalculosTest {
     }
 
     @Test
-    void descuentoConVariosTiposExponeBrutaYDescuento() {
+    void descuentoConVariosTiposExponeBrutaYDescuento() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "100.00", 21, "IVA 21%"), linea(1, "50.00", 10, "IVA 10%")), 10);
         assertEquals(new BigDecimal("150.00"), r.getBaseBruta());
@@ -97,12 +96,12 @@ class CalculosTest {
     }
 
     @Test
-    void entradaConIvaCalculaBaseHaciaAtras() {
+    void entradaConIvaCalculaBaseHaciaAtras() throws Exception {
         assertEquals(new BigDecimal("100.00"), Calculos.baseDesdeTotalConIva(new BigDecimal("121.00"), 21));
     }
 
     @Test
-    void precioCalculadoHaciaAtrasVuelveAlTotal() {
+    void precioCalculadoHaciaAtrasVuelveAlTotal() throws Exception {
         comprobarIdaYVuelta(new BigDecimal("100.00"), 3);
         comprobarIdaYVuelta(new BigDecimal("0.01"), 7);
         comprobarIdaYVuelta(new BigDecimal("1234.56"), 9);
@@ -114,17 +113,17 @@ class CalculosTest {
     }
 
     @Test
-    void redondeoHaciaArriba() {
+    void redondeoHaciaArriba() throws Exception {
         assertEquals(new BigDecimal("10.01"), Calculos.round2(new BigDecimal("10.005")));
         assertEquals(new BigDecimal("3.02"), Calculos.totalLinea(new BigDecimal("1.005"), 3));
     }
 
     @Test
-    void ajusteDeCentimosEnLaMayorBase() {
+    void ajusteDeCentimosEnLaMayorBase() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1.01", 21, "IVA 21%"), linea(1, "1.01", 10, "IVA 10%")), 33);
         BigDecimal suma = BigDecimal.ZERO;
-        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+        for (GrupoIva g : r.getGrupos()) {
             suma = suma.add(g.getBase());
         }
         assertEquals(r.getBaseTotal(), suma);
@@ -133,10 +132,10 @@ class CalculosTest {
     }
 
     @Test
-    void lineaExentaSinCuota() {
+    void lineaExentaSinCuota() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "100.00", null, "Exento", "Art. 20.1")), 0);
-        ResumenFactura.IvaGrupo g = r.getGrupos().get(0);
+        GrupoIva g = r.getGrupos().get(0);
         assertTrue(g.isExento());
         assertEquals(new BigDecimal("100.00"), g.getBase());
         assertEquals(0, g.getCuota().compareTo(BigDecimal.ZERO));
@@ -183,17 +182,15 @@ class CalculosTest {
     }
 
     @Test
-    void sinRetencionMantieneComportamientoAnterior() {
+    void sinRetencionMantieneComportamientoAnterior() throws Exception {
         ResumenFactura r = Calculos.resumen(
                 List.of(linea(1, "1000.00", 21, "IVA 21%")), 0, null);
         assertEquals(new BigDecimal("1210.00"), r.getTotal());
         assertEquals(0, BigDecimal.ZERO.compareTo(r.getImporteRetencion()));
     }
 
-    private LineaFactura suplido(String importe) {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
-        l.setPrecioUnitario(new BigDecimal(importe));
+    private LineaFactura suplido(String importe) throws Exception {
+        LineaFactura l = new LineaFactura(1, new BigDecimal(importe));
         l.setIvaNombre("Suplido");
         l.setIvaPorcentaje(null);
         l.setEsSuplido(true);
@@ -201,7 +198,7 @@ class CalculosTest {
     }
 
     @Test
-    void suplidoSoloSumaAlTotal() {
+    void suplidoSoloSumaAlTotal() throws Exception {
         ResumenFactura r = Calculos.resumen(List.of(suplido("250.00")), 0);
         assertEquals(0, r.getBaseTotal().compareTo(BigDecimal.ZERO));
         assertEquals(0, r.getIvaTotal().compareTo(BigDecimal.ZERO));
@@ -219,7 +216,7 @@ class CalculosTest {
         assertEquals(new BigDecimal("150.00"), r.getImporteRetencion());
         assertEquals(new BigDecimal("250.00"), r.getTotalSuplidos());
         assertEquals(new BigDecimal("1310.00"), r.getTotal());
-        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+        for (GrupoIva g : r.getGrupos()) {
             assertTrue(!"Suplido".equals(g.getNombre()));
         }
     }
@@ -244,36 +241,36 @@ class CalculosTest {
     }
 
     @Test
-    void totalConIvaSumaLaCuotaAlTipoNormal() {
+    void totalConIvaSumaLaCuotaAlTipoNormal() throws Exception {
         assertEquals(new BigDecimal("1210.00"),
                 Calculos.totalConIva(linea(1, "1000.00", 21, "IVA 21%")));
     }
 
     @Test
-    void totalConIvaDevuelveLaBaseSiEsExenta() {
+    void totalConIvaDevuelveLaBaseSiEsExenta() throws Exception {
         assertEquals(new BigDecimal("200.00"),
                 Calculos.totalConIva(linea(1, "200.00", null, "Exento", "Art. 20.1")));
     }
 
     @Test
-    void totalConIvaDevuelveLaBaseSiEsSuplido() {
+    void totalConIvaDevuelveLaBaseSiEsSuplido() throws Exception {
         assertEquals(new BigDecimal("250.00"), Calculos.totalConIva(suplido("250.00")));
     }
 
     @Test
-    void totalConIvaDevuelveLaBaseSiElTipoEsCero() {
+    void totalConIvaDevuelveLaBaseSiElTipoEsCero() throws Exception {
         LineaFactura l = linea(1, "100.00", 0, "IVA 0%");
         assertEquals(new BigDecimal("100.00"), Calculos.totalConIva(l));
     }
 
     @Test
-    void suplidosDeSinSuplidosDevuelveVacio() {
+    void suplidosDeSinSuplidosDevuelveVacio() throws Exception {
         assertTrue(Calculos.suplidosDe(
                 List.of(linea(1, "1000.00", 21, "IVA 21%"))).isEmpty());
     }
 
     @Test
-    void suplidosDeSoloSuplidosDevuelveTodas() {
+    void suplidosDeSoloSuplidosDevuelveTodas() throws Exception {
         List<LineaFactura> suplidos = Calculos.suplidosDe(
                 List.of(suplido("120.00"), suplido("80.00")));
         assertEquals(2, suplidos.size());
@@ -283,7 +280,7 @@ class CalculosTest {
     }
 
     @Test
-    void suplidosDeMezclaDevuelveSoloSuplidos() {
+    void suplidosDeMezclaDevuelveSoloSuplidos() throws Exception {
         List<LineaFactura> suplidos = Calculos.suplidosDe(List.of(
                 linea(1, "1000.00", 21, "IVA 21%"), suplido("250.00")));
         assertEquals(1, suplidos.size());
@@ -291,7 +288,7 @@ class CalculosTest {
     }
 
     @Test
-    void suplidosDeListaNulaDevuelveVacio() {
+    void suplidosDeListaNulaDevuelveVacio() throws Exception {
         assertTrue(Calculos.suplidosDe(null).isEmpty());
     }
 }

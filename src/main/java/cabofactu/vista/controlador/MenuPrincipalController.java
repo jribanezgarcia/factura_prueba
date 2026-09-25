@@ -42,7 +42,7 @@ public class MenuPrincipalController implements Pantalla, Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        LocalDate f = Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo();
+        LocalDate f = Vista.getInstancia().getControlador().fechaTrabajo();
         fechaTrabajo.setText(Formatos.fecha(f));
         cargarEmpresa();
     }

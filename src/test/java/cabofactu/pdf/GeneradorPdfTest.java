@@ -24,11 +24,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /** Comprobamos las tarjetas del PDF sin generar el documento entero. */
 class GeneradorPdfTest {
 
-    private LineaFactura lineaArmario() {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
+    private LineaFactura lineaArmario() throws Exception {
+        LineaFactura l = new LineaFactura(1, new BigDecimal("3128.10"));
         l.setDescripcion("ARMARIO EMPOTRADO 248X335 4P CORREDERAS");
-        l.setPrecioUnitario(new BigDecimal("3128.10"));
         l.setTipoIvaId(1L);
         l.setIvaNombre("IVA 21%");
         l.setIvaPorcentaje(21);

@@ -1,32 +1,35 @@
 package cabofactu.vista.controlador;
 
-import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
+import cabofactu.modelo.dominio.Factura;
+import cabofactu.modelo.dominio.GrupoIva;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.ResumenFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.pdf.ExportadorPdf;
 import cabofactu.modelo.negocio.Calculos;
-import cabofactu.modelo.negocio.ValidacionCliente;
+import cabofactu.modelo.negocio.sqlite.Conexion;
+import cabofactu.pdf.ExportadorPdf;
 import cabofactu.utilidades.Formatos;
 import cabofactu.utilidades.LogoMarco;
+import cabofactu.vista.Pantalla;
+import cabofactu.vista.Vista;
+import cabofactu.vista.utilidades.CambiosSinGuardar;
+import cabofactu.vista.utilidades.ConversorCliente;
+import cabofactu.vista.utilidades.Dialogos;
 import javafx.application.Platform;
-import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
-import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -38,16 +41,17 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-import javafx.util.StringConverter;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -56,14 +60,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.ResourceBundle;
-import cabofactu.modelo.dominio.Factura;
-import cabofactu.vista.Pantalla;
-import cabofactu.vista.Vista;
-import cabofactu.vista.utilidades.CambiosSinGuardar;
-import cabofactu.vista.utilidades.Dialogos;
 
 /**
  * Editor de factura: cabecera con serie, fecha, número y cliente; tabla de
@@ -73,24 +70,9 @@ import cabofactu.vista.utilidades.Dialogos;
  */
 public class EditorController implements Pantalla, Initializable {
 
-    /** Trazas temporales para diagnosticar el flujo de foco al editar líneas. */
-    private static final boolean DIAGNOSTICO_FOCO = false;
-    private static final String PREV_SERIE = "ultima_serie";
-    private static final String PREV_CARPETA = "carpeta_facturas";
-    private static final String PREV_EXPORT = "ultima_carpeta_export";
-
-    private boolean modificado;
-    private boolean cargando;
-    private Long facturaAbiertaId;
-    private Integer correlativoFijo;
-    private EstadoFactura estadoActual;
-    private Cliente clienteActual;
-    private int descuento;
-
-    private final ObservableList<LineaFactura> lineas = FXCollections.observableArrayList();
-    private final ObservableList<TipoIva> tiposIva = FXCollections.observableArrayList();
-    private final ObservableList<TipoRetencion> tiposRetencion = FXCollections.observableArrayList();
-    private TipoRetencion retencionActual;
+    private static final String PREF_SERIE = "ultima_serie";
+    private static final String PREF_CARPETA = "carpeta_facturas";
+    private static final String PREF_EXPORTACION = "ultima_carpeta_export";
 
     @FXML
     private Label lblTitulo;
@@ -121,13 +103,13 @@ public class EditorController implements Pantalla, Initializable {
     @FXML
     private Label lblTotal;
     @FXML
-    private TableView<ResumenFactura.IvaGrupo> matrizIva;
+    private TableView<GrupoIva> matrizIva;
     @FXML
-    private TableColumn<ResumenFactura.IvaGrupo, String> colMatrizIva;
+    private TableColumn<GrupoIva, String> colMatrizIva;
     @FXML
-    private TableColumn<ResumenFactura.IvaGrupo, String> colMatrizBase;
+    private TableColumn<GrupoIva, String> colMatrizBase;
     @FXML
-    private TableColumn<ResumenFactura.IvaGrupo, String> colMatrizCuota;
+    private TableColumn<GrupoIva, String> colMatrizCuota;
     @FXML
     private HBox filaSuplidos;
     @FXML
@@ -136,8 +118,6 @@ public class EditorController implements Pantalla, Initializable {
     private ImageView logo;
     @FXML
     private StackPane logoBox;
-    // Cómo funciona: JavaFX inyecta aquí el controlador del <fx:include fx:id="barra">;
-    // el nombre del campo es el fx:id más "Controller".
     @FXML
     private BarraNavegacionController barraController;
     @FXML
@@ -191,7 +171,7 @@ public class EditorController implements Pantalla, Initializable {
     @FXML
     private TableColumn<LineaFactura, String> colTotal;
     @FXML
-    private TableColumn<LineaFactura, TipoIva> colIva;
+    private TableColumn<LineaFactura, String> colIva;
     @FXML
     private Button btnGuardar;
     @FXML
@@ -207,36 +187,910 @@ public class EditorController implements Pantalla, Initializable {
     @FXML
     private Button btnRectificativa;
 
+    private boolean modificado;
+    private boolean cargando;
+    private Long facturaAbiertaId;
+    private Integer correlativoFijo;
+    private EstadoFactura estadoActual;
+    private Cliente clienteActual;
+    private int descuento;
+    private String numeroPropuesto = "";
+
+    private final ObservableList<LineaFactura> lineas = FXCollections.observableArrayList();
+    private final ObservableList<TipoIva> tiposIva = FXCollections.observableArrayList();
+    private final ObservableList<TipoRetencion> tiposRetencion = FXCollections.observableArrayList();
+    private TipoRetencion retencionActual;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        barraController.marcarActivo("editor");
         cargando = true;
-        try {
-            cargarLogo();
-            cargarSeries();
-            cargarFechaInicial();
-            cargarTiposIva();
-            cargarTiposRetencion();
-            configurarBusquedaCliente();
-            configurarDetalleCliente();
-            configurarTabla();
-            configurarMatriz();
-            configurarCambios();
-            actualizarVisibilidadReferencia(comboSerie.getValue());
-            actualizarBotonesEstado();
-            if (lineas.isEmpty()) {
-                lineas.add(nuevaLinea());
-            }
-            recalcularNumero();
-        } finally {
-            cargando = false;
-        }
-        actualizarResumen();
+        cargarLogo();
+        cargarSeries();
+        ponerFechaInicial();
+        cargarTiposIva();
+        cargarRetenciones();
+        prepararBuscadorCliente();
+        prepararTablaLineas();
+        prepararMatriz();
+        vigilarCambios();
+        empezarFacturaNueva();
+        cargando = false;
+        actualizarTotales();
     }
 
     @Override
     public void alMostrar() {
-        atajos();
+        ponerAtajos();
+    }
+
+    /** Cargamos la factura indicada en el editor, para verla, editarla o exportarla. */
+    public void cargarFactura(long facturaId) {
+        Factura factura = null;
+        try {
+            factura = Vista.getInstancia().getControlador().buscarFactura(facturaId);
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Factura", e.getMessage());
+            return;
+        }
+        if (factura == null) {
+            Dialogos.mostrarDialogoError("Factura", "No se pudo abrir la factura.");
+            return;
+        }
+        cargando = true;
+        try {
+            facturaAbiertaId = factura.getId();
+            correlativoFijo = factura.getCorrelativo();
+            estadoActual = factura.getEstado();
+            comboSerie.setValue(factura.getSerie());
+            actualizarVisibilidadReferencia(factura.getSerie());
+            fecha.setValue(factura.getFecha());
+            txtNumero.setText(factura.getNumero());
+            numeroPropuesto = txtNumero.getText();
+            Cliente cli = factura.getCliente();
+            clienteActual = cli;
+            cargarDatosCliente(cli);
+            lineas.setAll(factura.getLineas());
+            asegurarTiposIvaEnLista();
+            descuento = factura.getDescuento();
+            txtDescuento.setText(String.valueOf(descuento));
+            colocarRetencionDeFactura(factura);
+            txtObservaciones.setText(textoSinNulo(factura.getObservaciones()));
+            txtReferencia.setText(textoSinNulo(factura.getRectificaNumero()));
+            txtReferencia.setEditable(false);
+            txtFormaPago.setText(textoSinNulo(factura.getFormaPago()));
+            vencimiento.setValue(factura.getVencimiento());
+            txtRealizadaPor.setText(textoSinNulo(factura.getRealizadaPor()));
+            lblTitulo.setText("Factura " + factura.getNumero());
+            modificado = false;
+        } finally {
+            cargando = false;
+        }
+        aplicarEstado();
+        actualizarTotales();
+    }
+
+    @Override
+    public boolean puedeCerrar() {
+        if (!modificado) {
+            return true;
+        }
+        CambiosSinGuardar respuesta = Dialogos.mostrarDialogoCambiosSinGuardar();
+        if (respuesta == CambiosSinGuardar.GUARDAR) {
+            return guardar();
+        }
+        if (respuesta == CambiosSinGuardar.DESCARTAR) {
+            return true;
+        }
+        return false;
+    }
+
+    @FXML
+    private boolean guardar() {
+        Cliente cliente = comprobarCliente();
+        if (cliente == null) {
+            return false;
+        }
+        LocalDate dia = comprobarFecha();
+        if (dia == null) {
+            return false;
+        }
+        List<LineaFactura> guardables = lineasGuardables();
+        if (guardables.isEmpty()) {
+            Dialogos.mostrarDialogoError("Guardar", "La factura debe tener al menos una línea con contenido.");
+            return false;
+        }
+        if (facturaAbiertaId != null && estadoActual != EstadoFactura.EMITIDA) {
+            Dialogos.mostrarDialogoInformacion("Guardar", "Una factura anulada no se puede editar.");
+            return false;
+        }
+        if (!confirmarCliente(cliente)) {
+            return false;
+        }
+        boolean actualizarFicha = pedirActualizarFicha(cliente);
+        boolean hecho;
+        if (facturaAbiertaId == null) {
+            hecho = guardarNueva(cliente, dia, guardables);
+        } else {
+            hecho = guardarEmitida(cliente, dia, guardables);
+        }
+        if (!hecho) {
+            return false;
+        }
+        if (actualizarFicha) {
+            actualizarFichaCliente(cliente);
+        }
+        return true;
+    }
+
+    @FXML
+    private void nuevaFactura() {
+        Vista.getInstancia().mostrar("Editor.fxml");
+    }
+
+    @FXML
+    private void exportarPdf() {
+        if (facturaAbiertaId == null) {
+            Dialogos.mostrarDialogoInformacion("Exportar PDF", "Guarde primero la factura para poder exportarla.");
+            return;
+        }
+        Factura factura = null;
+        try {
+            factura = Vista.getInstancia().getControlador().buscarFactura(facturaAbiertaId);
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Exportar PDF", e.getMessage());
+            return;
+        }
+        if (factura == null) {
+            return;
+        }
+        Empresa empresa = null;
+        try {
+            empresa = Vista.getInstancia().getControlador().buscarEmpresa();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Exportar PDF", e.getMessage());
+            return;
+        }
+        Path sugerido = proponerDestinoPdf(factura);
+        FileChooser elegidor = new FileChooser();
+        elegidor.setTitle("Exportar PDF");
+        if (sugerido.getParent() != null && sugerido.getParent().toFile().exists()) {
+            elegidor.setInitialDirectory(sugerido.getParent().toFile());
+        }
+        elegidor.setInitialFileName(sugerido.getFileName().toString());
+        File elegido = elegidor.showSaveDialog(Vista.getInstancia().getVentana());
+        if (elegido == null) {
+            return;
+        }
+        Path ruta = elegido.toPath();
+        String color = colorPdfPreferido();
+        Vista.getInstancia().getVentana().getScene().setCursor(Cursor.WAIT);
+        try {
+            new ExportadorPdf().exportar(factura, empresa, ruta, color);
+            guardarPreferenciaCarpeta(ruta);
+            Dialogos.mostrarDialogoInformacion("Exportar PDF", "PDF generado en:\n" + ruta);
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Exportar PDF", e.getMessage());
+        } finally {
+            Vista.getInstancia().getVentana().getScene().setCursor(Cursor.DEFAULT);
+        }
+    }
+
+    @FXML
+    private void crearRectificativa() {
+        if (facturaAbiertaId == null) {
+            Dialogos.mostrarDialogoInformacion("Rectificativa", "Abra primero la factura a rectificar.");
+            return;
+        }
+        if (modificado) {
+            boolean seguir = Dialogos.mostrarDialogoConfirmacion("Cambios sin guardar",
+                    "Hay cambios sin guardar que se descartarán. ¿Continuar?");
+            if (!seguir) {
+                return;
+            }
+        }
+        try {
+            long nueva = Vista.getInstancia().getControlador().rectificarFactura(facturaAbiertaId,
+                    Vista.getInstancia().getControlador().fechaTrabajo());
+            cargarFactura(nueva);
+            Dialogos.mostrarDialogoInformacion("Rectificativa", "Rectificativa creada.");
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Rectificativa", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void anular() {
+        if (facturaAbiertaId == null) {
+            return;
+        }
+        if (modificado) {
+            boolean seguir = Dialogos.mostrarDialogoConfirmacion("Cambios sin guardar",
+                    "Hay cambios sin guardar que se descartarán. ¿Continuar?");
+            if (!seguir) {
+                return;
+            }
+        }
+        boolean confirmar = Dialogos.mostrarDialogoConfirmacion("Anular factura", "¿Anular la factura?");
+        if (!confirmar) {
+            return;
+        }
+        try {
+            Vista.getInstancia().getControlador().anularFactura(facturaAbiertaId);
+            Dialogos.mostrarDialogoInformacion("Anular", "Factura anulada.");
+            cargarFactura(facturaAbiertaId);
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Anular", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void restaurar() {
+        if (facturaAbiertaId == null) {
+            return;
+        }
+        boolean confirmar = Dialogos.mostrarDialogoConfirmacion("Restaurar factura",
+                "¿Restaurar la factura a estado Emitida?");
+        if (!confirmar) {
+            return;
+        }
+        try {
+            Vista.getInstancia().getControlador().restaurarFactura(facturaAbiertaId);
+            Dialogos.mostrarDialogoInformacion("Restaurar", "Factura restaurada.");
+            cargarFactura(facturaAbiertaId);
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Restaurar", e.getMessage());
+        }
+    }
+
+    @FXML
+    private void volver() {
+        Vista.getInstancia().mostrar("MenuPrincipal.fxml");
+    }
+
+    @FXML
+    private void anadirLinea() {
+        LineaFactura nueva = nuevaLinea();
+        if (nueva == null) {
+            return;
+        }
+        lineas.add(nueva);
+        tablaLineas.refresh();
+        actualizarTotales();
+        cambiado();
+        int fila = lineas.size() - 1;
+        // La tabla termina de insertar la fila después del pulso actual; abrimos el editor en el siguiente.
+        Platform.runLater(() -> editarCelda(fila, colCantidad));
+    }
+
+    @FXML
+    private void eliminarLinea() {
+        LineaFactura elegida = tablaLineas.getSelectionModel().getSelectedItem();
+        if (elegida == null) {
+            return;
+        }
+        lineas.remove(elegida);
+        if (lineas.isEmpty()) {
+            LineaFactura nueva = nuevaLinea();
+            if (nueva != null) {
+                lineas.add(nueva);
+            }
+        }
+        tablaLineas.refresh();
+        actualizarTotales();
+        cambiado();
+    }
+
+    private Cliente comprobarCliente() {
+        String primero = marcarCamposMalos();
+        if (todosVacios()) {
+            Dialogos.mostrarDialogoError("Datos del cliente", "Indique los datos del cliente.");
+            return null;
+        }
+        if (primero != null) {
+            Dialogos.mostrarDialogoError("Datos del cliente", primero);
+            return null;
+        }
+        try {
+            return clienteDeFormulario();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
+            return null;
+        }
+    }
+
+    private LocalDate comprobarFecha() {
+        LocalDate dia = fecha.getValue();
+        if (dia == null) {
+            Dialogos.mostrarDialogoError("Guardar", "Indique la fecha de la factura.");
+            return null;
+        }
+        return dia;
+    }
+
+    /**
+     * Confirmamos el cliente antes de guardar: si su NIF no está en la lista,
+     * avisamos de que se guardará junto con la factura. Si se cancela, no se
+     * guarda nada y el editor sigue como estaba.
+     */
+    private boolean confirmarCliente(Cliente cliente) {
+        if (cliente.getId() != null) {
+            return true;
+        }
+        Cliente existente = null;
+        try {
+            existente = Vista.getInstancia().getControlador().buscarClientePorNif(cliente.getNif());
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
+            return false;
+        }
+        if (existente != null) {
+            cliente.setId(existente.getId());
+            return true;
+        }
+        boolean aceptar = Dialogos.mostrarDialogoConfirmacion("Cliente nuevo",
+                String.format("El cliente %s (%s) no está en tu lista.%n%nSe guardará en ella junto con la factura.",
+                        cliente.getNombre(), cliente.getNif()));
+        return aceptar;
+    }
+
+    /**
+     * Preguntamos si actualizamos su ficha, solo cuando el cliente es el mismo
+     * que elegimos y hemos tocado algún dato. La factura se guarda con los
+     * datos nuevos en cualquier caso.
+     */
+    private boolean pedirActualizarFicha(Cliente cliente) {
+        if (cliente.getId() == null) {
+            return false;
+        }
+        if (clienteActual == null) {
+            return false;
+        }
+        if (!cliente.getId().equals(clienteActual.getId())) {
+            return false;
+        }
+        if (cliente.tieneLosMismosDatos(clienteActual)) {
+            return false;
+        }
+        return Dialogos.mostrarDialogoConfirmacion("Datos del cliente",
+                "Has cambiado los datos de «" + clienteActual.getNombre() + "» en esta factura.\n\n"
+                        + "¿Quieres guardar también esos cambios en su ficha de cliente?");
+    }
+
+    private boolean guardarNueva(Cliente cliente, LocalDate dia, List<LineaFactura> guardables) {
+        Serie serie = comboSerie.getValue();
+        if (serie == null) {
+            Dialogos.mostrarDialogoError("Guardar", "Seleccione la serie.");
+            return false;
+        }
+        Integer libre = numeroLibre(serie, dia);
+        String propuesto = txtNumero.getText().trim();
+        boolean esPropuesto = propuesto.equals(numeroPropuesto);
+        if (libre != null && esPropuesto) {
+            String textoLibre = Vista.getInstancia().getControlador().formarNumero(serie, libre, dia);
+            boolean usar = Dialogos.mostrarDialogoNumeroLibre(textoLibre, propuesto);
+            if (usar) {
+                txtNumero.setText(textoLibre);
+            }
+        }
+        Integer correlativo = Vista.getInstancia().getControlador().parseCorrelativo(serie, txtNumero.getText());
+        if (correlativo == null) {
+            Dialogos.mostrarDialogoError("Guardar", String.format("El número no se ajusta al formato de la serie %s (p. ej. %s-1).", serie.getCodigo(), serie.getCodigo()));
+            return false;
+        }
+        try {
+            Factura nueva = new Factura(serie, dia, cliente);
+            nueva.setCorrelativo(correlativo);
+            nueva.setDescuento(descuento);
+            nueva.setObservaciones(txtObservaciones.getText());
+            nueva.setFormaPago(txtFormaPago.getText().trim());
+            nueva.setVencimiento(vencimiento.getValue());
+            nueva.setRealizadaPor(txtRealizadaPor.getText().trim());
+            nueva.setRetencion(retencionActual);
+            nueva.setLineas(guardables);
+            long id = Vista.getInstancia().getControlador().altaFactura(nueva);
+            guardarSeriePreferida(serie);
+            cargarFactura(id);
+            Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
+            return true;
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Guardar", e.getMessage());
+            return false;
+        }
+    }
+
+    private boolean guardarEmitida(Cliente cliente, LocalDate dia, List<LineaFactura> guardables) {
+        Factura factura = null;
+        try {
+            factura = Vista.getInstancia().getControlador().buscarFactura(facturaAbiertaId);
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Guardar", e.getMessage());
+            return false;
+        }
+        if (factura == null) {
+            Dialogos.mostrarDialogoError("Guardar", "No se ha encontrado la factura.");
+            return false;
+        }
+        try {
+            factura.setFecha(dia);
+            factura.setCliente(cliente);
+            factura.setDescuento(descuento);
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Guardar", e.getMessage());
+            return false;
+        }
+        factura.setObservaciones(txtObservaciones.getText());
+        factura.setFormaPago(txtFormaPago.getText().trim());
+        factura.setVencimiento(vencimiento.getValue());
+        factura.setRealizadaPor(txtRealizadaPor.getText().trim());
+        factura.setRetencion(retencionActual);
+        factura.setLineas(guardables);
+        boolean confirmar = Dialogos.mostrarDialogoConfirmacion("Guardar factura",
+                String.format("¿Guardar los cambios de la factura %s?%n%nLa factura ya emitida se sobrescribirá.",
+                        factura.getNumero()));
+        if (!confirmar) {
+            return false;
+        }
+        try {
+            Vista.getInstancia().getControlador().modificarFactura(factura);
+            cargarFactura(facturaAbiertaId);
+            Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
+            return true;
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Guardar", e.getMessage());
+            return false;
+        }
+    }
+
+    private void actualizarFichaCliente(Cliente cliente) {
+        try {
+            Vista.getInstancia().getControlador().modificarCliente(cliente);
+            clienteActual = cliente;
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
+        }
+    }
+
+    private void prepararBuscadorCliente() {
+        comboCliente.setEditable(true);
+        comboCliente.setConverter(new ConversorCliente(comboCliente));
+        comboCliente.getEditor().textProperty().addListener((propiedad, anterior, nuevo) -> textoBuscador(nuevo));
+        comboCliente.setOnShowing(evento -> mostrarDesplegable());
+        comboCliente.setOnAction(evento -> elegirDeBuscador());
+    }
+
+    private void textoBuscador(String nuevo) {
+        if (cargando) {
+            return;
+        }
+        if (comboCliente.getValue() != null) {
+            String mostrado = comboCliente.getValue().toString();
+            if (mostrado != null && mostrado.equals(nuevo)) {
+                return;
+            }
+        }
+        String texto = "";
+        if (nuevo != null) {
+            texto = nuevo.trim();
+        }
+        if (texto.isEmpty()) {
+            comboCliente.getItems().clear();
+            return;
+        }
+        buscarClientes(texto);
+    }
+
+    private void buscarClientes(String texto) {
+        try {
+            comboCliente.getItems().setAll(
+                    Vista.getInstancia().getControlador().listadoClientes(texto, true));
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Cliente", e.getMessage());
+        }
+    }
+
+    private void mostrarDesplegable() {
+        if (cargando) {
+            return;
+        }
+        try {
+            String texto = comboCliente.getEditor().getText();
+            if (texto == null || texto.isBlank()) {
+                comboCliente.getItems().setAll(
+                        Vista.getInstancia().getControlador().listadoClientes(true));
+            } else {
+                comboCliente.getItems().setAll(
+                        Vista.getInstancia().getControlador().listadoClientes(texto.trim(), true));
+            }
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Cliente", e.getMessage());
+        }
+    }
+
+    private void elegirDeBuscador() {
+        if (cargando) {
+            return;
+        }
+        Cliente elegido = null;
+        Object valor = comboCliente.getValue();
+        if (valor instanceof Cliente) {
+            elegido = (Cliente) valor;
+        } else {
+            elegido = clientePorTexto(comboCliente.getEditor().getText());
+        }
+        if (elegido != null) {
+            cargarDatosCliente(elegido);
+            clienteActual = elegido;
+            cambiado();
+        }
+    }
+
+    private Cliente clientePorTexto(String texto) {
+        if (texto == null) {
+            return null;
+        }
+        String limpio = texto.trim();
+        if (limpio.isEmpty()) {
+            return null;
+        }
+        for (Cliente cliente : comboCliente.getItems()) {
+            if (cliente.getNombre() != null && cliente.getNombre().equalsIgnoreCase(limpio)) {
+                return cliente;
+            }
+            if (cliente.getNif() != null && cliente.getNif().equalsIgnoreCase(limpio)) {
+                return cliente;
+            }
+        }
+        return null;
+    }
+
+    private void cargarDatosCliente(Cliente cliente) {
+        clienteActual = cliente;
+        if (cliente == null) {
+            cliNombre.setText("");
+            cliNif.setText("");
+            cliDireccion.setText("");
+            cliCp.setText("");
+            cliLocalidad.setText("");
+            cliProvincia.setText("");
+            cliEmail.setText("");
+        } else {
+            cliNombre.setText(textoSinNulo(cliente.getNombre()));
+            cliNif.setText(textoSinNulo(cliente.getNif()));
+            cliDireccion.setText(textoSinNulo(cliente.getDireccion()));
+            cliCp.setText(textoSinNulo(cliente.getCp()));
+            cliLocalidad.setText(textoSinNulo(cliente.getLocalidad()));
+            cliProvincia.setText(textoSinNulo(cliente.getProvincia()));
+            cliEmail.setText(textoSinNulo(cliente.getEmail()));
+        }
+        quitarMarcas();
+    }
+
+    private void quitarMarcas() {
+        cliNombre.getStyleClass().remove("campo-error");
+        cliNif.getStyleClass().remove("campo-error");
+        cliDireccion.getStyleClass().remove("campo-error");
+        cliCp.getStyleClass().remove("campo-error");
+        cliLocalidad.getStyleClass().remove("campo-error");
+        cliProvincia.getStyleClass().remove("campo-error");
+        cliEmail.getStyleClass().remove("campo-error");
+    }
+
+    /**
+     * Marcamos en rojo todos los campos incorrectos y devolvemos el mensaje del
+     * primero, o null si está todo bien.
+     */
+    private String marcarCamposMalos() {
+        quitarMarcas();
+        String primero = null;
+        primero = revisarCampo(cliNombre, Cliente.errorNombre(cliNombre.getText().trim()), primero);
+        primero = revisarCampo(cliNif, Cliente.errorNif(cliNif.getText().trim()), primero);
+        primero = revisarCampo(cliDireccion, Cliente.errorDireccion(cliDireccion.getText().trim()), primero);
+        primero = revisarCampo(cliCp, Cliente.errorCp(cliCp.getText().trim()), primero);
+        primero = revisarCampo(cliLocalidad, Cliente.errorLocalidad(cliLocalidad.getText().trim()), primero);
+        primero = revisarCampo(cliProvincia, Cliente.errorProvincia(cliProvincia.getText().trim()), primero);
+        primero = revisarCampo(cliEmail, Cliente.errorEmail(cliEmail.getText().trim()), primero);
+        return primero;
+    }
+
+    private String revisarCampo(TextField campo, String error, String primero) {
+        if (error == null) {
+            return primero;
+        }
+        if (!campo.getStyleClass().contains("campo-error")) {
+            campo.getStyleClass().add("campo-error");
+        }
+        if (primero == null) {
+            return error;
+        }
+        return primero;
+    }
+
+    private boolean todosVacios() {
+        String todo = cliNombre.getText().trim() + cliNif.getText().trim() + cliDireccion.getText().trim()
+                + cliCp.getText().trim() + cliLocalidad.getText().trim() + cliProvincia.getText().trim()
+                + cliEmail.getText().trim();
+        return todo.isBlank();
+    }
+
+    /**
+     * El NIF identifica al cliente de la factura: si es el mismo que el del
+     * cliente elegido, conservamos su id; si no, se queda sin id y al guardar
+     * veremos si ya está en la lista o es nuevo.
+     */
+    private Cliente clienteDeFormulario() throws Exception {
+        String nombre = cliNombre.getText().trim();
+        String nif = cliNif.getText().trim();
+        String direccion = cliDireccion.getText().trim();
+        String cp = cliCp.getText().trim();
+        String localidad = cliLocalidad.getText().trim();
+        String provincia = cliProvincia.getText().trim();
+        String email = cliEmail.getText().trim();
+        Cliente cliente = new Cliente(nombre, nif, direccion, cp, localidad, provincia);
+        cliente.setEmail(email);
+        if (clienteActual != null && cliente.getNif().equals(clienteActual.getNif())) {
+            cliente.setId(clienteActual.getId());
+            cliente.setActivo(clienteActual.isActivo());
+        }
+        return cliente;
+    }
+
+    private void recalcularNumero() {
+        Serie serie = comboSerie.getValue();
+        LocalDate dia = fecha.getValue();
+        if (serie == null) {
+            return;
+        }
+        if (facturaAbiertaId != null && correlativoFijo != null && dia != null) {
+            txtNumero.setText(Vista.getInstancia().getControlador().formarNumero(serie, correlativoFijo, dia));
+        } else if (dia != null) {
+            try {
+                int correlativo = Vista.getInstancia().getControlador().siguienteCorrelativo(serie, dia);
+                txtNumero.setText(Vista.getInstancia().getControlador().formarNumero(serie, correlativo, dia));
+            } catch (Exception e) {
+                txtNumero.setText("");
+            }
+        }
+        numeroPropuesto = txtNumero.getText();
+    }
+
+    private Integer numeroLibre(Serie serie, LocalDate dia) {
+        List<Integer> huecos = null;
+        try {
+            huecos = Vista.getInstancia().getControlador().huecosDeSerie(serie, dia);
+        } catch (Exception e) {
+            return null;
+        }
+        if (huecos == null || huecos.isEmpty()) {
+            return null;
+        }
+        return huecos.get(0);
+    }
+
+    private void guardarSeriePreferida(Serie serie) {
+        try {
+            if (serie != null) {
+                Vista.getInstancia().getControlador().guardarPreferencia(PREF_SERIE, serie.getCodigo());
+            }
+        } catch (Exception e) {
+            return;
+        }
+    }
+
+    private void actualizarVisibilidadReferencia(Serie serie) {
+        boolean rectificativa = serie != null && serie.isEsRectificativa();
+        lblReferencia.setVisible(rectificativa);
+        lblReferencia.setManaged(rectificativa);
+        txtReferencia.setVisible(rectificativa);
+        txtReferencia.setManaged(rectificativa);
+    }
+
+    private void prepararTablaLineas() {
+        tablaLineas.setEditable(true);
+        tablaLineas.setItems(lineas);
+        tablaLineas.setPlaceholder(new Label("Sin líneas."));
+        colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidadTexto"));
+        colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
+        colPrecio.setCellValueFactory(new PropertyValueFactory<>("precioUnitarioTexto"));
+        colTotal.setCellValueFactory(new PropertyValueFactory<>("totalBaseTexto"));
+        colIva.setCellValueFactory(new PropertyValueFactory<>("ivaNombre"));
+        colCantidad.setCellFactory(columna -> new CeldaCantidad());
+        colDescripcion.setCellFactory(columna -> new CeldaDescripcion());
+        colPrecio.setCellFactory(columna -> new CeldaPrecio());
+        colTotal.setCellFactory(columna -> new CeldaTotal());
+        colIva.setCellFactory(columna -> new CeldaIva());
+        tablaLineas.setOnKeyPressed(evento -> teclaEnTabla(evento));
+    }
+
+    private LineaFactura nuevaLinea() {
+        LineaFactura hecha = null;
+        try {
+            hecha = new LineaFactura(1, BigDecimal.ZERO);
+        } catch (Exception e) {
+            return null;
+        }
+        TipoIva defecto = tipoIvaDefault();
+        if (defecto != null) {
+            hecha.setTipoIva(defecto);
+        }
+        return hecha;
+    }
+
+    private TipoIva tipoIvaDefault() {
+        for (TipoIva tipo : tiposIva) {
+            if (tipo.getPorcentaje() != null && tipo.getPorcentaje() == 21) {
+                return tipo;
+            }
+        }
+        for (TipoIva tipo : tiposIva) {
+            if (tipo.getPorcentaje() != null) {
+                return tipo;
+            }
+        }
+        if (tiposIva.isEmpty()) {
+            return null;
+        }
+        return tiposIva.get(0);
+    }
+
+    private TipoIva tipoIvaDe(LineaFactura linea) {
+        if (linea == null) {
+            return null;
+        }
+        if (linea.getTipoIvaId() != null) {
+            for (TipoIva tipo : tiposIva) {
+                if (tipo.getId() != null && tipo.getId().equals(linea.getTipoIvaId())) {
+                    return tipo;
+                }
+            }
+        }
+        if (linea.getIvaPorcentaje() != null) {
+            for (TipoIva tipo : tiposIva) {
+                if (linea.getIvaPorcentaje().equals(tipo.getPorcentaje())) {
+                    return tipo;
+                }
+            }
+        }
+        return null;
+    }
+
+    private LineaFactura filaDe(TableCell<LineaFactura, ?> celda) {
+        TableRow<LineaFactura> fila = celda.getTableRow();
+        if (fila == null) {
+            return null;
+        }
+        return fila.getItem();
+    }
+
+    private void avanzarDesde(TablePosition posicion) {
+        if (posicion == null) {
+            return;
+        }
+        int fila = posicion.getRow();
+        int columna = posicion.getColumn();
+        if (fila < 0 || fila >= lineas.size()) {
+            return;
+        }
+        int destinoFila = fila;
+        int destinoColumna = columna + 1;
+        if (destinoColumna > 3) {
+            destinoColumna = 0;
+            destinoFila = fila + 1;
+            if (destinoFila >= lineas.size()) {
+                if (lineas.get(fila).tieneContenido()) {
+                    LineaFactura nueva = nuevaLinea();
+                    if (nueva == null) {
+                        return;
+                    }
+                    lineas.add(nueva);
+                    destinoFila = lineas.size() - 1;
+                } else {
+                    destinoFila = fila;
+                }
+            }
+        }
+        int filaFinal = destinoFila;
+        TableColumn<LineaFactura, ?> columnaFinal = tablaLineas.getColumns().get(destinoColumna);
+        // La tabla termina de cerrar la celda anterior después de commitEdit,
+        // así que abrimos la siguiente en el siguiente pulso.
+        Platform.runLater(() -> editarCelda(filaFinal, columnaFinal));
+    }
+
+    private void editarCelda(int fila, TableColumn<LineaFactura, ?> columna) {
+        tablaLineas.scrollTo(fila);
+        tablaLineas.edit(fila, columna);
+    }
+
+    private void teclaEnTabla(KeyEvent evento) {
+        if (evento.getCode() == KeyCode.DELETE) {
+            eliminarLinea();
+            evento.consume();
+            return;
+        }
+        if (evento.getCode() == KeyCode.ENTER) {
+            TablePosition<LineaFactura, ?> celda = tablaLineas.getFocusModel().getFocusedCell();
+            if (celda != null && celda.getRow() >= 0 && tablaLineas.getEditingCell() == null) {
+                TableColumn<LineaFactura, ?> columna = celda.getTableColumn();
+                if (columna != null && columna.isEditable()) {
+                    tablaLineas.edit(celda.getRow(), columna);
+                }
+            }
+            evento.consume();
+        }
+    }
+
+    private List<LineaFactura> lineasGuardables() {
+        List<LineaFactura> guardables = new ArrayList<>();
+        for (LineaFactura linea : lineas) {
+            if (linea.tieneContenido()) {
+                guardables.add(linea);
+            }
+        }
+        return guardables;
+    }
+
+    private void prepararMatriz() {
+        matrizIva.setPlaceholder(new Label("Sin desglose."));
+        matrizIva.setFocusTraversable(false);
+        matrizIva.setMouseTransparent(true);
+        matrizIva.setFixedCellSize(22);
+        colMatrizIva.setCellValueFactory(new PropertyValueFactory<>("etiqueta"));
+        colMatrizBase.setCellValueFactory(new PropertyValueFactory<>("baseTexto"));
+        colMatrizCuota.setCellValueFactory(new PropertyValueFactory<>("cuotaTexto"));
+    }
+
+    private void actualizarTotales() {
+        ResumenFactura resumen = Calculos.resumen(lineas, descuento, retencionActual);
+        boolean conDescuento = resumen.getImporteDescuento() != null
+                && resumen.getImporteDescuento().compareTo(BigDecimal.ZERO) > 0;
+        filaBaseBruta.setVisible(conDescuento);
+        filaBaseBruta.setManaged(conDescuento);
+        filaDescuento.setVisible(conDescuento);
+        filaDescuento.setManaged(conDescuento);
+        ponerPrimera(filaBaseBruta, conDescuento);
+        ponerPrimera(filaBaseImponible, !conDescuento);
+        if (conDescuento) {
+            lblBaseBruta.setText(Formatos.moneda(resumen.getBaseBruta()));
+            lblDescuentoNombre.setText("Descuento " + descuento + "%");
+            lblDescuentoImporte.setText("-" + Formatos.moneda(resumen.getImporteDescuento()));
+        }
+        lblBaseTotal.setText(Formatos.moneda(resumen.getBaseTotal()));
+        lblIvaTotal.setText(Formatos.moneda(resumen.getIvaTotal()));
+        boolean conSuplidos = resumen.getTotalSuplidos() != null && resumen.getTotalSuplidos().compareTo(BigDecimal.ZERO) > 0;
+        filaSuplidos.setVisible(conSuplidos);
+        filaSuplidos.setManaged(conSuplidos);
+        if (conSuplidos) {
+            lblSuplidos.setText(Formatos.moneda(resumen.getTotalSuplidos()));
+        }
+        boolean conRetencion = resumen.getImporteRetencion() != null
+                && resumen.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0;
+        filaRetencion.setVisible(conRetencion);
+        filaRetencion.setManaged(conRetencion);
+        if (conRetencion) {
+            lblRetencionNombre.setText(nombreRetencion(resumen));
+            lblRetencionImporte.setText("-" + Formatos.moneda(resumen.getImporteRetencion()));
+        }
+        lblTotal.setText(Formatos.moneda(resumen.getTotal()));
+        ObservableList<GrupoIva> filas = FXCollections.observableArrayList(resumen.getGrupos());
+        filas.add(resumen.getFilaTotales());
+        matrizIva.setItems(filas);
+        matrizIva.setPrefHeight(26 + 22 * filas.size() + 2);
+    }
+
+    private String nombreRetencion(ResumenFactura resumen) {
+        if (resumen.getNombreRetencion() != null && !resumen.getNombreRetencion().isBlank()) {
+            return resumen.getNombreRetencion();
+        }
+        return "Retención " + resumen.getPorcentajeRetencion() + "%";
+    }
+
+    private void ponerPrimera(HBox fila, boolean primera) {
+        if (primera) {
+            if (!fila.getStyleClass().contains("total-fila-primera")) {
+                fila.getStyleClass().add("total-fila-primera");
+            }
+            return;
+        }
+        fila.getStyleClass().remove("total-fila-primera");
     }
 
     private void cargarLogo() {
@@ -247,134 +1101,74 @@ public class EditorController implements Pantalla, Initializable {
                 LogoMarco.limpiar(logoBox);
                 return;
             }
-            File f = new File(ruta);
-            if (!f.exists()) {
+            File visto = new File(ruta);
+            if (!visto.exists()) {
                 LogoMarco.limpiar(logoBox);
                 return;
             }
-            Image img = new Image(f.toURI().toString());
-            if (img.isError()) {
+            Image imagen = new Image(visto.toURI().toString());
+            if (imagen.isError()) {
                 LogoMarco.limpiar(logoBox);
                 return;
             }
-            logo.setImage(img);
+            logo.setImage(imagen);
             logo.setFitWidth(92);
             logo.setFitHeight(38);
             logo.setPreserveRatio(true);
-            LogoMarco.aplicar(logoBox, img);
-        } catch (Exception ignored) {
-        }
-    }
-
-    /** Cargamos la factura indicada en el editor, para verla, editarla o exportarla. */
-    public void cargarFactura(long facturaId) {
-        try {
-            Factura factura = Vista.getInstancia().getControlador().buscarFactura(facturaId);
-            if (factura == null) {
-                Dialogos.mostrarDialogoError("Factura", "No se pudo abrir la factura.");
-                return;
-            }
-            cargando = true;
-            try {
-                facturaAbiertaId = factura.getId();
-                correlativoFijo = factura.getCorrelativo();
-                estadoActual = factura.getEstado();
-
-                Serie serie = factura.getSerie();
-                comboSerie.setValue(serie);
-                comboSerie.setDisable(true);
-                actualizarVisibilidadReferencia(serie);
-                fecha.setValue(factura.getFecha());
-                txtNumero.setText(factura.getNumero());
-
-                Cliente cli = factura.getCliente();
-                comboCliente.setValue(cli);
-                cargarDatosCliente(cli);
-
-                lineas.setAll(factura.getLineas());
-                asegurarTiposIvaEnLista(lineas);
-                descuento = factura.getDescuento();
-                txtDescuento.setText(String.valueOf(descuento));
-                if (factura.getRetencion() == null) {
-                    asegurarRetencionEnLista(null, null, null);
-                    seleccionarRetencionPorId(null);
-                } else {
-                    asegurarRetencionEnLista(factura.getRetencion().getId(), factura.getRetencion().getNombre(),
-                            factura.getRetencion().getPorcentaje());
-                    seleccionarRetencionPorId(factura.getRetencion().getId());
-                }
-                txtObservaciones.setText(nz(factura.getObservaciones()));
-                txtReferencia.setText(nz(factura.getRectificaNumero()));
-                txtReferencia.setEditable(false);
-                txtFormaPago.setText(nz(factura.getFormaPago()));
-                vencimiento.setValue(factura.getVencimiento());
-                txtRealizadaPor.setText(nz(factura.getRealizadaPor()));
-
-                lblTitulo.setText("Factura " + factura.getNumero());
-                lblEstado.setVisible(estadoActual == EstadoFactura.ANULADA);
-                lblEstado.setManaged(estadoActual == EstadoFactura.ANULADA);
-                setEditable(estadoActual == EstadoFactura.EMITIDA);
-                actualizarBotonesEstado();
-                modificado = false;
-            } finally {
-                cargando = false;
-            }
-            actualizarResumen();
+            LogoMarco.aplicar(logoBox, imagen);
         } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Factura", "Error al abrir la factura: " + e.getMessage());
+            return;
         }
     }
-
-    @Override
-    public boolean puedeCerrar() {
-        if (!modificado) {
-            return true;
-        }
-        CambiosSinGuardar r = Dialogos.mostrarDialogoCambiosSinGuardar();
-        if (r == CambiosSinGuardar.GUARDAR) {
-            return guardar();
-        }
-        return r == CambiosSinGuardar.DESCARTAR;
-    }
-
-    // ------------------------------------------------------------------
-    // Carga inicial
-    // ------------------------------------------------------------------
 
     private void cargarSeries() {
+        List<Serie> series = null;
         try {
-            List<Serie> series = Vista.getInstancia().getControlador().listadoSeries();
-            comboSerie.getItems().setAll(series);
-            Serie inicial = null;
-            String ultima = Vista.getInstancia().getControlador().preferencia(PREV_SERIE);
-            if (ultima != null) {
-                for (Serie s : series) {
-                    if (ultima.equals(s.getCodigo())) {
-                        inicial = s;
-                        break;
-                    }
-                }
-            }
-            if (inicial == null) {
-                for (Serie s : series) {
-                    if (!s.isEsRectificativa()) {
-                        inicial = s;
-                        break;
-                    }
-                }
-            }
-            if (inicial == null && !series.isEmpty()) {
-                inicial = series.get(0);
-            }
-            comboSerie.setValue(inicial);
+            series = Vista.getInstancia().getControlador().listadoSeries();
         } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Factura", "No se pudieron cargar las series: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Factura", e.getMessage());
+            return;
         }
+        comboSerie.getItems().setAll(series);
+        Serie inicial = buscarSeriePreferida(series);
+        if (inicial == null) {
+            inicial = buscarSerieNormal(series);
+        }
+        if (inicial == null && !series.isEmpty()) {
+            inicial = series.get(0);
+        }
+        comboSerie.setValue(inicial);
     }
 
-    private void cargarFechaInicial() {
-        LocalDate fechaInicial = Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo();
-        fecha.setValue(fechaInicial);
+    private Serie buscarSeriePreferida(List<Serie> series) {
+        String ultima = "";
+        try {
+            ultima = Vista.getInstancia().getControlador().preferencia(PREF_SERIE);
+        } catch (Exception e) {
+            return null;
+        }
+        if (ultima == null) {
+            return null;
+        }
+        for (Serie serie : series) {
+            if (ultima.equals(serie.getCodigo())) {
+                return serie;
+            }
+        }
+        return null;
+    }
+
+    private Serie buscarSerieNormal(List<Serie> series) {
+        for (Serie serie : series) {
+            if (!serie.isEsRectificativa()) {
+                return serie;
+            }
+        }
+        return null;
+    }
+
+    private void ponerFechaInicial() {
+        fecha.setValue(Vista.getInstancia().getControlador().fechaTrabajo());
     }
 
     private void cargarTiposIva() {
@@ -385,765 +1179,242 @@ public class EditorController implements Pantalla, Initializable {
         }
     }
 
-    private void asegurarTiposIvaEnLista(ObservableList<LineaFactura> lineasCargadas) {
-        for (LineaFactura l : lineasCargadas) {
-            if (l.getTipoIvaId() == null) {
+    private void asegurarTiposIvaEnLista() {
+        for (LineaFactura linea : lineas) {
+            if (linea.getTipoIvaId() == null) {
                 continue;
             }
-            boolean yaEsta = false;
-            for (TipoIva t : tiposIva) {
-                if (t.getId() != null && t.getId().equals(l.getTipoIvaId())) {
-                    yaEsta = true;
-                    break;
-                }
-            }
-            if (yaEsta) {
+            if (tipoIvaEnLista(linea.getTipoIvaId())) {
                 continue;
             }
-            TipoIva existente = null;
-            try {
-                existente = Vista.getInstancia().getControlador().buscarTipoIva(l.getTipoIvaId());
-            } catch (Exception ignored) {
-            }
-            if (existente != null) {
-                tiposIva.add(existente);
-            } else {
-                try {
-                    String nombreIva = l.getIvaNombre();
-                    if (nombreIva == null || nombreIva.isBlank()) {
-                        nombreIva = "Tipo de IVA";
-                    }
-                    TipoIva snapshot = new TipoIva(nombreIva, l.getIvaPorcentaje(), l.isEsSuplido());
-                    snapshot.setId(l.getTipoIvaId());
-                    snapshot.setMotivoExencion(l.getIvaMotivoExencion());
-                    snapshot.setActivo(false);
-                    tiposIva.add(snapshot);
-                } catch (Exception ignored) {
-                }
-            }
+            traerTipoIva(linea);
         }
     }
 
-    private void cargarTiposRetencion() {
-        try {
-            List<TipoRetencion> activas = Vista.getInstancia().getControlador().listadoTiposRetencion(true);
-            TipoRetencion sin = new TipoRetencion("Sin retención", 0);
-            tiposRetencion.setAll(sin);
-            tiposRetencion.addAll(activas);
-            comboRetencion.setItems(tiposRetencion);
-            comboRetencion.setConverter(new StringConverter<>() {
-                @Override
-                public String toString(TipoRetencion t) {
-                    return t == null ? "" : t.toString();
-                }
-
-                @Override
-                public TipoRetencion fromString(String s) {
-                    return null;
-                }
-            });
-            comboRetencion.setValue(sin);
-        } catch (Exception e) {
-            tiposRetencion.clear();
-            try {
-                TipoRetencion sin = new TipoRetencion("Sin retención", 0);
-                tiposRetencion.add(sin);
-                comboRetencion.setItems(tiposRetencion);
-                comboRetencion.setValue(sin);
-            } catch (Exception ignorada) {
+    private boolean tipoIvaEnLista(Long id) {
+        for (TipoIva tipo : tiposIva) {
+            if (tipo.getId() != null && tipo.getId().equals(id)) {
+                return true;
             }
-        }
-    }
-
-    private void configurarBusquedaCliente() {
-        comboCliente.setEditable(true);
-        comboCliente.setConverter(new StringConverter<>() {
-            @Override
-            public String toString(Cliente c) {
-                return c == null ? "" : c.getNombreNif();
-            }
-
-            @Override
-            public Cliente fromString(String s) {
-                return clientePorTexto(s);
-            }
-        });
-        comboCliente.getEditor().textProperty().addListener((o, a, b) -> {
-            if (cargando) {
-                return;
-            }
-            if (comboCliente.getValue() instanceof Cliente) {
-                String display = comboCliente.getValue().toString();
-                if (display != null && display.equals(b)) {
-                    return;
-                }
-            }
-            String texto = b == null ? "" : b.trim();
-            if (texto.isEmpty()) {
-                comboCliente.getItems().clear();
-                return;
-            }
-            try {
-                comboCliente.getItems().setAll(Vista.getInstancia().getControlador().listadoClientes(texto, true));
-            } catch (Exception e) {
-                Dialogos.mostrarDialogoError("Cliente", "Error al buscar clientes: " + e.getMessage());
-            }
-        });
-        comboCliente.setOnShowing(e -> {
-            if (cargando) {
-                return;
-            }
-            try {
-                String texto = comboCliente.getEditor().getText();
-                if (texto == null || texto.isBlank()) {
-                    comboCliente.getItems().setAll(Vista.getInstancia().getControlador().listadoClientes(true));
-                } else {
-                    comboCliente.getItems().setAll(Vista.getInstancia().getControlador().listadoClientes(texto, true));
-                }
-            } catch (Exception ex) {
-                Dialogos.mostrarDialogoError("Cliente", "Error al cargar clientes: " + ex.getMessage());
-            }
-        });
-        comboCliente.setOnAction(e -> {
-            if (cargando) {
-                return;
-            }
-            Cliente c = comboCliente.getValue() instanceof Cliente cli
-                    ? cli
-                    : clientePorTexto(comboCliente.getEditor().getText());
-            if (c != null) {
-                cargarDatosCliente(c);
-                marcarModificado();
-            }
-        });
-    }
-
-    private Cliente clientePorTexto(String s) {
-        if (s == null) {
-            return null;
-        }
-        String texto = s.trim();
-        for (Cliente c : comboCliente.getItems()) {
-            if (c.getNombre().equalsIgnoreCase(texto)
-                    || (c.getNif() != null && c.getNif().equalsIgnoreCase(texto))) {
-                return c;
-            }
-        }
-        return null;
-    }
-
-    private void configurarDetalleCliente() {
-        for (TextField t : new TextField[]{cliNombre, cliNif, cliDireccion, cliCp, cliLocalidad, cliProvincia, cliEmail}) {
-            t.textProperty().addListener((o, a, b) -> {
-                if (!cargando) {
-                    marcarModificado();
-                }
-            });
-        }
-    }
-
-    private void marcarCampo(TextField campo, String error) {
-        if (error != null) {
-            campo.setStyle("-fx-border-color: #d32f2f; -fx-border-width: 2;");
-        } else {
-            campo.setStyle("");
-        }
-    }
-
-    private void marcarCamposCliente() {
-        marcarCampo(cliNombre, ValidacionCliente.errorNombre(cliNombre.getText()));
-        marcarCampo(cliNif, ValidacionCliente.errorNif(cliNif.getText()));
-        marcarCampo(cliDireccion, ValidacionCliente.errorDireccion(cliDireccion.getText()));
-        marcarCampo(cliCp, ValidacionCliente.errorCodigoPostal(cliCp.getText()));
-        marcarCampo(cliLocalidad, ValidacionCliente.errorLocalidad(cliLocalidad.getText()));
-        marcarCampo(cliProvincia, ValidacionCliente.errorProvincia(cliProvincia.getText()));
-        marcarCampo(cliEmail, ValidacionCliente.errorEmail(cliEmail.getText()));
-    }
-
-    private boolean avisarPrimerErrorCliente() {
-        String error = ValidacionCliente.errorNombre(cliNombre.getText());
-        if (error != null) {
-            Dialogos.mostrarDialogoError("Datos del cliente", error);
-            return true;
-        }
-        error = ValidacionCliente.errorNif(cliNif.getText());
-        if (error != null) {
-            Dialogos.mostrarDialogoError("NIF no válido", error);
-            return true;
-        }
-        error = ValidacionCliente.errorDireccion(cliDireccion.getText());
-        if (error != null) {
-            Dialogos.mostrarDialogoError("Datos del cliente", error);
-            return true;
-        }
-        error = ValidacionCliente.errorCodigoPostal(cliCp.getText());
-        if (error != null) {
-            Dialogos.mostrarDialogoError("Código postal no válido", error);
-            return true;
-        }
-        error = ValidacionCliente.errorLocalidad(cliLocalidad.getText());
-        if (error != null) {
-            Dialogos.mostrarDialogoError("Datos del cliente", error);
-            return true;
-        }
-        error = ValidacionCliente.errorProvincia(cliProvincia.getText());
-        if (error != null) {
-            Dialogos.mostrarDialogoError("Datos del cliente", error);
-            return true;
-        }
-        error = ValidacionCliente.errorEmail(cliEmail.getText());
-        if (error != null) {
-            Dialogos.mostrarDialogoError("Correo electrónico no válido", error);
-            return true;
         }
         return false;
     }
 
-    private void configurarCambios() {
-        comboSerie.valueProperty().addListener((o, a, b) -> {
-            if (cargando) {
-                return;
-            }
-            guardarSeriePreferida(b);
-            actualizarVisibilidadReferencia(b);
-            recalcularNumero();
-            marcarModificado();
-        });
-        fecha.valueProperty().addListener((o, a, b) -> {
-            if (cargando) {
-                return;
-            }
-            recalcularNumero();
-            marcarModificado();
-        });
-        txtNumero.textProperty().addListener((o, a, b) -> {
-            if (cargando) {
-                return;
-            }
-            marcarModificado();
-        });
-        txtDescuento.textProperty().addListener((o, a, b) -> {
-            if (cargando) {
-                return;
-            }
-            Integer v = parseEntero(b);
-            if (v == null || v < 0 || v > 100) {
-                return;
-            }
-            descuento = v;
-            actualizarResumen();
-            marcarModificado();
-        });
-        comboRetencion.valueProperty().addListener((o, a, b) -> {
-            if (cargando) {
-                return;
-            }
-            retencionActual = (b == null || b.getId() == null) ? null : b;
-            actualizarResumen();
-            marcarModificado();
-        });
-        txtObservaciones.textProperty().addListener((o, a, b) -> {
-            if (!cargando) {
-                marcarModificado();
-            }
-            int parrafos = Math.max(1, txtObservaciones.getParagraphs().size());
-            txtObservaciones.setPrefRowCount(Math.min(3, parrafos));
-        });
-        txtFormaPago.textProperty().addListener((o, a, b) -> {
-            if (!cargando) {
-                marcarModificado();
-            }
-        });
-        vencimiento.valueProperty().addListener((o, a, b) -> {
-            if (!cargando) {
-                marcarModificado();
-            }
-        });
-        txtRealizadaPor.textProperty().addListener((o, a, b) -> {
-            if (!cargando) {
-                marcarModificado();
-            }
-        });
-    }
-
-    // ------------------------------------------------------------------
-    // Tabla de lineas
-    // ------------------------------------------------------------------
-
-    private void configurarTabla() {
-        tablaLineas.setEditable(true);
-        tablaLineas.setItems(lineas);
-        tablaLineas.setPlaceholder(new Label("Sin líneas."));
-
-        colCantidad.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(mostrarCantidad(c.getValue())));
-        colDescripcion.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(nz(c.getValue().getDescripcion())));
-        colPrecio.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getPrecioUnitario())));
-        colTotal.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getTotalBase())));
-        colIva.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(tipoIvaDe(c.getValue())));
-
-        colCantidad.setCellFactory(c -> new CeldaCantidad());
-        colDescripcion.setCellFactory(c -> new CeldaDescripcion());
-        colPrecio.setCellFactory(c -> new CeldaPrecio());
-        colTotal.setCellFactory(c -> new CeldaTotal());
-        colIva.setCellFactory(c -> new CeldaIva());
-
-        tablaLineas.setOnKeyPressed(e -> {
-            if (e.getCode() == KeyCode.DELETE) {
-                eliminarLinea();
-                e.consume();
-            } else if (e.getCode() == KeyCode.ENTER) {
-                TablePosition<LineaFactura, ?> pos = tablaLineas.getFocusModel().getFocusedCell();
-                if (pos != null && pos.getRow() >= 0 && tablaLineas.getEditingCell() == null) {
-                    TableColumn<LineaFactura, ?> col = pos.getTableColumn();
-                    if (col != null && col.isEditable()) {
-                        tablaLineas.edit(pos.getRow(), col);
-                    }
-                }
-                e.consume();
-            }
-        });
-
-        if (DIAGNOSTICO_FOCO && Vista.getInstancia().getVentana() != null
-                && Vista.getInstancia().getVentana().getScene() != null) {
-            Vista.getInstancia().getVentana().getScene().focusOwnerProperty().addListener((o, anterior, actual) ->
-                    trazarFoco("Scene.focusOwner", actual));
+    private void traerTipoIva(LineaFactura linea) {
+        TipoIva encontrado = null;
+        try {
+            encontrado = Vista.getInstancia().getControlador().buscarTipoIva(linea.getTipoIvaId());
+        } catch (Exception e) {
+            encontrado = null;
         }
-    }
-
-    private void configurarMatriz() {
-        matrizIva.setPlaceholder(new Label("Sin desglose."));
-        matrizIva.setFocusTraversable(false);
-        matrizIva.setMouseTransparent(true);
-        matrizIva.setFixedCellSize(22);
-        colMatrizIva.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(etiquetaMatriz(c.getValue())));
-        colMatrizBase.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getBase())));
-        colMatrizCuota.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(Formatos.moneda(c.getValue().getCuota())));
-    }
-
-    private static String etiquetaMatriz(ResumenFactura.IvaGrupo g) {
-        if ("Totales".equals(g.getNombre())) {
-            return "Totales";
-        }
-        if (g.isExento()) {
-            String motivo = g.getMotivoExencion();
-            return "Exento" + (motivo != null && !motivo.isBlank() ? " (" + motivo + ")" : "");
-        }
-        String nombre = g.getNombre() != null ? g.getNombre().trim() : "";
-        if (nombre.endsWith("%")) {
-            return g.getNombre();
-        }
-        return (nombre.isEmpty() ? "" : nombre + " ") + g.getPorcentaje() + "%";
-    }
-
-    private void trazarFoco(String paso, Object foco) {
-        if (!DIAGNOSTICO_FOCO) {
+        if (encontrado != null) {
+            tiposIva.add(encontrado);
             return;
         }
-        TablePosition<LineaFactura, ?> edicion = tablaLineas == null ? null : tablaLineas.getEditingCell();
-        String celda = edicion == null ? "sin edición"
-                : "fila=" + edicion.getRow() + ", col=" + edicion.getColumn();
-        System.out.println("[FOCO] " + paso + " | foco="
-                + (foco == null ? "null" : foco.getClass().getSimpleName())
-                + " | " + celda);
-    }
-
-    private String mostrarCantidad(LineaFactura l) {
-        return String.valueOf(l == null ? 1 : l.getCantidad());
-    }
-
-    private void refrescarLineas() {
-        tablaLineas.refresh();
-    }
-
-    private LineaFactura nuevaLinea() {
-        LineaFactura l = new LineaFactura();
-        l.setCantidad(1);
-        TipoIva t = tipoIvaDefault();
-        if (t != null) {
-            l.setTipoIvaId(t.getId());
-            l.setIvaNombre(t.getNombre());
-            l.setIvaPorcentaje(t.getPorcentaje());
-            l.setIvaMotivoExencion(t.getMotivoExencion());
-            l.setEsSuplido(t.isEsSuplido());
-        }
-        return l;
-    }
-
-    private TipoIva tipoIvaDefault() {
-        for (TipoIva t : tiposIva) {
-            if (t.getPorcentaje() != null && t.getPorcentaje() == 21) {
-                return t;
+        try {
+            String nombre = linea.getIvaNombre();
+            if (nombre == null || nombre.isBlank()) {
+                nombre = "Tipo de IVA";
             }
-        }
-        for (TipoIva t : tiposIva) {
-            if (t.getPorcentaje() != null) {
-                return t;
-            }
-        }
-        return tiposIva.isEmpty() ? null : tiposIva.get(0);
-    }
-
-    private TipoIva tipoIvaDe(LineaFactura l) {
-        if (l == null) {
-            return null;
-        }
-        if (l.getTipoIvaId() != null) {
-            for (TipoIva t : tiposIva) {
-                if (t.getId().equals(l.getTipoIvaId())) {
-                    return t;
-                }
-            }
-        }
-        if (l.getIvaPorcentaje() != null) {
-            for (TipoIva t : tiposIva) {
-                if (Objects.equals(t.getPorcentaje(), l.getIvaPorcentaje())) {
-                    return t;
-                }
-            }
-        }
-        return null;
-    }
-
-    private LineaFactura lineaDeCelda(TableCell<LineaFactura, ?> celda) {
-        TableRow<LineaFactura> fila = celda.getTableRow();
-        return fila == null ? null : fila.getItem();
-    }
-
-    // Recálculo por tipo de cambio (6.4)
-    private void aplicarCantidad(LineaFactura l, int v) {
-        l.setCantidad(v);
-        marcarModificado();
-    }
-
-    private void aplicarPrecio(LineaFactura l, BigDecimal v) {
-        l.setPrecioUnitario(v);
-        marcarModificado();
-    }
-
-    private void aplicarTotal(LineaFactura l, BigDecimal t) {
-        if (chkTotalConIva.isSelected()) {
-            BigDecimal base = Calculos.baseDesdeTotalConIva(t, l.getIvaPorcentaje());
-            l.setPrecioUnitario(Calculos.precioDesdeTotal(base, l.getCantidad()));
-        } else {
-            l.setPrecioUnitario(Calculos.precioDesdeTotal(t, l.getCantidad()));
-        }
-        marcarModificado();
-    }
-
-    private void aplicarIva(LineaFactura l, TipoIva t) {
-        l.setTipoIvaId(t.getId());
-        l.setIvaNombre(t.getNombre());
-        l.setIvaPorcentaje(t.getPorcentaje());
-        l.setIvaMotivoExencion(t.getMotivoExencion());
-        l.setEsSuplido(t.isEsSuplido());
-        marcarModificado();
-    }
-
-    private void avanzarDesde(TablePosition pos) {
-        if (pos == null) {
+            TipoIva copia = new TipoIva(nombre, linea.getIvaPorcentaje(), linea.isEsSuplido());
+            copia.setId(linea.getTipoIvaId());
+            copia.setMotivoExencion(linea.getIvaMotivoExencion());
+            copia.setActivo(false);
+            tiposIva.add(copia);
+        } catch (Exception e) {
             return;
         }
-        int row = pos.getRow();
-        int col = pos.getColumn();
-        if (row < 0 || row >= lineas.size()) {
+    }
+
+    private void cargarRetenciones() {
+        try {
+            List<TipoRetencion> activas = Vista.getInstancia().getControlador().listadoTiposRetencion(true);
+            TipoRetencion ninguna = new TipoRetencion("Sin retención", 0);
+            tiposRetencion.setAll(ninguna);
+            tiposRetencion.addAll(activas);
+            comboRetencion.setItems(tiposRetencion);
+            comboRetencion.setValue(ninguna);
+            retencionActual = null;
+        } catch (Exception e) {
+            tiposRetencion.clear();
+            try {
+                TipoRetencion ninguna = new TipoRetencion("Sin retención", 0);
+                tiposRetencion.add(ninguna);
+                comboRetencion.setItems(tiposRetencion);
+                comboRetencion.setValue(ninguna);
+                retencionActual = null;
+            } catch (Exception error) {
+                return;
+            }
+        }
+    }
+
+    private void colocarRetencionDeFactura(Factura factura) {
+        if (factura.getRetencion() == null) {
+            traerRetencion(null, null, null);
+            elegirRetencion(null);
             return;
         }
-        int targetRow = row;
-        int targetCol = col + 1;
-        if (targetCol > 3) {
-            targetCol = 0;
-            targetRow = row + 1;
-            if (targetRow >= lineas.size()) {
-                if (lineaConContenido(lineas.get(row))) {
-                    lineas.add(nuevaLinea());
-                    targetRow = lineas.size() - 1;
+        traerRetencion(factura.getRetencion().getId(), factura.getRetencion().getNombre(),
+                factura.getRetencion().getPorcentaje());
+        elegirRetencion(factura.getRetencion().getId());
+    }
+
+    private void traerRetencion(Long id, String nombre, Integer porcentaje) {
+        if (id == null) {
+            return;
+        }
+        for (TipoRetencion tipo : tiposRetencion) {
+            if (id.equals(tipo.getId())) {
+                return;
+            }
+        }
+        try {
+            String texto = nombre;
+            if (texto == null || texto.isBlank()) {
+                texto = "Retención";
+            }
+            int tanto = 0;
+            if (porcentaje != null) {
+                tanto = porcentaje;
+            }
+            TipoRetencion copia = new TipoRetencion(texto, tanto);
+            copia.setId(id);
+            copia.setActivo(false);
+            tiposRetencion.add(copia);
+        } catch (Exception e) {
+            return;
+        }
+    }
+
+    private void elegirRetencion(Long id) {
+        for (TipoRetencion tipo : tiposRetencion) {
+            if (id == null && tipo.getId() == null) {
+                comboRetencion.setValue(tipo);
+                retencionActual = null;
+                return;
+            }
+            if (id != null && id.equals(tipo.getId())) {
+                comboRetencion.setValue(tipo);
+                if (tipo.getId() == null) {
+                    retencionActual = null;
                 } else {
-                    targetRow = row;
+                    retencionActual = tipo;
                 }
-            }
-        }
-        final int r = targetRow;
-        final TableColumn<LineaFactura, ?> c = tablaLineas.getColumns().get(targetCol);
-        Platform.runLater(() -> editarCeldaSegura(r, c));
-    }
-
-    private void editarCeldaSegura(int r, TableColumn<LineaFactura, ?> c) {
-        trazarFoco("editarCeldaSegura: antes de edit(" + r + ", " + c.getText() + ")", null);
-        tablaLineas.scrollTo(r);
-        tablaLineas.edit(r, c);
-        Platform.runLater(() -> {
-            TablePosition<?, ?> ed = tablaLineas.getEditingCell();
-            if (ed == null || ed.getRow() != r || ed.getTableColumn() != c) {
-                trazarFoco("editarCeldaSegura: edición no iniciada", null);
-                tablaLineas.requestFocus();
                 return;
             }
-            Node editor = tablaLineas.lookup(".text-field");
-            if (editor == null) {
-                editor = tablaLineas.lookup(".text-area");
-            }
-            if (editor instanceof TextInputControl tic) {
-                tic.requestFocus();
-                trazarFoco("editarCeldaSegura: editor enfocado", tic);
-            } else {
-                trazarFoco("editarCeldaSegura: editor no encontrado", null);
-                tablaLineas.requestFocus();
-            }
-            Platform.runLater(() -> trazarFoco("editarCeldaSegura: comprobación posterior", 
-                    Vista.getInstancia().getVentana().getScene().getFocusOwner()));
-        });
-    }
-
-    private boolean lineaConContenido(LineaFactura l) {
-        return (l.getDescripcion() != null && !l.getDescripcion().isBlank())
-                || l.getTotalBase().signum() > 0
-                || l.getPrecioUnitario().signum() > 0;
-    }
-
-    @FXML
-    private void anadirLinea() {
-        lineas.add(nuevaLinea());
-        refrescarLineas();
-        actualizarResumen();
-        marcarModificado();
-        final int row = lineas.size() - 1;
-        Platform.runLater(() -> tablaLineas.edit(row, colCantidad));
-    }
-
-    @FXML
-    private void eliminarLinea() {
-        LineaFactura sel = tablaLineas.getSelectionModel().getSelectedItem();
-        if (sel == null) {
+        }
+        if (tiposRetencion.isEmpty()) {
             return;
         }
-        lineas.remove(sel);
-        if (lineas.isEmpty()) {
-            lineas.add(nuevaLinea());
-        }
-        refrescarLineas();
-        actualizarResumen();
-        marcarModificado();
+        TipoRetencion primera = tiposRetencion.get(0);
+        comboRetencion.setValue(primera);
+        retencionActual = null;
     }
 
-    private void actualizarResumen() {
-        ResumenFactura r = Calculos.resumen(lineas, descuento, retencionActual);
-        boolean conDescuento = r.getImporteDescuento() != null && r.getImporteDescuento().compareTo(BigDecimal.ZERO) > 0;
-        filaBaseBruta.setVisible(conDescuento);
-        filaBaseBruta.setManaged(conDescuento);
-        filaDescuento.setVisible(conDescuento);
-        filaDescuento.setManaged(conDescuento);
-        togglePrimera(filaBaseBruta, conDescuento);
-        togglePrimera(filaBaseImponible, !conDescuento);
-        if (conDescuento) {
-            lblBaseBruta.setText(Formatos.moneda(r.getBaseBruta()));
-            lblDescuentoNombre.setText("Descuento " + descuento + "%");
-            lblDescuentoImporte.setText("-" + Formatos.moneda(r.getImporteDescuento()));
-        }
-        lblBaseTotal.setText(Formatos.moneda(r.getBaseTotal()));
-        lblIvaTotal.setText(Formatos.moneda(r.getIvaTotal()));
-        boolean conSuplidos = r.getTotalSuplidos() != null && r.getTotalSuplidos().compareTo(BigDecimal.ZERO) > 0;
-        filaSuplidos.setVisible(conSuplidos);
-        filaSuplidos.setManaged(conSuplidos);
-        if (conSuplidos) {
-            lblSuplidos.setText(Formatos.moneda(r.getTotalSuplidos()));
-        }
-        boolean conRetencion = r.getImporteRetencion() != null && r.getImporteRetencion().compareTo(BigDecimal.ZERO) > 0;
-        filaRetencion.setVisible(conRetencion);
-        filaRetencion.setManaged(conRetencion);
-        if (conRetencion) {
-            String nombre = r.getNombreRetencion() != null && !r.getNombreRetencion().isBlank()
-                    ? r.getNombreRetencion()
-                    : "Retención " + r.getPorcentajeRetencion() + "%";
-            lblRetencionNombre.setText(nombre);
-            lblRetencionImporte.setText("-" + Formatos.moneda(r.getImporteRetencion()));
-        }
-        lblTotal.setText(Formatos.moneda(r.getTotal()));
-        ObservableList<ResumenFactura.IvaGrupo> filasMatriz = FXCollections.observableArrayList(r.getGrupos());
-        ResumenFactura.IvaGrupo totales = new ResumenFactura.IvaGrupo();
-        totales.setNombre("Totales");
-        totales.setBase(r.getBaseTotal());
-        totales.setCuota(r.getIvaTotal());
-        filasMatriz.add(totales);
-        matrizIva.setItems(filasMatriz);
-        matrizIva.setPrefHeight(26 + 22 * filasMatriz.size() + 2);
+    private void vigilarCambios() {
+        comboSerie.valueProperty().addListener((propiedad, anterior, nuevo) -> cambiarSerie(nuevo));
+        fecha.valueProperty().addListener((propiedad, anterior, nuevo) -> cambiarFecha());
+        txtNumero.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        txtDescuento.textProperty().addListener((propiedad, anterior, nuevo) -> cambiarDescuento(nuevo));
+        comboRetencion.valueProperty().addListener((propiedad, anterior, nuevo) -> cambiarRetencion(nuevo));
+        txtObservaciones.textProperty().addListener((propiedad, anterior, nuevo) -> ajustarObservaciones());
+        txtFormaPago.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        vencimiento.valueProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        txtRealizadaPor.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        cliNombre.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        cliNif.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        cliDireccion.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        cliCp.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        cliLocalidad.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        cliProvincia.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
+        cliEmail.textProperty().addListener((propiedad, anterior, nuevo) -> cambiado());
     }
 
-    private static void togglePrimera(HBox fila, boolean primera) {
-        if (primera) {
-            if (!fila.getStyleClass().contains("total-fila-primera")) {
-                fila.getStyleClass().add("total-fila-primera");
-            }
+    private void cambiarSerie(Serie nuevo) {
+        if (cargando) {
+            return;
+        }
+        guardarSeriePreferida(nuevo);
+        actualizarVisibilidadReferencia(nuevo);
+        recalcularNumero();
+        cambiado();
+    }
+
+    private void cambiarFecha() {
+        if (cargando) {
+            return;
+        }
+        recalcularNumero();
+        cambiado();
+    }
+
+    private void cambiarDescuento(String nuevo) {
+        if (cargando) {
+            return;
+        }
+        Integer valor = parseEntero(nuevo);
+        if (valor == null || valor < 0 || valor > 100) {
+            return;
+        }
+        descuento = valor;
+        actualizarTotales();
+        cambiado();
+    }
+
+    private void cambiarRetencion(TipoRetencion nuevo) {
+        if (cargando) {
+            return;
+        }
+        if (nuevo == null || nuevo.getId() == null) {
+            retencionActual = null;
         } else {
-            fila.getStyleClass().remove("total-fila-primera");
+            retencionActual = nuevo;
         }
+        actualizarTotales();
+        cambiado();
     }
 
-    // ------------------------------------------------------------------
-    // Guardado
-    // ------------------------------------------------------------------
+    private void ajustarObservaciones() {
+        int parrafos = 1;
+        if (txtObservaciones.getParagraphs() != null) {
+            parrafos = txtObservaciones.getParagraphs().size();
+        }
+        if (parrafos < 1) {
+            parrafos = 1;
+        }
+        if (parrafos > 3) {
+            parrafos = 3;
+        }
+        txtObservaciones.setPrefRowCount(parrafos);
+        cambiado();
+    }
 
-    @FXML
-    private boolean guardar() {
-        marcarCamposCliente();
-        Cliente cli;
-        try {
-            cli = clienteDeFormulario();
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Datos del cliente", e.getMessage());
-            return false;
-        }
-        if (cli == null) {
-            Dialogos.mostrarDialogoError("Datos del cliente", "Indique los datos del cliente.");
-            return false;
-        }
-        if (avisarPrimerErrorCliente()) {
-            return false;
-        }
-        if (facturaAbiertaId != null && estadoActual != EstadoFactura.EMITIDA) {
-            Dialogos.mostrarDialogoInformacion("Guardar", "Una factura anulada no se puede editar.");
-            return false;
-        }
-        LocalDate f = fecha.getValue();
-        if (f == null) {
-            Dialogos.mostrarDialogoError("Guardar", "Indique la fecha de la factura.");
-            return false;
-        }
-        List<LineaFactura> lis = lineasGuardables();
-        if (lis.isEmpty()) {
-            Dialogos.mostrarDialogoError("Guardar", "La factura debe tener al menos una línea con contenido.");
-            return false;
-        }
-        String obs = txtObservaciones.getText();
-        String formaPago = txtFormaPago.getText().trim();
-        String realizadaPor = txtRealizadaPor.getText().trim();
-        boolean actualizarFicha = pedirActualizarFicha(cli);
-        try {
-            if (facturaAbiertaId == null) {
-                Serie serie = comboSerie.getValue();
-                if (serie == null) {
-                    Dialogos.mostrarDialogoError("Guardar", "Seleccione la serie.");
-                    return false;
-                }
-                Integer hueco = pedirHueco(serie, f);
-                if (hueco != null) {
-                    txtNumero.setText(Vista.getInstancia().getControlador().formarNumero(serie, hueco, f));
-                }
-                Integer corr = Vista.getInstancia().getControlador().parseCorrelativo(serie, txtNumero.getText());
-                if (corr == null) {
-                    Dialogos.mostrarDialogoError("Guardar", "El número no se ajusta al formato de la serie "
-                            + serie.getCodigo() + " (p. ej. " + serie.getCodigo() + "-1).");
-                    return false;
-                }
-                Factura nueva = new Factura(serie, f, cli);
-                nueva.setCorrelativo(corr);
-                nueva.setDescuento(descuento);
-                nueva.setObservaciones(obs);
-                nueva.setFormaPago(formaPago);
-                nueva.setVencimiento(vencimiento.getValue());
-                nueva.setRealizadaPor(realizadaPor);
-                nueva.setRetencion(retencionActual);
-                nueva.setLineas(lis);
-                long id = Vista.getInstancia().getControlador().altaFactura(nueva);
-                guardarSeriePreferida(serie);
-                cargarFactura(id);
-                Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
-            } else {
-                Factura factura = Vista.getInstancia().getControlador().buscarFactura(facturaAbiertaId);
-                if (factura == null) {
-                    Dialogos.mostrarDialogoError("Guardar", "No se ha encontrado la factura.");
-                    return false;
-                }
-                factura.setFecha(f);
-                factura.setCliente(cli);
-                factura.setDescuento(descuento);
-                factura.setObservaciones(obs);
-                factura.setFormaPago(formaPago);
-                factura.setVencimiento(vencimiento.getValue());
-                factura.setRealizadaPor(realizadaPor);
-                factura.setRetencion(retencionActual);
-                factura.setLineas(lis);
-                if (!Dialogos.mostrarDialogoConfirmacion("Guardar factura", String.format("¿Guardar los cambios de la factura %s?%n%nLa factura ya emitida se sobrescribirá.", factura.getNumero()))) {
-                    return false;
-                }
-                Vista.getInstancia().getControlador().modificarFactura(factura);
-                cargarFactura(facturaAbiertaId);
-                Dialogos.mostrarDialogoInformacion("Guardar", "Factura guardada.");
-            }
-            if (actualizarFicha) {
-                Vista.getInstancia().getControlador().modificarCliente(cli);
-                clienteActual = cli;
-            }
-            return true;
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Guardar", "Error al guardar: " + e.getMessage());
-            return false;
+    private void cambiado() {
+        if (!cargando) {
+            modificado = true;
         }
     }
 
     /**
-     * Si el cliente ya existe y sus datos no son los de su ficha, preguntamos si
-     * queremos guardarlos también allí. La factura se guarda con ellos en cualquier caso.
+     * Dejamos el editor en un estado coherente: qué botones se ven, qué campos
+     * se pueden tocar y si el número se puede escribir. Solo tocamos txtNumero
+     * aquí. La llamamos al empezar una factura nueva y al abrir una emitida.
      */
-    private boolean pedirActualizarFicha(Cliente cli) {
-        if (cli.getId() == null || clienteActual == null) {
-            return false;
-        }
-        if (cli.tieneLosMismosDatos(clienteActual)) {
-            return false;
-        }
-        return Dialogos.mostrarDialogoConfirmacion("Datos del cliente",
-                "Has cambiado los datos de «" + clienteActual.getNombre() + "» en esta factura.\n\n"
-                        + "¿Quieres guardar también esos cambios en su ficha de cliente?");
-    }
-
-    private List<LineaFactura> lineasGuardables() {
-        List<LineaFactura> out = new ArrayList<>();
-        for (LineaFactura l : lineas) {
-            if (lineaConContenido(l)) {
-                out.add(l);
-            }
-        }
-        return out;
-    }
-
-    private Cliente clienteDeFormulario() throws Exception {
-        String nombre = cliNombre.getText() == null ? "" : cliNombre.getText().trim();
-        String nif = cliNif.getText() == null ? "" : cliNif.getText().trim();
-        String dir = cliDireccion.getText() == null ? "" : cliDireccion.getText().trim();
-        String cp = cliCp.getText() == null ? "" : cliCp.getText().trim();
-        String loc = cliLocalidad.getText() == null ? "" : cliLocalidad.getText().trim();
-        String prov = cliProvincia.getText() == null ? "" : cliProvincia.getText().trim();
-        String mail = cliEmail.getText() == null ? "" : cliEmail.getText().trim();
-        boolean vacio = nombre.isEmpty() && nif.isEmpty() && dir.isEmpty() && cp.isEmpty()
-                && loc.isEmpty() && prov.isEmpty() && mail.isEmpty();
-        if (clienteActual == null && vacio) {
-            return null;
-        }
-        Cliente c;
-        if (clienteActual != null) {
-            c = new Cliente(clienteActual);
-            c.setNombre(nombre);
-            c.setNif(nif);
-            c.setDireccion(dir);
-            c.setCp(cp);
-            c.setLocalidad(loc);
-            c.setProvincia(prov);
-        } else {
-            c = new Cliente(nombre, nif, dir, cp, loc, prov);
-            c.setActivo(true);
-        }
-        c.setEmail(mail);
-        return c;
-    }
-
-    // ------------------------------------------------------------------
-    // Estados, rectificativas y PDF
-    // ------------------------------------------------------------------
-
-    private void actualizarBotonesEstado() {
+    private void aplicarEstado() {
         boolean abierta = facturaAbiertaId != null;
         boolean emitida = abierta && estadoActual == EstadoFactura.EMITIDA;
         boolean anulada = abierta && estadoActual == EstadoFactura.ANULADA;
+        boolean editable = !abierta || emitida;
+        aplicarBotones(abierta, emitida, anulada);
+        aplicarCampos(editable, abierta);
+        boolean numeroBloqueado = abierta || !editable;
+        txtNumero.setDisable(numeroBloqueado);
+        btnExportar.setDisable(!abierta);
+        btnRectificativa.setDisable(!abierta);
+    }
+
+    private void aplicarBotones(boolean abierta, boolean emitida, boolean anulada) {
         btnAnular.setVisible(emitida);
         btnAnular.setManaged(emitida);
         btnRestaurar.setVisible(anulada);
@@ -1153,151 +1424,65 @@ public class EditorController implements Pantalla, Initializable {
         } else {
             lblTitulo.setMaxWidth(200);
         }
-        txtNumero.setDisable(abierta);
-        btnExportar.setDisable(!abierta);
-        btnRectificativa.setDisable(!abierta);
+        lblEstado.setVisible(anulada);
+        lblEstado.setManaged(anulada);
     }
 
-    private void setEditable(boolean e) {
-        btnGuardar.setDisable(!e);
-        btnAnadirLinea.setDisable(!e);
-        btnEliminarLinea.setDisable(!e);
-        fecha.setDisable(!e);
-        txtNumero.setDisable(!e);
-        comboCliente.setDisable(!e);
-        cliNombre.setDisable(!e);
-        cliNif.setDisable(!e);
-        cliDireccion.setDisable(!e);
-        cliCp.setDisable(!e);
-        cliLocalidad.setDisable(!e);
-        cliProvincia.setDisable(!e);
-        txtReferencia.setDisable(!e);
-        txtFormaPago.setDisable(!e);
-        vencimiento.setDisable(!e);
-        txtRealizadaPor.setDisable(!e);
-        txtDescuento.setDisable(!e);
-        comboRetencion.setDisable(!e);
-        txtObservaciones.setDisable(!e);
-        chkTotalConIva.setDisable(!e);
-        tablaLineas.setEditable(e);
-        for (TableColumn<LineaFactura, ?> col : tablaLineas.getColumns()) {
-            col.setEditable(e);
+    private void aplicarCampos(boolean editable, boolean abierta) {
+        btnGuardar.setDisable(!editable);
+        btnAnadirLinea.setDisable(!editable);
+        btnEliminarLinea.setDisable(!editable);
+        comboSerie.setDisable(abierta);
+        fecha.setDisable(!editable);
+        comboCliente.setDisable(!editable);
+        cliNombre.setDisable(!editable);
+        cliNif.setDisable(!editable);
+        cliDireccion.setDisable(!editable);
+        cliCp.setDisable(!editable);
+        cliLocalidad.setDisable(!editable);
+        cliProvincia.setDisable(!editable);
+        cliEmail.setDisable(!editable);
+        txtReferencia.setDisable(!editable);
+        txtFormaPago.setDisable(!editable);
+        vencimiento.setDisable(!editable);
+        txtRealizadaPor.setDisable(!editable);
+        txtDescuento.setDisable(!editable);
+        comboRetencion.setDisable(!editable);
+        txtObservaciones.setDisable(!editable);
+        chkTotalConIva.setDisable(!editable);
+        tablaLineas.setEditable(editable);
+        for (TableColumn<LineaFactura, ?> columna : tablaLineas.getColumns()) {
+            columna.setEditable(editable);
         }
-        tablaLineas.setDisable(!e);
+        tablaLineas.setDisable(!editable);
     }
 
-    @FXML
-    private void anular() {
-        if (facturaAbiertaId == null) {
-            return;
+    private void empezarFacturaNueva() {
+        facturaAbiertaId = null;
+        correlativoFijo = null;
+        estadoActual = null;
+        clienteActual = null;
+        descuento = 0;
+        txtDescuento.setText("0");
+        retencionActual = null;
+        if (!tiposRetencion.isEmpty()) {
+            comboRetencion.setValue(tiposRetencion.get(0));
         }
-        if (modificado && !Dialogos.mostrarDialogoConfirmacion("Cambios sin guardar",
-                "Hay cambios sin guardar que se descartarán. ¿Continuar?")) {
-            return;
+        txtObservaciones.setText("");
+        txtReferencia.setText("");
+        txtFormaPago.setText("");
+        vencimiento.setValue(null);
+        txtRealizadaPor.setText("");
+        cargarDatosCliente(null);
+        lineas.clear();
+        LineaFactura primera = nuevaLinea();
+        if (primera != null) {
+            lineas.add(primera);
         }
-        if (!Dialogos.mostrarDialogoConfirmacion("Anular factura",
-                "¿Anular la factura?")) {
-            return;
-        }
-        try {
-            Vista.getInstancia().getControlador().anularFactura(facturaAbiertaId);
-            Dialogos.mostrarDialogoInformacion("Anular", "Factura anulada.");
-            cargarFactura(facturaAbiertaId);
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Anular", "Error al anular: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void restaurar() {
-        if (facturaAbiertaId == null) {
-            return;
-        }
-        if (!Dialogos.mostrarDialogoConfirmacion("Restaurar factura",
-                "¿Restaurar la factura a estado Emitida?")) {
-            return;
-        }
-        try {
-            Vista.getInstancia().getControlador().restaurarFactura(facturaAbiertaId);
-            Dialogos.mostrarDialogoInformacion("Restaurar", "Factura restaurada.");
-            cargarFactura(facturaAbiertaId);
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Restaurar", "Error al restaurar: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void crearRectificativa() {
-        if (facturaAbiertaId == null) {
-            Dialogos.mostrarDialogoInformacion("Rectificativa", "Abra primero la factura a rectificar.");
-            return;
-        }
-        if (modificado && !Dialogos.mostrarDialogoConfirmacion("Cambios sin guardar",
-                "Hay cambios sin guardar que se descartarán. ¿Continuar?")) {
-            return;
-        }
-        try {
-            long nueva = Vista.getInstancia().getControlador().rectificarFactura(facturaAbiertaId,
-                    Vista.getInstancia().getControlador().getModelo().getReloj().fechaTrabajo());
-            cargarFactura(nueva);
-            Dialogos.mostrarDialogoInformacion("Rectificativa", "Rectificativa creada.");
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Rectificativa", "Error al crear la rectificativa: " + e.getMessage());
-        }
-    }
-
-    @FXML
-    private void exportarPdf() {
-        if (facturaAbiertaId == null) {
-            Dialogos.mostrarDialogoInformacion("Exportar PDF", "Guarde primero la factura para poder exportarla.");
-            return;
-        }
-        try {
-            Factura factura = Vista.getInstancia().getControlador().buscarFactura(facturaAbiertaId);
-            if (factura == null) {
-                return;
-            }
-            Empresa empresa = Vista.getInstancia().getControlador().buscarEmpresa();
-            Path sugerido = proponerDestinoPdf(factura);
-            FileChooser chooser = new FileChooser();
-            chooser.setTitle("Exportar PDF");
-            if (sugerido.getParent() != null && sugerido.getParent().toFile().exists()) {
-                chooser.setInitialDirectory(sugerido.getParent().toFile());
-            }
-            chooser.setInitialFileName(sugerido.getFileName().toString());
-            File f = chooser.showSaveDialog(Vista.getInstancia().getVentana());
-            if (f == null) {
-                return;
-            }
-            Path ruta = f.toPath();
-            final String colorPdf = colorPdfPreferido();
-            btnExportar.setDisable(true);
-            Task<Path> t = new Task<>() {
-                @Override
-                protected Path call() throws Exception {
-                    new ExportadorPdf().exportar(factura, empresa, ruta, colorPdf);
-                    return ruta;
-                }
-            };
-            t.setOnSucceeded(e -> {
-                btnExportar.setDisable(false);
-                try {
-                    if (ruta.getParent() != null) {
-                        Vista.getInstancia().getControlador().guardarPreferencia(PREV_EXPORT, ruta.getParent().toString());
-                    }
-                } catch (Exception ignored) {
-                }
-                Dialogos.mostrarDialogoInformacion("Exportar PDF", "PDF generado en:\n" + ruta);
-            });
-            t.setOnFailed(e -> {
-                btnExportar.setDisable(false);
-                Dialogos.mostrarDialogoError("Exportar PDF", "No se pudo generar el PDF: "
-                        + (t.getException() == null ? "error desconocido" : t.getException().getMessage()));
-            });
-            new Thread(t).start();
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Exportar PDF", "Error: " + e.getMessage());
-        }
+        lblTitulo.setText("Nueva factura");
+        recalcularNumero();
+        modificado = false;
+        aplicarEstado();
     }
 
     private String colorPdfPreferido() {
@@ -1311,11 +1496,12 @@ public class EditorController implements Pantalla, Initializable {
     private Path proponerDestinoPdf(Factura factura) {
         String carpeta = "Facturas";
         try {
-            String pref = Vista.getInstancia().getControlador().preferencia(PREV_CARPETA);
-            if (pref != null && !pref.isBlank()) {
-                carpeta = pref;
+            String preferida = Vista.getInstancia().getControlador().preferencia(PREF_CARPETA);
+            if (preferida != null && !preferida.isBlank()) {
+                carpeta = preferida;
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            carpeta = "Facturas";
         }
         Path base = Path.of(carpeta);
         if (!base.isAbsolute()) {
@@ -1331,155 +1517,36 @@ public class EditorController implements Pantalla, Initializable {
                 .resolve(nombre);
     }
 
-    // ------------------------------------------------------------------
-    // Utilidades
-    // ------------------------------------------------------------------
-
-    private void asegurarRetencionEnLista(Long id, String nombre, Integer porcentaje) {
-        if (id == null) {
+    private void guardarPreferenciaCarpeta(Path ruta) {
+        try {
+            if (ruta.getParent() != null) {
+                Vista.getInstancia().getControlador().guardarPreferencia(PREF_EXPORTACION,
+                        ruta.getParent().toString());
+            }
+        } catch (Exception e) {
             return;
         }
-        for (TipoRetencion t : tiposRetencion) {
-            if (id.equals(t.getId())) {
-                return;
-            }
-        }
-        try {
-            String nombreRetencion = nombre;
-            if (nombreRetencion == null || nombreRetencion.isBlank()) {
-                nombreRetencion = "Retención";
-            }
-            int pct = 0;
-            if (porcentaje != null) {
-                pct = porcentaje;
-            }
-            TipoRetencion snapshot = new TipoRetencion(nombreRetencion, pct);
-            snapshot.setId(id);
-            snapshot.setActivo(false);
-            tiposRetencion.add(snapshot);
-        } catch (Exception ignored) {
-        }
     }
 
-    private void seleccionarRetencionPorId(Long id) {
-        for (TipoRetencion t : tiposRetencion) {
-            if (id == null ? t.getId() == null : id.equals(t.getId())) {
-                comboRetencion.setValue(t);
-                retencionActual = t.getId() == null ? null : t;
-                return;
-            }
-        }
-        TipoRetencion sin = tiposRetencion.isEmpty() ? null : tiposRetencion.get(0);
-        comboRetencion.setValue(sin);
-        retencionActual = null;
-    }
-
-    private void cargarDatosCliente(Cliente c) {
-        this.clienteActual = c;
-        cliNombre.setText(c == null ? "" : nz(c.getNombre()));
-        cliNif.setText(c == null ? "" : nz(c.getNif()));
-        cliDireccion.setText(c == null ? "" : nz(c.getDireccion()));
-        cliCp.setText(c == null ? "" : nz(c.getCp()));
-        cliLocalidad.setText(c == null ? "" : nz(c.getLocalidad()));
-        cliProvincia.setText(c == null ? "" : nz(c.getProvincia()));
-        cliEmail.setText(c == null ? "" : nz(c.getEmail()));
-        marcarCampo(cliNombre, null);
-        marcarCampo(cliNif, null);
-        marcarCampo(cliDireccion, null);
-        marcarCampo(cliCp, null);
-        marcarCampo(cliLocalidad, null);
-        marcarCampo(cliProvincia, null);
-        marcarCampo(cliEmail, null);
-    }
-
-    private void recalcularNumero() {
-        Serie s = comboSerie.getValue();
-        LocalDate f = fecha.getValue();
-        if (s == null) {
-            return;
-        }
-        if (facturaAbiertaId != null && correlativoFijo != null && f != null) {
-            txtNumero.setText(Vista.getInstancia().getControlador().formarNumero(s, correlativoFijo, f));
-        } else if (f != null) {
-            try {
-                int correlativo = Vista.getInstancia().getControlador().siguienteCorrelativo(s, f);
-                txtNumero.setText(Vista.getInstancia().getControlador().formarNumero(s, correlativo, f));
-            } catch (Exception e) {
-                txtNumero.setText("");
-            }
-        }
-    }
-
-    private Integer pedirHueco(Serie serie, LocalDate fecha) {
-        try {
-            List<Integer> huecos = Vista.getInstancia().getControlador().huecosDeSerie(serie, fecha);
-            if (huecos.isEmpty()) {
-                return null;
-            }
-            int siguiente = Vista.getInstancia().getControlador().siguienteCorrelativo(serie, fecha);
-            List<Integer> menores = new ArrayList<>();
-            for (int hueco : huecos) {
-                if (hueco < siguiente) {
-                    menores.add(hueco);
-                }
-            }
-            if (menores.isEmpty()) {
-                return null;
-            }
-            int hueco = menores.get(0);
-            ChoiceDialog<String> dialog = new ChoiceDialog<>(
-                    "Usar hueco " + hueco,
-                    "Usar hueco " + hueco,
-                    "Continuar con " + siguiente);
-            dialog.setTitle("Número de factura");
-            dialog.setHeaderText(null);
-            dialog.setContentText("Hay un hueco disponible en la numeración:");
-            Optional<String> resultado = dialog.showAndWait();
-            if (resultado.isPresent() && resultado.get().startsWith("Usar hueco")) {
-                return hueco;
-            }
-        } catch (Exception ignored) {
-        }
-        return null;
-    }
-
-    private void guardarSeriePreferida(Serie s) {
-        try {
-            if (s != null) {
-                Vista.getInstancia().getControlador().guardarPreferencia(PREV_SERIE, s.getCodigo());
-            }
-        } catch (Exception ignored) {
-        }
-    }
-
-    private void actualizarVisibilidadReferencia(Serie s) {
-        boolean r = s != null && s.isEsRectificativa();
-        lblReferencia.setVisible(r);
-        lblReferencia.setManaged(r);
-        txtReferencia.setVisible(r);
-        txtReferencia.setManaged(r);
-    }
-
-    private void marcarModificado() {
-        this.modificado = true;
-    }
-
-    private Integer parseEntero(String t) {
-        if (t == null || t.isBlank()) {
+    private Integer parseEntero(String texto) {
+        if (texto == null || texto.isBlank()) {
             return 0;
         }
         try {
-            return Integer.parseInt(t.trim());
+            return Integer.parseInt(texto.trim());
         } catch (NumberFormatException e) {
             return null;
         }
     }
 
-    private String nz(String s) {
-        return s == null ? "" : s;
+    private String textoSinNulo(String texto) {
+        if (texto == null) {
+            return "";
+        }
+        return texto;
     }
 
-    private void atajos() {
+    private void ponerAtajos() {
         Vista.getInstancia().getVentana().getScene().getAccelerators().put(
                 new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN), () -> guardar());
         Vista.getInstancia().getVentana().getScene().getAccelerators().put(
@@ -1490,308 +1557,267 @@ public class EditorController implements Pantalla, Initializable {
                 new KeyCodeCombination(KeyCode.ESCAPE), () -> volver());
     }
 
-    @FXML
-    private void nuevaFactura() {
-        Vista.getInstancia().mostrar("Editor.fxml");
-    }
+    /**
+     * Cómo funciona: la tabla no sabe editar sola; con setCellFactory le decimos
+     * qué celda poner en cada columna. Cada celda pasa por updateItem para
+     * enseñarse, por startEdit para abrir su editor, por commitEdit para cerrar
+     * aceptando lo escrito y por cancelEdit para cerrar sin guardar. Nosotros
+     * solo aplicamos el texto a la LineaFactura de la fila y refrescamos.
+     */
+    private abstract class CeldaTexto extends TableCell<LineaFactura, String> {
 
-    @FXML
-    private void volver() {
-        Vista.getInstancia().mostrar("MenuPrincipal.fxml");
-    }
+        protected final TextInputControl editor;
+        private boolean aplicando = false;
 
-    // ------------------------------------------------------------------
-    // Celdas editables
-    // ------------------------------------------------------------------
-
-    private abstract class CeldaEditable extends TableCell<LineaFactura, String> {
-        protected final TextInputControl editor = crearEditor();
-        private boolean committing;
-
-        protected TextInputControl crearEditor() {
-            return new TextField();
+        protected CeldaTexto(TextInputControl editor) {
+            this.editor = editor;
+            editor.setOnKeyPressed(evento -> teclaEnEditor(evento));
+            editor.focusedProperty().addListener((propiedad, anterior, nuevo) -> focoEnEditor(nuevo));
         }
 
-        CeldaEditable() {
-            editor.setOnKeyPressed(e -> {
-                if (e.getCode() == KeyCode.ENTER) {
-                    commitYAvanzar();
-                    e.consume();
-                } else if (e.getCode() == KeyCode.ESCAPE) {
-                    cancelEdit();
-                    e.consume();
-                }
-            });
-            editor.focusedProperty().addListener((o, a, b) -> {
-                if (!b) {
-                    commitSolo();
-                }
-            });
-        }
-
-        private void commitYAvanzar() {
-            if (committing) {
+        private void teclaEnEditor(KeyEvent evento) {
+            if (evento.getCode() == KeyCode.ENTER) {
+                confirmarYSaltar();
+                evento.consume();
                 return;
             }
-            committing = true;
-            TablePosition<LineaFactura, ?> pos = tablaLineas.getEditingCell();
-            trazarFoco("Enter: antes de confirmar", editor);
-            tablaLineas.requestFocus();
-            // No refrescar aquí: refresh() descarta la celda editada y, en la ventana real,
-            // dejaba a JavaFX elegir el siguiente foco antes de que se abriera la nueva celda.
-            commitValor(false);
-            avanzarDesde(pos);
-            trazarFoco("Enter: avance programado", null);
-            committing = false;
+            if (evento.getCode() == KeyCode.ESCAPE) {
+                cancelEdit();
+                evento.consume();
+            }
         }
 
-        private void commitSolo() {
-            if (committing || !isEditing()) {
+        private void focoEnEditor(Boolean nuevo) {
+            if (nuevo != null && !nuevo) {
+                confirmarSinSaltar();
+            }
+        }
+
+        private void confirmarYSaltar() {
+            if (aplicando) {
                 return;
             }
-            committing = true;
-            commitValor(true);
-            committing = false;
+            aplicando = true;
+            TablePosition<LineaFactura, ?> posicion = tablaLineas.getEditingCell();
+            guardarTexto();
+            avanzarDesde(posicion);
+            aplicando = false;
         }
 
-        private void commitValor(boolean refrescar) {
-            LineaFactura l = lineaDeCelda(this);
-            if (l != null) {
-                aplicar(l, editor.getText());
+        private void confirmarSinSaltar() {
+            if (aplicando || !isEditing()) {
+                return;
+            }
+            aplicando = true;
+            guardarTexto();
+            aplicando = false;
+        }
+
+        private void guardarTexto() {
+            LineaFactura linea = filaDe(this);
+            if (linea != null) {
+                try {
+                    aplicar(linea, editor.getText());
+                } catch (Exception e) {
+                    // Si lo escrito no vale, la línea se queda como estaba.
+                }
             }
             commitEdit(getItem());
-            if (refrescar) {
-                refrescarLineas();
-            }
-            actualizarResumen();
+            tablaLineas.refresh();
+            actualizarTotales();
+            cambiado();
         }
 
         @Override
-        protected void updateItem(String item, boolean empty) {
-            super.updateItem(item, empty);
-            if (empty) {
+        protected void updateItem(String texto, boolean vacia) {
+            super.updateItem(texto, vacia);
+            if (vacia) {
                 setText(null);
                 setGraphic(null);
-            } else {
-                LineaFactura l = lineaDeCelda(this);
-                setText(l == null ? "" : mostrar(l));
-                setGraphic(null);
+                return;
             }
+            if (isEditing()) {
+                setText(null);
+                setGraphic(editor);
+                return;
+            }
+            if (texto == null) {
+                setText("");
+            } else {
+                setText(texto);
+            }
+            setGraphic(null);
         }
 
         @Override
         public void startEdit() {
             super.startEdit();
-            LineaFactura l = lineaDeCelda(this);
-            editor.setText(l == null ? "" : mostrar(l));
-            setGraphic(editor);
+            String actual = getItem();
+            if (actual == null) {
+                actual = "";
+            }
+            editor.setText(actual);
             setText(null);
-            editor.requestFocus();
+            setGraphic(editor);
             editor.selectAll();
-        }
-
-        abstract String mostrar(LineaFactura l);
-
-        abstract void aplicar(LineaFactura l, String texto);
-    }
-
-    private final class CeldaCantidad extends CeldaEditable {
-        @Override
-        String mostrar(LineaFactura l) {
-            return String.valueOf(l.getCantidad());
+            // Sin runLater el foco no llega al editor recién puesto como graphic.
+            Platform.runLater(() -> editor.requestFocus());
         }
 
         @Override
-        void aplicar(LineaFactura l, String texto) {
-            try {
-                int v = Integer.parseInt(texto.trim());
-                if (v < 1) {
-                    v = 1;
-                }
-                aplicarCantidad(l, v);
-            } catch (NumberFormatException ignored) {
+        public void cancelEdit() {
+            super.cancelEdit();
+            setGraphic(null);
+            String actual = getItem();
+            if (actual == null) {
+                setText("");
+            } else {
+                setText(actual);
             }
         }
+
+        abstract void aplicar(LineaFactura linea, String texto) throws Exception;
     }
 
-    private final class CeldaDescripcion extends CeldaEditable {
-        private final Label etiqueta = new Label();
+    private final class CeldaCantidad extends CeldaTexto {
+
+        CeldaCantidad() {
+            super(new TextField());
+        }
+
+        @Override
+        void aplicar(LineaFactura linea, String texto) throws Exception {
+            int valor = Integer.parseInt(texto.trim());
+            linea.setCantidad(valor);
+        }
+    }
+
+    private final class CeldaPrecio extends CeldaTexto {
+
+        CeldaPrecio() {
+            super(new TextField());
+        }
+
+        @Override
+        void aplicar(LineaFactura linea, String texto) throws Exception {
+            BigDecimal valor = Formatos.parseEntrada(texto);
+            if (valor == null) {
+                throw new Exception("El precio no es válido.");
+            }
+            linea.setPrecioUnitario(valor);
+        }
+    }
+
+    private final class CeldaTotal extends CeldaTexto {
+
+        CeldaTotal() {
+            super(new TextField());
+        }
+
+        @Override
+        void aplicar(LineaFactura linea, String texto) throws Exception {
+            BigDecimal valor = Formatos.parseEntrada(texto);
+            if (valor == null) {
+                throw new Exception("El total no es válido.");
+            }
+            if (chkTotalConIva.isSelected()) {
+                BigDecimal base = Calculos.baseDesdeTotalConIva(valor, linea.getIvaPorcentaje());
+                linea.setPrecioUnitario(Calculos.precioDesdeTotal(base, linea.getCantidad()));
+                return;
+            }
+            linea.setPrecioUnitario(Calculos.precioDesdeTotal(valor, linea.getCantidad()));
+        }
+    }
+
+    private final class CeldaDescripcion extends CeldaTexto {
+
+        private final TextArea area;
+        private final Text etiqueta = new Text();
 
         CeldaDescripcion() {
-            etiqueta.setWrapText(true);
-            etiqueta.prefWidthProperty().bind(colDescripcion.widthProperty().subtract(8));
-            colDescripcion.widthProperty().addListener((o, anterior, ancho) -> {
-                ajustarAltoEtiqueta();
-                tablaLineas.requestLayout();
-            });
-            etiqueta.layoutBoundsProperty().addListener((o, anterior, bounds) -> ajustarAltoEtiqueta());
-        }
-
-        private void ajustarAltoEtiqueta() {
-            double w = etiqueta.getPrefWidth();
-            String t = etiqueta.getText();
-            if (t == null || t.isEmpty() || Double.isNaN(w) || w <= 0) {
-                if (etiqueta.getMinHeight() != Region.USE_PREF_SIZE) {
-                    etiqueta.setMinHeight(Region.USE_PREF_SIZE);
-                    etiqueta.setMaxHeight(Region.USE_PREF_SIZE);
-                }
-                return;
-            }
-            double necesidad = etiqueta.prefHeight(w);
-            if (necesidad > 0 && etiqueta.getMinHeight() != necesidad) {
-                etiqueta.setMinHeight(necesidad);
-                etiqueta.setMaxHeight(necesidad);
-            }
-        }
-
-        @Override
-        protected TextInputControl crearEditor() {
-            TextArea area = new TextArea();
+            super(new TextArea());
+            area = (TextArea) editor;
             area.setWrapText(true);
-            area.setPrefRowCount(1);
-            area.setMinHeight(Region.USE_PREF_SIZE);
-            area.skinProperty().addListener((o, anterior, skin) -> atarAltoEditor(area));
-            area.layoutBoundsProperty().addListener((o, anterior, bounds) -> atarAltoEditor(area));
-            area.textProperty().addListener((o, anterior, texto) -> {
-                TableRow<?> fila = getTableRow();
-                if (fila != null) {
-                    fila.requestLayout();
-                }
-            });
-            return area;
-        }
-
-        private void atarAltoEditor(TextArea area) {
-            if (area.prefHeightProperty().isBound()) {
-                return;
-            }
-            Node texto = area.lookup(".text");
-            Node contenido = area.lookup(".content");
-            Node scroll = area.lookup(".scroll-pane");
-            if (texto == null || !(contenido instanceof Region) || !(scroll instanceof Region)) {
-                return;
-            }
-            // +1 px contra el redondeo de fracciones de píxel: sin él, la igualdad
-            // exacta entre contenido y ventana hace parpadear la barra vertical.
-            double extra = vertical((Region) contenido) + vertical((Region) scroll)
-                    + vertical(area) + 1;
-            area.prefHeightProperty().bind(Bindings.createDoubleBinding(
-                    () -> texto.getBoundsInParent().getHeight() + extra,
-                    texto.boundsInParentProperty()));
-        }
-
-        private static double vertical(Region nodo) {
-            double total = nodo.getPadding().getTop() + nodo.getPadding().getBottom();
-            if (nodo.getBorder() != null) {
-                total += nodo.getBorder().getInsets().getTop() + nodo.getBorder().getInsets().getBottom();
-            }
-            return total;
+            area.setPrefRowCount(3);
+            etiqueta.wrappingWidthProperty().bind(colDescripcion.widthProperty().subtract(10));
         }
 
         @Override
-        protected void updateItem(String item, boolean empty) {
+        protected void updateItem(String texto, boolean vacia) {
             if (isEditing()) {
                 return;
             }
-            super.updateItem(item, empty);
-            if (empty) {
+            super.updateItem(texto, vacia);
+            if (vacia) {
                 setText(null);
                 setGraphic(null);
-            } else {
-                LineaFactura l = lineaDeCelda(this);
-                etiqueta.setText(l == null ? "" : mostrar(l));
-                ajustarAltoEtiqueta();
-                setText(null);
-                setGraphic(etiqueta);
+                return;
             }
+            String actual = getItem();
+            if (actual == null) {
+                actual = "";
+            }
+            etiqueta.setText(actual);
+            setText(null);
+            setGraphic(etiqueta);
         }
 
         @Override
-        protected double computePrefHeight(double width) {
-            if (isEditing() && getGraphic() == editor) {
-                double altoEditor = editor.getPrefHeight();
-                if (altoEditor > 0) {
-                    return altoEditor + getPadding().getTop() + getPadding().getBottom();
-                }
-            }
-            double w = etiqueta.getPrefWidth();
-            if (Double.isNaN(w) || w <= 0) {
-                return super.computePrefHeight(width);
-            }
-            double r = etiqueta.prefHeight(w) + getPadding().getTop() + getPadding().getBottom();
-            return r;
-        }
-
-        @Override
-        String mostrar(LineaFactura l) {
-            return nz(l.getDescripcion());
-        }
-
-        @Override
-        void aplicar(LineaFactura l, String texto) {
-            l.setDescripcion(texto);
-            marcarModificado();
+        void aplicar(LineaFactura linea, String texto) throws Exception {
+            linea.setDescripcion(texto);
         }
     }
 
-    private final class CeldaPrecio extends CeldaEditable {
-        @Override
-        String mostrar(LineaFactura l) {
-            return l.getPrecioUnitario() == null ? "0,00" : Formatos.moneda(l.getPrecioUnitario());
-        }
+    private final class CeldaIva extends TableCell<LineaFactura, String> {
 
-        @Override
-        void aplicar(LineaFactura l, String texto) {
-            BigDecimal v = Formatos.parseEntrada(texto);
-            if (v != null && v.signum() >= 0) {
-                aplicarPrecio(l, v);
-            }
-        }
-    }
-
-    private final class CeldaTotal extends CeldaEditable {
-        @Override
-        String mostrar(LineaFactura l) {
-            return l.getTotalBase() == null ? "0,00" : Formatos.moneda(l.getTotalBase());
-        }
-
-        @Override
-        void aplicar(LineaFactura l, String texto) {
-            BigDecimal v = Formatos.parseEntrada(texto);
-            if (v != null && v.signum() >= 0) {
-                aplicarTotal(l, v);
-            }
-        }
-    }
-
-    private final class CeldaIva extends TableCell<LineaFactura, TipoIva> {
         private final ComboBox<TipoIva> combo = new ComboBox<>();
-        private final javafx.event.EventHandler<javafx.event.ActionEvent> handler = e -> {
-            LineaFactura l = lineaDeCelda(this);
-            TipoIva t = combo.getValue();
-            if (l != null && t != null && !Objects.equals(t.getId(), l.getTipoIvaId())) {
-                aplicarIva(l, t);
-                refrescarLineas();
-                actualizarResumen();
-            }
-        };
+        private boolean cargandoCelda = false;
 
         CeldaIva() {
             combo.setItems(tiposIva);
             combo.setMaxWidth(Double.MAX_VALUE);
-            combo.setOnAction(handler);
+            combo.valueProperty().addListener((propiedad, anterior, nuevo) -> cambiarIva(nuevo));
+        }
+
+        private void cambiarIva(TipoIva nuevo) {
+            if (cargandoCelda) {
+                return;
+            }
+            if (nuevo == null) {
+                return;
+            }
+            LineaFactura linea = filaDe(this);
+            if (linea == null) {
+                return;
+            }
+            if (nuevo.getId() != null && nuevo.getId().equals(linea.getTipoIvaId())) {
+                return;
+            }
+            linea.setTipoIva(nuevo);
+            tablaLineas.refresh();
+            actualizarTotales();
+            cambiado();
         }
 
         @Override
-        protected void updateItem(TipoIva item, boolean empty) {
-            super.updateItem(item, empty);
-            LineaFactura l = lineaDeCelda(this);
-            setGraphic(empty || l == null ? null : combo);
-            if (l != null) {
-                combo.setOnAction(null);
-                combo.setValue(tipoIvaDe(l));
-                combo.setOnAction(handler);
+        protected void updateItem(String texto, boolean vacia) {
+            super.updateItem(texto, vacia);
+            if (vacia) {
+                setText(null);
+                setGraphic(null);
+                return;
             }
+            LineaFactura linea = filaDe(this);
+            if (linea == null) {
+                setText(null);
+                setGraphic(null);
+                return;
+            }
+            cargandoCelda = true;
+            combo.setValue(tipoIvaDe(linea));
+            cargandoCelda = false;
+            setText(null);
+            setGraphic(combo);
         }
     }
 }

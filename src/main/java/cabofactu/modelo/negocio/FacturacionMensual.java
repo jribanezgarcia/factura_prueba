@@ -104,7 +104,9 @@ public class FacturacionMensual {
         if (cliente == null || cliente.getId() == null) {
             throw new Exception("Seleccione un cliente existente.");
         }
-        ValidacionCliente.comprobar(cliente);
+        if (cliente == null) {
+            throw new Exception("Indique los datos del cliente.");
+        }
         if (serie == null || serie.getId() == null) {
             throw new Exception("Seleccione una serie de numeración.");
         }
@@ -134,14 +136,13 @@ public class FacturacionMensual {
         return LocalDate.of(anio, mes, dia);
     }
 
-    private List<LineaFactura> lineasParaMes(List<LineaPlantilla> plantillas, int mes, TipoIva iva) {
+    private List<LineaFactura> lineasParaMes(List<LineaPlantilla> plantillas, int mes, TipoIva iva) throws Exception {
         String nombreMes = nombreMes(mes);
         List<LineaFactura> lineas = new ArrayList<>();
         int orden = 1;
         for (LineaPlantilla p : plantillas) {
-            LineaFactura l = new LineaFactura();
+            LineaFactura l = new LineaFactura(p.cantidad, p.precioUnitario);
             l.setOrden(orden++);
-            l.setCantidad(p.cantidad);
             String desc = p.descripcion;
             if (desc == null) {
                 desc = "";
@@ -150,11 +151,7 @@ public class FacturacionMensual {
                 desc = desc + " - mes de " + nombreMes;
             }
             l.setDescripcion(desc);
-            l.setPrecioUnitario(p.precioUnitario);
-            l.setTipoIvaId(iva.getId());
-            l.setIvaNombre(iva.getNombre());
-            l.setIvaPorcentaje(iva.getPorcentaje());
-            l.setIvaMotivoExencion(iva.getMotivoExencion());
+            l.setTipoIva(iva);
             lineas.add(l);
         }
         return lineas;

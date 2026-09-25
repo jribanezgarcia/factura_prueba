@@ -3,6 +3,7 @@ package cabofactu.pdf;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.Factura;
+import cabofactu.modelo.dominio.GrupoIva;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.ResumenFactura;
 import cabofactu.modelo.negocio.Calculos;
@@ -143,7 +144,7 @@ public final class ConstructorDocumentoFactura {
 
     static DocumentoFactura.TotalsBlock totalsBlock(ResumenFactura r, int descuento) {
         List<DocumentoFactura.IvaRow> rows = new ArrayList<>();
-        for (ResumenFactura.IvaGrupo g : r.getGrupos()) {
+        for (GrupoIva g : r.getGrupos()) {
             rows.add(new DocumentoFactura.IvaRow(
                     g.isExento() ? "Exento" : porcentajeRejilla(g.getPorcentaje()),
                     importePdf(g.getBase()),
@@ -184,7 +185,7 @@ public final class ConstructorDocumentoFactura {
                 + " % (−" + importePdf(r.getImporteDescuento())
                 + " s/ " + importePdf(r.getBaseBruta()) + ").";
         String motivo = null;
-        for (ResumenFactura.IvaGrupo grupo : r.getGrupos()) {
+        for (GrupoIva grupo : r.getGrupos()) {
             if (grupo.isExento() && grupo.getMotivoExencion() != null && !grupo.getMotivoExencion().isBlank()) {
                 motivo = grupo.getMotivoExencion();
                 break;

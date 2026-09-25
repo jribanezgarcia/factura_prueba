@@ -278,7 +278,9 @@ public class Facturas {
         if (serie == null) {
             throw new Exception("No hay ninguna serie de rectificativas. Créala en Configuración.");
         }
-        ValidacionCliente.comprobar(original.getCliente());
+        if (original.getCliente() == null) {
+            throw new Exception("Indique los datos del cliente.");
+        }
         Cliente cliente = copiarCliente(original.getCliente());
         TipoRetencion retencion = copiarRetencion(original.getRetencion());
         List<LineaFactura> lineas = copiarLineas(original.getLineas());
@@ -309,7 +311,7 @@ public class Facturas {
     }
 
     /** Copiamos las líneas originales para la rectificativa, sin sus ids. */
-    private List<LineaFactura> copiarLineas(List<LineaFactura> originales) {
+    private List<LineaFactura> copiarLineas(List<LineaFactura> originales) throws Exception {
         List<LineaFactura> lineas = new ArrayList<>();
         if (originales == null) {
             return lineas;
@@ -498,7 +500,9 @@ public class Facturas {
         if (factura.getEstado() == null) {
             throw new Exception("Indique el estado de la factura.");
         }
-        ValidacionCliente.comprobar(factura.getCliente());
+        if (factura.getCliente() == null) {
+            throw new Exception("Indique los datos del cliente.");
+        }
         comprobarLineas(factura.getLineas());
         if (factura.getDescuento() < 0 || factura.getDescuento() > 100) {
             throw new Exception("El descuento debe estar entre 0 y 100.");
@@ -828,13 +832,11 @@ public class Facturas {
     }
 
     /** Pasamos una fila de línea a objeto. */
-    private LineaFactura crearLinea(ResultSet fila) throws SQLException {
-        LineaFactura linea = new LineaFactura();
+    private LineaFactura crearLinea(ResultSet fila) throws Exception {
+        LineaFactura linea = new LineaFactura(fila.getInt("cantidad"), importe(fila.getString("precio_unitario")));
         linea.setId(fila.getLong("id"));
         linea.setOrden(fila.getInt("orden"));
-        linea.setCantidad(fila.getInt("cantidad"));
         linea.setDescripcion(fila.getString("descripcion"));
-        linea.setPrecioUnitario(importe(fila.getString("precio_unitario")));
         long tipoIvaId = fila.getLong("tipo_iva_id");
         if (fila.wasNull()) {
             linea.setTipoIvaId(null);

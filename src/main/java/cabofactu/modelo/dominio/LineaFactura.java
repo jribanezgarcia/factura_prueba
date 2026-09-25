@@ -1,6 +1,7 @@
 package cabofactu.modelo.dominio;
 
 import cabofactu.modelo.negocio.Calculos;
+import cabofactu.utilidades.Formatos;
 
 import java.math.BigDecimal;
 
@@ -13,7 +14,7 @@ public class LineaFactura {
     private Long id;
     private int orden;
     private int cantidad = 1;
-    private String descripcion;
+    private String descripcion = "";
     private BigDecimal precioUnitario = BigDecimal.ZERO;
     private Long tipoIvaId;
     private String ivaNombre;
@@ -21,11 +22,14 @@ public class LineaFactura {
     private String ivaMotivoExencion;
     private boolean esSuplido;
 
-    public LineaFactura() {
+    public LineaFactura(int cantidad, BigDecimal precioUnitario) throws Exception {
+        setCantidad(cantidad);
+        setPrecioUnitario(precioUnitario);
+        setDescripcion("");
     }
 
     /** Copiamos una línea entera, sin su id, para poder reutilizarla en otra factura. */
-    public LineaFactura(LineaFactura otra) {
+    public LineaFactura(LineaFactura otra) throws Exception {
         setOrden(otra.getOrden());
         setCantidad(otra.getCantidad());
         setDescripcion(otra.getDescripcion());
@@ -57,7 +61,10 @@ public class LineaFactura {
         return cantidad;
     }
 
-    public void setCantidad(int cantidad) {
+    public void setCantidad(int cantidad) throws Exception {
+        if (cantidad < 1) {
+            throw new Exception("La cantidad debe ser 1 o más.");
+        }
         this.cantidad = cantidad;
     }
 
@@ -66,14 +73,21 @@ public class LineaFactura {
     }
 
     public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+        if (descripcion == null) {
+            this.descripcion = "";
+        } else {
+            this.descripcion = descripcion;
+        }
     }
 
     public BigDecimal getPrecioUnitario() {
         return precioUnitario;
     }
 
-    public void setPrecioUnitario(BigDecimal precioUnitario) {
+    public void setPrecioUnitario(BigDecimal precioUnitario) throws Exception {
+        if (precioUnitario == null || precioUnitario.signum() < 0) {
+            throw new Exception("El precio no puede ser negativo.");
+        }
         this.precioUnitario = precioUnitario;
     }
 
@@ -125,5 +139,45 @@ public class LineaFactura {
 
     public void setEsSuplido(boolean esSuplido) {
         this.esSuplido = esSuplido;
+    }
+
+    /** Copiamos los cinco datos del tipo elegido, como al cambiar el IVA en el editor. */
+    public void setTipoIva(TipoIva tipo) {
+        if (tipo == null) {
+            setTipoIvaId(null);
+            setIvaNombre("");
+            setIvaPorcentaje(null);
+            setIvaMotivoExencion("");
+            setEsSuplido(false);
+            return;
+        }
+        setTipoIvaId(tipo.getId());
+        setIvaNombre(tipo.getNombre());
+        setIvaPorcentaje(tipo.getPorcentaje());
+        setIvaMotivoExencion(tipo.getMotivoExencion());
+        setEsSuplido(tipo.isEsSuplido());
+    }
+
+    /** Decimos si la línea tiene algo escrito: descripción o precio mayor que cero. */
+    public boolean tieneContenido() {
+        if (descripcion != null && !descripcion.isBlank()) {
+            return true;
+        }
+        if (precioUnitario != null && precioUnitario.signum() > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    public String getCantidadTexto() {
+        return String.valueOf(cantidad);
+    }
+
+    public String getPrecioUnitarioTexto() {
+        return Formatos.moneda(precioUnitario);
+    }
+
+    public String getTotalBaseTexto() {
+        return Formatos.moneda(getTotalBase());
     }
 }
