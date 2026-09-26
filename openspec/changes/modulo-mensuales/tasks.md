@@ -19,9 +19,9 @@
 - [x] 3.3 Rehacer `vista/controlador/GenerarFacturasMensualesController.java`: `abrir()` con `Vista.crearVentanaModal`, `initialize` como índice, desplegables sin conversor, la tabla con `LineaFactura`, `actualizarInfo()` y `generar()` en pasos. Ver `design.md - D4`.
 - [x] 3.4 `vista/recursos/Historico.fxml`: el botón «Mensual» pasa a «Facturar mes», sin *tooltip*. Si `ConfiguracionVentana.GENERAR_MENSUAL` se queda sin uso, se borra. Ver `design.md - D4`.
 - [x] 3.5 `mvn -q compile` sin errores.
-- [ ] 3.6 `TextosCompletosTest.comprobarTextos` detecta también el texto con «…» (`design.md - D6`). Comprobar que, con el botón todavía en «Facturar mes», `TextosCompletosTest` falla en el histórico, y apuntarlo aquí.
-- [ ] 3.7 `Historico.fxml`: el botón pasa a «Fact. mes» con el tooltip «Facturar mes». `TextosCompletosTest` vuelve a pasar. Ver `design.md - D6`.
-- [ ] 3.8 `base.css`: los dos `#F6F6F6` de `.panel-neutro` pasan a `-fx-control-inner-background`, y nada más (comprobar con `git diff` que no cambia ninguna otra línea ni el `.root` de ningún tema). Ver `design.md - D6`.
+- [x] 3.6 `TextosCompletosTest.comprobarTextos` detecta también el texto con «…» (`design.md - D6`). Comprobar que, con el botón todavía en «Facturar mes», `TextosCompletosTest` falla en el histórico, y apuntarlo aquí. Falló con: `Textos cortados en Historico.fxml: [Facturar mes (72.0 de 72.0)]`.
+- [x] 3.7 `Historico.fxml`: el botón pasa a «Fact. mes» con el tooltip «Facturar mes». `TextosCompletosTest` vuelve a pasar. Ver `design.md - D6`.
+- [x] 3.8 `base.css`: los dos `#F6F6F6` de `.panel-neutro` pasan a `-fx-control-inner-background`, y nada más (comprobar con `git diff` que no cambia ninguna otra línea ni el `.root` de ningún tema). Ver `design.md - D6`.
 
 ## 4. Tests
 

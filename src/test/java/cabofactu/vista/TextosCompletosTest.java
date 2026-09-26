@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Labeled;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -267,13 +268,41 @@ class TextosCompletosTest {
         for (Node nodo : raiz.lookupAll("*")) {
             if (nodo instanceof Labeled && seVe(nodo)) {
                 Labeled etiqueta = (Labeled) nodo;
-                if (etiqueta.getWidth() < etiqueta.prefWidth(-1)) {
+                if (etiqueta.getWidth() < etiqueta.prefWidth(-1) || textoRecortado(etiqueta)) {
                     cortados.add(etiqueta.getText() + " (" + etiqueta.getWidth()
                             + " de " + etiqueta.prefWidth(-1) + ")");
                 }
             }
         }
         assertTrue(cortados.isEmpty(), "Textos cortados en " + fxml + ": " + cortados);
+    }
+
+    private static boolean textoRecortado(Labeled etiqueta) {
+        if (etiqueta.getText() == null) {
+            return false;
+        }
+        Node nodoTexto = etiqueta.lookup(".text");
+        if (nodoTexto instanceof Text && esTextoPropio(nodoTexto, etiqueta)) {
+            Text texto = (Text) nodoTexto;
+            if (!etiqueta.getText().equals(texto.getText())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // El lookup busca en toda la rama, así que un botón con un grafico que
+    // lleve otro Labeled dentro (como los del menú principal) podría
+    // encontrar el texto de ese Labeled anidado en vez del suyo propio.
+    private static boolean esTextoPropio(Node nodoTexto, Labeled etiqueta) {
+        Node actual = nodoTexto.getParent();
+        while (actual != null && actual != etiqueta) {
+            if (actual instanceof Labeled) {
+                return false;
+            }
+            actual = actual.getParent();
+        }
+        return actual == etiqueta;
     }
 
     private static boolean seVe(Node nodo) {
