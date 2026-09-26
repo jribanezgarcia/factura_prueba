@@ -1,74 +1,62 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Cliente;
+import cabofactu.modelo.dominio.LineaFactura;
+import cabofactu.modelo.dominio.ModoDia;
+import cabofactu.modelo.dominio.PlantillaMensual;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.FacturacionMensual;
 import cabofactu.utilidades.Formatos;
-import javafx.beans.property.BooleanProperty;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.stage.Modality;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import cabofactu.vista.Vista;
+import cabofactu.vista.recursos.LocalizadorRecursos;
+import cabofactu.vista.utilidades.Dialogos;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.SpinnerValueFactory;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.CheckBoxTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.stage.Stage;
-import javafx.util.StringConverter;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URL;
-import java.time.LocalDate;
-import java.time.Month;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.ResourceBundle;
-import cabofactu.vista.ConfiguracionVentana;
-import cabofactu.vista.Vista;
-import cabofactu.vista.Ventanas;
-import cabofactu.vista.utilidades.Dialogos;
-import cabofactu.vista.utilidades.GestorTemas;
 
+/**
+ * Diálogo de facturación mensual: genera una factura por cada mes del rango
+ * elegido, siempre en el año de trabajo.
+ */
 public class GenerarFacturasMensualesController implements Initializable {
 
     private Stage stage;
 
-    private final ObservableList<LineaDialogo> lineas = FXCollections.observableArrayList();
+    private final ObservableList<LineaFactura> lineas = FXCollections.observableArrayList();
 
     @FXML
     private ComboBox<Cliente> comboCliente;
     @FXML
     private ComboBox<Serie> comboSerie;
     @FXML
-    private Spinner<Integer> spinnerAnio;
+    private Label lblAnio;
     @FXML
-    private ComboBox<Integer> comboMesInicio;
+    private ComboBox<String> comboMesInicio;
     @FXML
-    private ComboBox<Integer> comboMesFin;
+    private ComboBox<String> comboMesFin;
     @FXML
     private Spinner<Integer> spinnerDia;
     @FXML
@@ -82,15 +70,15 @@ public class GenerarFacturasMensualesController implements Initializable {
     @FXML
     private ComboBox<TipoRetencion> comboRetencion;
     @FXML
-    private TableView<LineaDialogo> tablaLineas;
+    private TableView<LineaFactura> tablaLineas;
     @FXML
-    private TableColumn<LineaDialogo, Number> colCantidad;
+    private TableColumn<LineaFactura, String> colCantidad;
     @FXML
-    private TableColumn<LineaDialogo, String> colDescripcion;
+    private TableColumn<LineaFactura, String> colDescripcion;
     @FXML
-    private TableColumn<LineaDialogo, BigDecimal> colPrecio;
+    private TableColumn<LineaFactura, String> colPrecio;
     @FXML
-    private TableColumn<LineaDialogo, Boolean> colAnadirMes;
+    private CheckBox chkAnadirMes;
     @FXML
     private Button btnGenerar;
     @FXML
@@ -104,64 +92,35 @@ public class GenerarFacturasMensualesController implements Initializable {
         this.stage = stage;
     }
 
+    /** Abrimos el diálogo modal, como pide el menú principal y el histórico. */
     public static void abrir() {
         try {
-            FXMLLoader loader = new FXMLLoader(GenerarFacturasMensualesController.class.getResource(
-                    "/cabofactu/vista/recursos/GenerarFacturasMensuales.fxml"));
-            Parent root = loader.load();
-            GenerarFacturasMensualesController c = loader.getController();
-            Stage dialog = new Stage();
-            dialog.initOwner(Vista.getInstancia().getVentana());
-            dialog.initModality(Modality.APPLICATION_MODAL);
-            dialog.setTitle(Ventanas.PREFIJO + "Generar facturas mensuales");
-            Ventanas.aplicarIcono(dialog);
-            Scene scene = new Scene(root);
-            GestorTemas.aplicar(scene);
-            dialog.setScene(scene);
-            ConfiguracionVentana configuracion = ConfiguracionVentana.para("GenerarFacturasMensuales.fxml");
-            if (configuracion != null) {
-                configuracion.aplicar(dialog);
-            }
-            c.setStage(dialog);
-            dialog.showAndWait();
+            FXMLLoader cargador = new FXMLLoader(LocalizadorRecursos.class.getResource("GenerarFacturasMensuales.fxml"));
+            Parent raiz = cargador.load();
+            GenerarFacturasMensualesController controlador = cargador.getController();
+            Stage modal = Vista.getInstancia().crearVentanaModal(raiz, "Generar facturas mensuales", null);
+            controlador.setStage(modal);
+            modal.showAndWait();
         } catch (IOException e) {
             Dialogos.mostrarDialogoError("Diálogo", "No se pudo abrir el diálogo: " + e.getMessage());
         }
     }
 
-    @FXML
+    @Override
     public void initialize(URL url, ResourceBundle rb) {
-        configurarTabla();
+        lblAnio.setText(String.valueOf(anioDeTrabajo()));
         cargarClientes();
         cargarSeries();
         cargarMeses();
         cargarIvas();
         cargarRetenciones();
-        configurarSpinners();
-        configurarDiaDelMes();
-        comboMesInicio.setValue(1);
-        comboMesFin.setValue(12);
-        comboMesInicio.valueProperty().addListener((o, anterior, nuevo) -> actualizarInfo());
-        comboMesFin.valueProperty().addListener((o, anterior, nuevo) -> actualizarInfo());
-        lineas.add(new LineaDialogo(1, "", BigDecimal.ZERO, true));
-        actualizarInfo();
+        prepararTabla();
+        empezar();
     }
 
     private void cargarClientes() {
         try {
-            List<Cliente> activos = Vista.getInstancia().getControlador().listadoClientes(true);
-            comboCliente.getItems().setAll(activos);
-            comboCliente.setConverter(new StringConverter<>() {
-                @Override
-                public String toString(Cliente c) {
-                    return c == null ? "" : c.getNombreNif();
-                }
-
-                @Override
-                public Cliente fromString(String s) {
-                    return null;
-                }
-            });
+            comboCliente.getItems().setAll(Vista.getInstancia().getControlador().listadoClientes(true));
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Clientes", "Error al cargar clientes: " + e.getMessage());
         }
@@ -170,64 +129,31 @@ public class GenerarFacturasMensualesController implements Initializable {
     private void cargarSeries() {
         try {
             List<Serie> series = new ArrayList<>();
-            for (Serie s : Vista.getInstancia().getControlador().listadoSeries()) {
-                if (!s.isEsRectificativa()) {
-                    series.add(s);
+            for (Serie serie : Vista.getInstancia().getControlador().listadoSeries()) {
+                if (!serie.isEsRectificativa()) {
+                    series.add(serie);
                 }
             }
             comboSerie.getItems().setAll(series);
-            comboSerie.setConverter(new StringConverter<>() {
-                @Override
-                public String toString(Serie s) {
-                    return s == null ? "" : s.toString();
-                }
-
-                @Override
-                public Serie fromString(String s) {
-                    return null;
-                }
-            });
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Series", "Error al cargar series: " + e.getMessage());
         }
     }
 
     private void cargarMeses() {
-        List<Integer> meses = new ArrayList<>();
-        for (int i = 1; i <= 12; i++) {
-            meses.add(i);
+        List<String> nombres = new ArrayList<>();
+        for (int mes = 1; mes <= 12; mes++) {
+            nombres.add(Formatos.nombreMes(mes));
         }
-        comboMesInicio.getItems().setAll(meses);
-        comboMesFin.getItems().setAll(meses);
-        StringConverter<Integer> converter = new StringConverter<>() {
-            @Override
-            public String toString(Integer m) {
-                return m == null ? "" : Month.of(m).getDisplayName(java.time.format.TextStyle.FULL, new Locale("es", "ES"));
-            }
-
-            @Override
-            public Integer fromString(String s) {
-                return null;
-            }
-        };
-        comboMesInicio.setConverter(converter);
-        comboMesFin.setConverter(converter);
+        comboMesInicio.getItems().setAll(nombres);
+        comboMesFin.getItems().setAll(nombres);
+        comboMesInicio.valueProperty().addListener((propiedad, anterior, nuevo) -> actualizarInfo());
+        comboMesFin.valueProperty().addListener((propiedad, anterior, nuevo) -> actualizarInfo());
     }
 
     private void cargarIvas() {
         try {
             comboIva.getItems().setAll(Vista.getInstancia().getControlador().listadoTiposIva(true));
-            comboIva.setConverter(new StringConverter<>() {
-                @Override
-                public String toString(TipoIva t) {
-                    return t == null ? "" : t.toString();
-                }
-
-                @Override
-                public TipoIva fromString(String s) {
-                    return null;
-                }
-            });
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("IVA", "Error al cargar tipos de IVA: " + e.getMessage());
         }
@@ -235,240 +161,124 @@ public class GenerarFacturasMensualesController implements Initializable {
 
     private void cargarRetenciones() {
         try {
-            TipoRetencion sin = new TipoRetencion("Sin retención", 0);
+            TipoRetencion sinRetencion = new TipoRetencion("Sin retención", 0);
             List<TipoRetencion> items = new ArrayList<>();
-            items.add(sin);
+            items.add(sinRetencion);
             items.addAll(Vista.getInstancia().getControlador().listadoTiposRetencion(true));
             comboRetencion.getItems().setAll(items);
-            comboRetencion.setConverter(new StringConverter<>() {
-                @Override
-                public String toString(TipoRetencion t) {
-                    return t == null ? "" : t.toString();
-                }
-
-                @Override
-                public TipoRetencion fromString(String s) {
-                    return null;
-                }
-            });
-            comboRetencion.setValue(sin);
+            comboRetencion.setValue(sinRetencion);
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Retenciones", "Error al cargar retenciones: " + e.getMessage());
         }
     }
 
-    private void configurarSpinners() {
-        int anioActual = LocalDate.now().getYear();
-        spinnerAnio.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(anioActual - 5, anioActual + 10, anioActual));
-        spinnerDia.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 31, 15));
-        spinnerDia.setEditable(true);
-    }
-
-    private void configurarDiaDelMes() {
-        ToggleGroup grupo = new ToggleGroup();
-        radioDiaFijo.setToggleGroup(grupo);
-        radioPrimerDia.setToggleGroup(grupo);
-        radioUltimoDia.setToggleGroup(grupo);
-        radioDiaFijo.setSelected(true);
-        actualizarEstadoDia();
-        grupo.selectedToggleProperty().addListener((o, a, b) -> actualizarEstadoDia());
-    }
-
-    private void actualizarEstadoDia() {
-        boolean fijo = radioDiaFijo.isSelected();
-        spinnerDia.setDisable(!fijo);
-    }
-
-    private void configurarTabla() {
+    private void prepararTabla() {
         tablaLineas.setItems(lineas);
         tablaLineas.setEditable(true);
-
-        colCantidad.setCellValueFactory(c -> c.getValue().cantidadProperty());
-        colCantidad.setCellFactory(c -> new TextFieldTableCell<>(new StringConverter<>() {
-            @Override
-            public String toString(Number n) {
-                return n == null ? "1" : String.valueOf(n.intValue());
-            }
-
-            @Override
-            public Number fromString(String s) {
-                try {
-                    return Integer.parseInt(s.trim());
-                } catch (NumberFormatException e) {
-                    return 1;
-                }
-            }
-        }));
-        colCantidad.setOnEditCommit(e -> {
-            int v = e.getNewValue() == null ? 1 : Math.max(1, e.getNewValue().intValue());
-            e.getRowValue().setCantidad(v);
-            actualizarInfo();
-        });
-
-        colDescripcion.setCellValueFactory(c -> c.getValue().descripcionProperty());
+        colCantidad.setCellValueFactory(new PropertyValueFactory<>("cantidadTexto"));
+        colCantidad.setCellFactory(TextFieldTableCell.forTableColumn());
+        colDescripcion.setCellValueFactory(new PropertyValueFactory<>("descripcion"));
         colDescripcion.setCellFactory(TextFieldTableCell.forTableColumn());
-        colDescripcion.setOnEditCommit(e -> e.getRowValue().setDescripcion(e.getNewValue()));
-
-        colPrecio.setCellValueFactory(c -> c.getValue().precioProperty());
-        colPrecio.setCellFactory(c -> new TextFieldTableCell<>(new StringConverter<>() {
-            @Override
-            public String toString(BigDecimal b) {
-                return b == null ? "0,00" : Formatos.moneda(b);
-            }
-
-            @Override
-            public BigDecimal fromString(String s) {
-                BigDecimal v = Formatos.parseEntrada(s);
-                return v == null ? BigDecimal.ZERO : v;
-            }
-        }));
-        colPrecio.setOnEditCommit(e -> {
-            BigDecimal v = e.getNewValue() == null ? BigDecimal.ZERO : e.getNewValue();
-            e.getRowValue().setPrecioUnitario(v);
-            actualizarInfo();
-        });
-
-        colAnadirMes.setCellValueFactory(c -> c.getValue().anadirMesProperty());
-        colAnadirMes.setCellFactory(CheckBoxTableCell.forTableColumn(colAnadirMes));
+        colPrecio.setCellValueFactory(new PropertyValueFactory<>("precioUnitarioTexto"));
+        colPrecio.setCellFactory(TextFieldTableCell.forTableColumn());
     }
 
-    @FXML
-    private void anadirLinea() {
-        lineas.add(new LineaDialogo(1, "", BigDecimal.ZERO, true));
+    /** Ponemos los valores de siempre: todo el año, día 15, una línea vacía y «Añadir mes» marcada. */
+    private void empezar() {
+        comboMesInicio.getSelectionModel().select(0);
+        comboMesFin.getSelectionModel().select(11);
+        radioDiaFijo.setSelected(true);
+        spinnerDia.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1, 31, 15));
+        spinnerDia.setEditable(true);
+        chkAnadirMes.setSelected(true);
+        try {
+            lineas.setAll(new LineaFactura(1, BigDecimal.ZERO));
+        } catch (Exception e) {
+            // la cantidad y el precio de la línea inicial siempre son válidos
+        }
         actualizarInfo();
     }
 
     @FXML
+    private void cambiarModoDia() {
+        spinnerDia.setDisable(!radioDiaFijo.isSelected());
+    }
+
+    @FXML
+    private void anadirLinea() {
+        try {
+            lineas.add(new LineaFactura(1, BigDecimal.ZERO));
+        } catch (Exception e) {
+            // la cantidad y el precio de la línea nueva siempre son válidos
+        }
+    }
+
+    @FXML
     private void eliminarLinea() {
-        LineaDialogo sel = tablaLineas.getSelectionModel().getSelectedItem();
-        if (sel == null) {
+        LineaFactura seleccionada = tablaLineas.getSelectionModel().getSelectedItem();
+        if (seleccionada == null) {
             return;
         }
-        lineas.remove(sel);
+        lineas.remove(seleccionada);
         if (lineas.isEmpty()) {
-            lineas.add(new LineaDialogo(1, "", BigDecimal.ZERO, true));
+            anadirLinea();
         }
+    }
+
+    @FXML
+    private void cambiarCantidad(TableColumn.CellEditEvent<LineaFactura, String> evento) {
+        try {
+            evento.getRowValue().setCantidad(Integer.parseInt(evento.getNewValue().trim()));
+        } catch (Exception e) {
+            // el texto no es un número válido, o no llega a 1: dejamos la línea como estaba
+        }
+        tablaLineas.refresh();
+        actualizarInfo();
+    }
+
+    @FXML
+    private void cambiarDescripcion(TableColumn.CellEditEvent<LineaFactura, String> evento) {
+        evento.getRowValue().setDescripcion(evento.getNewValue());
+        tablaLineas.refresh();
+        actualizarInfo();
+    }
+
+    @FXML
+    private void cambiarPrecio(TableColumn.CellEditEvent<LineaFactura, String> evento) {
+        BigDecimal valor = Formatos.parseEntrada(evento.getNewValue());
+        if (valor != null) {
+            try {
+                evento.getRowValue().setPrecioUnitario(valor);
+            } catch (Exception e) {
+                // el precio no puede ser negativo: dejamos la línea como estaba
+            }
+        }
+        tablaLineas.refresh();
         actualizarInfo();
     }
 
     @FXML
     private void generar() {
-        Cliente cliente = comboCliente.getValue();
-        if (cliente == null) {
-            Dialogos.mostrarDialogoError("Generar", "Seleccione un cliente.");
-            return;
-        }
-        Serie serie = comboSerie.getValue();
-        if (serie == null) {
-            Dialogos.mostrarDialogoError("Generar", "Seleccione una serie.");
-            return;
-        }
-        TipoIva iva = comboIva.getValue();
-        if (iva == null) {
-            Dialogos.mostrarDialogoError("Generar", "Seleccione un tipo de IVA.");
-            return;
-        }
-        Integer mesInicio = comboMesInicio.getValue();
-        Integer mesFin = comboMesFin.getValue();
-        if (mesInicio == null || mesFin == null || mesInicio > mesFin) {
-            Dialogos.mostrarDialogoError("Generar", "El mes de inicio debe ser anterior o igual al mes de fin.");
-            return;
-        }
-        List<FacturacionMensual.LineaPlantilla> plantillas = new ArrayList<>();
-        for (LineaDialogo l : lineas) {
-            if (l.getDescripcion() == null || l.getDescripcion().isBlank()) {
-                continue;
-            }
-            plantillas.add(new FacturacionMensual.LineaPlantilla(
-                    l.getCantidad(), l.getDescripcion().trim(), l.getPrecioUnitario(), l.isAnadirMes()));
-        }
-        if (plantillas.isEmpty()) {
-            Dialogos.mostrarDialogoError("Generar", "Añada al menos una línea con descripción.");
-            return;
-        }
-        TipoRetencion retencion = comboRetencion.getValue();
-        if (retencion == null || retencion.getId() == null) {
-            retencion = null;
-        }
-
-        boolean generarDuplicados = false;
-        List<String> duplicados = List.of();
+        PlantillaMensual plantilla;
         try {
-            duplicados = Vista.getInstancia().getControlador().mensualesDuplicadas(
-                    cliente, spinnerAnio.getValue(), mesInicio, mesFin);
-            if (!duplicados.isEmpty()) {
-                String mensaje = "Ya existen facturas para este cliente en:\n\n"
-                        + String.join(", ", duplicados)
-                        + "\n\n¿Deseas generar las facturas de todos modos?";
-                if (!Dialogos.mostrarDialogoConfirmacion("Meses con facturas", mensaje)) {
-                    return;
-                }
-                generarDuplicados = true;
-            }
+            plantilla = leerPlantilla();
         } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Generar", "Error al comprobar duplicados: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Generar", e.getMessage());
             return;
         }
-
-        FacturacionMensual.ModoDia diaMode;
-        int diaFijo = 15;
-        if (radioPrimerDia.isSelected()) {
-            diaMode = FacturacionMensual.ModoDia.PRIMER_DIA;
-        } else if (radioUltimoDia.isSelected()) {
-            diaMode = FacturacionMensual.ModoDia.ULTIMO_DIA;
-        } else {
-            diaMode = FacturacionMensual.ModoDia.FIJO;
-            Integer v = spinnerDia.getValue();
-            diaFijo = v == null ? 15 : Math.max(1, Math.min(31, v));
-        }
-
-        int cantidadMeses = mesFin - mesInicio + 1;
-        int mesesAGenerar = generarDuplicados ? cantidadMeses : cantidadMeses;
-        if (!generarDuplicados) {
-            mesesAGenerar = cantidadMeses - duplicados.size();
-        }
-
-        boolean usarHuecos = false;
         try {
-            if (mesesAGenerar > 0) {
-                List<Integer> conHuecos = Vista.getInstancia().getControlador().proponerNumeros(
-                        serie, spinnerAnio.getValue(), mesesAGenerar, true);
-                List<Integer> sinHuecos = Vista.getInstancia().getControlador().proponerNumeros(
-                        serie, spinnerAnio.getValue(), mesesAGenerar, false);
-                if (!conHuecos.equals(sinHuecos)) {
-                    StringBuilder numeros = new StringBuilder();
-                    for (int i = 0; i < conHuecos.size(); i++) {
-                        if (i > 0) {
-                            numeros.append(", ");
-                        }
-                        numeros.append(conHuecos.get(i));
-                    }
-                    usarHuecos = Dialogos.mostrarDialogoConfirmacion("Huecos de numeración",
-                            "Hay huecos disponibles en la numeración. ¿Quieres usarlos?\n\n"
-                                    + "Números propuestos: " + numeros);
-                }
+            if (!confirmarMesesConFactura(plantilla)) {
+                return;
             }
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Generar", "Error al calcular la numeración: " + e.getMessage());
-            return;
-        }
-
-        try {
-            FacturacionMensual.Resultado r = Vista.getInstancia().getControlador().generarFacturasMensuales(
-                    cliente, spinnerAnio.getValue(), mesInicio, mesFin, serie,
-                    diaMode, diaFijo, iva, retencion, plantillas, generarDuplicados, usarHuecos);
-            StringBuilder msg = new StringBuilder();
-            msg.append("Se han generado ").append(r.getGeneradas()).append(" facturas.");
-            if (!r.getMesesOmitidos().isEmpty()) {
-                msg.append("\n\nMeses ya existentes omitidos:\n");
-                msg.append(String.join(", ", r.getMesesOmitidos()));
-            }
-            Dialogos.mostrarDialogoInformacion("Generar facturas mensuales", msg.toString());
+            boolean usarLibres = preguntarNumerosLibres(plantilla);
+            int generadas = Vista.getInstancia().getControlador().generarFacturasMensuales(plantilla, usarLibres);
+            Dialogos.mostrarDialogoInformacion("Generar facturas mensuales",
+                    String.format("Se han generado %d facturas.", generadas));
             if (stage != null) {
                 stage.close();
             }
         } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Generar", "Error al generar las facturas: " + e.getMessage());
+            Dialogos.mostrarDialogoError("Generar", e.getMessage());
         }
     }
 
@@ -479,79 +289,101 @@ public class GenerarFacturasMensualesController implements Initializable {
         }
     }
 
-    private void actualizarInfo() {
-        int mesInicio = comboMesInicio.getValue() == null ? 1 : comboMesInicio.getValue();
-        int mesFin = comboMesFin.getValue() == null ? 12 : comboMesFin.getValue();
-        if (mesFin < mesInicio) {
-            lblInfo.setText("No se generará ninguna factura");
-            return;
+    /** Juntamos las líneas con descripción y creamos la plantilla con lo elegido en el diálogo. */
+    private PlantillaMensual leerPlantilla() throws Exception {
+        List<LineaFactura> lineasConDescripcion = new ArrayList<>();
+        for (LineaFactura linea : lineas) {
+            if (linea.getDescripcion() != null && !linea.getDescripcion().isBlank()) {
+                linea.setDescripcion(linea.getDescripcion().trim());
+                lineasConDescripcion.add(linea);
+            }
         }
-        int meses = mesFin - mesInicio + 1;
-        lblInfo.setText(meses == 1 ? "Se generará 1 factura" : "Se generarán " + meses + " facturas");
+        PlantillaMensual plantilla = new PlantillaMensual(comboCliente.getValue(), comboSerie.getValue(),
+                mesSeleccionado(comboMesInicio), mesSeleccionado(comboMesFin), modoDiaElegido(),
+                diaFijoElegido(), comboIva.getValue(), lineasConDescripcion);
+        TipoRetencion retencion = comboRetencion.getValue();
+        if (retencion != null && retencion.getId() != null) {
+            plantilla.setRetencion(retencion);
+        }
+        plantilla.setAnadirMes(chkAnadirMes.isSelected());
+        return plantilla;
     }
 
-    public static class LineaDialogo {
-        private final IntegerProperty cantidad = new SimpleIntegerProperty(1);
-        private final StringProperty descripcion = new SimpleStringProperty("");
-        private final ObjectProperty<BigDecimal> precioUnitario = new SimpleObjectProperty<>(BigDecimal.ZERO);
-        private final BooleanProperty anadirMes = new SimpleBooleanProperty(false);
-
-        public LineaDialogo() {
+    /** Si el cliente ya tiene factura en algún mes del rango, preguntamos si generar de todos modos. */
+    private boolean confirmarMesesConFactura(PlantillaMensual plantilla) throws Exception {
+        List<String> meses = Vista.getInstancia().getControlador().mesesConFacturaMensual(plantilla);
+        if (meses.isEmpty()) {
+            return true;
         }
+        String mensaje = "Ya existen facturas para este cliente en:\n\n"
+                + String.join(", ", meses)
+                + "\n\n¿Deseas generar las facturas de todos modos?";
+        return Dialogos.mostrarDialogoConfirmacion("Meses con facturas", mensaje);
+    }
 
-        public LineaDialogo(int cantidad, String descripcion, BigDecimal precioUnitario, boolean anadirMes) {
-            setCantidad(cantidad);
-            setDescripcion(descripcion);
-            setPrecioUnitario(precioUnitario);
-            setAnadirMes(anadirMes);
+    /** Si hay números libres distintos de los propuestos, preguntamos si usarlos. */
+    private boolean preguntarNumerosLibres(PlantillaMensual plantilla) throws Exception {
+        int anio = anioDeTrabajo();
+        int cantidad = plantilla.getCantidadMeses();
+        List<Integer> conLibres = Vista.getInstancia().getControlador().proponerNumeros(
+                plantilla.getSerie(), anio, cantidad, true);
+        List<Integer> sinLibres = Vista.getInstancia().getControlador().proponerNumeros(
+                plantilla.getSerie(), anio, cantidad, false);
+        if (conLibres.equals(sinLibres)) {
+            return false;
         }
+        String libres = "";
+        for (Integer numero : conLibres) {
+            if (!sinLibres.contains(numero)) {
+                if (!libres.isEmpty()) {
+                    libres = libres + ", ";
+                }
+                libres = libres + numero;
+            }
+        }
+        return Dialogos.mostrarDialogoNumerosLibres(plantilla.getSerie().toString(), libres);
+    }
 
-        public int getCantidad() {
-            return cantidad.get();
+    private void actualizarInfo() {
+        int mesInicio = mesSeleccionado(comboMesInicio);
+        int mesFin = mesSeleccionado(comboMesFin);
+        if (mesFin < mesInicio) {
+            lblInfo.setText("No se generará ninguna factura.");
+            return;
         }
+        int anio = anioDeTrabajo();
+        int meses = mesFin - mesInicio + 1;
+        if (meses == 1) {
+            lblInfo.setText(String.format("Se generará 1 factura en %d.", anio));
+        } else {
+            lblInfo.setText(String.format("Se generarán %d facturas en %d.", meses, anio));
+        }
+    }
 
-        public void setCantidad(int cantidad) {
-            this.cantidad.set(Math.max(1, cantidad));
+    private ModoDia modoDiaElegido() {
+        if (radioPrimerDia.isSelected()) {
+            return ModoDia.PRIMER_DIA;
         }
+        if (radioUltimoDia.isSelected()) {
+            return ModoDia.ULTIMO_DIA;
+        }
+        return ModoDia.FIJO;
+    }
 
-        public IntegerProperty cantidadProperty() {
-            return cantidad;
+    private int diaFijoElegido() {
+        Integer valor = spinnerDia.getValue();
+        if (valor == null) {
+            return 15;
         }
+        return valor;
+    }
 
-        public String getDescripcion() {
-            return descripcion.get();
-        }
+    /** La posición del mes elegido en el desplegable, de 1 a 12; 0 si no hay ninguno elegido. */
+    private int mesSeleccionado(ComboBox<String> combo) {
+        return combo.getSelectionModel().getSelectedIndex() + 1;
+    }
 
-        public void setDescripcion(String descripcion) {
-            this.descripcion.set(descripcion == null ? "" : descripcion);
-        }
-
-        public StringProperty descripcionProperty() {
-            return descripcion;
-        }
-
-        public BigDecimal getPrecioUnitario() {
-            return precioUnitario.get();
-        }
-
-        public void setPrecioUnitario(BigDecimal precioUnitario) {
-            this.precioUnitario.set(precioUnitario == null ? BigDecimal.ZERO : precioUnitario);
-        }
-
-        public ObjectProperty<BigDecimal> precioProperty() {
-            return precioUnitario;
-        }
-
-        public boolean isAnadirMes() {
-            return anadirMes.get();
-        }
-
-        public void setAnadirMes(boolean anadirMes) {
-            this.anadirMes.set(anadirMes);
-        }
-
-        public BooleanProperty anadirMesProperty() {
-            return anadirMes;
-        }
+    private int anioDeTrabajo() {
+        return Vista.getInstancia().getControlador().fechaTrabajo().getYear();
     }
 }

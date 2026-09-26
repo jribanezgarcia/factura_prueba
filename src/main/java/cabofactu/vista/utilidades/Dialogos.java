@@ -90,6 +90,30 @@ public final class Dialogos {
         return aviso.getResult() == usar;
     }
 
+    /**
+     * Preguntamos si usar los números libres de la serie para las facturas
+     * mensuales o continuar sin ellos. Cerrar el aviso es continuar sin ellos.
+     */
+    public static boolean mostrarDialogoNumerosLibres(String serie, String libres) {
+        ButtonType usar = new ButtonType("Usar los números libres", ButtonBar.ButtonData.OK_DONE);
+        ButtonType continuar = new ButtonType("Continuar sin ellos", ButtonBar.ButtonData.CANCEL_CLOSE);
+        Alert aviso = new Alert(Alert.AlertType.CONFIRMATION, "", usar, continuar);
+        aviso.setTitle("Números libres");
+        aviso.setHeaderText(null);
+        ponerMensaje(aviso, String.format(
+                "La serie %s tiene números libres este año: %s.%n%n¿Quieres usarlos para estas facturas?",
+                serie, libres));
+        aviso.setGraphic(icono(Alert.AlertType.CONFIRMATION));
+        aplicarTema(aviso.getDialogPane());
+        iconoVentana(aviso);
+        Button botonUsar = (Button) aviso.getDialogPane().lookupButton(usar);
+        if (botonUsar != null) {
+            botonUsar.setDefaultButton(true);
+        }
+        aviso.showAndWait();
+        return aviso.getResult() == usar;
+    }
+
     /** Preguntamos cómo exportar varias facturas seleccionadas del histórico. */
     public static ExportacionVarias mostrarDialogoExportarVarias(int cantidad) {
         Alert aviso = new Alert(Alert.AlertType.CONFIRMATION);

@@ -8,10 +8,10 @@ import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.dominio.Factura;
 import cabofactu.modelo.dominio.FiltrosHistorial;
+import cabofactu.modelo.dominio.PlantillaMensual;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
-import cabofactu.modelo.negocio.FacturacionMensual;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.vista.Vista;
 
@@ -294,17 +294,12 @@ public class Controlador {
         return modelo.numeroDeLineasFactura(id);
     }
 
-    public FacturacionMensual.Resultado generarFacturasMensuales(Cliente cliente, int anio, int mesInicio,
-            int mesFin, Serie serie, FacturacionMensual.ModoDia diaMode, int diaFijo, TipoIva iva,
-            TipoRetencion retencion, List<FacturacionMensual.LineaPlantilla> plantillas,
-            boolean generarDuplicados, boolean usarHuecos) throws Exception {
-        return modelo.generarFacturasMensuales(cliente, anio, mesInicio, mesFin, serie, diaMode, diaFijo,
-                iva, retencion, plantillas, generarDuplicados, usarHuecos);
+    public int generarFacturasMensuales(PlantillaMensual plantilla, boolean usarLibres) throws Exception {
+        return modelo.generarFacturasMensuales(plantilla, usarLibres);
     }
 
-    public List<String> mensualesDuplicadas(Cliente cliente, int anio, int mesInicio, int mesFin)
-            throws Exception {
-        return modelo.mensualesDuplicadas(cliente, anio, mesInicio, mesFin);
+    public List<String> mesesConFacturaMensual(PlantillaMensual plantilla) throws Exception {
+        return modelo.mesesConFacturaMensual(plantilla);
     }
 
     public LocalDate fechaTrabajo() {

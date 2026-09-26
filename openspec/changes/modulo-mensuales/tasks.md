@@ -2,42 +2,42 @@
 
 ## 1. Datos
 
-- [ ] 1.1 Nuevo `modelo/dominio/ModoDia.java`. Ver `design.md - D1`.
-- [ ] 1.2 Nuevo `modelo/dominio/PlantillaMensual.java` con su constructor, sus setters que validan y `getCantidadMeses()`. Ver `design.md - D1`.
-- [ ] 1.3 `utilidades/Formatos.java`: `nombreMes(int mes)`. Ver `design.md - D1`.
+- [x] 1.1 Nuevo `modelo/dominio/ModoDia.java`. Ver `design.md - D1`.
+- [x] 1.2 Nuevo `modelo/dominio/PlantillaMensual.java` con su constructor, sus setters que validan y `getCantidadMeses()`. Ver `design.md - D1`.
+- [x] 1.3 `utilidades/Formatos.java`: `nombreMes(int mes)`. Ver `design.md - D1`.
 
 ## 2. Negocio
 
-- [ ] 2.1 Rehacer `modelo/negocio/FacturacionMensual.java` como singleton con `mesesConFactura` y `generar(PlantillaMensual, boolean)`. Ver `design.md - D2`.
-- [ ] 2.2 `modelo/Modelo.java` y `controlador/Controlador.java`: las dos operaciones nuevas; fuera el campo `facturacionMensual` y las firmas viejas. Ver `design.md - D2`.
-- [ ] 2.3 `mvn -q compile` sin errores (el diálogo, con lo justo para compilar hasta la sección 3).
+- [x] 2.1 Rehacer `modelo/negocio/FacturacionMensual.java` como singleton con `mesesConFactura` y `generar(PlantillaMensual, boolean)`. Ver `design.md - D2`.
+- [x] 2.2 `modelo/Modelo.java` y `controlador/Controlador.java`: las dos operaciones nuevas; fuera el campo `facturacionMensual` y las firmas viejas. Ver `design.md - D2`.
+- [x] 2.3 `mvn -q compile` sin errores (el diálogo, con lo justo para compilar hasta la sección 3).
 
 ## 3. La ventana
 
-- [ ] 3.1 `vista/utilidades/Dialogos.java`: `mostrarDialogoNumerosLibres`. Ver `design.md - D3`.
-- [ ] 3.2 `vista/recursos/GenerarFacturasMensuales.fxml`: imports explícitos, `lblAnio`, el `ToggleGroup` en el FXML, tres columnas con `onEditCommit` y la casilla `chkAnadirMes`. Ver `design.md - D4`.
-- [ ] 3.3 Rehacer `vista/controlador/GenerarFacturasMensualesController.java`: `abrir()` con `Vista.crearVentanaModal`, `initialize` como índice, desplegables sin conversor, la tabla con `LineaFactura`, `actualizarInfo()` y `generar()` en pasos. Ver `design.md - D4`.
-- [ ] 3.4 `vista/recursos/Historico.fxml`: el botón «Mensual» pasa a «Facturar mes», sin *tooltip*. Si `ConfiguracionVentana.GENERAR_MENSUAL` se queda sin uso, se borra. Ver `design.md - D4`.
-- [ ] 3.5 `mvn -q compile` sin errores.
+- [x] 3.1 `vista/utilidades/Dialogos.java`: `mostrarDialogoNumerosLibres`. Ver `design.md - D3`.
+- [x] 3.2 `vista/recursos/GenerarFacturasMensuales.fxml`: imports explícitos, `lblAnio`, el `ToggleGroup` en el FXML, tres columnas con `onEditCommit` y la casilla `chkAnadirMes`. Ver `design.md - D4`.
+- [x] 3.3 Rehacer `vista/controlador/GenerarFacturasMensualesController.java`: `abrir()` con `Vista.crearVentanaModal`, `initialize` como índice, desplegables sin conversor, la tabla con `LineaFactura`, `actualizarInfo()` y `generar()` en pasos. Ver `design.md - D4`.
+- [x] 3.4 `vista/recursos/Historico.fxml`: el botón «Mensual» pasa a «Facturar mes», sin *tooltip*. Si `ConfiguracionVentana.GENERAR_MENSUAL` se queda sin uso, se borra. Ver `design.md - D4`.
+- [x] 3.5 `mvn -q compile` sin errores.
 
 ## 4. Tests
 
-- [ ] 4.1 Nuevo `PlantillaMensualTest` con los casos de `design.md - D5`.
-- [ ] 4.2 Rehacer `FacturacionMensualTest` con los casos de `design.md - D5`.
-- [ ] 4.3 `PantallaMensualesTest`: los cuatro de hoy adaptados y los cuatro nuevos de `design.md - D5`. `TextosCompletosTest` y `PantallaHistoricoTest` siguen pasando con el texto nuevo del botón.
+- [x] 4.1 Nuevo `PlantillaMensualTest` con los casos de `design.md - D5`.
+- [x] 4.2 Rehacer `FacturacionMensualTest` con los casos de `design.md - D5`.
+- [x] 4.3 `PantallaMensualesTest`: los cuatro de hoy adaptados y los cuatro nuevos de `design.md - D5`. `TextosCompletosTest` y `PantallaHistoricoTest` siguen pasando con el texto nuevo del botón.
 
 ## 5. Repaso
 
-- [ ] 5.1 `grep -rn "LineaDialogo\|LineaPlantilla\|FacturacionMensual.Resultado\|FacturacionMensual.ModoDia\|detectarDuplicados\|spinnerAnio\|colAnadirMes" src/`: sin resultados.
-- [ ] 5.2 En los ficheros tocados, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|javafx\.[a-z]+\.[A-Z]|java\.[a-z]+\.[a-z]+\.[A-Z]|new Thread|Task<|StringBuilder|static class|enum [A-Z]"` sin contar las líneas `import` (en `ModoDia.java` el `enum` es el propio fichero): nada.
-- [ ] 5.3 Apuntar aquí cuántas líneas tienen `GenerarFacturasMensualesController.java` y `FacturacionMensual.java` (`grep -c ""`).
-- [ ] 5.4 Con la aplicación cerrada, borrar `target` y `mvn test`: todo en verde y ningún `ClassCastException` en el log. Apuntar aquí cuántas pruebas son y cuánto tarda.
-- [ ] 5.5 `openspec validate modulo-mensuales --strict` sin errores.
+- [x] 5.1 `grep -rn "LineaDialogo\|LineaPlantilla\|FacturacionMensual.Resultado\|FacturacionMensual.ModoDia\|detectarDuplicados\|spinnerAnio\|colAnadirMes" src/`: sin resultados (el único acierto es la comprobación de `PantallaMensualesTest` de que `#spinnerAnio` ya no existe).
+- [x] 5.2 En los ficheros tocados, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|javafx\.[a-z]+\.[A-Z]|java\.[a-z]+\.[a-z]+\.[A-Z]|new Thread|Task<|StringBuilder|static class|enum [A-Z]"` sin contar las líneas `import` (en `ModoDia.java` el `enum` es el propio fichero): nada nuevo (los dos ternarios de `Formatos.java` son de antes de este change).
+- [x] 5.3 `GenerarFacturasMensualesController.java`: 389 líneas. `FacturacionMensual.java`: 112 líneas.
+- [x] 5.4 Con la aplicación cerrada, borrar `target` y `mvn test`: todo en verde, sin `ClassCastException`. 451 pruebas, 17:34 min.
+- [x] 5.5 `openspec validate modulo-mensuales --strict` sin errores.
 
 ## 6. Estado
 
-- [ ] 6.1 Añadir este change a «En curso» en `ESTADO.md`.
-- [ ] 6.2 En «Qué toca ahora» de `ESTADO.md`, quitar `modulo-pdf` (no se hace: el PDF irá con JasperReports) y dejar el orden: `modulo-mensuales` → `modulo-copias` → `documentacion-final` → rama `pdf-jasper` (plan en `borrador_changes/plan-pdf-jasper.md`).
+- [x] 6.1 Añadir este change a «En curso» en `ESTADO.md`.
+- [x] 6.2 En «Qué toca ahora» de `ESTADO.md`, quitar `modulo-pdf` (no se hace: el PDF irá con JasperReports) y dejar el orden: `modulo-mensuales` → `modulo-copias` → `documentacion-final` → rama `pdf-jasper` (plan en `borrador_changes/plan-pdf-jasper.md`).
 
 ## 7. Pruebas manuales
 

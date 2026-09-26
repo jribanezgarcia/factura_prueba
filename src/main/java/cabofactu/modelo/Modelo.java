@@ -11,6 +11,7 @@ import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.dominio.Factura;
 import cabofactu.modelo.dominio.FiltrosHistorial;
+import cabofactu.modelo.dominio.PlantillaMensual;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
@@ -30,7 +31,6 @@ import cabofactu.modelo.negocio.Series;
  */
 public class Modelo {
 
-    private final FacturacionMensual facturacionMensual;
     private final CopiaSeguridad copiaSeguridad;
 
     public Modelo() {
@@ -38,7 +38,6 @@ public class Modelo {
     }
 
     public Modelo(Clock clock) {
-        facturacionMensual = new FacturacionMensual(Facturas.getFacturas());
         copiaSeguridad = new CopiaSeguridad(new CopiaSeguridadDAO(), Facturas.getFacturas(), clock);
     }
 
@@ -262,17 +261,12 @@ public class Modelo {
         return Facturas.getFacturas().numeroDeLineas(id);
     }
 
-    public FacturacionMensual.Resultado generarFacturasMensuales(Cliente cliente, int anio, int mesInicio,
-            int mesFin, Serie serie, FacturacionMensual.ModoDia diaMode, int diaFijo, TipoIva iva,
-            TipoRetencion retencion, List<FacturacionMensual.LineaPlantilla> plantillas,
-            boolean generarDuplicados, boolean usarHuecos) throws Exception {
-        return facturacionMensual.generar(cliente, anio, mesInicio, mesFin, serie, diaMode, diaFijo,
-                iva, retencion, plantillas, generarDuplicados, usarHuecos);
+    public int generarFacturasMensuales(PlantillaMensual plantilla, boolean usarLibres) throws Exception {
+        return FacturacionMensual.getFacturacionMensual().generar(plantilla, usarLibres);
     }
 
-    public List<String> mensualesDuplicadas(Cliente cliente, int anio, int mesInicio, int mesFin)
-            throws Exception {
-        return facturacionMensual.detectarDuplicados(cliente, anio, mesInicio, mesFin);
+    public List<String> mesesConFacturaMensual(PlantillaMensual plantilla) throws Exception {
+        return FacturacionMensual.getFacturacionMensual().mesesConFactura(plantilla);
     }
 
     public CopiaSeguridad getCopiaSeguridad() {

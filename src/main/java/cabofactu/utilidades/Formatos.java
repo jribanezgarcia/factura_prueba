@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
 import java.util.Locale;
 
 /**
@@ -33,6 +35,11 @@ public final class Formatos {
 
     public static String fechaHora(java.time.LocalDateTime fechaHora) {
         return fechaHora == null ? "" : FECHA_HORA.format(fechaHora);
+    }
+
+    /** Nombre del mes en español y en minúscula, por ejemplo «enero». */
+    public static String nombreMes(int mes) {
+        return Month.of(mes).getDisplayName(TextStyle.FULL, ES);
     }
 
     /** Nombre de archivo PDF para un numero de factura: la barra se sustituye por guion. */

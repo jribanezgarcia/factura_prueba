@@ -13,8 +13,7 @@ public enum ConfiguracionVentana {
     CONFIGURACION("Configuracion", "Configuracion.fxml", 1024, 768, 1024, 768, true),
     HISTORICO("Historico", "Historico.fxml", 1024, 768, 1024, 768, true),
     CLIENTES("Clientes", "Clientes.fxml", 1024, 768, 1024, 768, true),
-    COPIA_SEGURIDAD("Copias", "CopiaSeguridad.fxml", 1024, 768, 1024, 768, true),
-    GENERAR_MENSUAL("Generar facturas mensuales", "GenerarFacturasMensuales.fxml", 800, 600, 800, 600, true);
+    COPIA_SEGURIDAD("Copias", "CopiaSeguridad.fxml", 1024, 768, 1024, 768, true);
 
     private static final String CLAVE_CONFIG = "cabofactu.ventanaConfig";
 

@@ -40,6 +40,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 ## En curso
 
+**`modulo-mensuales`**: el diálogo de facturación mensual siempre en el año de trabajo (sin `Spinner` de año), una única casilla «Añadir mes» para todas las líneas, `PlantillaMensual` como clase de datos que se valida sola, `FacturacionMensual` como singleton sin la opción de omitir meses repetidos, números libres con dos botones (`Usar los números libres` / `Continuar sin ellos`) y el botón del histórico pasa a decir «Facturar mes».
+
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
@@ -51,9 +53,10 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 
 ## Qué toca ahora
 
-1. **`modulo-pdf`**.
-2. Después, en el orden de los módulos: mensuales → copias → documentación.
-3. VeriFactu, al final, en otra rama.
+1. **`modulo-copias`**.
+2. Después, `documentacion-final`.
+3. La rama `pdf-jasper` (plan en `borrador_changes/plan-pdf-jasper.md`): el PDF se hace con JasperReports en vez de con OpenPDF.
+4. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
 
