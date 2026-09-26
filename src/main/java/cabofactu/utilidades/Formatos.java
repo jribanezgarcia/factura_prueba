@@ -35,27 +35,6 @@ public final class Formatos {
         return fechaHora == null ? "" : FECHA_HORA.format(fechaHora);
     }
 
-    public static BigDecimal parseMoneda(String texto) {
-        if (texto == null || texto.isBlank()) {
-            return BigDecimal.ZERO;
-        }
-        String limpio = texto.trim()
-                .replace("\u00a0", "")
-                .replace("\u20ac", "")
-                .replace(".", "")
-                .replace(",", ".");
-        try {
-            return new BigDecimal(limpio);
-        } catch (NumberFormatException e) {
-            return BigDecimal.ZERO;
-        }
-    }
-
-    /** Devuelve null cuando no hay filtro de importe informado. */
-    public static BigDecimal parseMonedaOpcional(String texto) {
-        return texto == null || texto.isBlank() ? null : parseMoneda(texto);
-    }
-
     /** Nombre de archivo PDF para un numero de factura: la barra se sustituye por guion. */
     public static String nombreArchivoPdf(String numeroFactura) {
         if (numeroFactura == null || numeroFactura.isBlank()) {

@@ -3,7 +3,6 @@ package cabofactu.utilidades;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Comprobamos el validador de DNI, NIE y NIF/CIF: resultado global, forma y letra por separado. */
@@ -51,11 +50,5 @@ class ValidadorDocumentoFiscalTest {
         assertFalse(ValidadorDocumentoFiscal.letraCorrecta(""));
         String nulo = null;
         assertFalse(ValidadorDocumentoFiscal.letraCorrecta(nulo));
-    }
-
-    @Test
-    void importeVacioNoCreaFiltro() {
-        assertNull(Formatos.parseMonedaOpcional(""));
-        assertNull(Formatos.parseMonedaOpcional("  "));
     }
 }

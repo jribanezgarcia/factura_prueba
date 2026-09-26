@@ -27,7 +27,7 @@
 
 ## 5. Repaso
 
-- [x] 5.1 `grep -rn "serieCodigo\|new FiltrosHistorial()\|borrarSeleccionadas\|parseMonedaOpcional" src/`: nada en el histórico ni en sus tests. `parseMonedaOpcional` sigue usándolo `ValidadorDocumentoFiscalTest` (ajeno a este change), así que se queda en `Formatos`.
+- [x] 5.1 `grep -rn "serieCodigo\|new FiltrosHistorial()\|borrarSeleccionadas\|parseMonedaOpcional" src/`: nada en el histórico ni en sus tests. Se han borrado `parseMoneda` y `parseMonedaOpcional` de `Formatos`, que ya no usaba nadie, junto con su caso de test en `ValidadorDocumentoFiscalTest`.
 - [x] 5.2 En los ficheros tocados, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|javafx\.[a-z]+\.[A-Z]|new Thread|Task<|ChoiceDialog|StringBuilder|int\[\]"`: solo salen falsos positivos (imports `javafx.*`, `FutureTask` de los tests, y el `StringBuilder` del SQL de `Facturas.listado`, que ya estaba antes de este change y no lo toca `design.md`); nada nuevo prohibido.
 - [x] 5.3 Apuntar aquí cuántas líneas tiene `HistoricoController.java` (`grep -c ""`): 554 líneas.
 - [x] 5.4 Con la aplicación cerrada, borrar `target` y `mvn test`: todo en verde y ningún `ClassCastException` en el log. Apuntar aquí cuántas pruebas son y cuánto tarda: 436 pruebas, 6:46 min, `BUILD SUCCESS`, sin `ClassCastException`.
