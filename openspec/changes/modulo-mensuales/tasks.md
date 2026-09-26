@@ -19,6 +19,9 @@
 - [x] 3.3 Rehacer `vista/controlador/GenerarFacturasMensualesController.java`: `abrir()` con `Vista.crearVentanaModal`, `initialize` como índice, desplegables sin conversor, la tabla con `LineaFactura`, `actualizarInfo()` y `generar()` en pasos. Ver `design.md - D4`.
 - [x] 3.4 `vista/recursos/Historico.fxml`: el botón «Mensual» pasa a «Facturar mes», sin *tooltip*. Si `ConfiguracionVentana.GENERAR_MENSUAL` se queda sin uso, se borra. Ver `design.md - D4`.
 - [x] 3.5 `mvn -q compile` sin errores.
+- [ ] 3.6 `TextosCompletosTest.comprobarTextos` detecta también el texto con «…» (`design.md - D6`). Comprobar que, con el botón todavía en «Facturar mes», `TextosCompletosTest` falla en el histórico, y apuntarlo aquí.
+- [ ] 3.7 `Historico.fxml`: el botón pasa a «Fact. mes» con el tooltip «Facturar mes». `TextosCompletosTest` vuelve a pasar. Ver `design.md - D6`.
+- [ ] 3.8 `base.css`: los dos `#F6F6F6` de `.panel-neutro` pasan a `-fx-control-inner-background`, y nada más (comprobar con `git diff` que no cambia ninguna otra línea ni el `.root` de ningún tema). Ver `design.md - D6`.
 
 ## 4. Tests
 
@@ -52,3 +55,5 @@
 - [ ] 7.7 Borrar una factura que no sea la última de la serie y generar: el aviso ofrece «Usar los números libres» y «Continuar sin ellos», y cada botón hace lo que dice.
 - [ ] 7.8 Escribir una cantidad o un precio que no valen en la tabla de líneas: la línea se queda como estaba.
 - [ ] 7.9 Cancelar cierra sin generar nada, y el diálogo se ve bien.
+- [ ] 7.10 Tras la 3.7: el botón del histórico dice «Fact. mes» completo, también con omarchy, y al pasar el ratón sale «Facturar mes».
+- [ ] 7.11 Tras la 3.8: con omarchy (y neon o negro-dorado), la ventana de facturar mes es oscura y todos sus textos se leen. Con biblioteca8 se ve como antes.

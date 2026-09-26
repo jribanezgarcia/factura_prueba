@@ -185,6 +185,14 @@ Fuera `omiteMesesYaFacturados`.
   - con un mes que ya tiene factura, el aviso de meses con factura, y con `cancelarAviso()` no se genera nada.
 - Para escribir en la tabla, doble clic en la celda, texto y Enter.
 
+## D6. Lo que salió en las pruebas manuales
+
+**El botón del histórico no cabe.** Los botones de la barra de herramientas miden 72 px fijos (`.btn-ribbon` en `base.css`), y «Facturar mes» se corta en todos los temas. En `Historico.fxml` el botón pasa a `text="Fact. mes"` con `<tooltip><Tooltip text="Facturar mes"/></tooltip>`. El requisito «Menú y navegación» ya permite una forma breve si el nombre completo va en el tooltip, así que la especificación no cambia.
+
+**La ventana de facturar mes es ilegible en los temas oscuros.** En `base.css`, `.panel-neutro` y `.panel-neutro > .viewport` fijan `#F6F6F6`. En omarchy, neon y negro-dorado, los textos del tema, que son claros, quedan sobre ese gris claro. Los dos `-fx-background-color: #F6F6F6;` pasan a `-fx-background-color: -fx-control-inner-background;`, el color de las tarjetas de cada tema. En los temas claros apenas cambia (de `#F6F6F6` a blanco). No se toca nada más de `base.css` ni de los temas.
+
+**`TextosCompletosTest` no vio el botón cortado.** Compara `getWidth()` con `prefWidth(-1)`, pero con un ancho fijo en el CSS el ancho preferido es ese ancho fijo, así que la comparación sale bien aunque el texto lleve «…». `comprobarTextos` pasa a mirar también el `Text` que dibuja cada `Labeled`: el texto se da por cortado si `lookup(".text")` es un `Text` con un texto distinto de `getText()`. La comparación de anchos se queda. Antes de arreglar el botón, la prueba nueva tiene que fallar con «Facturar mes» (se comprueba y se apunta en la tarea).
+
 ## Riesgos y renuncias
 
 - **Solo el año de trabajo**: para facturar otro ejercicio hay que volver al arranque y elegirlo. Decidido con el usuario.
