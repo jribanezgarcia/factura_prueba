@@ -39,6 +39,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 ## En curso
 
+**`modulo-historico`**: `HistoricoController` rehecho según `AGENTS.md` (columnas con `PropertyValueFactory`, menú del clic derecho y exportar en el FXML/Java, sin hilos), las fechas del año de trabajo puestas al entrar, filtros que se comprueban (`FiltrosHistorial` con setters que validan), «Eliminar» en toda la pantalla y el resumen de anular/eliminar con el número de cada factura.
+
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).

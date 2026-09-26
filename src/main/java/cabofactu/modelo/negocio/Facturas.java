@@ -134,8 +134,7 @@ public class Facturas {
             conexion.setAutoCommit(false);
             String rectificativa = buscarRectificativa(id);
             if (rectificativa != null) {
-                throw new Exception(String.format("La factura %s tiene la rectificativa %s y no se puede borrar.",
-                        actual.getNumero(), rectificativa));
+                throw new Exception(String.format("Tiene la rectificativa %s y no se puede eliminar.", rectificativa));
             }
             borrarLineas(id);
             String borrar = "DELETE FROM factura WHERE id = ?";
@@ -181,12 +180,11 @@ public class Facturas {
         }
     }
 
-    /** El histórico: una Factura por fila, sin líneas, ordenada por serie, año y correlativo. */
+    /**
+     * El histórico: una Factura por fila, sin líneas, ordenada por serie, año y
+     * correlativo. Con filtros a null devolvemos todas, sin aplicar ninguno.
+     */
     public List<Factura> listado(FiltrosHistorial filtros) throws Exception {
-        FiltrosHistorial criterios = filtros;
-        if (criterios == null) {
-            criterios = new FiltrosHistorial();
-        }
         StringBuilder consulta = new StringBuilder("""
                 SELECT f.id, f.serie_id, f.anio, f.correlativo, f.numero, f.fecha, f.estado, f.cliente_id,
                     f.cli_nombre, f.cli_nif, f.cli_direccion, f.cli_cp, f.cli_localidad, f.cli_provincia, f.cli_email,
@@ -195,7 +193,10 @@ public class Facturas {
                     f.base_total, f.iva_total, f.importe_retencion, f.total_suplidos, f.total
                 FROM factura f JOIN serie s ON s.id = f.serie_id WHERE 1 = 1
                 """);
-        List<Object> parametros = parametrosListado(criterios, consulta);
+        List<Object> parametros = new ArrayList<>();
+        if (filtros != null) {
+            parametros = parametrosListado(filtros, consulta);
+        }
         consulta.append(" ORDER BY s.codigo, f.anio, f.correlativo");
 
         try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(consulta.toString())) {
@@ -209,9 +210,9 @@ public class Facturas {
     /** Añadimos los filtros del histórico a la consulta y devolvemos sus parámetros en orden. */
     private List<Object> parametrosListado(FiltrosHistorial criterios, StringBuilder consulta) {
         List<Object> parametros = new ArrayList<>();
-        if (criterios.getSerieCodigo() != null && !criterios.getSerieCodigo().isBlank()) {
-            consulta.append(" AND s.codigo = ?");
-            parametros.add(criterios.getSerieCodigo().trim());
+        if (criterios.getSerie() != null) {
+            consulta.append(" AND f.serie_id = ?");
+            parametros.add(criterios.getSerie().getId());
         }
         if (criterios.getClienteTexto() != null && !criterios.getClienteTexto().isBlank()) {
             consulta.append(" AND (f.cli_nombre LIKE ? OR f.cli_nif LIKE ?)");

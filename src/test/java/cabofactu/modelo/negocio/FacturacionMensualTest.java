@@ -3,7 +3,6 @@ package cabofactu.modelo.negocio;
 import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.FormatoNumero;
@@ -68,7 +67,7 @@ class FacturacionMensualTest {
     }
 
     private List<Factura> facturas() throws Exception {
-        return Facturas.getFacturas().listado(new FiltrosHistorial());
+        return Facturas.getFacturas().listado(null);
     }
 
     private Factura facturaDeMes(List<Factura> facturas, LocalDate fecha) {

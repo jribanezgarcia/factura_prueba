@@ -116,7 +116,7 @@ class FacturasTest {
         guardada.setObservaciones("nueva observacion");
         Facturas.getFacturas().modificar(guardada);
 
-        List<Factura> filas = Facturas.getFacturas().listado(new FiltrosHistorial());
+        List<Factura> filas = Facturas.getFacturas().listado(null);
         assertEquals(1, filas.size());
         Factura leida = Facturas.getFacturas().buscar(facturaId);
         assertEquals(1, leida.getLineas().size());
@@ -220,7 +220,7 @@ class FacturasTest {
         Factura anulada = Facturas.getFacturas().buscar(facturaId);
         assertEquals(EstadoFactura.ANULADA, anulada.getEstado());
         assertEquals(numero, anulada.getNumero());
-        assertEquals(1, Facturas.getFacturas().listado(new FiltrosHistorial()).size());
+        assertEquals(1, Facturas.getFacturas().listado(null).size());
 
         Facturas.getFacturas().restaurar(facturaId);
         Factura restaurada = Facturas.getFacturas().buscar(facturaId);
@@ -293,8 +293,7 @@ class FacturasTest {
         String numeroRectificativa = Facturas.getFacturas().buscar(rectificativaId).getNumero();
 
         Exception e = assertThrows(Exception.class, () -> Facturas.getFacturas().baja(facturaId));
-        assertEquals("La factura " + numeroOriginal + " tiene la rectificativa " + numeroRectificativa
-                + " y no se puede borrar.", e.getMessage());
+        assertEquals("Tiene la rectificativa " + numeroRectificativa + " y no se puede eliminar.", e.getMessage());
         assertEquals(numeroOriginal, Facturas.getFacturas().buscar(facturaId).getNumero());
     }
 
@@ -329,6 +328,7 @@ class FacturasTest {
     @Test
     void listadoDaUnaFilaPorFacturaYFiltra() throws Exception {
         Serie serie = serieC();
+        Serie otraSerie = serieR();
         Cliente otro = new Cliente("Cliente Otro", "87654321X", "Calle Prueba 2", "28002", "Madrid", "Madrid");
         Factura primera = facturaNueva(serie, LocalDate.of(2026, 9, 1), clientePrueba(), "100.00");
         primera.setCorrelativo(2);
@@ -342,20 +342,23 @@ class FacturasTest {
         Facturas.getFacturas().modificar(guardada);
         Facturas.getFacturas().anular(primeraId);
 
-        List<Factura> filas = Facturas.getFacturas().listado(new FiltrosHistorial());
+        List<Factura> filas = Facturas.getFacturas().listado(null);
         assertEquals(2, filas.size());
         assertEquals("C-1/10", filas.get(0).getNumero());
         assertEquals("C-2/9", filas.get(1).getNumero());
 
-        FiltrosHistorial filtros = new FiltrosHistorial();
-        filtros.setEstado(EstadoFactura.ANULADA);
-        List<Factura> anuladas = Facturas.getFacturas().listado(filtros);
+        FiltrosHistorial porOtraSerie = new FiltrosHistorial(otraSerie, null, null, null, null, null, null);
+        assertEquals(0, Facturas.getFacturas().listado(porOtraSerie).size());
+        FiltrosHistorial porLaSerie = new FiltrosHistorial(serie, null, null, null, null, null, null);
+        assertEquals(2, Facturas.getFacturas().listado(porLaSerie).size());
+
+        FiltrosHistorial porEstado = new FiltrosHistorial(null, null, null, null, null, null, EstadoFactura.ANULADA);
+        List<Factura> anuladas = Facturas.getFacturas().listado(porEstado);
         assertEquals(1, anuladas.size());
         assertEquals("C-2/9", anuladas.get(0).getNumero());
 
-        filtros = new FiltrosHistorial();
-        filtros.setClienteTexto("87654321X");
-        List<Factura> delOtro = Facturas.getFacturas().listado(filtros);
+        FiltrosHistorial porCliente = new FiltrosHistorial(null, "87654321X", null, null, null, null, null);
+        List<Factura> delOtro = Facturas.getFacturas().listado(porCliente);
         assertEquals(1, delOtro.size());
         assertEquals("C-1/10", delOtro.get(0).getNumero());
     }
@@ -373,7 +376,7 @@ class FacturasTest {
         facturas.add(segunda);
 
         assertThrows(Exception.class, () -> Facturas.getFacturas().altaVarias(facturas));
-        assertEquals(0, Facturas.getFacturas().listado(new FiltrosHistorial()).size());
+        assertEquals(0, Facturas.getFacturas().listado(null).size());
         assertEquals(0, Facturas.getFacturas().contar());
     }
 
@@ -384,7 +387,7 @@ class FacturasTest {
         Factura factura = facturaNueva(serie, LocalDate.of(2026, 2, 15), cliente, "100.00");
         Facturas.getFacturas().alta(factura);
         long clienteId = Facturas.getFacturas().buscar(
-                Facturas.getFacturas().listado(new FiltrosHistorial()).get(0).getId())
+                Facturas.getFacturas().listado(null).get(0).getId())
                 .getCliente().getId();
 
         assertTrue(Facturas.getFacturas().clienteTieneFacturaEnMes(clienteId, 2026, 2));

@@ -90,6 +90,29 @@ public final class Dialogos {
         return aviso.getResult() == usar;
     }
 
+    /** Preguntamos cómo exportar varias facturas seleccionadas del histórico. */
+    public static ExportacionVarias mostrarDialogoExportarVarias(int cantidad) {
+        Alert aviso = new Alert(Alert.AlertType.CONFIRMATION);
+        aviso.setTitle("Exportar PDF");
+        aviso.setHeaderText(null);
+        ponerMensaje(aviso, String.format("¿Cómo quieres exportar las %d facturas seleccionadas?", cantidad));
+        ButtonType porFactura = new ButtonType("Un PDF por factura", ButtonBar.ButtonData.OK_DONE);
+        ButtonType agrupada = new ButtonType("Todas en un PDF", ButtonBar.ButtonData.OTHER);
+        ButtonType cancelar = new ButtonType("Cancelar", ButtonBar.ButtonData.CANCEL_CLOSE);
+        aviso.getButtonTypes().setAll(porFactura, agrupada, cancelar);
+        aviso.setGraphic(icono(Alert.AlertType.CONFIRMATION));
+        aplicarTema(aviso.getDialogPane());
+        iconoVentana(aviso);
+        aviso.showAndWait();
+        if (aviso.getResult() == porFactura) {
+            return ExportacionVarias.POR_FACTURA;
+        }
+        if (aviso.getResult() == agrupada) {
+            return ExportacionVarias.AGRUPADA;
+        }
+        return ExportacionVarias.CANCELAR;
+    }
+
     public static CambiosSinGuardar mostrarDialogoCambiosSinGuardar() {
         Alert aviso = new Alert(Alert.AlertType.CONFIRMATION);
         aviso.setTitle("Cambios sin guardar");

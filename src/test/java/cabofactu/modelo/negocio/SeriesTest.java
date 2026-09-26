@@ -3,7 +3,6 @@ package cabofactu.modelo.negocio;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.EstadoFactura;
 import cabofactu.modelo.dominio.Factura;
-import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.FormatoNumero;
 import cabofactu.modelo.dominio.LineaFactura;
 import cabofactu.modelo.dominio.Serie;
@@ -84,7 +83,7 @@ class SeriesTest {
     }
 
     private void borrarFacturaDe(long serieId, int correlativo) throws Exception {
-        List<Factura> filas = Facturas.getFacturas().listado(new FiltrosHistorial());
+        List<Factura> filas = Facturas.getFacturas().listado(null);
         for (Factura fila : filas) {
             if (fila.getSerie().getId() == serieId && fila.getCorrelativo() == correlativo
                     && fila.getAnio() == 2026) {
