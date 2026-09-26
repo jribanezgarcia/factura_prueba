@@ -31,7 +31,7 @@
 - [x] 5.1 `grep -rn "serieCodigo\|new FiltrosHistorial()\|borrarSeleccionadas\|parseMonedaOpcional" src/`: nada en el histórico ni en sus tests. Se han borrado `parseMoneda` y `parseMonedaOpcional` de `Formatos`, que ya no usaba nadie, junto con su caso de test en `ValidadorDocumentoFiscalTest`.
 - [x] 5.2 En los ficheros tocados, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|javafx\.[a-z]+\.[A-Z]|new Thread|Task<|ChoiceDialog|StringBuilder|int\[\]"`: solo salen falsos positivos (imports `javafx.*`, `FutureTask` de los tests, y el `StringBuilder` del SQL de `Facturas.listado`, que ya estaba antes de este change y no lo toca `design.md`); nada nuevo prohibido.
 - [x] 5.3 Apuntar aquí cuántas líneas tiene `HistoricoController.java` (`grep -c ""`): 554 líneas.
-- [x] 5.4 Con la aplicación cerrada, borrar `target` y `mvn test`: todo en verde y ningún `ClassCastException` en el log. Apuntar aquí cuántas pruebas son y cuánto tarda: 436 pruebas, 6:46 min, `BUILD SUCCESS`, sin `ClassCastException`.
+- [x] 5.4 Con la aplicación cerrada, borrar `target` y `mvn test`: todo en verde y ningún `ClassCastException` en el log. Apuntar aquí cuántas pruebas son y cuánto tarda: 436 pruebas, 6:46 min, `BUILD SUCCESS`, sin `ClassCastException`. Repetido tras 1d5430b y 708ce66: 435 pruebas, 7:12 min, `BUILD SUCCESS`, sin `ClassCastException`.
 - [x] 5.5 `openspec validate modulo-historico --strict` sin errores.
 
 ## 6. Estado
@@ -42,13 +42,13 @@
 
 > La base de datos no cambia: no hace falta borrar `%APPDATA%\Facturacion`.
 
-- [ ] 7.1 Entrar en el histórico: las fechas vienen puestas en el año de trabajo y la tabla ya enseña sus facturas.
-- [ ] 7.2 Escribir «12,5x» en «Importe desde» y Buscar: el campo sale en rojo y el aviso dice que no es un importe válido. Poner la fecha desde después de la hasta: las dos en rojo y su aviso.
-- [ ] 7.3 Filtrar por serie, por estado y por cliente: los resultados cuadran.
-- [ ] 7.4 Doble clic en una fila: abre la factura en el editor.
-- [ ] 7.5 Clic derecho sobre la tabla: el menú dice «Exportar a PDF», «Anular facturas seleccionadas» y «Eliminar facturas seleccionadas».
-- [ ] 7.6 Anular dos facturas, una ya anulada: el resumen dice 1 anulada y 1 ya anulada. Eliminar la A-1/9: el resumen dice «A-1/9: Tiene la rectificativa R-1 y no se puede eliminar.».
-- [ ] 7.7 Exportar una factura: pide dónde guardarla y el PDF se ve bien.
-- [ ] 7.8 Exportar tres facturas «Un PDF por factura»: pide la carpeta y salen tres PDF con sus nombres. Exportarlas «Todas en un PDF»: sale un único PDF con las tres. Mientras se generan, cursor de espera.
-- [ ] 7.9 Ctrl+F busca, y el histórico se ve bien a 1024×768.
-- [ ] 7.10 Tras la 3.7: en biblioteca8 y en un tema oscuro (neon o negro-dorado), clic derecho en el histórico y pasar el ratón por las opciones: la marcada se lee bien. El menú principal se ve igual que antes, también al pasar el ratón por sus botones.
+- [x] 7.1 Entrar en el histórico: las fechas vienen puestas en el año de trabajo y la tabla ya enseña sus facturas.
+- [x] 7.2 Escribir «12,5x» en «Importe desde» y Buscar: el campo sale en rojo y el aviso dice que no es un importe válido. Poner la fecha desde después de la hasta: las dos en rojo y su aviso.
+- [x] 7.3 Filtrar por serie, por estado y por cliente: los resultados cuadran.
+- [x] 7.4 Doble clic en una fila: abre la factura en el editor.
+- [x] 7.5 Clic derecho sobre la tabla: el menú dice «Exportar a PDF», «Anular facturas seleccionadas» y «Eliminar facturas seleccionadas».
+- [x] 7.6 Anular dos facturas, una ya anulada: el resumen dice 1 anulada y 1 ya anulada. Eliminar la A-1/9: el resumen dice «A-1/9: Tiene la rectificativa R-1 y no se puede eliminar.».
+- [x] 7.7 Exportar una factura: pide dónde guardarla y el PDF se ve bien.
+- [x] 7.8 Exportar tres facturas «Un PDF por factura»: pide la carpeta y salen tres PDF con sus nombres. Exportarlas «Todas en un PDF»: sale un único PDF con las tres. Mientras se generan, cursor de espera.
+- [x] 7.9 Ctrl+F busca, y el histórico se ve bien a 1024×768.
+- [x] 7.10 Tras la 3.7: en biblioteca8 y en un tema oscuro (neon o negro-dorado), clic derecho en el histórico y pasar el ratón por las opciones: la marcada se lee bien. El menú principal se ve igual que antes, también al pasar el ratón por sus botones.

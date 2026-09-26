@@ -1,6 +1,6 @@
 # CaboFactu: estado del proyecto
 
-Actualizado: **25/09/2026**
+Actualizado: **26/09/2026**
 
 Por dónde va el proyecto y qué toca ahora. Las normas de cómo se escribe el código y cómo se trabaja están en [AGENTS.md](AGENTS.md).
 
@@ -34,12 +34,11 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Revisión de la base de datos: NIF y nombres únicos en las tablas maestras, recuperación de clientes inactivos y reutilización del cliente al facturar.
 - Módulo de facturas: una fila por factura, sin versiones, sin DAO de facturas y sin `ValidacionException`; 403 pruebas en unos 5 min.
 - Editor de facturas reescrito: celdas explicadas dentro del editor (`CeldaTexto` y sus subclases), cliente por NIF con aviso de cliente nuevo, número libre al guardar con dos botones, descripción de tres renglones; fuera `Reloj` y `ValidacionCliente`; 423 pruebas.
+- Histórico rehecho: año de trabajo puesto al entrar, filtros que se comprueban y se marcan en rojo, «Eliminar» en toda la pantalla, resumen de anular/eliminar con el número de cada factura, exportar sin hilos con aviso de tres botones y menú del clic derecho en el FXML y legible en todos los temas; 435 pruebas.
 
-Último cambio archivado: `2026-09-26-modulo-editor`.
+Último cambio archivado: `2026-09-26-modulo-historico`.
 
 ## En curso
-
-**`modulo-historico`**: `HistoricoController` rehecho según `AGENTS.md` (columnas con `PropertyValueFactory`, menú del clic derecho y exportar en el FXML/Java, sin hilos), las fechas del año de trabajo puestas al entrar, filtros que se comprueban (`FiltrosHistorial` con setters que validan), «Eliminar» en toda la pantalla y el resumen de anular/eliminar con el número de cada factura.
 
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
@@ -52,8 +51,8 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 
 ## Qué toca ahora
 
-1. **`modulo-historico`**.
-2. Después, en el orden de los módulos: PDF → mensuales → copias → documentación.
+1. **`modulo-pdf`**.
+2. Después, en el orden de los módulos: mensuales → copias → documentación.
 3. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
@@ -84,3 +83,5 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **Tras modulo-facturas, las bases y las copias de seguridad anteriores no valen**: hay que borrar `%APPDATA%\Facturacion`.
 - **La sincronización al archivar puede dejarse líneas del delta sin aplicar aunque las cifras cuadren** (pasó en modulo-facturas). Después de archivar, compara cada requisito modificado o añadido con su bloque del delta, no solo el recuento.
 - **En TestFX headless, el foco no llega al editor de una celda recién puesto como graphic sin un `Platform.runLater`.**
+- **No uses como clase de estilo propia un nombre que JavaFX ya usa** (`menu-item`, `context-menu`, `button`…): las reglas del tema se aplican también a los controles de JavaFX. Con `.menu-item:hover` del menú principal, las opciones del clic derecho quedaban ilegibles en cinco temas.
+- **En TestFX headless, el clic derecho no abre el menú contextual**: Monocle no genera el `ContextMenuEvent`. El test lo lanza a mano sobre la tabla.
