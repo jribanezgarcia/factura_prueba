@@ -95,7 +95,7 @@ El NIF SHALL ser único: dos clientes SHALL NOT tener el mismo NIF, estén activ
 
 ### Requirement: Búsqueda de clientes al crear factura
 
-Al crear o editar una factura, el usuario SHALL poder buscar un cliente por nombre/razón social o NIF con búsqueda incremental mientras escribe. Al seleccionar un cliente, sus datos —incluido el email— SHALL cargarse en la factura. Los datos del cliente (email incluido) SHALL poder modificarse desde la factura, y esos datos modificados SHALL quedar siempre en la factura que se guarda. La aplicación SHALL NOT modificar la ficha general del cliente sin preguntar: al guardar una factura cuyos datos de cliente difieran de los de su ficha, la aplicación SHALL pedir confirmación para guardar también esos cambios en la ficha, y SHALL actualizarla solo si el usuario acepta. La ficha general de clientes SHALL incluir el campo email.
+Al crear o editar una factura, el usuario SHALL poder buscar un cliente por nombre/razón social o NIF con búsqueda incremental mientras escribe. Al seleccionar un cliente, sus datos —incluido el email— SHALL cargarse en la factura. Los datos del cliente (email incluido) SHALL poder modificarse desde la factura, y esos datos modificados SHALL quedar siempre en la factura que se guarda. La aplicación SHALL NOT modificar la ficha general del cliente sin preguntar: al guardar una factura cuyos datos de cliente difieran de los de su ficha, la aplicación SHALL pedir confirmación para guardar también esos cambios en la ficha, y SHALL actualizarla solo si el usuario acepta. El NIF SHALL identificar al cliente de la factura: si el usuario cambia en la factura el NIF del cliente elegido, la factura SHALL tratarse como la de otro cliente, y la ficha del cliente elegido SHALL NOT modificarse ni ofrecerse para actualizar. Al guardar una factura con datos de cliente correctos cuyo NIF no tiene ningún cliente de la lista, la aplicación SHALL avisar de que ese cliente se guardará en la lista junto con la factura, con Aceptar y Cancelar: si el usuario acepta, SHALL guardarse la factura y el cliente; si cancela, SHALL NOT guardarse nada y el editor SHALL seguir abierto con los datos escritos. La ficha general de clientes SHALL incluir el campo email.
 
 #### Scenario: Búsqueda incremental
 - **WHEN** el usuario escribe caracteres en el campo de búsqueda de cliente
@@ -122,6 +122,21 @@ Al crear o editar una factura, el usuario SHALL poder buscar un cliente por nomb
 #### Scenario: Factura con los datos del cliente sin tocar
 - **WHEN** el usuario guarda una factura sin haber cambiado ningún dato del cliente
 - **THEN** la aplicación no pregunta nada sobre la ficha del cliente
+
+#### Scenario: Cliente nuevo escrito a mano
+- **WHEN** el usuario guarda una factura con los datos correctos de un cliente cuyo NIF no está en la lista
+- **THEN** la aplicación avisa de que el cliente se guardará en la lista junto con la factura
+- **AND** si el usuario acepta, la factura se guarda y el cliente aparece en la lista de clientes
+
+#### Scenario: Cliente nuevo cancelado
+- **WHEN** el usuario guarda una factura con un cliente cuyo NIF no está en la lista y cancela el aviso
+- **THEN** no se guardan ni la factura ni el cliente
+- **AND** el editor sigue abierto con los datos escritos
+
+#### Scenario: Otro NIF sobre el cliente elegido
+- **WHEN** el usuario elige un cliente de la lista, cambia su NIF en la factura por uno que no tiene ningún cliente y guarda
+- **THEN** la aplicación no pregunta si actualizar la ficha del cliente elegido y avisa de que el cliente nuevo se guardará en la lista
+- **AND** la ficha del cliente elegido no cambia
 
 ### Requirement: Facturas normales
 
@@ -158,6 +173,10 @@ Cada línea SHALL tener cantidad, descripción, precio unitario, total e IVA. La
 #### Scenario: Guardar sin líneas
 - **WHEN** el usuario intenta guardar una factura sin ninguna línea
 - **THEN** la aplicación impide el guardado e informa del error
+
+#### Scenario: Descripción larga
+- **WHEN** el usuario escribe en una línea una descripción más larga que el ancho de su columna y pulsa Enter
+- **THEN** la fila crece y muestra la descripción entera, partida en varias líneas
 
 ### Requirement: Precios y recálculo
 
@@ -230,37 +249,37 @@ La factura SHALL tener un descuento general que se aplica sobre toda la factura,
 
 ### Requirement: Numeración de facturas por series
 
-La aplicación SHALL tener series de numeración. En una instalación nueva la aplicación SHALL NO crear ninguna serie por defecto: el listado de series comienza vacío y el usuario las crea a mano. Cada serie SHALL tener su propio correlativo. El correlativo SHALL ser la identidad de la factura; el componente de fecha (mes o año) SHALL recalcularse según la fecha y guardarse con la factura. Al editar una factura ya emitida, su fecha SHALL poder cambiar dentro del mismo año, pero SHALL NOT pasar a otro año: la factura se queda siempre en la numeración de su año. La base de datos SHALL impedir que dos facturas de la misma serie y el mismo año tengan el mismo correlativo. El correlativo de cada serie SHALL ser independiente por ejercicio: cada año de trabajo reinicia su propia cuenta sobre el siguiente número de ese año, sin afectar al correlativo de otros años. Las series SHALL poder crearse y configurarse desde la aplicación. La aplicación SHALL recordar la última serie utilizada y proponerla al crear la siguiente factura. El número SHALL proponerse automáticamente y poder modificarse manualmente. El número SHALL NOT consumirse hasta que la factura se guarda correctamente. El siguiente correlativo de una serie SHALL calcularse a partir de sus propias facturas: el mayor correlativo usado ese año más uno, o 1 si la serie no tiene ninguna factura ese año. La aplicación SHALL NOT guardar contadores de numeración. Una factura anulada SHALL conservar su correlativo, que SHALL NOT volver a proponerse. Los correlativos que queden libres por el borrado físico de facturas SHALL ofrecerse antes de proponer un correlativo nuevo. En Configuración → Series el usuario SHALL poder ver las series y su siguiente número, que SHALL NOT poder modificarse a mano.
+La aplicación SHALL tener series de numeración. En una instalación nueva la aplicación SHALL NO crear ninguna serie por defecto: el listado de series comienza vacío y el usuario las crea a mano. Cada serie SHALL tener su propio correlativo. El correlativo SHALL ser la identidad de la factura; el componente de fecha (mes o año) SHALL recalcularse según la fecha y guardarse con la factura. Al editar una factura ya emitida, su fecha SHALL poder cambiar dentro del mismo año, pero SHALL NOT pasar a otro año: la factura se queda siempre en la numeración de su año. La base de datos SHALL impedir que dos facturas de la misma serie y el mismo año tengan el mismo correlativo. El correlativo de cada serie SHALL ser independiente por ejercicio: cada año de trabajo reinicia su propia cuenta sobre el siguiente número de ese año, sin afectar al correlativo de otros años. Las series SHALL poder crearse y configurarse desde la aplicación. La aplicación SHALL recordar la última serie utilizada y proponerla al crear la siguiente factura. El número SHALL proponerse automáticamente y poder modificarse manualmente. El número SHALL NOT consumirse hasta que la factura se guarda correctamente. El siguiente correlativo de una serie SHALL calcularse a partir de sus propias facturas: el mayor correlativo usado ese año más uno, o 1 si la serie no tiene ninguna factura ese año. La aplicación SHALL NOT guardar contadores de numeración. Una factura anulada SHALL conservar su correlativo, que SHALL NOT volver a proponerse. Los correlativos que queden libres por el borrado físico de facturas SHALL ofrecerse al guardar una factura nueva con el número propuesto: la aplicación SHALL avisar del menor número libre con dos botones, uno para usarlo y otro para continuar con el número propuesto. Si el usuario ha escrito el número a mano, SHALL respetarse sin preguntar. En Configuración → Series el usuario SHALL poder ver las series y su siguiente número, que SHALL NOT poder modificarse a mano.
 
-Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\ (formato CODIGO-CORRELATIVO/MES o CORRELATIVO/MES si no hay código), \ANIO\ (formato CODIGO-CORRELATIVO-ANIO o CORRELATIVO-ANIO si no hay código) y \NINGUNO\ (formato CODIGO-CORRELATIVO o solo CORRELATIVO si no hay código). El campo \codigo\ de una serie SHALL poder estar vacío, en cuyo caso el número NO tendrá prefijo de letra; solo SHALL admitirse una serie sin código a la vez, de modo que otra serie en blanco se rechaza y se identifica la serie por su descripción. El formato predeterminado para series nuevas SHALL ser \MES\. Los correlativos libres SHALL buscarse dentro del mismo año: un correlativo SHALL considerarse usado cuando lo tiene una factura de esa serie y ese ejercicio, esté activa o anulada.
+Cada serie SHALL tener un campo `sufijo_fecha` con tres opciones posibles: `MES` (formato CODIGO-CORRELATIVO/MES o CORRELATIVO/MES si no hay código), `ANIO` (formato CODIGO-CORRELATIVO-ANIO o CORRELATIVO-ANIO si no hay código) y `NINGUNO` (formato CODIGO-CORRELATIVO o solo CORRELATIVO si no hay código). El campo `codigo` de una serie SHALL poder estar vacío, en cuyo caso el número NO tendrá prefijo de letra; solo SHALL admitirse una serie sin código a la vez, de modo que otra serie en blanco se rechaza y se identifica la serie por su descripción. El formato predeterminado para series nuevas SHALL ser `MES`. Los correlativos libres SHALL buscarse dentro del mismo año: un correlativo SHALL considerarse usado cuando lo tiene una factura de esa serie y ese ejercicio, esté activa o anulada.
 
 #### Scenario: Propuesta de número con formato MES (actual)
 - **WHEN** el usuario crea una factura en la serie C con formato MES, fecha 11/08/2026 y el siguiente correlativo de 2026 es 58
-- **THEN** la aplicación propone el número \C-58/8\
+- **THEN** la aplicación propone el número `C-58/8`
 
 #### Scenario: Propuesta de número con formato ANIO sin código
 - **WHEN** el usuario crea una factura en una serie sin código, formato ANIO, fecha 15/07/2026 y el siguiente correlativo de 2026 es 56
-- **THEN** la aplicación propone el número \56-2026\
+- **THEN** la aplicación propone el número `56-2026`
 
 #### Scenario: Propuesta de número con formato ANIO con código
 - **WHEN** el usuario crea una factura en la serie C con formato ANIO, fecha 15/07/2026 y el siguiente correlativo de 2026 es 56
-- **THEN** la aplicación propone el número \C-56-2026\
+- **THEN** la aplicación propone el número `C-56-2026`
 
 #### Scenario: Propuesta de número con formato NINGUNO sin código
 - **WHEN** el usuario crea una factura en una serie sin código, formato NINGUNO y el siguiente correlativo es 56
-- **THEN** la aplicación propone el número \56\
+- **THEN** la aplicación propone el número `56`
 
 #### Scenario: Propuesta de número con formato NINGUNO con código
 - **WHEN** el usuario crea una factura en la serie R con formato NINGUNO y el siguiente correlativo es 1
-- **THEN** la aplicación propone el número \R-1\
+- **THEN** la aplicación propone el número `R-1`
 
 #### Scenario: El mes sigue a la fecha con formato MES
 - **WHEN** el usuario cambia la fecha de la factura de julio a agosto y la guarda con formato MES
-- **THEN** el número se guarda con el mes correspondiente a la nueva fecha (p. ej. \C-59/8\) y el correlativo no cambia
+- **THEN** el número se guarda con el mes correspondiente a la nueva fecha (p. ej. `C-59/8`) y el correlativo no cambia
 
 #### Scenario: El año sigue a la fecha con formato ANIO
 - **WHEN** el usuario crea una factura con fecha de 2027 en una serie con formato ANIO
-- **THEN** el número lleva el año de esa fecha (p. ej. \1-2027\)
+- **THEN** el número lleva el año de esa fecha (p. ej. `1-2027`)
 
 #### Scenario: Número manual duplicado
 - **WHEN** el usuario introduce manualmente un número que ya tiene otra factura de la misma serie y el mismo año, esté activa o anulada
@@ -297,7 +316,7 @@ Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\
 
 #### Scenario: Reutilización de números borrados
 - **WHEN** la serie C tiene en 2026 facturas con los correlativos 1, 3 y 5, porque las del 2 y el 4 se borraron
-- **THEN** al crear una factura en 2026 la aplicación ofrece el correlativo 2, el menor hueco libre, o continuar con el 6
+- **THEN** al guardar una factura nueva de 2026 con el número propuesto, la aplicación ofrece el correlativo 2, el menor hueco libre, o continuar con el 6
 
 #### Scenario: Reutilización de anulados limitada al año
 - **WHEN** la serie C tiene en 2025 una factura anulada con correlativo 5, el mayor de ese año, y el usuario crea otra factura en 2025
@@ -315,6 +334,19 @@ Cada serie SHALL tener un campo \sufijo_fecha\ con tres opciones posibles: \MES\
 - **WHEN** el usuario edita una factura emitida de 2026, le pone una fecha de 2027 y guarda
 - **THEN** la factura no se guarda
 - **AND** la aplicación avisa «Una factura emitida no puede cambiar de año. Si es de otro año, anúlala y crea una nueva.»
+
+#### Scenario: Usar el número libre
+- **WHEN** la serie tiene un número libre y el usuario, al guardar una factura nueva con el número propuesto, elige usarlo
+- **THEN** la factura se guarda con el número libre
+
+#### Scenario: Continuar tras un número libre
+- **WHEN** la serie tiene un número libre y el usuario, al guardar una factura nueva con el número propuesto, elige continuar
+- **THEN** la factura se guarda con el número propuesto
+
+#### Scenario: Número a mano con números libres
+- **WHEN** la serie tiene un número libre y el usuario escribe a mano otro número que no tiene ninguna factura y guarda
+- **THEN** la aplicación no pregunta por el número libre
+- **AND** la factura se guarda con el número escrito
 
 ### Requirement: Fecha de trabajo
 
@@ -990,11 +1022,6 @@ La aplicación SHALL permitir anular y borrar facturas directamente desde la pan
 
 ### Requirement: Desglose de totales por tipo de IVA
 
-> Recrea «Orden del desglose de totales» sin su parrafo de PDF ni su escenario
-> de PDF («Factura con descuento en el PDF»), que estan en «Orden del desglose
-> en el PDF» de `pdf-rendering`. El título es nuevo porque el primero es una
-> regla general que sostiene tambien al requisito del PDF, no solo al editor.
-
 Cuando la factura tenga **varios tipos de IVA**, el desglose SHALL mostrar la base imponible de **cada tipo** junto a su cuota, de modo que cada cuota impresa sea comprobable a partir de una base impresa. SHALL NOT mostrarse una única base imponible agregada en lugar de las bases por tipo. El desglose SHALL incluir además una suma de las bases y una suma de las cuotas.
 
 En el **editor**, ese desglose por tipo SHALL presentarse como una matriz con una fila por tipo de IVA y columnas de base imponible y cuota, más una fila de totales. Junto a la matriz SHALL mostrarse la escalera hasta el total, con las filas de subtotal, descuento, base imponible, IVA total, retención, suplidos y TOTAL FACTURA, cada una sujeta a su condición de aparición. Las filas de subtotal y descuento SHALL aparecer solo cuando el descuento global sea mayor que 0.
@@ -1020,11 +1047,6 @@ El editor y el PDF SHALL partir del mismo cálculo y SHALL mostrar los mismos im
 - **THEN** todos los importes son idénticos a los calculados antes del cambio
 
 ### Requirement: Suplidos en la facturación
-
-> Recrea «Suplidos» sin sus parrafos de PDF ni su escenario de PDF («El
-> suplido tiene su propio bloque en el PDF»), que estan en «Suplidos en el PDF»
-> de `pdf-rendering`. El título es nuevo porque lo que queda no es solo fiscal:
-> incluye como se introduce un suplido y que su total se guarda con la factura.
 
 La aplicación SHALL permitir facturar suplidos: gastos pagados por cuenta del cliente que no forman parte de la contraprestación.
 
@@ -1112,4 +1134,3 @@ La demostración SHALL cubrir los casos que cuestan de montar a mano: varias ser
 #### Scenario: Los datos de demostración son ficticios
 - **WHEN** alguien revisa la empresa de demostración
 - **THEN** ningún cliente, NIF ni dirección corresponde a una persona o empresa real
-

@@ -279,11 +279,7 @@ La aplicación SHALL permitir exportar a PDF varias facturas seleccionadas en el
 
 ### Requirement: Orden del desglose en el PDF
 
-> Procede de «Orden del desglose de totales» de `invoicing`. Alli se quedan la
-> regla general del desglose y su presentacion en el editor, que son negocio y
-> pantalla; aqui viene el parrafo del PDF con su escenario.
-
-En el **PDF**, el desglose SHALL presentarse como las dos rejillas hermanas descritas en el requisito «Exportación a PDF»: el desglose de IVA a la izquierda, con una fila por tipo y una última fila `Totales`, y la liquidación a la derecha, terminada en la banda `TOTAL`. El descuento global SHALL resolverse como nota bajo la rejilla izquierda, sin duplicar el bloque de bases. El PDF SHALL NOT imprimir los rótulos `Subtotal`, `Subtotal N %`, `Subtotal exento`, `Base imponible N %` ni `Base exenta`.
+En el **PDF**, el desglose SHALL presentarse como las dos rejillas hermanas descritas en el requisito «Exportación de facturas a PDF»: el desglose de IVA a la izquierda, con una fila por tipo y una última fila `Totales`, y la liquidación a la derecha, terminada en la banda `TOTAL`. El descuento global SHALL resolverse como nota bajo la rejilla izquierda, sin duplicar el bloque de bases. El PDF SHALL NOT imprimir los rótulos `Subtotal`, `Subtotal N %`, `Subtotal exento`, `Base imponible N %` ni `Base exenta`.
 
 #### Scenario: Factura con descuento en el PDF
 - **WHEN** el usuario exporta el PDF de una factura con base 200,00, descuento global del 10 %, IVA 21 % y retención del 15 %
@@ -301,10 +297,6 @@ En el **PDF**, el desglose SHALL presentarse como las dos rejillas hermanas desc
 - **AND** el descuento, si lo hay, aparece una sola vez, en la nota bajo la rejilla de IVA
 
 ### Requirement: Suplidos en el PDF
-
-> Procede de «Suplidos» de `invoicing`. Que un suplido no forme parte de la base
-> imponible, no genere cuota, no entre en la base de retencion y no se vea
-> afectado por el descuento son reglas de negocio y se quedan alli.
 
 En el PDF, las líneas de suplido SHALL NOT aparecer en la tabla de líneas junto a las operaciones facturadas, y SHALL NOT rotularse como exentas: un suplido no es una operación exenta de IVA. SHALL presentarse en un bloque propio, situado tras la tabla de líneas y antes del bloque de totales, con la descripción y el importe de cada suplido. Ese bloque SHALL llevar una nota que deje constancia de que se han pagado en nombre y por cuenta del cliente, facturados a su nombre, y de que no están sujetos a IVA ni a retención. El bloque SHALL aparecer solo cuando la factura tenga al menos un suplido.
 

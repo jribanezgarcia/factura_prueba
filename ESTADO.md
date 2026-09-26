@@ -33,12 +33,13 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Módulo de pruebas: la tercera capa, TestFX en modo headless, una clase de prueba por pantalla (heredan de `PruebaDePantalla`, que prepara la empresa de demostración en una carpeta temporal) y dos pruebas de apariencia (`TemasTest` y `TextosCompletosTest`). El toolkit se arranca solo desde `PruebasJavaFx`. En total 381 pruebas; la batería completa, ~4:21 con `mvn test`. La columna del histórico queda como «Base» para que quepa en la ventana mínima.
 - Revisión de la base de datos: NIF y nombres únicos en las tablas maestras, recuperación de clientes inactivos y reutilización del cliente al facturar.
 - Módulo de facturas: una fila por factura, sin versiones, sin DAO de facturas y sin `ValidacionException`; 403 pruebas en unos 5 min.
+- Editor de facturas reescrito: celdas explicadas dentro del editor (`CeldaTexto` y sus subclases), cliente por NIF con aviso de cliente nuevo, número libre al guardar con dos botones, descripción de tres renglones; fuera `Reloj` y `ValidacionCliente`; 423 pruebas.
 
-Último cambio archivado: `2026-09-25-modulo-facturas`.
+Último cambio archivado: `2026-09-26-modulo-editor`.
 
 ## En curso
 
-**`modulo-editor`** (25/09/2026): rehace el editor de facturas (cliente por NIF con aviso de cliente nuevo, número libre al guardar, descripción de tres renglones) y elimina `ValidacionCliente`, `Reloj`, `ResumenFactura.IvaGrupo` y el constructor vacío de `LineaFactura`.
+**Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
@@ -49,8 +50,8 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 
 ## Qué toca ahora
 
-1. **`modulo-editor`**.
-2. Después, en el orden de los módulos: histórico → PDF → mensuales → copias → documentación.
+1. **`modulo-historico`**.
+2. Después, en el orden de los módulos: PDF → mensuales → copias → documentación.
 3. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
@@ -80,3 +81,4 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **Con `UNIQUE (serie_id, anio, correlativo)` un número tampoco se puede repetir aunque la factura que lo tiene esté anulada.**
 - **Tras modulo-facturas, las bases y las copias de seguridad anteriores no valen**: hay que borrar `%APPDATA%\Facturacion`.
 - **La sincronización al archivar puede dejarse líneas del delta sin aplicar aunque las cifras cuadren** (pasó en modulo-facturas). Después de archivar, compara cada requisito modificado o añadido con su bloque del delta, no solo el recuento.
+- **En TestFX headless, el foco no llega al editor de una celda recién puesto como graphic sin un `Platform.runLater`.**

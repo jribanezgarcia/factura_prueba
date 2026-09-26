@@ -27,7 +27,7 @@
   4. Guardar la factura nueva (con el número libre) o la emitida (con su confirmación).
   5. Actualizar la ficha si se aceptó.
 - [x] 3.7 `mvn -q compile` sin errores.
-- [ ] 3.8 Repaso tras revisión: celdas sin repetir (`CeldaTexto` con el editor por constructor), `guardarTexto` sin `return` ni `finally`, booleanos directos, `todosVacios()` en una comprobación, fuera los `nuevaCelda*`, `aplicarEstado()` partido en botones y campos, retoques de `guardarNueva`, tres `runLater` con su `//`, y celda por `getId()` en `PruebaDePantalla`.
+- [x] 3.8 Repaso tras revisión: celdas sin repetir (`CeldaTexto` con el editor por constructor), `guardarTexto` sin `return` ni `finally`, booleanos directos, `todosVacios()` en una comprobación, fuera los `nuevaCelda*`, `aplicarEstado()` partido en botones y campos, retoques de `guardarNueva`, tres `runLater` con su `//`, y celda por `getId()` en `PruebaDePantalla`.
 
 ## 4. Tests
 
@@ -40,7 +40,7 @@
 - [x] 5.1 `grep -rn "ValidacionCliente\|Reloj\|getReloj\|IvaGrupo\|new LineaFactura()" src/`: sin resultados.
 - [x] 5.2 En los ficheros reescritos, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|new Thread|Task<"`: nada (en `ConfiguracionController`, `GenerarFacturasMensualesController` y `ConstructorDocumentoFactura` quedan ternarios anteriores al change; no se añadió ninguno).
 - [x] 5.3 `grep -n "System.out\|ignored" vista/controlador/EditorController.java`: nada.
-- [x] 5.4 `EditorController.java` tiene 1804 líneas.
+- [x] 5.4 `EditorController.java` tiene 1823 líneas.
 - [x] 5.5 Con la aplicación cerrada, borrado `target` y `mvn test`: 423 pruebas en verde en 7:02 y ningún `ClassCastException` en el log.
 - [x] 5.6 `openspec validate modulo-editor --strict` sin errores.
 
@@ -53,13 +53,13 @@
 
 > La base de datos no cambia: no hace falta borrar `%APPDATA%\Facturacion`.
 
-- [ ] 7.1 Nueva factura. En la primera línea, sin tocar el ratón: cantidad, Enter, descripción, Enter, precio, Enter, Enter. El cursor salta cada vez a la celda siguiente, listo para escribir, y al final aparece una línea nueva con el cursor en su cantidad.
-- [ ] 7.2 Escribir una descripción de cuatro o cinco renglones: mientras se escribe, el cuadro tiene tres renglones con barra; al pulsar Enter, la fila crece y se lee entera.
-- [ ] 7.3 Cambiar el IVA de una línea con su desplegable, y poner otra como suplido: los totales y el desglose se actualizan.
-- [ ] 7.4 Marcar «Total de línea con IVA incluido», escribir 121 en el total de una línea al 21 %: el precio queda en 100,00.
-- [ ] 7.5 Cliente escrito a mano con un NIF nuevo: avisa de que se guardará en la lista. Cancelar: no se guarda nada. Aceptar: se guarda, y el cliente sale en Clientes.
-- [ ] 7.6 Elegir un cliente de la lista y cambiarle el email: pregunta si actualizar su ficha. Elegir otro cliente y cambiarle el NIF: no pregunta por su ficha y avisa de cliente nuevo.
-- [ ] 7.7 Borrar una factura desde el histórico que no sea la última de su serie y crear una nueva de esa serie: al guardar ofrece el número libre con los dos botones. Crear otra escribiendo el número a mano: no pregunta.
-- [ ] 7.8 Exportar a PDF desde el editor: sale el cursor de espera, el aviso con la ruta y el PDF se ve bien.
-- [ ] 7.9 Ctrl+S guarda, Ctrl+P exporta, Ctrl+N abre una factura nueva y Esc vuelve al menú (con el aviso de cambios si los hay).
-- [ ] 7.10 El editor se ve igual que antes a 1024×768 y maximizado.
+- [x] 7.1 Nueva factura. En la primera línea, sin tocar el ratón: cantidad, Enter, descripción, Enter, precio, Enter, Enter. El cursor salta cada vez a la celda siguiente, listo para escribir, y al final aparece una línea nueva con el cursor en su cantidad.
+- [x] 7.2 Escribir una descripción de cuatro o cinco renglones: mientras se escribe, el cuadro tiene tres renglones con barra; al pulsar Enter, la fila crece y se lee entera.
+- [x] 7.3 Cambiar el IVA de una línea con su desplegable, y poner otra como suplido: los totales y el desglose se actualizan.
+- [x] 7.4 Marcar «Total de línea con IVA incluido», escribir 121 en el total de una línea al 21 %: el precio queda en 100,00.
+- [x] 7.5 Cliente escrito a mano con un NIF nuevo: avisa de que se guardará en la lista. Cancelar: no se guarda nada. Aceptar: se guarda, y el cliente sale en Clientes.
+- [x] 7.6 Elegir un cliente de la lista y cambiarle el email: pregunta si actualizar su ficha. Elegir otro cliente y cambiarle el NIF: no pregunta por su ficha y avisa de cliente nuevo.
+- [x] 7.7 Borrar una factura desde el histórico que no sea la última de su serie y crear una nueva de esa serie: al guardar ofrece el número libre con los dos botones. Crear otra escribiendo el número a mano: no pregunta.
+- [x] 7.8 Exportar a PDF desde el editor: sale el cursor de espera, el aviso con la ruta y el PDF se ve bien.
+- [x] 7.9 Ctrl+S guarda, Ctrl+P exporta, Ctrl+N abre una factura nueva y Esc vuelve al menú (con el aviso de cambios si los hay).
+- [x] 7.10 El editor se ve igual que antes a 1024×768 y maximizado.
