@@ -18,6 +18,7 @@
 - [x] 3.4 Anular y eliminar con la lista de facturas, los textos y el resumen con números. Ver `design.md - D3`.
 - [x] 3.5 Exportar una, varias por separado y varias en un PDF, sin `Task` ni `Thread` y con cursor de espera. Ver `design.md - D4`.
 - [x] 3.6 `mvn -q compile` sin errores.
+- [ ] 3.7 Menú del clic derecho legible: la clase de estilo `menu-item` de los botones del menú principal pasa a `opcion-menu` en `MenuPrincipal.fxml`, `base.css`, los siete `tema-*.css` y `Botones.java`. Ver `design.md - D6`. Después, `grep -rn "menu-item" src/` no debe devolver nada, y pasan `TemasTest`, `TextosCompletosTest`, `CargaPantallasTest`, `PantallaMenuPrincipalTest` y `PantallaHistoricoTest`.
 
 ## 4. Tests
 
@@ -50,3 +51,4 @@
 - [ ] 7.7 Exportar una factura: pide dónde guardarla y el PDF se ve bien.
 - [ ] 7.8 Exportar tres facturas «Un PDF por factura»: pide la carpeta y salen tres PDF con sus nombres. Exportarlas «Todas en un PDF»: sale un único PDF con las tres. Mientras se generan, cursor de espera.
 - [ ] 7.9 Ctrl+F busca, y el histórico se ve bien a 1024×768.
+- [ ] 7.10 Tras la 3.7: en biblioteca8 y en un tema oscuro (neon o negro-dorado), clic derecho en el histórico y pasar el ratón por las opciones: la marcada se lee bien. El menú principal se ve igual que antes, también al pasar el ratón por sus botones.

@@ -191,6 +191,18 @@ try {
 
 - Los de hoy se adaptan: los textos de «Eliminar», el mensaje nuevo de la rectificada y `quitarFechas()` donde cuenten la demostración.
 
+## D6. El menú del clic derecho, legible en todos los temas
+
+Encontrado en las pruebas manuales. Los botones del menú principal usan la clase de estilo `menu-item`, que es también la que JavaFX pone a cada opción de un `ContextMenu`. Cada tema pinta `.menu-item:hover` con un fondo pensado para esos botones, y JavaFX pone el texto de la opción marcada en blanco o negro pensando en el color principal del tema. Resultado, medido en los siete temas al pasar el ratón por una opción: en cinco el contraste es de 1,2 a 1,4 (ilegible).
+
+**Arreglo**: nuestra clase pasa a llamarse `opcion-menu`, un nombre que JavaFX no usa.
+
+- `vista/recursos/MenuPrincipal.fxml`: los siete `styleClass="menu-item"` pasan a `styleClass="opcion-menu"`.
+- `vista/recursos/temas/base.css` y los siete `tema-*.css`: todas las reglas `.menu-item` (con `:hover`, `.icono`, `.nombre` y `.descripcion`) pasan a `.opcion-menu`. Nada más cambia en esos ficheros, y el `.root` de los temas no se toca.
+- `vista/utilidades/Botones.java`: el `contains("menu-item")` pasa a `contains("opcion-menu")`.
+
+Con el arreglo, la opción marcada del menú del clic derecho usa el color principal de cada tema, con un contraste de entre 4,6 y 8,3 (lo mínimo legible es 4,5). El menú principal se ve igual que antes.
+
 ## Riesgos y renuncias
 
 - **Exportar muchas facturas congela la ventana** mientras se generan los PDF, con el cursor de espera. `AGENTS.md` no permite hilos, y el aviso de cómo exportar hace de confirmación antes de la operación larga.
