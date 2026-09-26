@@ -30,7 +30,7 @@
                 <Label fx:id="lblEmpresaInfo" styleClass="empresa-info" text="" wrapText="true"/>
             </VBox>
             <VBox spacing="2" prefWidth="430.0" maxWidth="430.0" styleClass="card">
-                <Button maxWidth="Infinity" onAction="#nuevaFactura" styleClass="menu-item">
+                <Button maxWidth="Infinity" onAction="#nuevaFactura" styleClass="opcion-menu">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
                             <StackPane styleClass="caja-icono-menu">
@@ -43,7 +43,7 @@
                         </HBox>
                     </graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#generarMensual" styleClass="menu-item">
+                <Button maxWidth="Infinity" onAction="#generarMensual" styleClass="opcion-menu">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
                             <StackPane styleClass="caja-icono-menu">
@@ -56,7 +56,7 @@
                         </HBox>
                     </graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#historico" styleClass="menu-item">
+                <Button maxWidth="Infinity" onAction="#historico" styleClass="opcion-menu">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
                             <StackPane styleClass="caja-icono-menu">
@@ -69,7 +69,7 @@
                         </HBox>
                     </graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#clientes" styleClass="menu-item">
+                <Button maxWidth="Infinity" onAction="#clientes" styleClass="opcion-menu">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
                             <StackPane styleClass="caja-icono-menu">
@@ -82,7 +82,7 @@
                         </HBox>
                     </graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#configuracion" styleClass="menu-item">
+                <Button maxWidth="Infinity" onAction="#configuracion" styleClass="opcion-menu">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
                             <StackPane styleClass="caja-icono-menu">
@@ -95,7 +95,7 @@
                         </HBox>
                     </graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#copiaSeguridad" styleClass="menu-item">
+                <Button maxWidth="Infinity" onAction="#copiaSeguridad" styleClass="opcion-menu">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
                             <StackPane styleClass="caja-icono-menu">
@@ -108,7 +108,7 @@
                         </HBox>
                     </graphic>
                 </Button>
-                <Button maxWidth="Infinity" onAction="#salir" styleClass="menu-item">
+                <Button maxWidth="Infinity" onAction="#salir" styleClass="opcion-menu">
                     <graphic>
                         <HBox alignment="CENTER_LEFT" spacing="18">
                             <StackPane styleClass="caja-icono-menu">

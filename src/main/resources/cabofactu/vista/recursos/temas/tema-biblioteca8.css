@@ -52,11 +52,11 @@
 .menu-logo-box { -fx-background-color: #FFFFFF; -fx-border-color: #D8DBDF; }
 .empresa-nombre { -fx-text-fill: #1F2937; }
 .empresa-info { -fx-text-fill: #6B7280; }
-.menu-item:hover { -fx-background-color: #E8EEF3; }
-.menu-item .icono { -fx-fill: #296796; }
+.opcion-menu:hover { -fx-background-color: #E8EEF3; }
+.opcion-menu .icono { -fx-fill: #296796; }
 .default-button .icono-boton, .action-button .icono-boton { -fx-fill: #296796; }
 .primary-button .icono-boton { -fx-fill: #FFFFFF; }
-.menu-item .nombre { -fx-text-fill: #296796; }
-.menu-item .descripcion { -fx-text-fill: #6B7280; }
+.opcion-menu .nombre { -fx-text-fill: #296796; }
+.opcion-menu .descripcion { -fx-text-fill: #6B7280; }
 
 .panel-busqueda { -fx-background-color: #F6F6F6; }

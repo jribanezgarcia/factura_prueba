@@ -61,7 +61,7 @@ public final class Botones {
     private static boolean aceptado(Button b) {
         if (b.getStyleClass().contains("btn-ribbon")
                 || b.getStyleClass().contains("nav-button")
-                || b.getStyleClass().contains("menu-item")) {
+                || b.getStyleClass().contains("opcion-menu")) {
             return false;
         }
         for (Node p = b.getParent(); p != null; p = p.getParent()) {

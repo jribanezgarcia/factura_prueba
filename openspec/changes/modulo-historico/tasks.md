@@ -18,7 +18,7 @@
 - [x] 3.4 Anular y eliminar con la lista de facturas, los textos y el resumen con números. Ver `design.md - D3`.
 - [x] 3.5 Exportar una, varias por separado y varias en un PDF, sin `Task` ni `Thread` y con cursor de espera. Ver `design.md - D4`.
 - [x] 3.6 `mvn -q compile` sin errores.
-- [ ] 3.7 Menú del clic derecho legible: la clase de estilo `menu-item` de los botones del menú principal pasa a `opcion-menu` en `MenuPrincipal.fxml`, `base.css`, los siete `tema-*.css` y `Botones.java`. Ver `design.md - D6`. Después, `grep -rn "menu-item" src/` no debe devolver nada, y pasan `TemasTest`, `TextosCompletosTest`, `CargaPantallasTest`, `PantallaMenuPrincipalTest` y `PantallaHistoricoTest`.
+- [x] 3.7 Menú del clic derecho legible: la clase de estilo `menu-item` de los botones del menú principal pasa a `opcion-menu` en `MenuPrincipal.fxml`, `base.css`, los siete `tema-*.css` y `Botones.java`. Ver `design.md - D6`. Después, `grep -rn "menu-item" src/` no debe devolver nada, y pasan `TemasTest`, `TextosCompletosTest`, `CargaPantallasTest`, `PantallaMenuPrincipalTest` y `PantallaHistoricoTest`.
 
 ## 4. Tests
 

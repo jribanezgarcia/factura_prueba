@@ -107,7 +107,7 @@
     -fx-background-color: rgba(128,128,128,0.10);
 }
 
-.menu-item:hover, .primary-button:hover {
+.opcion-menu:hover, .primary-button:hover {
     -fx-scale-x: 1.02;
     -fx-scale-y: 1.02;
 }
@@ -369,7 +369,7 @@
     -fx-font-size: 13px;
 }
 
-.menu-item {
+.opcion-menu {
     -fx-background-radius: 8px;
     -fx-padding: 10px 16px;
     -fx-cursor: hand;
@@ -377,7 +377,7 @@
     -fx-spacing: 16px;
 }
 
-.menu-item .icono {
+.opcion-menu .icono {
     -fx-scale-x: 1.35;
     -fx-scale-y: 1.35;
 }
@@ -392,11 +392,11 @@
     -fx-alignment: center;
 }
 
-.menu-item .nombre {
+.opcion-menu .nombre {
     -fx-font-size: 15px;
 }
 
-.menu-item .descripcion {
+.opcion-menu .descripcion {
     -fx-font-size: 12px;
 }
 

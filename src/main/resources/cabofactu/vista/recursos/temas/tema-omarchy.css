@@ -53,9 +53,9 @@
 .menu-logo-box { -fx-background-color: #131A3A; -fx-border-color: rgba(125, 130, 217, 0.22); }
 .empresa-nombre { -fx-text-fill: #FFCEAD; }
 .empresa-info { -fx-text-fill: #6D7DB6; }
-.menu-item:hover { -fx-background-color: #1B2350; }
-.menu-item .icono { -fx-fill: #7D82D9; }
+.opcion-menu:hover { -fx-background-color: #1B2350; }
+.opcion-menu .icono { -fx-fill: #7D82D9; }
 .default-button .icono-boton, .action-button .icono-boton { -fx-fill: #7D82D9; }
 .primary-button .icono-boton { -fx-fill: #060B1E; }
-.menu-item .nombre { -fx-text-fill: #9A9EE8; }
-.menu-item .descripcion { -fx-text-fill: #6D7DB6; }
+.opcion-menu .nombre { -fx-text-fill: #9A9EE8; }
+.opcion-menu .descripcion { -fx-text-fill: #6D7DB6; }
