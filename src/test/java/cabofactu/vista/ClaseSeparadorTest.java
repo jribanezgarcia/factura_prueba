@@ -16,9 +16,9 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 
 /**
- * Verifica que ningun FXML declare un styleClass con espacios separando
+ * Verifica que ningún FXML declare un styleClass con espacios separando
  * clases: FXMLLoader parte esas listas por comas, de modo que un espacio
- * crea una clase literal que no coincide con ningun selector CSS.
+ * crea una clase literal que no coincide con ningún selector CSS.
  */
 class ClaseSeparadorTest {
 

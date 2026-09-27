@@ -7,7 +7,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -65,7 +67,7 @@ public final class CargarDemo {
         String sql;
         try (InputStream in = CargarDemo.class.getClassLoader().getResourceAsStream("db/seed_demo.sql")) {
             if (in == null) {
-                throw new IllegalStateException("seed_demo.sql no encontrado en recursos");
+                throw new Exception("No se encontró seed_demo.sql dentro de la aplicación.");
             }
             sql = new String(in.readAllBytes(), StandardCharsets.UTF_8);
         }
@@ -84,11 +86,31 @@ public final class CargarDemo {
                     sentencias++;
                 }
             }
+            copiarLogo();
         } finally {
             Conexion.cerrarConexion();
         }
         System.out.println("Demostración cargada: " + sentencias + " sentencias.");
         return info;
+    }
+
+    /**
+     * Copiamos el logo de la demostración a su carpeta de datos y dejamos la
+     * empresa en modo logo, para que se vea sin configurar nada.
+     */
+    private static void copiarLogo() throws Exception {
+        Path destino = Conexion.rutaBaseDe(CARPETA).getParent().resolve("logo.png");
+        try (InputStream in = CargarDemo.class.getClassLoader().getResourceAsStream("db/logo_demo.png")) {
+            if (in == null) {
+                throw new Exception("No se encontró el logo de la demostración dentro de la aplicación.");
+            }
+            Files.copy(in, destino, StandardCopyOption.REPLACE_EXISTING);
+        }
+        String actualizar = "UPDATE empresa SET logo_path = ?, cabecera_modo = 'LOGO' WHERE id = 1";
+        try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(actualizar)) {
+            sentencia.setString(1, destino.toAbsolutePath().toString());
+            sentencia.executeUpdate();
+        }
     }
 
     public static void main(String[] args) throws Exception {

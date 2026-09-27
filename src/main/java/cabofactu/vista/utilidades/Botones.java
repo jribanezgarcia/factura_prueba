@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * Iguala el ancho de los botones de solo texto que comparten fila,
- * como hacen los botones de los dialogos de aviso y confirmacion.
+ * como hacen los botones de los diálogos de aviso y confirmación.
  */
 public final class Botones {
 
@@ -21,9 +21,9 @@ public final class Botones {
     }
 
     /**
-     * Recorre el arbol y fija el mismo ancho preferido a los botones de
+     * Recorre el árbol y fija el mismo ancho preferido a los botones de
      * cada grupo. Un grupo son dos o mas botones hijos directos del mismo
-     * HBox o FlowPane, sin clases de icono, navegacion o menu y fuera de
+     * HBox o FlowPane, sin clases de icono, navegación o menú y fuera de
      * cualquier DialogPane. Debe llamarse con el CSS ya aplicado.
      */
     public static void igualarGrupos(Parent raiz) {

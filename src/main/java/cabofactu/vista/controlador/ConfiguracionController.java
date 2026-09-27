@@ -52,7 +52,7 @@ import cabofactu.vista.utilidades.GestorTemas;
 
 /**
  * Configuracion por secciones con lista lateral: Empresa, Cabecera y pie, PDF
- * y apariencia se guardan con un boton global; IVA, Retenciones y Series
+ * y apariencia se guardan con un botón global; IVA, Retenciones y Series
  * se administran con sus propias acciones.
  */
 public class ConfiguracionController implements Pantalla, Initializable {

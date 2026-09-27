@@ -4,12 +4,12 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 /**
- * Utilidades de identidad visual de la aplicacion: el prefijo de marca del
- * titulo y el icono propio de las ventanas.
+ * Utilidades de identidad visual de la aplicación: el prefijo de marca del
+ * título y el icono propio de las ventanas.
  */
 public final class Ventanas {
 
-    /** Prefijo de marca del titulo de todas las ventanas. */
+    /** Prefijo de marca del título de todas las ventanas. */
     public static final String PREFIJO = "CaboFactu\u00AE ";
 
     private static final String ICONO = "/cabofactu/vista/recursos/imagenes/icono-aplicacion.png";
@@ -17,7 +17,7 @@ public final class Ventanas {
     private Ventanas() {
     }
 
-    /** Aplica el icono de la aplicacion a una ventana (una sola vez). Silencioso si falta el recurso. */
+    /** Aplica el icono de la aplicación a una ventana (una sola vez). Silencioso si falta el recurso. */
     public static void aplicarIcono(Stage stage) {
         if (!stage.getIcons().isEmpty()) {
             return;

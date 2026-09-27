@@ -42,29 +42,34 @@
 
 ## 9. Ortografía
 
-- [ ] 9.1 `ConfiguracionVentana`: los cuatro títulos con tilde, y los tests que los comparen, al día. Ver `design.md - D8`.
-- [ ] 9.2 Tildes en los comentarios y el Javadoc de `src/main/java` y `src/test/java` (fuera del paquete `pdf`), sin tocar ningún identificador. Apuntar aquí cuántas líneas se han corregido. Ver `design.md - D8`.
+- [x] 9.1 `ConfiguracionVentana`: los cuatro títulos con tilde, y los tests que los comparen, al día. Ver `design.md - D8`.
+  - Ningún test compara esos títulos literalmente, así que no había ninguno que actualizar.
+- [x] 9.2 Tildes en los comentarios y el Javadoc de `src/main/java` y `src/test/java` (fuera del paquete `pdf`), sin tocar ningún identificador. Apuntar aquí cuántas líneas se han corregido. Ver `design.md - D8`.
+  - 46 líneas corregidas. No se han tocado `factura_linea`, `tipo_retencion` (identificadores de tabla partidos por el propio texto), `anio` ni `CODIGO`/`CORRELATIVO`/`ANIO`/`MES`/`NINGUNO` (notación de formato en mayúsculas de `Series.java`), ni `guion` (válido sin tilde en la ortografía actual).
 
 ## 10. Logo de la demo
 
-- [ ] 10.1 `src/main/resources/db/logo_demo.png`: el logo reducido a 600 px de ancho. Apuntar aquí su peso.
-- [ ] 10.2 `CargarDemo.cargar` copia el logo y pone `logo_path` y `cabecera_modo = 'LOGO'`. Ver `design.md - D9`.
-- [ ] 10.3 `CargarDemoTest` con los casos de `design.md - D9`.
+- [x] 10.1 `src/main/resources/db/logo_demo.png`: el logo reducido a 600 px de ancho. Apuntar aquí su peso.
+  - 600×400 px, 149,7 KB (153.302 bytes).
+- [x] 10.2 `CargarDemo.cargar` copia el logo y pone `logo_path` y `cabecera_modo = 'LOGO'`. Ver `design.md - D9`.
+- [x] 10.3 `CargarDemoTest` con los casos de `design.md - D9`.
 
 ## 11. Excepciones
 
-- [ ] 11.1 `AGENTS.md`: la norma nueva de excepciones. `CargarDemo`: `IllegalStateException` → `Exception`. Ver `design.md - D10`.
+- [x] 11.1 `AGENTS.md`: la norma nueva de excepciones. `CargarDemo`: `IllegalStateException` → `Exception`. Ver `design.md - D10`.
 
 ## 12. Errores inesperados
 
-- [ ] 12.1 Nuevo `vista/utilidades/ErroresInesperados.java`; registrarlo en `LanzadorVentanaPrincipal.start` y poner el `try / catch` de `AppCaboFactu.main`. Ver `design.md - D11`.
-- [ ] 12.2 `ErroresInesperadosTest` con los casos de `design.md - D11`, y la prueba de pantalla si es fiable (si no, apuntarlo aquí).
-- [ ] 12.3 En los ficheros de código tocados, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|javafx\.[a-z]+\.[A-Z]|java\.[a-z]+\.[a-z]+\.[A-Z]|new Thread|Task<|static class|enum [A-Z]"` sin contar las líneas `import`: nada nuevo. Borrar `target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo.
+- [x] 12.1 Nuevo `vista/utilidades/ErroresInesperados.java`; registrarlo en `LanzadorVentanaPrincipal.start` y poner el `try / catch` de `AppCaboFactu.main`. Ver `design.md - D11`.
+- [x] 12.2 `ErroresInesperadosTest` con los casos de `design.md - D11`, y la prueba de pantalla si es fiable (si no, apuntarlo aquí).
+  - Sin prueba de pantalla: `PruebaDePantalla` es de paquete (`cabofactu.vista`) y monta la empresa de demostración entera; forzar una excepción no capturada dentro de un botón real en TestFX headless, con los problemas ya conocidos de esta batería con los diálogos, no era fiable. Queda como prueba manual (tarea 15).
+- [x] 12.3 En los ficheros de código tocados, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|javafx\.[a-z]+\.[A-Z]|java\.[a-z]+\.[a-z]+\.[A-Z]|new Thread|Task<|static class|enum [A-Z]"` sin contar las líneas `import`: nada nuevo. Borrar `target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo.
+  - Los únicos avisos del grep son de código ya existente en los ficheros solo tocados por comentarios (ternarios, `var`, el propio `enum ConfiguracionVentana`...); ninguno en las líneas que he escrito o cambiado. `mvn test` completo tras borrar `target`: **475 pruebas, 0 fallos, 0 errores, 7:16 min**, sin ningún `ClassCastException` en el log.
 
 ## 13. Documentos al día
 
-- [ ] 13.1 `docs/tecnico.md`, `docs/flujos.md` y `README.md` según `design.md - D12`.
-- [ ] 13.2 `openspec validate documentacion-final --strict` sin errores. Actualizar la línea del change en «En curso» de `ESTADO.md`.
+- [x] 13.1 `docs/tecnico.md`, `docs/flujos.md` y `README.md` según `design.md - D12`.
+- [x] 13.2 `openspec validate documentacion-final --strict` sin errores. Actualizar la línea del change en «En curso» de `ESTADO.md`.
 
 ## 14. Capturas otra vez (sesión principal, con Computer use)
 

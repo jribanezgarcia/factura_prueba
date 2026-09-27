@@ -11,7 +11,7 @@ import java.util.Map;
 
 /**
  * Sistema de temas. Cada tema es un fichero CSS con sus colores que se aplica
- * junto a base.css (estructura comun). El tema activo se recuerda en la tabla
+ * junto a base.css (estructura común). El tema activo se recuerda en la tabla
  * de preferencias y se aplica al cargar cada vista.
  */
 public final class GestorTemas {

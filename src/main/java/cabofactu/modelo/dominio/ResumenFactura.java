@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Resultado del calculo de una factura: desglose por tipo de IVA, bases,
+ * Resultado del cálculo de una factura: desglose por tipo de IVA, bases,
  * importes de IVA y totales, con el descuento global aplicado.
  */
 public class ResumenFactura {

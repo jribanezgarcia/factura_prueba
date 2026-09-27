@@ -51,7 +51,7 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
-**`documentacion-final`**: reescribe `README.md`, `docs/metodologia.md` y `docs/tecnico.md`, añade `docs/flujos.md`, rehace las capturas y pone `AGENTS.md` y `openspec/config.yaml` al día con el flujo de trabajo real. Solo documentación: no toca el código ni `openspec/specs/`.
+**`documentacion-final`**: reescribe `README.md`, `docs/metodologia.md` y `docs/tecnico.md`, añade `docs/flujos.md`, rehace las capturas y pone `AGENTS.md` y `openspec/config.yaml` al día con el flujo de trabajo real. Además corrige los cuatro títulos de ventana y las tildes de los comentarios, añade el logo a la demostración, suaviza la norma de excepciones (`CargarDemo` pasa a `Exception`) y añade un manejador global de errores inesperados (`ErroresInesperados`, con aviso y `errores.log`).
 
 ## Qué toca ahora
 

@@ -322,7 +322,7 @@ class TextosCompletosTest {
         return false;
     }
 
-    // El lookup busca en toda la rama, así que un botón con un grafico que
+    // El lookup busca en toda la rama, así que un botón con un gráfico que
     // lleve otro Labeled dentro (como los del menú principal) podría
     // encontrar el texto de ese Labeled anidado en vez del suyo propio.
     private static boolean esTextoPropio(Node nodoTexto, Labeled etiqueta) {

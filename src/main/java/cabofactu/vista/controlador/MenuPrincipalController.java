@@ -23,9 +23,9 @@ import java.util.ResourceBundle;
 import cabofactu.vista.Vista;
 
 /**
- * Menu principal: Nueva factura, Historico, Clientes, Configuracion, Copia de
- * seguridad y Salir. Muestra la fecha de trabajo de la sesion (solo lectura).
- * El logo y los datos de empresa salen de la configuracion.
+ * Menú principal: Nueva factura, Histórico, Clientes, Configuracion, Copia de
+ * seguridad y Salir. Muestra la fecha de trabajo de la sesión (solo lectura).
+ * El logo y los datos de empresa salen de la configuración.
  */
 public class MenuPrincipalController implements Pantalla, Initializable {
 
@@ -54,7 +54,7 @@ public class MenuPrincipalController implements Pantalla, Initializable {
     }
 
     /**
-     * Evita que el primer boton del menu quede resaltado al abrir la vista:
+     * Evita que el primer botón del menú quede resaltado al abrir la vista:
      * el foco inicial se deja en el fondo de la escena y no en los botones.
      */
     private void quitarFocoInicial() {

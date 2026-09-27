@@ -13,20 +13,20 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Servicio central de calculo monetario. Siempre BigDecimal y HALF_UP.
+ * Servicio central de cálculo monetario. Siempre BigDecimal y HALF_UP.
  * Reglas:
- * - total linea = cantidad x precio (redondeado a 2 decimales).
- * - precio se deduce del total con precision interna (6 decimales).
+ * - total línea = cantidad x precio (redondeado a 2 decimales).
+ * - precio se deduce del total con precisión interna (6 decimales).
  * - entrada "con IVA": base = totalConIVA / (1 + tipo), IVA = resto.
  * - descuento global: se reduce cada base de IVA en el mismo porcentaje y se
- *   ajustan centimos en la mayor base para que la suma cuadre con el total
+ *   ajustan céntimos en la mayor base para que la suma cuadre con el total
  *   base descontado.
- * - el resumen expone ademas la base bruta (antes del descuento) y el
+ * - el resumen expone además la base bruta (antes del descuento) y el
  *   importe descontado para poder pintar el cuadre en el PDF.
- * - retencion de IRPF: se aplica sobre la base imponible (despues del
+ * - retención de IRPF: se aplica sobre la base imponible (después del
  *   descuento), la misma base sobre la que se calcula el IVA.
- * - suplidos: las lineas marcadas como suplido no entran en bases, cuotas,
- *   ajuste de centimos, descuento ni base de retencion; se acumulan aparte
+ * - suplidos: las líneas marcadas como suplido no entran en bases, cuotas,
+ *   ajuste de céntimos, descuento ni base de retención; se acumulan aparte
  *   en totalSuplidos y se suman al total.
  */
 public final class Calculos {
@@ -53,7 +53,7 @@ public final class Calculos {
     }
 
     /**
-     * Total de la linea con el IVA incluido (base × (1 + IVA%)); las
+     * Total de la línea con el IVA incluido (base × (1 + IVA%)); las
      * exentas se muestran sin IVA. No es lo mismo que {@link #totalLinea}:
      * aquel multiplica cantidad por precio sin IVA, este parte de la base ya
      * calculada y le suma la cuota.
@@ -67,9 +67,9 @@ public final class Calculos {
     }
 
     /**
-     * Lineas marcadas como suplido. Se filtra por el flag congelado de cada
-     * linea, no por el catalogo actual de tipos: una factura antigua sigue
-     * clasificando igual aunque el tipo se haya cambiado despues.
+     * Líneas marcadas como suplido. Se filtra por el flag congelado de cada
+     * línea, no por el catálogo actual de tipos: una factura antigua sigue
+     * clasificando igual aunque el tipo se haya cambiado después.
      */
     public static List<LineaFactura> suplidosDe(List<LineaFactura> lineas) {
         List<LineaFactura> suplidos = new ArrayList<>();
@@ -120,7 +120,7 @@ public final class Calculos {
 
     /**
      * Calcula el resumen completo de la factura con descuento global, desglose
-     * por tipo de IVA y retencion de IRPF aplicada sobre la base imponible.
+     * por tipo de IVA y retención de IRPF aplicada sobre la base imponible.
      */
     public static ResumenFactura resumen(List<LineaFactura> lineas, int descuento, TipoRetencion retencion) {
         BigDecimal factor = factorDescuento(descuento);

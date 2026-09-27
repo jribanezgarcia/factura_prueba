@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.util.Properties;
 
 /**
- * Preferencias fuera de las empresas: la ultima empresa abierta y su tema,
+ * Preferencias fuera de las empresas: la última empresa abierta y su tema,
  * que usa la pantalla de arranque.
  * Se guardan en BASE_DATA_DIR/preferencias.properties, fuera de la BD.
  */

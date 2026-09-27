@@ -50,7 +50,7 @@ Soy **[@jribanezgarcia](https://github.com/jribanezgarcia)**, estudiante de DAM.
 | Empresas | Varias, con sus datos fiscales obligatorios antes de empezar |
 | Copias de seguridad | Un botón, y restauración en la empresa activa o como empresa nueva |
 | Apariencia | 7 temas: biblioteca8, omarchy, esmeralda, terracota, negro-dorado, sakura y neon |
-| Demostración | Empresa de datos ficticios que se carga sola en una instalación nueva |
+| Demostración | Empresa de datos ficticios con logo que se carga sola en una instalación nueva |
 
 ## Capturas
 
@@ -109,6 +109,7 @@ En la primera ejecución se carga una **empresa de demostración** con datos fic
 - **Escribir antes de programar.** Con OpenSpec cada cambio empieza por explicar *por qué* y *qué se descarta*, y la especificación se mantiene siempre al día.
 - **Trabajar con IA revisándolo todo.** Las herramientas ayudan mucho, pero las decisiones y la revisión final son mías: en una auditoría temprana un modelo se inventó clases que no existían, y solo se detectó comprobándolo en el código.
 - **Cambios pequeños.** Mejor muchos cambios pequeños y revisables que uno gigante imposible de probar.
+- **Un error no debe cerrar la aplicación en silencio.** Un manejador global (`Thread.setDefaultUncaughtExceptionHandler`) avisa al usuario y anota cada error inesperado en `errores.log`, en vez de perderse en la consola.
 
 ## Próximos pasos
 

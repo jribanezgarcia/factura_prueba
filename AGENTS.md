@@ -114,7 +114,7 @@ Obligatorio en todo código nuevo o modificado, también en los tests.
 - Una clase por fichero. Nada de clases, enums, records ni interfaces dentro de otra clase. Única excepción: las celdas de la tabla de líneas dentro de `EditorController`.
 - Sin `record`, sin `var`, sin streams, sin referencias a método (`::`), sin clases anónimas y sin operador ternario: siempre `if / else`.
 - Sin `Optional`, salvo el que devuelve `showAndWait()` de un diálogo, leído con `isPresent()` y `get()`. En el resto, `null`.
-- Solo `Exception`: nada de excepciones propias. Los mensajes van sin prefijos, tal como los verá el usuario.
+- Por defecto, `Exception` con el mensaje tal como lo verá el usuario, sin prefijos. Una excepción propia solo cuando aporte algo (un `catch` que la trate aparte), en su propio fichero. Las de Java (`IllegalArgumentException`, `IllegalStateException`) solo para errores de programación que el usuario no puede provocar, como un `null` donde no debe. Todo lo que se escape lo recoge `ErroresInesperados`.
 - Bucles `for-each`; con índice solo cuando se necesita la posición.
 - Textos con datos dentro, con `String.format`. Un texto que se monta por partes, en un bucle o con partes que dependen de un `if` (la consulta del histórico con sus filtros), con `StringBuilder`. Una lista separada por comas, con `String.join`.
 - Comprobar texto vacío escrito tal cual: `if (texto == null || texto.isBlank())`.

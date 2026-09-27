@@ -131,7 +131,7 @@ public final class LogoMarco {
         }
     }
 
-    /** Aplica el relleno al recuadro segun la imagen, tras limpiar lo anterior. */
+    /** Aplica el relleno al recuadro según la imagen, tras limpiar lo anterior. */
     public static void aplicar(StackPane pane, Image imagen) {
         limpiar(pane);
         if (imagen == null || imagen.isError()) {

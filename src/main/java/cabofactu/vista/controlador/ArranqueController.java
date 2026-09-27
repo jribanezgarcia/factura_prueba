@@ -25,8 +25,8 @@ import cabofactu.vista.utilidades.Dialogos;
 /**
  * Pantalla de arranque: elige la empresa, el anio del ejercicio fiscal y la
  * fecha de trabajo. Si el ejercicio es el anio en curso, la fecha de trabajo se
- * fija a hoy automaticamente; en otro caso se pide a mano dentro del ejercicio.
- * Tambien permite crear una empresa nueva y eliminar cualquiera de la lista.
+ * fija a hoy automáticamente; en otro caso se pide a mano dentro del ejercicio.
+ * También permite crear una empresa nueva y eliminar cualquiera de la lista.
  */
 public class ArranqueController implements Pantalla, Initializable {
 
@@ -86,7 +86,7 @@ public class ArranqueController implements Pantalla, Initializable {
     }
 
     /**
-     * Ajusta la fecha de trabajo segun el anio del ejercicio: si es el anio en
+     * Ajusta la fecha de trabajo según el anio del ejercicio: si es el anio en
      * curso, queda fijada a hoy (no editable); si es otro, se pide a mano y solo
      * se permiten fechas dentro de ese ejercicio.
      */

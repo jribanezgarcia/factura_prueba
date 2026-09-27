@@ -7,11 +7,11 @@ import javafx.stage.Stage;
  */
 public enum ConfiguracionVentana {
 
-    ARRANQUE("Seleccion de empresa", "Arranque.fxml", 760, 520, 760, 520, false),
-    MENU("Menu Principal", "MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
+    ARRANQUE("Selección de empresa", "Arranque.fxml", 760, 520, 760, 520, false),
+    MENU("Menú principal", "MenuPrincipal.fxml", 1024, 768, 1024, 768, true),
     EDITOR("Editor de factura", "Editor.fxml", 1024, 768, 1024, 768, true),
-    CONFIGURACION("Configuracion", "Configuracion.fxml", 1024, 768, 1024, 768, true),
-    HISTORICO("Historico", "Historico.fxml", 1024, 768, 1024, 768, true),
+    CONFIGURACION("Configuración", "Configuracion.fxml", 1024, 768, 1024, 768, true),
+    HISTORICO("Histórico", "Historico.fxml", 1024, 768, 1024, 768, true),
     CLIENTES("Clientes", "Clientes.fxml", 1024, 768, 1024, 768, true),
     COPIA_SEGURIDAD("Copias", "CopiaSeguridad.fxml", 1024, 768, 1024, 768, true);
 

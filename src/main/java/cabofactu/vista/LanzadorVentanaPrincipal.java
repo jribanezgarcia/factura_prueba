@@ -3,6 +3,7 @@ package cabofactu.vista;
 import cabofactu.controlador.Controlador;
 import cabofactu.vista.controlador.ArranqueController;
 import cabofactu.vista.utilidades.Dialogos;
+import cabofactu.vista.utilidades.ErroresInesperados;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
@@ -20,6 +21,7 @@ public class LanzadorVentanaPrincipal extends Application {
 
     @Override
     public void start(Stage stage) {
+        ErroresInesperados.registrar();
         Controlador controlador = Vista.getInstancia().getControlador();
         try {
             controlador.prepararDatos();

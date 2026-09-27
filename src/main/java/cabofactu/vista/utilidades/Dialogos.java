@@ -13,7 +13,7 @@ import javafx.stage.Window;
 import cabofactu.vista.Ventanas;
 
 /**
- * Dialogos comunes de la aplicacion.
+ * Dialogos comunes de la aplicación.
  */
 public final class Dialogos {
 
@@ -173,7 +173,7 @@ public final class Dialogos {
 
     /**
      * Viste un {@link DialogPane} con el tema activo y la clase de tarjeta,
-     * de modo que los dialogos no salgan con el gris por defecto de JavaFX.
+     * de modo que los diálogos no salgan con el gris por defecto de JavaFX.
      */
     public static void aplicarTema(DialogPane pane) {
         pane.getStyleClass().add("dialog-card");
@@ -181,7 +181,7 @@ public final class Dialogos {
     }
 
     /**
-     * Glifo del icono de aviso segun el tipo del dialogo, coloreado con el
+     * Glifo del icono de aviso según el tipo del diálogo, coloreado con el
      * acento del tema activo mediante la clase CSS "dialog-icon".
      */
     private static SVGPath icono(Alert.AlertType tipo) {
@@ -198,7 +198,7 @@ public final class Dialogos {
     }
 
     /**
-     * Aplica el icono de aplicacion a la ventana propia del dialogo una vez
+     * Aplica el icono de aplicación a la ventana propia del diálogo una vez
      * mostrado, reutilizando {@link Ventanas#aplicarIcono(Stage)} (idempotente
      * y silencioso si falta el recurso).
      */

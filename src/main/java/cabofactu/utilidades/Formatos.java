@@ -10,7 +10,7 @@ import java.time.format.TextStyle;
 import java.util.Locale;
 
 /**
- * Formato espanol de importes y fechas.
+ * Formato español de importes y fechas.
  */
 public final class Formatos {
 
@@ -42,7 +42,7 @@ public final class Formatos {
         return Month.of(mes).getDisplayName(TextStyle.FULL, ES);
     }
 
-    /** Nombre de archivo PDF para un numero de factura: la barra se sustituye por guion. */
+    /** Nombre de archivo PDF para un número de factura: la barra se sustituye por guion. */
     public static String nombreArchivoPdf(String numeroFactura) {
         if (numeroFactura == null || numeroFactura.isBlank()) {
             return "factura.pdf";
@@ -51,8 +51,8 @@ public final class Formatos {
     }
 
     /**
-     * Parseo de importes tecleados en celdas de linea: admite coma o punto como
-     * separador decimal y devuelve null si no es numerico.
+     * Parseo de importes tecleados en celdas de línea: admite coma o punto como
+     * separador decimal y devuelve null si no es numérico.
      */
     public static BigDecimal parseEntrada(String texto) {
         if (texto == null || texto.isBlank()) {

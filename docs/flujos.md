@@ -35,6 +35,7 @@ sequenceDiagram
     M->>C: new Controlador(modelo, vista) + comenzar()
     C->>V: comenzar()
     V->>L: comenzar()
+    L->>L: ErroresInesperados.registrar()
     L->>C: prepararDatos()
     C->>C: PreparacionDatos.crearCarpeta() + InstanciaUnica.adquirir()
     L->>C: cargarDemostracion()
@@ -48,8 +49,8 @@ sequenceDiagram
 
 1. **[`AppCaboFactu.main`](../src/main/java/cabofactu/AppCaboFactu.java)**: fija el idioma a español, crea [`Modelo`](../src/main/java/cabofactu/modelo/Modelo.java), pide `Vista.getInstancia()`, crea el [`Controlador`](../src/main/java/cabofactu/controlador/Controlador.java) con ambos y llama a `controlador.comenzar()`.
 2. **`Controlador.comenzar`** llama a [`Vista`](../src/main/java/cabofactu/vista/Vista.java)`.comenzar`, que llama a [`LanzadorVentanaPrincipal`](../src/main/java/cabofactu/vista/LanzadorVentanaPrincipal.java)`.comenzar`: arranca JavaFX (`Application.launch`), que a su vez invoca `start(Stage)`.
-3. **`LanzadorVentanaPrincipal.start`** pide al controlador `prepararDatos()`. Dentro, `Controlador.prepararDatos` llama a [`PreparacionDatos`](../src/main/java/cabofactu/PreparacionDatos.java)`.crearCarpeta()` (crea `%APPDATA%\Facturacion` si no existe) y a [`InstanciaUnica`](../src/main/java/cabofactu/InstanciaUnica.java)`.adquirir()`, que intenta bloquear `facturas.lock`; si otra instancia ya lo tiene bloqueado, se lanza una `Exception` y la aplicación se cierra con un aviso.
-4. **`LanzadorVentanaPrincipal.start`** llama después a `controlador.cargarDemostracion()`, que reenvía a `PreparacionDatos.cargarDemoSiNoHayEmpresas`: si [`Empresas`](../src/main/java/cabofactu/modelo/negocio/Empresas.java)`.getEmpresas().listado()` está vacío, llama a [`CargarDemo`](../src/main/java/cabofactu/modelo/negocio/sqlite/CargarDemo.java)`.cargar()`, que da de alta la empresa `demo` con `Empresas.alta("Demo")` y ejecuta `db/seed_demo.sql` sobre la base recién creada con [`Conexion`](../src/main/java/cabofactu/modelo/negocio/sqlite/Conexion.java)`.establecerConexion()`.
+3. **`LanzadorVentanaPrincipal.start`** llama antes que nada a [`ErroresInesperados`](../src/main/java/cabofactu/vista/utilidades/ErroresInesperados.java)`.registrar()`, para que un error no previsto ya se pueda avisar y anotar, y pide después al controlador `prepararDatos()`. Dentro, `Controlador.prepararDatos` llama a [`PreparacionDatos`](../src/main/java/cabofactu/PreparacionDatos.java)`.crearCarpeta()` (crea `%APPDATA%\Facturacion` si no existe) y a [`InstanciaUnica`](../src/main/java/cabofactu/InstanciaUnica.java)`.adquirir()`, que intenta bloquear `facturas.lock`; si otra instancia ya lo tiene bloqueado, se lanza una `Exception` y la aplicación se cierra con un aviso.
+4. **`LanzadorVentanaPrincipal.start`** llama después a `controlador.cargarDemostracion()`, que reenvía a `PreparacionDatos.cargarDemoSiNoHayEmpresas`: si [`Empresas`](../src/main/java/cabofactu/modelo/negocio/Empresas.java)`.getEmpresas().listado()` está vacío, llama a [`CargarDemo`](../src/main/java/cabofactu/modelo/negocio/sqlite/CargarDemo.java)`.cargar()`, que da de alta la empresa `demo` con `Empresas.alta("Demo")`, ejecuta `db/seed_demo.sql` sobre la base recién creada con [`Conexion`](../src/main/java/cabofactu/modelo/negocio/sqlite/Conexion.java)`.establecerConexion()` y copia el logo de la demostración a su carpeta de datos, dejando la empresa en modo logo.
 5. **`Vista.prepararArranque`** carga `Arranque.fxml` en la ventana y devuelve su [`ArranqueController`](../src/main/java/cabofactu/vista/controlador/ArranqueController.java). Al mostrarse, `stage.setOnShown` llama a `arranque.mostrarAvisoInicial(demoCargada)`, que avisa de la demo si se acaba de cargar.
 6. **`ArranqueController.initialize`** (llamado por JavaFX al cargar el FXML) rellena el combo de empresas (`cargarEmpresas`) y el de ejercicios fiscales (`configurarEjercicio`), y fija la fecha de trabajo a hoy si el ejercicio elegido es el actual.
 7. El usuario elige empresa y pulsa **Entrar**: `ArranqueController.entrar` valida que hay empresa y fecha, y llama a `Controlador.abrirEmpresa(carpeta, fecha)`, que reenvía a `Modelo` y termina en `Empresas.abrir`.
@@ -59,7 +60,7 @@ sequenceDiagram
 11. **[`MenuPrincipalController`](../src/main/java/cabofactu/vista/controlador/MenuPrincipalController.java)`.initialize`** carga el nombre, el NIF y el logo de la empresa activa, y la fecha de trabajo de la sesión.
 12. Al cerrar la ventana, `Vista` pide confirmación (`puedeSalir`) y llama a `Controlador.terminar()`, que suelta el bloqueo de `InstanciaUnica` y cierra la conexión con `Conexion.cerrarConexion()`.
 
-**Conceptos que aparecen**: patrón *singleton* (`Vista`, `Empresas`, `Sesion`), MVC con `Controlador`/`Modelo`/`Vista`, `Initializable.initialize()` de JavaFX, bloqueo de fichero (`FileLock`) para instancia única, y la separación entre `alMostrar()` (después de que la pantalla ya está en la ventana) e `initialize()` (mientras se carga el FXML).
+**Conceptos que aparecen**: patrón *singleton* (`Vista`, `Empresas`, `Sesion`), MVC con `Controlador`/`Modelo`/`Vista`, `Initializable.initialize()` de JavaFX, bloqueo de fichero (`FileLock`) para instancia única, la separación entre `alMostrar()` (después de que la pantalla ya está en la ventana) e `initialize()` (mientras se carga el FXML), y el manejador global de errores (`Thread.setDefaultUncaughtExceptionHandler`) que avisa y anota en `errores.log` cualquier error que ninguna pantalla haya capturado.
 
 ---
 

@@ -15,8 +15,8 @@ import javafx.scene.text.Text;
 import java.io.File;
 
 /**
- * Previsualizacion aproximada de la cabecera del PDF. Usa la geometria de
- * {@link DisposicionCabecera}, la misma que emplea la generacion real, y se pinta a
+ * Previsualizacion aproximada de la cabecera del PDF. Usa la geometría de
+ * {@link DisposicionCabecera}, la misma que emplea la generación real, y se pinta a
  * escala sobre una hoja A4 recortada a la banda superior.
  */
 public class PreviaCabecera extends Pane {

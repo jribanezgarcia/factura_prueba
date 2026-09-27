@@ -3,6 +3,7 @@ package cabofactu;
 import cabofactu.controlador.Controlador;
 import cabofactu.modelo.Modelo;
 import cabofactu.vista.Vista;
+import cabofactu.vista.utilidades.ErroresInesperados;
 
 import java.util.Locale;
 
@@ -16,9 +17,13 @@ public class AppCaboFactu {
 
     public static void main(String[] args) {
         Locale.setDefault(new Locale("es", "ES"));
-        Modelo modelo = new Modelo();
-        Vista vista = Vista.getInstancia();
-        Controlador controlador = new Controlador(modelo, vista);
-        controlador.comenzar();
+        try {
+            Modelo modelo = new Modelo();
+            Vista vista = Vista.getInstancia();
+            Controlador controlador = new Controlador(modelo, vista);
+            controlador.comenzar();
+        } catch (Exception e) {
+            ErroresInesperados.guardar(e);
+        }
     }
 }

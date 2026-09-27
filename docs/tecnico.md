@@ -74,7 +74,7 @@ src/main/java/cabofactu/
 ├── vista/                   → Vista (singleton), Pantalla, LanzadorVentanaPrincipal, Ventanas
 ├── vista/controlador/       → un Controller por FXML (MenuPrincipalController, EditorController...)
 ├── vista/recursos/          → LocalizadorRecursos, que busca los FXML en el classpath
-├── vista/utilidades/        → Dialogos, GestorTemas, Botones, CambiosSinGuardar...
+├── vista/utilidades/        → Dialogos, GestorTemas, Botones, CambiosSinGuardar, ErroresInesperados...
 └── utilidades/              → Formatos y validadores: NIF, código postal, email
 ```
 
@@ -87,7 +87,8 @@ src/main/resources/
 │   └── imagenes/             → icono de la aplicación
 └── db/
     ├── crear_tablas.sql      → el único script de creación de tablas
-    └── seed_demo.sql         → los datos de la empresa de demostración
+    ├── seed_demo.sql         → los datos de la empresa de demostración
+    └── logo_demo.png         → el logo de la empresa de demostración
 ```
 
 ## Clases de datos, negocio y pantallas
@@ -200,8 +201,9 @@ JavaFX se arranca una sola vez por proceso de pruebas, desde `PruebasJavaFx` (co
 | SQLite | MySQL / PostgreSQL | No hay que instalar ni configurar un servidor: la base es un fichero |
 | Una base de datos por empresa | Una base con `empresa_id` en cada tabla | Aislamiento total: copiar o borrar una empresa es copiar o borrar una carpeta |
 | Singletons con el SQL dentro (como Biblioteca8) | Capas negocio + DAO separadas | Menos clases e indirección para un proyecto de un alumno de 1º de DAM |
-| Solo `Exception`, con el mensaje para el usuario | Excepciones propias (`DatosException`) | Un único tipo que capturar en toda la aplicación |
+| `Exception` por defecto; una propia solo si aporta algo | Excepciones propias siempre (`DatosException`) | Menos tipos que mantener; una propia solo cuando un `catch` la va a tratar aparte |
 | Sin hilos: cursor de espera | `Task` y `Thread` para operaciones largas | Nada que sincronizar ni que se pueda quedar a medias |
+| Manejador global de errores con aviso y `errores.log` | Dejar que el error salga por consola | Un error no previsto avisa al usuario y queda anotado en vez de perderse |
 | Un único script de tablas (`db/crear_tablas.sql`) | Migraciones versionadas | En una aplicación en desarrollo las tablas son siempre las últimas |
 | Copias con `VACUUM INTO` | Copiar el fichero `.db` a mano | Genera una copia consistente aunque la aplicación esté usando la base |
 | La copia se comprueba contra `crear_tablas.sql` | Listas de tablas y columnas escritas a mano | Se crea una base vacía en memoria con el script y se compara: no hay que tocar dos sitios con cada cambio de esquema |
