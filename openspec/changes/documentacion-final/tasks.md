@@ -37,8 +37,9 @@
 
 ## 8. Revisión del alumno (al final, después de la sección 16)
 
-- [ ] 8.1 Leer los cuatro documentos en GitHub (en una rama o tras el push) y comprobar que los diagramas se dibujan.
-- [ ] 8.2 Comprobar que lo que se cuenta del flujo de trabajo es como se ha trabajado de verdad.
+- [x] 8.1 Leer los cuatro documentos en GitHub (en una rama o tras el push) y comprobar que los diagramas se dibujan.
+- [x] 8.2 Comprobar que lo que se cuenta del flujo de trabajo es como se ha trabajado de verdad.
+  - Revisado por el alumno en GitHub: los diagramas se dibujan y el flujo de trabajo es el real.
 
 ## 9. Ortografía
 
@@ -91,3 +92,4 @@
 - [x] 16.5 El `grep` de estilo de la 12.3 sobre los ficheros tocados: nada nuevo. `rm -rf target` y `mvn test` completo: todo en verde. 475 pruebas, 0 fallos, 7:45 min.
 - [x] 16.6 Prueba manual: arrancar la aplicación borrando antes la carpeta de la demo. Sale el aviso de bienvenida encima de la ventana de arranque y la demo queda elegida. Sin borrar nada, arranca sin aviso.
   - Comprobada con Computer use: con la demo apartada, sale «Bienvenido» encima de la ventana de arranque y la demo queda elegida; con la demo en su sitio, arranca sin aviso. La demo del usuario quedó como estaba.
+- [x] 16.7 `README.md`, «Lo que he aprendido»: la frase del manejador de errores decía que un error «cierra la aplicación en silencio», y no es así (sin manejador, JavaFX lo escribe en la consola y sigue). Pasa a «Un error inesperado no debe pasar en silencio», con la aplicación abierta y el error en `errores.log`.
