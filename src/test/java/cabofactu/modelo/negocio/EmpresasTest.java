@@ -128,6 +128,23 @@ class EmpresasTest {
     }
 
     @Test
+    void bajaDeLaEmpresaRecordadaBorraLaPreferencia() throws Exception {
+        Empresas.getEmpresas().alta("Recordada");
+        Empresas.getEmpresas().recordarUltima("recordada");
+        Empresas.getEmpresas().baja("recordada");
+        assertEquals("", PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA));
+    }
+
+    @Test
+    void bajaDeOtraEmpresaNoCambiaLaRecordada() throws Exception {
+        Empresas.getEmpresas().alta("Recordada");
+        Empresas.getEmpresas().alta("Otra");
+        Empresas.getEmpresas().recordarUltima("recordada");
+        Empresas.getEmpresas().baja("otra");
+        assertEquals("recordada", PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA));
+    }
+
+    @Test
     void laEmpresaEnUsoNoSePuedeDarDeBaja() throws Exception {
         Empresas.getEmpresas().alta("Activa");
         Empresas.getEmpresas().abrir("activa", LocalDate.now());

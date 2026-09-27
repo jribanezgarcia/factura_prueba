@@ -1,10 +1,13 @@
 package cabofactu.vista;
 
+import cabofactu.modelo.negocio.Empresas;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -36,6 +39,18 @@ class PantallaArranqueTest extends PruebaDePantalla {
         pulsar("Nueva...");
         aceptarAviso();
         assertEquals(1, empresas().getItems().size());
+    }
+
+    @Test
+    void eliminarLaEmpresaElegidaDejaElegidaLaDemo() throws Exception {
+        Empresas.getEmpresas().alta("Prueba Dos");
+        abrirArranque();
+        clickOn(empresas());
+        pulsar("Prueba Dos");
+        pulsar("Eliminar");
+        aceptarAviso();
+        assertEquals("Empresa Demo S.L.", empresas().getValue().toString());
+        assertFalse(buscar("#btnEntrar", Button.class).isDisabled());
     }
 
     @Test

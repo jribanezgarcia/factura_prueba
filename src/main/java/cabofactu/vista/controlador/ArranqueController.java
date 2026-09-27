@@ -125,6 +125,7 @@ public class ArranqueController implements Pantalla, Initializable {
     private void cargarEmpresas() {
         try {
             List<EmpresaDisponible> empresas = Vista.getInstancia().getControlador().listadoEmpresas();
+            cmbEmpresa.setValue(null);
             cmbEmpresa.getItems().setAll(empresas);
             String ultima = PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA);
             if (ultima != null) {

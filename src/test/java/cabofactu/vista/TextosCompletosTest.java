@@ -12,6 +12,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.Labeled;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.junit.jupiter.api.AfterAll;
@@ -93,7 +94,10 @@ class TextosCompletosTest {
 
     @Test
     void textosConfiguracion() {
-        revisarMostrada("Configuracion.fxml");
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Throwable> error = new AtomicReference<>();
+        Platform.runLater(() -> revisarConfiguracion(latch, error));
+        await(latch, error, "Configuracion.fxml");
     }
 
     @Test
@@ -165,6 +169,33 @@ class TextosCompletosTest {
         } finally {
             latch.countDown();
         }
+    }
+
+    private static final String[] SECCIONES_CONFIGURACION = {
+            "btnEmpresa", "btnCabecera", "btnPdf", "btnIva", "btnRetenciones", "btnSeries"
+    };
+
+    private static void revisarConfiguracion(CountDownLatch latch, AtomicReference<Throwable> error) {
+        try {
+            Pantalla pantalla = Vista.getInstancia().mostrar("Configuracion.fxml");
+            assertNotNull(pantalla, "El controller de Configuracion.fxml no se creo");
+            Parent raiz = Vista.getInstancia().getVentana().getScene().getRoot();
+            maquetarAlMinimo(raiz);
+            for (String idBoton : SECCIONES_CONFIGURACION) {
+                pulsarSeccion(raiz, idBoton);
+                comprobarTextos(raiz, "Configuracion.fxml (" + idBoton + ")");
+            }
+        } catch (Throwable t) {
+            error.set(t);
+        } finally {
+            latch.countDown();
+        }
+    }
+
+    private static void pulsarSeccion(Parent raiz, String idBoton) {
+        ToggleButton boton = (ToggleButton) raiz.lookup("#" + idBoton);
+        boton.fire();
+        maquetarAlMinimo(raiz);
     }
 
     private static void revisarMensuales(CountDownLatch latch, AtomicReference<Throwable> error) {

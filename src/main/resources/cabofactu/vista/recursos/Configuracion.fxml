@@ -84,6 +84,9 @@
                 <VBox fx:id="seccionPdfApariencia" visible="false" managed="false" spacing="8"
                       styleClass="card, zona-contenido, seccion-config">
                     <GridPane hgap="8" vgap="6">
+                        <columnConstraints>
+                            <ColumnConstraints minWidth="-Infinity"/>
+                        </columnConstraints>
                         <Label text="Carpeta automática de almacenamiento"/>
                         <TextField fx:id="txtCarpetaAuto" editable="false" prefWidth="420" GridPane.columnIndex="1"/>
                         <Button onAction="#seleccionarCarpetaAuto" styleClass="default-button, btn-suave" text="Elegir carpeta..." GridPane.columnIndex="2"/>
@@ -92,9 +95,9 @@
                         <Label text="Color del PDF" GridPane.rowIndex="2"/>
                         <ColorPicker fx:id="colorPdf" prefWidth="220" GridPane.columnIndex="1" GridPane.rowIndex="2"/>
                         <Label styleClass="muted" text="Color de acento: cabeceras de tarjetas, totales y pie legal; también SERIE/Nº y FECHA"
-                               GridPane.columnIndex="2" GridPane.rowIndex="2"/>
-                        <Label text="Tema de la aplicación" GridPane.rowIndex="3"/>
-                        <ComboBox fx:id="comboTema" prefWidth="240" GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                               wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="3"/>
+                        <Label text="Tema de la aplicación" GridPane.rowIndex="4"/>
+                        <ComboBox fx:id="comboTema" prefWidth="240" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
                     </GridPane>
                 </VBox>
                 <VBox fx:id="seccionIva" visible="false" managed="false" spacing="8"

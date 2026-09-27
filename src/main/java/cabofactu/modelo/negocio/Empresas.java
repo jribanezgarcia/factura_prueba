@@ -86,6 +86,9 @@ public class Empresas {
         Properties catalogo = cargarCatalogo();
         catalogo.remove(claveNombre(carpeta));
         guardarCatalogo(catalogo);
+        if (carpeta.equals(PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA))) {
+            recordarUltima("");
+        }
     }
 
     /** Abrimos la empresa: la dejamos activa, conectamos con su base y empezamos la sesión. */
