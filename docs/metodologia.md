@@ -1,157 +1,208 @@
 <div align="center">
 
-# 🧭 Metodología
+# Metodología
 
-**Cómo se desarrolla CaboFactu con opencode y OpenSpec**
+**Cómo se ha hecho CaboFactu con OpenSpec**
 
-[⬅️ Volver al README](../README.md) · [📐 Documentación técnica](tecnico.md)
+[Volver al README](../README.md) · [Documentación técnica](tecnico.md) · [Flujos](flujos.md)
 
 </div>
 
 ---
 
-## 📑 Índice
+## Índice
 
-1. [🔁 El ciclo de un cambio](#-el-ciclo-de-un-cambio)
-2. [👥 Quién hace qué](#-quién-hace-qué)
-3. [📂 Qué hay en un change](#-qué-hay-en-un-change)
-4. [🕰️ Ejemplo real: reloj-inyectable](#️-ejemplo-real-reloj-inyectable)
-5. [🔍 Auditoría de la arquitectura con IA](#-auditoría-de-la-arquitectura-con-ia)
+1. [Qué es OpenSpec](#qué-es-openspec)
+2. [Las carpetas de OpenSpec](#las-carpetas-de-openspec)
+3. [Los comandos y qué hacen](#los-comandos-y-qué-hacen)
+4. [Cómo lo hacemos aquí](#cómo-lo-hacemos-aquí)
+5. [El flujo completo de un change](#el-flujo-completo-de-un-change)
+6. [Commits y ramas](#commits-y-ramas)
+7. [Ejemplo real: modulo-copias](#ejemplo-real-modulo-copias)
+8. [Historia del proyecto por fases](#historia-del-proyecto-por-fases)
+9. [Documentos de trabajo](#documentos-de-trabajo)
 
 ---
 
-## 🔁 El ciclo de un cambio
+## Qué es OpenSpec
 
-Cada cambio, por pequeño que sea, sigue **el mismo ciclo**. Así nunca se programa «a ciegas» y queda escrito por qué se hizo cada cosa.
+OpenSpec es el marco de trabajo con el que desarrollo CaboFactu: cada cambio se escribe **antes** de programarlo, y la especificación de [`openspec/specs/`](../openspec/specs/) describe siempre lo que hace la aplicación hoy, no lo que hacía ayer.
 
-```mermaid
-flowchart LR
-    I["💡 Idea o<br/>problema"] --> Q["❓ Preguntas<br/><small>decidir opciones</small>"]
-    Q --> P["📝 Propose<br/><small>proposal · design · tasks · spec</small>"]
-    P --> A["⚙️ Apply<br/><small>opencode implementa</small>"]
-    A --> V["🔍 Revisar<br/><small>diff + tests + prueba manual</small>"]
-    V -->|"algo falla"| P
-    V -->|"todo OK"| R["📦 Archive<br/><small>la spec se actualiza</small>"]
-    R --> G["🚀 commit + push"]
+Una **spec** (`openspec/specs/<capacidad>/spec.md`) agrupa los **requisitos** de una capacidad de la aplicación (en CaboFactu hay tres: `invoicing`, `pdf-rendering` y `testing`). Cada requisito describe una regla con `SHALL` («el sistema SHALL...») y la ilustra con uno o varios **escenarios** en formato WHEN/THEN. Por ejemplo, del requisito «Clientes» de [`invoicing`](../openspec/specs/invoicing/spec.md):
 
-    style I fill:#FEF3C7,stroke:#D97706,color:#1F2937
-    style Q fill:#FFEDD5,stroke:#EA580C,color:#1F2937
-    style P fill:#EDE9FE,stroke:#7C3AED,color:#1F2937
-    style A fill:#DBEAFE,stroke:#2563EB,color:#1F2937
-    style V fill:#FCE7F3,stroke:#DB2777,color:#1F2937
-    style R fill:#DCFCE7,stroke:#16A34A,color:#1F2937
-    style G fill:#E5E7EB,stroke:#374151,color:#1F2937
+```markdown
+#### Scenario: NIF con la letra incorrecta
+- **WHEN** el usuario intenta guardar un cliente con el NIF `12345678A`
+- **THEN** la aplicación no guarda el cliente
+- **AND** muestra un único aviso «La letra no es correcta.»
 ```
 
-> [!TIP]
-> **💡 Concepto: spec.** Una *especificación* describe **qué debe hacer** la aplicación, con requisitos y escenarios del tipo «**cuando** el usuario hace X, **entonces** pasa Y». Está en [`openspec/specs/`](../openspec/specs/) y se actualiza sola al archivar cada cambio, así que siempre refleja cómo funciona la aplicación de verdad.
+Cuando un change modifica el comportamiento, no toco la spec directamente: escribo un **delta** dentro del change (`openspec/changes/<nombre>/specs/<capacidad>/spec.md`) con las secciones `ADDED`, `MODIFIED` o `REMOVED Requirements`, y ese delta se funde en la spec principal al archivar.
 
----
+## Las carpetas de OpenSpec
 
-## 👥 Quién hace qué
+```text
+openspec/
+├── specs/                    → la fuente de verdad: qué hace la aplicación hoy
+│   ├── invoicing/spec.md     → clientes, facturas, series, empresas, copias...
+│   ├── pdf-rendering/spec.md → exportación a PDF
+│   └── testing/spec.md       → qué se prueba y cómo
+├── changes/                  → los changes en curso
+│   └── <nombre>/
+│       ├── proposal.md       → por qué y qué cambia
+│       ├── design.md         → cómo, con las alternativas descartadas
+│       ├── tasks.md          → los pasos, con las pruebas manuales
+│       └── specs/            → el delta, si el change toca comportamiento
+└── changes/archive/          → los changes terminados, con fecha (`2026-09-27-modulo-copias`)
+```
+
+Fuera de `openspec/` pero relacionados: `AGENTS.md` (las normas de código y de flujo de trabajo) y `ESTADO.md` (qué está hecho, en curso y qué toca ahora), que leo antes de empezar cualquier change. `openspec/config.yaml` guarda las guías del proyecto para `apply` y `archive` (por ejemplo, que hay que actualizar `ESTADO.md` en cada uno).
+
+## Los comandos y qué hacen
+
+Cada comando existe en dos juegos, con el mismo comportamiento: `/opsx-<comando>` en opencode y `/opsx:<comando>` en Claude Code.
+
+| Comando | Qué le escribo | Qué hace | Qué ficheros toca |
+|---|---|---|---|
+| `propose` | El nombre del change y una descripción | Crea la carpeta del change y escribe `proposal.md`, `design.md`, `tasks.md` y el delta de `specs/` si hace falta | Crea `openspec/changes/<nombre>/` entero |
+| `apply` | El nombre del change (o nada, si solo hay uno activo) | Recorre `tasks.md` tarea a tarea, programa cada una y la marca `- [x]` | El código de `src/`, y `tasks.md` según avanza |
+| `archive` | El nombre del change | Comprueba que las tareas y los artefactos están completos, funde el delta en `openspec/specs/` y mueve la carpeta a `archive/` con la fecha | `openspec/specs/`, mueve `openspec/changes/<nombre>/` a `archive/` |
+| `explore` | Una idea o un problema, en libre | Piensa en voz alta sobre el problema, sin escribir código; solo captura decisiones en artefactos si se le pide | Ninguno, salvo que se le pida capturar algo |
+| `update` | El nombre del change y qué ha cambiado de idea | Revisa los artefactos ya escritos y los deja coherentes entre sí, sin tocar código | Los artefactos del change que ya existían |
+| `sync` | El nombre del change | Funde el delta en `openspec/specs/` sin archivar, para revisar la spec antes de cerrar el change | `openspec/specs/` |
+
+Para comprobar el estado desde la terminal, sin pasar por ningún comando de chat:
+
+```bash
+openspec list                       # changes activos y sus tareas
+openspec show <spec> --type spec    # una spec entera
+openspec validate --strict          # formato de changes y specs
+openspec status --change <nombre>   # qué artefactos le faltan a un change
+```
+
+**Un ejemplo de cada uno de los tres principales**, con `modulo-copias`:
+
+- `/opsx-propose modulo-copias` más una descripción del problema → crea `openspec/changes/modulo-copias/` con `proposal.md` (por qué las copias no cumplían `AGENTS.md`), `design.md` (el diseño del singleton `CopiaSeguridad`), `tasks.md` (los pasos) y `specs/invoicing/spec.md` con un `MODIFIED Requirements` para «Copia de seguridad».
+- `/opsx-apply modulo-copias` → programa las tareas de `tasks.md`, marcándolas `- [x]` una a una, hasta `modelo/negocio/CopiaSeguridad.java`, la pantalla y los tests.
+- `/opsx-archive modulo-copias` → funde el `MODIFIED Requirements` en `openspec/specs/invoicing/spec.md` y mueve la carpeta a `openspec/changes/archive/2026-09-27-modulo-copias/`.
+
+**Qué es un delta.** Un delta nunca sustituye la spec entera: `ADDED Requirements` añade un requisito nuevo, `MODIFIED Requirements` reemplaza un requisito completo (con **todos** sus escenarios, aunque solo cambie una frase) y `REMOVED Requirements` lo quita. Al archivar, OpenSpec aplica esas tres operaciones sobre la spec principal.
+
+## Cómo lo hacemos aquí
+
+El ciclo de arriba es el que documenta OpenSpec en general. En este proyecto lo repartimos entre dos modelos de IA, sin ocultarlo:
+
+- Antes de `propose`, hago una ronda de preguntas de una en una, cada una con las opciones explicadas y una recomendada. **Decido yo.**
+- El change (`proposal.md`, `design.md`, `tasks.md` y el delta) lo escribe **Claude Code con el modelo Opus**, con las decisiones que ya he tomado.
+- Lo aplica un **subagente de Claude Code con el modelo Sonnet** (`implementador`), o el `/opsx-apply` de **opencode**.
+- **Opus revisa** el diff, que cumple `AGENTS.md` y que `mvn test` pasa entero.
+- Las pruebas manuales las hago yo, o, desde el módulo de copias, **Claude Code con Computer use** las ejecuta sobre la aplicación real y yo reviso el resultado.
+- Archiva el subagente o **opencode**, y **Opus comprueba la especificación requisito por requisito** (no solo que las cifras cuadren).
 
 | Paso | Quién | Qué se hace |
 |---|---|---|
-| ❓ **Preguntas** | Yo + **Claude Code** | Antes de escribir nada, rondas de preguntas con las opciones explicadas y una recomendada. **La decisión es mía.** |
-| 📝 **Propose** | **Claude Code** | Crea la carpeta del cambio en `openspec/changes/<nombre>/` con las decisiones tomadas |
-| ⚙️ **Apply** | **opencode** | `/opsx-apply <nombre>` implementa las tareas y ejecuta los tests |
-| 🔍 **Revisar** | Yo + **Claude Code** | Se revisa el diff, se pasa `mvn test` de nuevo y hago las pruebas manuales en la aplicación |
-| 📦 **Archive** | **opencode** | `/opsx-archive <nombre>` mueve el cambio a `openspec/changes/archive/` y actualiza la spec |
+| Preguntas | Yo + Opus | Rondas de una pregunta con opciones; la decisión es mía |
+| Propose | Opus | Escribe el change entero con mis decisiones |
+| Apply | Sonnet (`implementador`) u opencode | Programa las tareas de `tasks.md` |
+| Revisar | Opus | Diff, normas de `AGENTS.md` y `mvn test` |
+| Pruebas manuales | Yo, o Claude Code con Computer use (y yo reviso) | Comprobar la aplicación real, no solo los tests |
+| Archive | Sonnet (`implementador`) u opencode | Mueve el change y funde el delta |
+| Comprobación final | Opus | Cada requisito de la spec, uno a uno |
 
-> [!NOTE]
-> **Qué hago yo y qué hace la IA.** Las herramientas me ayudan a proponer, escribir y revisar código, pero **las decisiones son mías**: qué se cambia, qué opción se elige, qué se descarta y cuándo un cambio está bien. Varias propuestas se han rechazado o simplificado por eso, por ejemplo un estado «Borrador» que decidí no implementar todavía, o un diseño con clases intermedias que cambié por uno más sencillo.
+La configuración de Claude Code (`.claude/`) es local y no se sube al repositorio; los comandos de opencode sí (`.opencode/`).
 
----
+**Por qué se reparte así**: el modelo que decide y revisa (Opus) es el más capaz y el más caro, así que solo lo uso donde hace falta criterio. El que aplica (Sonnet o opencode) es más barato y le basta con seguir `tasks.md` al pie de la letra: **las decisiones no son suyas**, ya vienen tomadas en `design.md`.
 
-## 📂 Qué hay en un change
+## El flujo completo de un change
+
+```mermaid
+flowchart TD
+    A["Idea o problema"] --> B["Preguntas<br/>una a una, decide el alumno"]
+    B --> C["propose<br/>commit docs(openspec): propuesta ..."]
+    C --> D["apply<br/>commit refactor(...)"]
+    D --> E["Revisión<br/>diff + normas + mvn test"]
+    E --> F["Pruebas manuales"]
+    F -->|"algo falla"| G["update / apply<br/>commit fix(...)"]
+    G --> E
+    F -->|"todo bien"| H["archive<br/>commit refactor(openspec): archivar ..."]
+    H --> I["git push"]
+
+    C -.->|"cambio sensible"| R["Rama propia"]
+    R -.-> S["changes dentro de la rama"]
+    S -.-> T["pull request en GitHub"]
+    T -.-> J["main"]
+```
+
+Pasos, en una línea cada uno:
+
+1. Surge una idea o un problema en el código.
+2. Ronda de preguntas de una en una, con opciones y una recomendada; decido yo.
+3. `propose` escribe el change entero.
+4. `apply` lo implementa.
+5. Reviso el diff, las normas y `mvn test`.
+6. Hago (o Claude Code con Computer use hace) las pruebas manuales.
+7. Si algo falla, vuelvo a `update` o `apply` y repito la revisión.
+8. Si todo va bien, `archive` funde la spec y mueve el change.
+9. `git push` con el change entero terminado.
+
+Los cambios sensibles (una rama entera de trabajo, como `pdf-jasper` o VeriFactu) no van directos a `main`: viven en su propia rama, con sus changes dentro, y vuelven con un **pull request** en GitHub.
+
+## Commits y ramas
+
+Un commit por paso, con prefijo y alcance entre paréntesis: `docs(openspec): propuesta <nombre>` al proponer, `refactor(<alcance>): <nombre>` al aplicar, `fix(<alcance>): <qué arregla>` si algo falla en la revisión o en las pruebas manuales, `docs(openspec): archivar <nombre>` (o `refactor(openspec):`) al archivar, y `chore` para tareas sueltas de mantenimiento.
+
+El `git log` real de `modulo-copias`, de la propuesta al archivado:
 
 ```text
-openspec/changes/2026-09-13-reloj-inyectable/
-├── .openspec.yaml   → metadatos (fecha, si modifica la spec o no)
-├── proposal.md      → 🤔 POR QUÉ: el problema y qué va a cambiar
-├── design.md        → 🛠️ CÓMO: decisiones D1, D2… con las alternativas descartadas
-├── tasks.md         → ✅ PASOS: tareas concretas con rutas de ficheros, incluidas las pruebas manuales
-└── specs/…          → 📚 solo si cambia el comportamiento visible
+ba86f45 docs(openspec): propuesta modulo-copias
+5f2ef5a refactor(copias): modulo-copias
+d6665a8 fix(copias): la copia de rescate no cambia la carpeta recordada
+41cd8a4 docs(agents): StringBuilder para los textos que se montan por partes
+ac6f1ee docs(openspec): modulo-copias, etiquetas de Configuración y borrado en el arranque
+aeee8f6 fix(copias): etiquetas de Configuración y borrado en el arranque
+b677bb6 fix(configuracion): el botón de elegir carpeta no se corta
+ec3a3c3 docs(openspec): modulo-copias, pruebas manuales pasadas
+4bf36c0 refactor(openspec): archivar modulo-copias
 ```
 
----
+El `git push` se hace al archivar, con el change entero terminado, nunca a medias.
 
-## 🕰️ Ejemplo real: reloj-inyectable
+Las ramas: `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriFactu, cada una con sus propios changes dentro. Si la rama sale bien, vuelve a `main` con un pull request en GitHub; si no, se cierra el pull request y `main` no cambia.
 
-Un cambio pequeño y completo, tal como se hizo.
+## Ejemplo real: modulo-copias
 
-### 🤔 El problema (`proposal.md`)
+`modulo-copias` era el último módulo por rehacer al estilo de Biblioteca8, y con él terminó la reescritura de `main`.
 
-La fecha actual se leía con `LocalDate.now()` **dentro** de las reglas de negocio: cinco veces en `Numeracion` para decidir el año de la numeración, dos en `Versiones` para sellar la hora de guardado, y otras en las pantallas. Además, la regla «fecha de trabajo o, si no hay, hoy» estaba **copiada en cuatro pantallas**.
+**Qué se preguntó y qué se decidió**: un botón único «Crear copia…» en vez de elegir carpeta y crear en dos pasos; la carpeta se recuerda entre empresas; el nombre del fichero lleva la empresa (`demo_20260927_103015.db`); la copia se comprueba contra `crear_tablas.sql` en vez de listas de columnas escritas a mano; reemplazar una empresa solo si tiene el mismo NIF; y [`Conexion`](../src/main/java/cabofactu/modelo/negocio/sqlite/Conexion.java) entera se reescribe según las normas de una vez.
 
-Consecuencia: **no se podía probar** la numeración de otro año, porque los tests siempre usaban el día en que se ejecutaban.
+- **El change escrito** (`ba86f45`): `proposal.md` explicaba por qué el módulo no cumplía `AGENTS.md` (un `record`, un DAO con listas de columnas a mano, una excepción propia, tres `Task` con hilos) y qué cambiaba.
+- **La implementación** (`5f2ef5a`): [`CopiaSeguridad`](../src/main/java/cabofactu/modelo/negocio/CopiaSeguridad.java) pasó a singleton de `modelo/negocio` con el SQL dentro, [`ResumenCopia`](../src/main/java/cabofactu/modelo/dominio/ResumenCopia.java) a `modelo/dominio`, y la pantalla se quedó sin hilos. 465 pruebas en verde.
+- **La revisión encontró un fallo del propio diseño**: la copia de rescate (al restaurar) reutilizaba el método `crear()` y de paso pisaba la carpeta recordada por el usuario. Se corrigió compartiendo un privado (`copiarEn`) y dejando que solo `crear()` guarde la preferencia (`d6665a8`).
+- **Las pruebas manuales con Computer use encontraron dos fallos fuera del módulo**: unas etiquetas cortadas en «PDF y apariencia» de Configuración, y que eliminar la empresa elegida en el arranque no se quitaba de la preferencia recordada.
+- **El change se amplió con una sección 8** en `tasks.md`: primero se comprobó que un test fallaba con el error real (por ejemplo, `EmpresasTest.bajaDeLaEmpresaRecordadaBorraLaPreferencia` con `expected: <> but was: <recordada>`), y solo después se aplicó el arreglo, para no corregir «a ciegas» (`aeee8f6`, `b677bb6`).
+- **El archivado** (`4bf36c0`): 469 pruebas en verde, sin fallos, y la spec `invoicing` con el requisito «Copia de seguridad» actualizado.
 
-### 🛠️ Las decisiones (`design.md`)
+**Qué se aprende de aquí**: el ciclo no es una línea recta. Cuando la revisión o las pruebas manuales encuentran algo, el change vuelve atrás (a `update` o directamente a más tareas), y ese ida y vuelta queda escrito en `tasks.md` y en los commits, no se pierde.
 
-| # | Decisión | Descartado | Por qué |
-|---|---|---|---|
-| D1 | Los servicios reciben un `java.time.Clock` por constructor | Una interfaz propia `ProveedorFecha` | `Clock` ya existe en Java y tiene `Clock.fixed(...)` para tests |
-| D2 | El año del contador de una serie nueva lo decide el servicio, no el repositorio | Dejar `now()` en el repositorio | El DAO no debe conocer la fecha actual |
-| D3 | Clase `Reloj` con `hoy()`, `ahora()` y `fechaTrabajo()` para las pantallas | Repetir la regla en cada pantalla | Una sola fuente para la fecha de trabajo |
-| D4 | `Modelo(Clock)` crea un único reloj y lo reparte | Un reloj por servicio | Todos los servicios ven la misma hora |
-| D5 | La pantalla de arranque queda fuera | Tocarla también | Se muestra antes de que existan los servicios y no numera nada |
+## Historia del proyecto por fases
 
-También se decidió **partir el cambio en dos**: el reloj por un lado y las excepciones por otro, porque juntos daban un diff enorme e imposible de revisar bien.
+1. **Primera versión**, con capas de servicios y DAO (un `ClienteDAO`, un `ClienteService`... por cada entidad), al estilo de un proyecto empresarial más grande que lo que necesitaba CaboFactu.
+2. **Auditoría de la arquitectura con IA**: la lección de esa fase fue que un modelo se inventó clases que no existían en el código al responder sobre la arquitectura, y hubo que comprobar cada hallazgo en el código real antes de actuar.
+3. **Reescritura módulo a módulo** al estilo de Biblioteca8: sin DAO (el SQL vive dentro de cada clase de negocio, que es un singleton), sin `record`, sin streams ni operador ternario, clases de datos que se validan solas en sus setters, para que el código sea defendible a nivel de 1º de DAM.
+4. **Lo que viene**: la rama `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriFactu.
 
-### ✅ Las tareas y la verificación (`tasks.md`)
+Cifras reales a día de hoy: `ls openspec/changes/archive | wc -l` da **121** changes archivados, y `mvn test` pasa **469** pruebas.
 
-```java
-Clock fijo = Clock.fixed(Instant.parse("2031-06-15T10:00:00Z"), ZoneId.of("Europe/Madrid"));
-```
+## Documentos de trabajo
 
-- 🧪 **Tests nuevos con la fecha fijada en 2031**: la numeración sin fecha usa el contador de 2031, y la versión se sella con `2031-06-15T12:00` (hora de Madrid).
-- 🔎 **Búsquedas de control**: ningún `now()` sin reloj en servicios ni repositorios.
-- 🟢 **`mvn test`**: 220 tests en verde.
-- 🖱️ **Pruebas manuales**: arrancar con una fecha de trabajo de otro año y comprobar menú, editor, rectificativa y series; crear una copia de seguridad y comprobar que el nombre del fichero lleva la fecha y hora reales.
-
-> [!TIP]
-> **💡 Concepto: inyectar una dependencia.** En vez de que la clase «vaya a buscar» la hora (`LocalDate.now()`), **se la dan** al crearla (`new Numeracion(…, clock)`). En la aplicación se le pasa el reloj real y en los tests uno parado en la fecha que interese.
-
----
-
-## 🔍 Auditoría de la arquitectura con IA
-
-Antes de seguir añadiendo funciones se hizo una **auditoría** del código para detectar problemas de diseño típicos de un proyecto hecho con ayuda de IA.
-
-### Qué se revisó
-
-| Bloque | Preguntas |
-|---|---|
-| 🧩 **Dependencias** | ¿Las clases crean lo que necesitan o se lo dan? ¿Hay un único sitio que monta todo? ¿Se cuela SQL en pantallas o servicios? ¿Hay clases gigantes o dependencias circulares? |
-| 🧾 **VeriFactu** | ¿Se pueden modificar o borrar facturas emitidas? ¿Hay registro con huella? ¿Faltan datos fiscales? ¿Hay un único punto de emisión? |
-
-### Cómo se hizo
-
-1. 🧪 **Probar el modelo antes de fiarse de él.** Se hizo una pregunta de control sobre una clase concreta. Un modelo (Nemotron 3 Ultra) **se inventó cinco clases** (los nombres que dio no existían en el código), porque dedujo los tipos por el nombre de los campos. Otro (Muse Spark 1.3) respondió bien citando fichero y línea, y fue el elegido.
-2. 📄 **Informe por bloques** guardado en ficheros, con cada hallazgo en formato `fichero:línea | gravedad | problema | arreglo`.
-3. ✔️ **Verificar cada hallazgo grave en el código real** antes de creerlo. Así se corrigieron recuentos de líneas mal hechos y se encontró algo que el informe no vio: que no existía el estado «Borrador».
-4. 📋 **Convertir lo confirmado en una cola de cambios pequeños**, ordenados de menos a más riesgo.
-
-### Qué salió de ahí
-
-| Hallazgo | Cambio |
-|---|---|
-| Las pantallas usaban los DAO directamente | ✅ `capa-servicios-catalogos` |
-| `LocalDate.now()` repartido por las reglas | ✅ `reloj-inyectable` |
-| `SQLException` llegaba hasta las pantallas | ✅ `excepcion-de-datos` |
-| Empresa creada con un nombre fijo y sin datos fiscales | ✅ `empresa-inicial-obligatoria` |
-| `Main` con demasiadas responsabilidades | ✅ `main-delgado` |
-| SQL dentro de pantallas y servicios de copias | ✅ `sql-fuera-de-ui-y-service` |
-| Paquetes y clases con nombres en inglés o mezclados | ✅ `paquetes-en-espanol` · `nombres-modelo-y-datos` · `nombres-vista-pdf-utilidades` |
-| Emisión repartida, sin registro ni datos fiscales | ⏳ [Preparación para VeriFactu](tecnico.md#-preparación-para-verifactu) |
-
-> [!IMPORTANT]
-> **La lección:** la IA es muy útil para revisar mucho código rápido, pero **se equivoca con total seguridad**. Cada hallazgo hay que comprobarlo en el código antes de actuar.
+- **`AGENTS.md`**: las normas del proyecto (arquitectura, estilo de código, tests, comentarios) y el flujo de trabajo con OpenSpec. Es lo único que se lee entero al empezar cualquier tarea.
+- **`ESTADO.md`**: qué está hecho, qué change está en curso y qué toca ahora, más la sección «Trampas conocidas».
+- **Las «trampas»**: en `ESTADO.md`, una lista creciente de lo que ha salido mal alguna vez (un CSS roto, una comparación de fechas que no funcionaba en SQLite, un test que no detectaba un cambio) para no repetirlo. No es una guía de estilo: es un historial de errores ya resueltos.
 
 ---
 
 <div align="center">
 
-[⬅️ Volver al README](../README.md) · [📐 Documentación técnica](tecnico.md)
+[Volver al README](../README.md) · [Documentación técnica](tecnico.md) · [Flujos](flujos.md)
 
 </div>

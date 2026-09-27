@@ -8,7 +8,7 @@ El autor es alumno de 1º de DAM: el código tiene que poder leerlo, entenderlo 
 
 ## Flujo de trabajo
 
-Todo pasa por OpenSpec, con los comandos de opencode: `/opsx-propose` → `/opsx-apply` → `/opsx-archive`. No se toca el código ni `openspec/specs/` fuera de un change.
+Todo pasa por OpenSpec, con el mismo ciclo en dos juegos de comandos: `/opsx-propose` → `/opsx-apply` → `/opsx-archive` en opencode, o `/opsx:propose` → `/opsx:apply` → `/opsx:archive` en Claude Code. No se toca el código ni `openspec/specs/` fuera de un change.
 
 Obligatorio en cada change:
 
@@ -37,6 +37,7 @@ Este fichero es lo único que se lee entero siempre. Lo demás se consulta **cua
 | `openspec/specs/` | Qué hace la aplicación (fuente de verdad) | Al proponer o revisar comportamiento, **por requisito** |
 | `openspec/changes/<nombre>/` | `proposal.md`, `design.md`, `tasks.md` de un change | Al aplicar o revisar ese change |
 | `docs/tecnico.md` | Arquitectura, paquetes, modelo de datos, decisiones técnicas | Si necesitas el esquema de tablas o cómo fluye una operación |
+| `docs/flujos.md` | Dos recorridos por el código, clase a clase | Si necesitas ver cómo encajan las clases en una operación real |
 | `docs/metodologia.md`, `README.md` | Explicación del proyecto para GitHub | Solo si hay que actualizarlos |
 | `borrador_changes/` (fuera de git) | Decisiones tomadas con el usuario y análisis | Si necesitas **por qué** se decidió algo |
 | `openspec/changes/archive/` | Los 100+ changes terminados | Solo para rastrear un cambio viejo; antes prueba `git log -S` |
