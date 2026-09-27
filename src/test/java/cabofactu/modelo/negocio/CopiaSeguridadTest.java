@@ -376,6 +376,16 @@ class CopiaSeguridadTest {
     }
 
     @Test
+    void restaurarNoCambiaLaCarpetaRecordada() throws Exception {
+        insertarDatosBasicos();
+        Path copia = crearCopia();
+
+        servicio.restaurar(copia);
+
+        assertEquals(tempDir.resolve("copias"), servicio.carpetaCopias());
+    }
+
+    @Test
     void puedeReemplazarConElMismoNifIgnorandoMayusculas() throws Exception {
         insertarDatosBasicos();
         ResumenCopia resumen = new ResumenCopia("Otra", "b12345674", 0, null, "");

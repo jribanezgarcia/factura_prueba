@@ -13,6 +13,8 @@
 - [x] 2.3 `modelo/Modelo.java` y `controlador/Controlador.java`: las siete operaciones de `design.md - D2`; fuera `Modelo(Clock)`, el campo `copiaSeguridad`, `getCopiaSeguridad()` y `Controlador.getModelo()`.
 - [x] 2.4 `mvn -q compile` sin errores (la pantalla, con lo justo para compilar hasta la sección 3).
 
+- [x] 2.5 La copia de rescate de `restaurar` no cambia la carpeta recordada: `crear` y `restaurar` comparten el privado `copiarEn`, y solo `crear` guarda `CARPETA_COPIAS`. Test `restaurarNoCambiaLaCarpetaRecordada`. Ver `design.md - D2`.
+
 ## 3. La pantalla
 
 - [x] 3.1 `vista/recursos/CopiaSeguridad.fxml`: imports explícitos, `btnCrear` con `Crear copia…`, `lblCarpeta`, `Elegir copia…`, `onAction="#cambiarDestino"` en los dos `RadioButton`, y fuera `lblDestino`, `lblResultado` y `lblResultadoRestauracion`. Ver `design.md - D4`.

@@ -43,25 +43,15 @@ public class CopiaSeguridad {
         return copiaSeguridad;
     }
 
-    /** Creamos la copia en la carpeta indicada y devolvemos la ruta del archivo generado. */
+    /**
+     * Creamos la copia en la carpeta indicada, la recordamos para la próxima
+     * vez y devolvemos la ruta del archivo generado.
+     */
     public Path crear(Path carpeta) throws Exception {
         if (carpeta == null) {
             throw new Exception("Elija la carpeta de la copia.");
         }
-        try {
-            Files.createDirectories(carpeta);
-        } catch (IOException e) {
-            throw new Exception("No se pudo crear la carpeta: " + e.getMessage());
-        }
-        String nombre = Sesion.getSesion().getCarpetaEmpresa() + "_" + LocalDateTime.now().format(FORMATO_NOMBRE);
-        Path archivo = rutaLibre(carpeta, nombre);
-        String ruta = archivo.toString().replace("'", "''");
-        String vacuum = "VACUUM INTO '" + ruta + "'";
-        try (Statement sentencia = Conexion.establecerConexion().createStatement()) {
-            sentencia.execute(vacuum);
-        } catch (SQLException e) {
-            throw new Exception("Error SQLite: " + e.getMessage());
-        }
+        Path archivo = copiarEn(carpeta);
         PreferenciasGlobales.set(PreferenciasGlobales.CARPETA_COPIAS, carpeta.toString());
         return archivo;
     }
@@ -117,7 +107,7 @@ public class CopiaSeguridad {
                     "La copia es de otra empresa (NIF %s). Restáurela como empresa nueva.", resumen.getNif()));
         }
         Path carpetaRescate = Conexion.carpetaEmpresa().resolve(CARPETA_RESCATE);
-        Path rescate = crear(carpetaRescate);
+        Path rescate = copiarEn(carpetaRescate);
         try {
             sustituirBase(origen);
         } catch (Exception e) {
@@ -137,6 +127,7 @@ public class CopiaSeguridad {
             Files.copy(origen, destino, StandardCopyOption.REPLACE_EXISTING);
             borrarDiario(destino.getParent());
         } catch (Exception e) {
+            // Si tampoco se puede dar de baja, enseñamos el error de la copia, que es el que importa.
             try {
                 Empresas.getEmpresas().baja(nueva.getCarpeta());
             } catch (Exception ignorada) {
@@ -144,6 +135,28 @@ public class CopiaSeguridad {
             throw new Exception("No se pudo crear la empresa desde la copia: " + e.getMessage());
         }
         return nueva;
+    }
+
+    /**
+     * Copiamos la base activa a un archivo nuevo de la carpeta, sin recordar
+     * la carpeta: así la copia de rescate no cambia la de las copias.
+     */
+    private Path copiarEn(Path carpeta) throws Exception {
+        try {
+            Files.createDirectories(carpeta);
+        } catch (IOException e) {
+            throw new Exception("No se pudo crear la carpeta: " + e.getMessage());
+        }
+        String nombre = Sesion.getSesion().getCarpetaEmpresa() + "_" + LocalDateTime.now().format(FORMATO_NOMBRE);
+        Path archivo = rutaLibre(carpeta, nombre);
+        String ruta = archivo.toString().replace("'", "''");
+        String vacuum = "VACUUM INTO '" + ruta + "'";
+        try (Statement sentencia = Conexion.establecerConexion().createStatement()) {
+            sentencia.execute(vacuum);
+        } catch (SQLException e) {
+            throw new Exception("Error SQLite: " + e.getMessage());
+        }
+        return archivo;
     }
 
     private Path rutaLibre(Path carpeta, String nombre) {
