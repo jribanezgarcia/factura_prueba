@@ -56,8 +56,8 @@
 - [x] 7.8 Crear una empresa desde una copia sin escribir el nombre: avisa. Con nombre, pide confirmación, la crea y pregunta si cambiar a ella. «No»: sigue en Copias con la misma empresa y el bloque de restaurar vacío.
 - [x] 7.9 Repetir la 7.8 contestando «Sí»: se cierra la empresa y sale la pantalla de arranque con la empresa nueva elegida; al entrar, tiene los datos de la copia.
 - [x] 7.10 La pantalla se ve bien y se lee en biblioteca8 y en omarchy, sin textos cortados.
-- [ ] 7.11 Tras la 8.2: Configuración → «PDF y apariencia» enseña enteras sus etiquetas, con biblioteca8 y con omarchy.
-- [ ] 7.12 Tras la 8.4: en el arranque, eliminar la empresa elegida deja elegida otra (la demo) y «Entrar» funciona; al cerrar y volver a abrir, sale elegida esa otra.
+- [x] 7.11 Tras la 8.2: Configuración → «PDF y apariencia» enseña enteras sus etiquetas, con biblioteca8 y con omarchy.
+- [x] 7.12 Tras la 8.4: en el arranque, eliminar la empresa elegida deja elegida otra (la demo) y «Entrar» funciona; al cerrar y volver a abrir, sale elegida esa otra.
 
 ## 8. Lo que salió en las pruebas manuales
 
