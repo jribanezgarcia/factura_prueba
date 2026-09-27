@@ -761,15 +761,15 @@ Los campos obligatorios de la sección Empresa SHALL marcarse con un asterisco. 
 
 ### Requirement: Copia de seguridad
 
-La aplicación SHALL tener un botón para crear una copia de seguridad manual. En la V1 la copia SHALL ser únicamente del archivo SQLite; no se incluyen PDFs ni configuración. La aplicación SHALL permitir restaurar una copia de seguridad desde la misma pantalla. Antes de restaurar, la aplicación SHALL mostrar un resumen del contenido del archivo (empresa, NIF, número de facturas y última fecha). La aplicación SHALL validar la copia antes de sustituir nada: rechazará archivos que no sean bases de datos válidas de la aplicación, que no contengan las tablas fundamentales de la aplicación ni que sean la propia base activa.
+La aplicación SHALL tener un único botón «Crear copia…» que abre el selector de carpetas en la última carpeta usada para una copia y SHALL crear la copia en cuanto el usuario elige la carpeta. La aplicación SHALL recordar esa carpeta para todas las empresas. El archivo de la copia SHALL llamarse con la carpeta de la empresa, la fecha y la hora (`demo_AAAAMMDD_HHMMSS.db`). La copia SHALL ser únicamente del archivo SQLite; no se incluyen PDFs ni configuración. La aplicación SHALL permitir restaurar una copia de seguridad desde la misma pantalla. Antes de restaurar, la aplicación SHALL mostrar un resumen del contenido del archivo (empresa, NIF, número de facturas y última fecha). La aplicación SHALL validar la copia antes de sustituir nada: rechazará archivos que no sean bases de datos válidas de la aplicación, que no contengan las tablas fundamentales de la aplicación ni que sean la propia base activa.
 
-La aplicación SHALL decidir si acepta una copia por **su estructura**: SHALL aceptarla si contiene todas las tablas y columnas que la aplicación necesita, y SHALL rechazarla en caso contrario, indicando qué tabla o columna falta. Las bases de datos SHALL NOT llevar número de versión de esquema. Tras restaurar, la base SHALL quedar en un estado utilizable sin que el usuario tenga que hacer nada más.
+La aplicación SHALL decidir si acepta una copia por **su estructura**: SHALL aceptarla si contiene todas las tablas y columnas que crea el script de esquema de la aplicación, y SHALL rechazarla en caso contrario, indicando qué tabla o columna falta. Las bases de datos SHALL NOT llevar número de versión de esquema. Tras restaurar, la base SHALL quedar en un estado utilizable sin que el usuario tenga que hacer nada más.
 
-Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de rescate del estado previo de la empresa activa. La aplicación SHALL permitir restaurar sobre la empresa activa o crear una nueva empresa a partir de la copia. La aplicación SHALL NOT permitir sobrescribir una empresa con los datos de otra con NIF distinto; en ese caso solo se ofrecerá crear una empresa nueva. Si el logo referenciado en la copia no existe en la máquina, la aplicación SHALL avisar y continuar sin bloquear.
+Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de rescate del estado previo de la empresa activa. La aplicación SHALL permitir restaurar sobre la empresa activa o crear una nueva empresa a partir de la copia. La aplicación SHALL permitir reemplazar la empresa activa solo cuando el NIF de la copia coincide con el suyo, y SHALL NOT permitir sobrescribir una empresa con los datos de otra con NIF distinto; en ese caso solo se ofrecerá crear una empresa nueva. Tras crear una empresa nueva desde una copia, la aplicación SHALL preguntar si se quiere cambiar a ella: si el usuario acepta, SHALL cerrar la empresa activa y volver a la pantalla de arranque con la empresa nueva elegida; si no, SHALL seguir en la empresa activa. Si el logo referenciado en la copia no existe en la máquina, la aplicación SHALL avisar y continuar sin bloquear.
 
 #### Scenario: Crear copia de seguridad
-- **WHEN** el usuario pulsa el botón de copia de seguridad y elige dónde guardarla
-- **THEN** se genera una copia del archivo SQLite en la ubicación elegida
+- **WHEN** el usuario pulsa «Crear copia…» y elige una carpeta
+- **THEN** se genera en esa carpeta una copia del archivo SQLite, con la carpeta de la empresa, la fecha y la hora en el nombre
 
 #### Scenario: Restaurar sobre la empresa activa
 - **WHEN** el usuario selecciona un archivo de copia, elige «Reemplazar la empresa activa» y confirma
@@ -800,8 +800,8 @@ Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de r
 - **THEN** la opción «Reemplazar la empresa activa» se deshabilita y solo se ofrece crear una empresa nueva
 
 #### Scenario: Empresa activa vacía sin NIF
-- **WHEN** la empresa activa no tiene NIF configurado y no tiene ninguna factura, y el usuario restaura una copia con NIF distinto
-- **THEN** se permite reemplazar la empresa activa aunque el NIF no coincida
+- **WHEN** la empresa activa no tiene NIF configurado
+- **THEN** la pantalla de copias no está disponible hasta completar los datos de la empresa, así que nunca se reemplaza una empresa sin NIF
 
 #### Scenario: Archivo que no es una copia válida
 - **WHEN** el usuario selecciona un archivo que no es una base de datos SQLite válida de la aplicación
@@ -822,6 +822,18 @@ Antes de restaurar, la aplicación SHALL guardar automáticamente una copia de r
 #### Scenario: Dos copias seguidas dentro del mismo segundo
 - **WHEN** el usuario crea dos copias de seguridad en menos de un segundo
 - **THEN** ambas se crean correctamente con nombres distintos sin error de colisión
+
+#### Scenario: Carpeta recordada
+- **WHEN** el usuario ya hizo una copia en la carpeta «Copias» de su pendrive, aunque fuera desde otra empresa, y vuelve a pulsar «Crear copia…»
+- **THEN** el selector de carpetas se abre en la carpeta «Copias» del pendrive
+
+#### Scenario: Cambiar a la empresa creada desde una copia
+- **WHEN** tras crear una empresa nueva desde una copia el usuario acepta cambiar a ella
+- **THEN** la aplicación cierra la empresa activa y vuelve a la pantalla de arranque con la empresa nueva elegida
+
+#### Scenario: Seguir en la empresa activa
+- **WHEN** tras crear una empresa nueva desde una copia el usuario no acepta cambiar a ella
+- **THEN** la aplicación sigue en la pantalla de copias con la misma empresa activa
 
 ### Requirement: Apariencia de la interfaz
 

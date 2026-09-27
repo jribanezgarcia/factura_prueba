@@ -36,8 +36,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Editor de facturas reescrito: celdas explicadas dentro del editor (`CeldaTexto` y sus subclases), cliente por NIF con aviso de cliente nuevo, número libre al guardar con dos botones, descripción de tres renglones; fuera `Reloj` y `ValidacionCliente`; 423 pruebas.
 - Histórico rehecho: año de trabajo puesto al entrar, filtros que se comprueban y se marcan en rojo, «Eliminar» en toda la pantalla, resumen de anular/eliminar con el número de cada factura, exportar sin hilos con aviso de tres botones y menú del clic derecho en el FXML y legible en todos los temas; 435 pruebas.
 - Facturación mensual rehecha: siempre en el año de trabajo, casilla única «Añadir mes», `PlantillaMensual` que se valida sola, `FacturacionMensual` singleton, números libres con dos botones y ventana con `Vista.crearVentanaModal` y legible en los temas oscuros; 451 pruebas.
+- Módulo de copias: botón único «Crear copia…» con la carpeta recordada y el nombre con la empresa, comprobación de la copia contra `crear_tablas.sql` en vez de listas escritas a mano, reemplazar solo con el mismo NIF, vuelta al arranque al cambiar de empresa desde una copia, `CopiaSeguridad` pasa a singleton de `modelo/negocio` con `ResumenCopia` en `modelo/dominio` (fuera `CopiaSeguridadDAO`, `DatosException`, el paquete `fichero` y `Controlador.getModelo()`) y la pantalla sin hilos; de paso arregla las etiquetas cortadas de «PDF y apariencia» en Configuración y el borrado de la empresa elegida en el arranque; 469 pruebas.
 
-Último cambio archivado: `2026-09-27-modulo-mensuales`.
+Último cambio archivado: `2026-09-27-modulo-copias`.
 
 ## En curso
 
@@ -49,8 +50,6 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`. **(22/09) Revertida F8**: una empresa sin sus datos obligatorios vuelve a bloquear (directo a Configuración, barra solo con Salir, «Cambiar de empresa» disponible).
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
-
-**`modulo-copias`**: botón único «Crear copia…» con la carpeta recordada y el nombre con la empresa, comprobación de la copia contra `crear_tablas.sql` en vez de listas escritas a mano, reemplazar solo con el mismo NIF, vuelta al arranque al cambiar de empresa desde una copia, `CopiaSeguridad` pasa a singleton de `modelo/negocio` con `ResumenCopia` en `modelo/dominio` (fuera `CopiaSeguridadDAO`, `DatosException`, el paquete `fichero` y `Controlador.getModelo()`) y la pantalla sin hilos.
 
 ## Qué toca ahora
 
@@ -91,3 +90,6 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **`TextosCompletosTest` no se fiaba de un ancho fijo**: con `-fx-pref-width` en el CSS (como `.btn-ribbon`), el ancho preferido es el fijo y la comparación de anchos no ve el texto cortado. Ahora mira también si JavaFX ha puesto «…» en el `Text` del control.
 - **No escribas colores fijos en `base.css`**: `base.css` es de todos los temas. Un `#F6F6F6` en `.panel-neutro` dejaba la ventana de facturar mes ilegible en los temas oscuros. Usa las variables del `.root` del tema (`-fx-control-inner-background`, `-fx-base`…).
 - **En headless se puede ver la pantalla**: `scene.snapshot(null)` dibuja la ventana o un menú, y leyendo sus píxeles o guardándola como imagen se comprueban colores y textos cortados sin abrir la aplicación. La fuente de cada tema no se carga en headless (sale la del sistema).
+- **`TextosCompletosTest` solo revisa lo que está visible**: las secciones ocultas (Configuración) hay que abrirlas con su botón en la prueba.
+- **En un `GridPane`, un texto largo en una columna estrecha las demás**: las columnas de etiquetas y botones llevan `ColumnConstraints minWidth="-Infinity"` y los textos largos van en su propia fila con `wrapText`.
+- **El diseño de una operación que reutiliza otra pública puede arrastrar efectos**: la copia de rescate usaba `crear()` y pisaba la carpeta recordada; lo común va a un privado.
