@@ -40,6 +40,7 @@
 
 - [x] 6.1 `AGENTS.md`: quitar `.fichero` de la lista de paquetes, y en «Transición» quitar la frase de lo que queda (el DAO de las copias y `DatosException`) y decir que todo el código cumple ya estas normas. La regla de no introducir nada prohibido se queda.
 - [x] 6.2 Añadir este change a «En curso» en `ESTADO.md`.
+- [x] 6.3 `AGENTS.md`, «Estilo del código»: `StringBuilder` está permitido para montar un texto por partes (en un bucle o con `if`), y `String.join` para las listas separadas por comas. Los repasos dejan de buscar `StringBuilder`.
 
 ## 7. Pruebas manuales
 

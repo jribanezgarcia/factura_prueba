@@ -115,7 +115,7 @@ Obligatorio en todo código nuevo o modificado, también en los tests.
 - Sin `Optional`, salvo el que devuelve `showAndWait()` de un diálogo, leído con `isPresent()` y `get()`. En el resto, `null`.
 - Solo `Exception`: nada de excepciones propias. Los mensajes van sin prefijos, tal como los verá el usuario.
 - Bucles `for-each`; con índice solo cuando se necesita la posición.
-- Textos con datos dentro, con `String.format`.
+- Textos con datos dentro, con `String.format`. Un texto que se monta por partes, en un bucle o con partes que dependen de un `if` (la consulta del histórico con sus filtros), con `StringBuilder`. Una lista separada por comas, con `String.join`.
 - Comprobar texto vacío escrito tal cual: `if (texto == null || texto.isBlank())`.
 - Leer un campo de pantalla: `this.txtNombre.getText().trim()`.
 - `this.` solo cuando hace falta (constructores y setters).
