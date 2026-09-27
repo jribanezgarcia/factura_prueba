@@ -196,6 +196,7 @@ Las diez pruebas de la sección 7 pasaron. Por el camino salieron dos fallos de 
 - **Causa**: en la rejilla de la sección, la explicación del color («Color de acento: cabeceras de tarjetas…») está en la tercera columna, en una sola línea. Esa columna se ensancha y la primera, la de las etiquetas, no tiene ancho mínimo.
 - **Arreglo en `Configuracion.fxml`**, solo en esa rejilla:
   - la primera columna lleva `<ColumnConstraints minWidth="-Infinity"/>` (`USE_PREF_SIZE`): las etiquetas nunca se encogen;
+  - la tercera, la del botón «Elegir carpeta...», también, porque si no el botón se corta; la que cede es la segunda, la de los campos de texto;
   - la explicación del color pasa a su propia fila, debajo del `ColorPicker`, en la columna 1 y ocupando dos columnas (`GridPane.columnSpan="2"`), con `wrapText="true"`;
   - «Tema de la aplicación» y su desplegable bajan una fila.
   - No cambia ningún texto.

@@ -86,6 +86,8 @@
                     <GridPane hgap="8" vgap="6">
                         <columnConstraints>
                             <ColumnConstraints minWidth="-Infinity"/>
+                            <ColumnConstraints/>
+                            <ColumnConstraints minWidth="-Infinity"/>
                         </columnConstraints>
                         <Label text="Carpeta automática de almacenamiento"/>
                         <TextField fx:id="txtCarpetaAuto" editable="false" prefWidth="420" GridPane.columnIndex="1"/>
