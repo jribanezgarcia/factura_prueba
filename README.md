@@ -109,7 +109,7 @@ En la primera ejecución se carga una **empresa de demostración** con datos fic
 - **Escribir antes de programar.** Con OpenSpec cada cambio empieza por explicar *por qué* y *qué se descarta*, y la especificación se mantiene siempre al día.
 - **Trabajar con IA revisándolo todo.** Las herramientas ayudan mucho, pero las decisiones y la revisión final son mías: en una auditoría temprana un modelo se inventó clases que no existían, y solo se detectó comprobándolo en el código.
 - **Cambios pequeños.** Mejor muchos cambios pequeños y revisables que uno gigante imposible de probar.
-- **Un error no debe cerrar la aplicación en silencio.** Un manejador global (`Thread.setDefaultUncaughtExceptionHandler`) avisa al usuario y anota cada error inesperado en `errores.log`, en vez de perderse en la consola.
+- **Un error inesperado no debe pasar en silencio.** Un manejador global (`Thread.setDefaultUncaughtExceptionHandler`) avisa al usuario, deja la aplicación abierta y anota cada error en `errores.log`, en vez de dejarlo perdido en la consola.
 
 ## Próximos pasos
 
