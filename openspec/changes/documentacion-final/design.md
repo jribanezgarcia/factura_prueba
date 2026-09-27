@@ -233,6 +233,95 @@ Al terminar se deja el tema como estaba y se borra el PDF de prueba si no está 
 - **`README.md`**: «Demostración» con logo, y una línea en «Lo que he aprendido» sobre el manejador global de errores.
 - **Capturas**: se rehacen **las siete** siguiendo D6, con la demo recién cargada (con logo) y los títulos corregidos. Antes hay que borrar la carpeta de la demo de `%APPDATA%\Facturacion`, o recargarla, para que traiga el logo; el resto de empresas no se toca.
 
+## D13. `LanzadorVentanaPrincipal`, más parecido a Biblioteca8
+
+Hoy `start` hace cinco cosas seguidas y termina con un apaño: `boolean demo = demoCargada;` solo existe porque una lambda no puede usar una variable a la que se le ha dado valor dos veces. Pasa a leerse como un índice:
+
+```java
+@Override
+public void start(Stage stage) {
+    ErroresInesperados.registrar();
+    try {
+        Vista.getInstancia().getControlador().prepararDatos();
+    } catch (Exception e) {
+        Dialogos.mostrarDialogoError("Facturación", e.getMessage());
+        Platform.exit();
+        return;
+    }
+    Vista.getInstancia().mostrarArranque(stage);
+}
+```
+
+- **`Vista.mostrarArranque(Stage ventanaArranque)`** (nuevo, público, con Javadoc):
+  1. `boolean demoCargada = cargarDemostracion();`
+  2. `ArranqueController arranque = prepararArranque(ventanaArranque);`
+  3. `ventanaArranque.show();`
+  4. `arranque.mostrarAvisoInicial(demoCargada);`
+  - Sin `setOnShown` ni lambda: el aviso se pide después de `show()`, con la ventana ya visible, y el aviso modal queda encima.
+- **`Vista.cargarDemostracion()`** (nuevo, privado): llama a `controlador.cargarDemostracion()` dentro de `try / catch (Exception e)`; si falla, muestra el aviso de hoy («No se pudo cargar la empresa de demostración:» + mensaje) y devuelve `false`.
+- `prepararArranque` se queda como está, porque también lo usa `volverAlArranque`, que no tiene que avisar de la demo.
+- El Javadoc de la clase explica en dos frases por qué hay algo antes de enseñar la ventana: la carpeta de datos y la instancia única se comprueban aquí porque hasta que arranca JavaFX no se pueden mostrar avisos.
+
+## D14. Las pantallas solo pasan por el `Controlador`
+
+Para que la documentación diga la verdad («las pantallas no conocen el negocio»), se quitan las tres fugas que hay hoy:
+
+| Pantalla | Hoy | Pasa a |
+|---|---|---|
+| `ArranqueController` | `PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA)` | `Vista.getInstancia().getControlador().ultimaEmpresa()` |
+| `ArranqueController` | `...getCarpeta().equals(CargarDemo.CARPETA)` | `Vista.getInstancia().getControlador().esEmpresaDemo(carpeta)` |
+| `ConfiguracionController` | `Sesion.getSesion().getCarpetaEmpresa()` | `Vista.getInstancia().getControlador().carpetaEmpresa()` |
+| `EditorController` | `Conexion.carpetaEmpresa().resolve(base)` | `Vista.getInstancia().getControlador().carpetaDatosEmpresa().resolve(base)` |
+
+- Operaciones nuevas en `Controlador` y `Modelo`, con una línea cada una:
+  - `String ultimaEmpresa()`: `Empresas.getEmpresas().ultima()`, que lee la preferencia;
+  - `boolean esEmpresaDemo(String carpeta)`: `CargarDemo.CARPETA.equals(carpeta)`;
+  - `String carpetaEmpresa()`: `Sesion.getSesion().getCarpetaEmpresa()`;
+  - `Path carpetaDatosEmpresa()`: `Conexion.carpetaEmpresa()`.
+- `Empresas.ultima()`: nuevo; la pareja de `recordarUltima`.
+- **`Calculos` se queda**: `EditorController` lo usa para recalcular los totales mientras se escribe. Es una herramienta `static` sin datos, como `Formatos`, y `AGENTS.md` ya la trata así.
+- `GestorTemas` (`vista/utilidades`) sigue leyendo la preferencia del tema: no es una pantalla.
+- Comprobar al final: `grep -rn "^import cabofactu.modelo.negocio" src/main/java/cabofactu/vista/controlador` solo devuelve `Calculos`.
+
+## D15. Qué hacen de verdad el `Controlador` y el `Modelo`
+
+«Repetir cada operación en un método de una línea» da a entender que sobran. Cuenta la forma, no para qué sirven. Se reescribe en todos los sitios.
+
+**`docs/tecnico.md`, tabla de capas**, estas dos filas:
+
+| Capa | Qué hace | Qué **no** hace |
+|---|---|---|
+| **`Controlador`** | Une la vista y el modelo. Arranca la aplicación (carpeta de datos, instancia única, demo) y la cierra (suelta el bloqueo y la base). Es **la única puerta** de las pantallas hacia los datos: una pantalla solo conoce `Vista.getInstancia().getControlador()` | Guardar ni decidir nada: no sabe cómo ni dónde se guardan los datos |
+| **`Modelo`** | Reúne en un solo sitio todo lo que la aplicación sabe hacer con sus datos, y sabe a qué clase de negocio le toca cada operación: `altaFactura` a `Facturas`, `siguienteCorrelativo` a `Series`. También guarda la sesión (fecha de trabajo) | SQL ni pantallas |
+
+**Debajo de la tabla, un apartado nuevo «Para qué sirven el `Controlador` y el `Modelo`»**, con este contenido, en prosa y corto:
+
+- La mayoría de sus métodos tienen una línea, y es buena señal: cada decisión está en su sitio. Las reglas están en el negocio, y las pantallas solo leen y enseñan. Si un método del `Controlador` necesitara diez líneas, sería que alguna regla se ha colado donde no toca.
+- **Separan las capas**. Las 13 pantallas no importan nada de `modelo/negocio` ni de SQLite; solo hablan con el `Controlador`. Si mañana cambia cómo se guarda algo (otra base de datos, o el PDF con JasperReports), el cambio se queda en el negocio y no se toca ninguna pantalla.
+- **Son el índice de la aplicación**. Leyendo el `Controlador` se ven todas las operaciones que hay, con nombres de verbo y entidad (`altaCliente`, `anularFactura`, `restaurarCopia`…), sin abrir ninguna pantalla.
+- **Son el sitio para lo que afecta a todas las operaciones**. Si hubiera que comprobar la sesión o apuntar cada operación en un registro, se haría en un único punto, sin tocar pantallas ni negocio.
+- Es el MVC de Biblioteca8, el que se ve en clase: Vista, Controlador y Modelo, cada uno con su papel.
+
+**`docs/tecnico.md`, árbol de paquetes**:
+
+- `controlador/ → Controlador: une vista y modelo; arranca y cierra la aplicación`
+- `modelo/ → Modelo: todas las operaciones con los datos, en un solo sitio`
+
+**`README.md`, «Cómo está montado»**: la frase pasa a decir que el `Controlador` es la única puerta de las pantallas hacia los datos y arranca y cierra la aplicación, y que el `Modelo` reúne todas las operaciones y sabe a qué clase de negocio le toca cada una. Las clases de `modelo/negocio` son singletons con su SQL, sin DAO ni servicios. El enlace al apartado nuevo de `tecnico.md`.
+
+**`docs/flujos.md`**: donde dice «reenvía», decir qué aporta. Por ejemplo, paso 7 del primer arranque y paso 5 del segundo: «el `Controlador` lo pasa al `Modelo`, que sabe que abrir una empresa le toca a `Empresas`». En «Conceptos que aparecen», «MVC: la pantalla solo habla con el `Controlador`» en lugar de «reenvío». El paso 3 y el diagrama del primer arranque se ajustan a D13 (`mostrarArranque`).
+
+**`AGENTS.md`, «Arquitectura»**:
+
+- las líneas del esquema pasan a `controlador/Controlador une vista y modelo; arranca y cierra la aplicación` y `modelo/Modelo reúne todas las operaciones con los datos`;
+- la viñeta «`Controlador` y `Modelo` repiten cada operación…» pasa a: «`Controlador` y `Modelo` tienen **una operación por cada cosa que la aplicación sabe hacer**, casi siempre de una línea, como en Biblioteca8: el `Controlador` es la única puerta de las pantallas hacia los datos y el `Modelo` sabe a qué clase de negocio le toca cada una.» Los nombres verbo + entidad se quedan.
+- viñeta nueva: «Las pantallas **no importan nada de `modelo/negocio`**, salvo `Calculos`; lo que necesiten lo piden al `Controlador`.»
+
+**Javadoc de las clases**:
+
+- `Controlador`: «Une la vista y el modelo. Arranca la aplicación y la cierra, y es la única puerta de las pantallas hacia los datos: cada operación que la aplicación sabe hacer tiene aquí su método.»
+- `Modelo`: «Reúne todas las operaciones con los datos de la aplicación y sabe a qué clase de negocio le toca cada una (clientes a `Clientes`, facturas a `Facturas`…). Las pantallas no lo usan directamente: pasan por el `Controlador`.»
+
 ## Riesgos y renuncias
 
 - **La documentación se queda vieja con la rama Jasper**: los flujos se paran antes del PDF por eso, y la rama pondrá al día `tecnico.md` y `flujos.md`.

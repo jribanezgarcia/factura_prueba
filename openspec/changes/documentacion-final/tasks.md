@@ -35,7 +35,7 @@
 - [x] 7.3 Ningún emoji en títulos ni tablas (comprobado con `grep` sobre los rangos Unicode de emoji; solo aparecen flechas `→` y caracteres de árbol `├└│`, que no son emojis).
 - [x] 7.4 Líneas de cada documento: `README.md` 128, `docs/metodologia.md` 208, `docs/tecnico.md` 239, `docs/flujos.md` 113 (688 en total).
 
-## 8. Revisión del alumno (al final, después de la sección 15)
+## 8. Revisión del alumno (al final, después de la sección 16)
 
 - [ ] 8.1 Leer los cuatro documentos en GitHub (en una rama o tras el push) y comprobar que los diagramas se dibujan.
 - [ ] 8.2 Comprobar que lo que se cuenta del flujo de trabajo es como se ha trabajado de verdad.
@@ -81,3 +81,12 @@
 - [x] 15.1 La ventana de arranque se titula «CaboFactu® Selección de empresa», y el menú, el histórico y la configuración llevan sus tildes.
 - [x] 15.2 Con la demo recién cargada, el menú y el editor enseñan el logo, y el PDF de una factura lo lleva a la izquierda, con los datos de la empresa a la derecha.
   - Comprobadas con Computer use al hacer las capturas de la 14.1 (títulos en la barra de cada ventana; logo en menú, editor y PDF).
+
+## 16. Controlador, Modelo y arranque
+
+- [ ] 16.1 `LanzadorVentanaPrincipal.start` como en `design.md - D13`, con `Vista.mostrarArranque` y `Vista.cargarDemostracion` nuevos, sin `setOnShown` ni la variable copiada.
+- [ ] 16.2 Las tres fugas de `design.md - D14`: `ultimaEmpresa`, `esEmpresaDemo`, `carpetaEmpresa` y `carpetaDatosEmpresa` en `Controlador` y `Modelo`, y `Empresas.ultima()`. Comprobar con el `grep` de D14 que las pantallas solo importan `Calculos` de `modelo/negocio`.
+- [ ] 16.3 Javadoc de `Controlador` y `Modelo`, y `AGENTS.md`, según `design.md - D15`.
+- [ ] 16.4 `docs/tecnico.md`, `README.md` y `docs/flujos.md` según `design.md - D15`, incluido el apartado nuevo «Para qué sirven el `Controlador` y el `Modelo`». `grep -rn -i "repite\|repetir\|reenv" README.md docs/ AGENTS.md`: no queda nada que describa el `Controlador` o el `Modelo` así.
+- [ ] 16.5 El `grep` de estilo de la 12.3 sobre los ficheros tocados: nada nuevo. `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo.
+- [ ] 16.6 Prueba manual: arrancar la aplicación borrando antes la carpeta de la demo. Sale el aviso de bienvenida encima de la ventana de arranque y la demo queda elegida. Sin borrar nada, arranca sin aviso.

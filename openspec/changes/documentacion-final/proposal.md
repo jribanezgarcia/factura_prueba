@@ -40,6 +40,7 @@ Y falta lo que el profesor tiene que poder ver: cómo se ha desarrollado el proy
 - **La demo trae logo**: el logo de CaboFactu, reducido, dentro de la aplicación; al cargar la demo se copia a su carpeta de datos y la cabecera del PDF queda en modo logo.
 - **Excepciones**: `Exception` por defecto; una propia solo si aporta algo; las de Java solo para errores de programación. `CargarDemo` pasa a `Exception`.
 - **Errores inesperados**: un manejador global que avisa sin cerrar la aplicación y apunta cada error en `errores.log`.
+- **Controlador y Modelo bien explicados**: la documentación dejaba entender que solo repiten métodos. Se cuenta para qué sirven, y las tres pantallas que se saltaban el `Controlador` pasan por él. `LanzadorVentanaPrincipal` queda más corto y parecido al de Biblioteca8.
 - **`AGENTS.md` y `openspec/config.yaml`**: el flujo con los dos juegos de comandos (opencode y Claude Code), `docs/flujos.md` en el mapa de la documentación, y la guía de archivado sin `git add -A`.
 
 ## Capacidades
