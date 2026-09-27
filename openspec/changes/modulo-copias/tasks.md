@@ -46,13 +46,23 @@
 
 > La base de datos no cambia: no hace falta borrar `%APPDATA%\Facturacion`.
 
-- [ ] 7.1 En Copias, la primera vez, `lblCarpeta` dice que no se ha elegido carpeta. «Crear copia…» abre el selector de carpetas; al elegir una se crea `demo_AAAAMMDD_HHMMSS.db` sin más pasos, sale el aviso con la ruta y la etiqueta enseña la carpeta. Cancelar el selector no hace nada.
-- [ ] 7.2 Volver a pulsar «Crear copia…»: el selector se abre en la misma carpeta. Otra copia en el mismo segundo sale con `_2`.
-- [ ] 7.3 Cambiar de empresa, entrar en Copias: la etiqueta enseña la misma carpeta, y la copia se llama con la carpeta de esa empresa.
-- [ ] 7.4 «Elegir copia…» se abre en la carpeta de las copias. Al elegir una copia de la misma empresa sale el resumen (empresa, NIF, facturas y última factura en formato `dd/mm/aaaa`) y se pueden elegir las dos opciones.
-- [ ] 7.5 Elegir un archivo que no es una base (un `.txt` renombrado a `.db`): avisa y no enseña resumen.
-- [ ] 7.6 Reemplazar la empresa activa: pide confirmación con su nombre, avisa con la ruta del rescate en `copias_previas` y vuelve al menú con los datos de la copia.
-- [ ] 7.7 Elegir una copia de otra empresa (otro NIF): «Reemplazar» está desactivado y queda marcada «Crear una empresa nueva», con el campo del nombre.
-- [ ] 7.8 Crear una empresa desde una copia sin escribir el nombre: avisa. Con nombre, pide confirmación, la crea y pregunta si cambiar a ella. «No»: sigue en Copias con la misma empresa y el bloque de restaurar vacío.
-- [ ] 7.9 Repetir la 7.8 contestando «Sí»: se cierra la empresa y sale la pantalla de arranque con la empresa nueva elegida; al entrar, tiene los datos de la copia.
-- [ ] 7.10 La pantalla se ve bien y se lee en biblioteca8 y en omarchy, sin textos cortados.
+- [x] 7.1 En Copias, la primera vez, `lblCarpeta` dice que no se ha elegido carpeta. «Crear copia…» abre el selector de carpetas; al elegir una se crea `demo_AAAAMMDD_HHMMSS.db` sin más pasos, sale el aviso con la ruta y la etiqueta enseña la carpeta. Cancelar el selector no hace nada.
+- [x] 7.2 Volver a pulsar «Crear copia…»: el selector se abre en la misma carpeta. Otra copia en el mismo segundo sale con `_2`.
+- [x] 7.3 Cambiar de empresa, entrar en Copias: la etiqueta enseña la misma carpeta, y la copia se llama con la carpeta de esa empresa.
+- [x] 7.4 «Elegir copia…» se abre en la carpeta de las copias. Al elegir una copia de la misma empresa sale el resumen (empresa, NIF, facturas y última factura en formato `dd/mm/aaaa`) y se pueden elegir las dos opciones.
+- [x] 7.5 Elegir un archivo que no es una base (un `.txt` renombrado a `.db`): avisa y no enseña resumen.
+- [x] 7.6 Reemplazar la empresa activa: pide confirmación con su nombre, avisa con la ruta del rescate en `copias_previas` y vuelve al menú con los datos de la copia.
+- [x] 7.7 Elegir una copia de otra empresa (otro NIF): «Reemplazar» está desactivado y queda marcada «Crear una empresa nueva», con el campo del nombre.
+- [x] 7.8 Crear una empresa desde una copia sin escribir el nombre: avisa. Con nombre, pide confirmación, la crea y pregunta si cambiar a ella. «No»: sigue en Copias con la misma empresa y el bloque de restaurar vacío.
+- [x] 7.9 Repetir la 7.8 contestando «Sí»: se cierra la empresa y sale la pantalla de arranque con la empresa nueva elegida; al entrar, tiene los datos de la copia.
+- [x] 7.10 La pantalla se ve bien y se lee en biblioteca8 y en omarchy, sin textos cortados.
+- [ ] 7.11 Tras la 8.2: Configuración → «PDF y apariencia» enseña enteras sus etiquetas, con biblioteca8 y con omarchy.
+- [ ] 7.12 Tras la 8.4: en el arranque, eliminar la empresa elegida deja elegida otra (la demo) y «Entrar» funciona; al cerrar y volver a abrir, sale elegida esa otra.
+
+## 8. Lo que salió en las pruebas manuales
+
+- [ ] 8.1 `TextosCompletosTest.textosConfiguracion` revisa las seis secciones de Configuración. Comprobar que falla en «PDF y apariencia» antes de tocar el FXML y apuntar aquí el mensaje (o que no falla en *headless*). Ver `design.md - D6`.
+- [ ] 8.2 `Configuracion.fxml`: en la rejilla de «PDF y apariencia», `ColumnConstraints` con `minWidth="-Infinity"` en la primera columna y la explicación del color en su propia fila con `wrapText`. `TextosCompletosTest` pasa. Ver `design.md - D6`.
+- [ ] 8.3 `EmpresasTest` y `PantallaArranqueTest` con los casos de `design.md - D6`. Comprobar que el de la pantalla falla antes del arreglo y apuntar aquí el mensaje.
+- [ ] 8.4 `Empresas.baja` borra `ultima_empresa` si es la empresa borrada, y `ArranqueController.cargarEmpresas()` empieza con `cmbEmpresa.setValue(null)`. Las pruebas de la 8.3 pasan. Ver `design.md - D6`.
+- [ ] 8.5 El `grep` de la 5.2 sobre los ficheros tocados en esta sección, sin buscar `StringBuilder`: nada nuevo. `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí el número de pruebas y el tiempo.

@@ -187,6 +187,30 @@ Todo con `try / catch / finally`: un único `catch (Exception e)` con `Dialogos.
 
 Los selectores de archivos de Windows no se pueden manejar desde el test: crear, elegir y restaurar se prueban en el negocio y a mano.
 
+## D6. Lo que salió en las pruebas manuales
+
+Las diez pruebas de la sección 7 pasaron. Por el camino salieron dos fallos de fuera de Copias, que estaban antes de este change y se arreglan aquí.
+
+**Configuración → «PDF y apariencia» corta tres etiquetas** («Carpeta autom…», «Última carpeta…», «Tema de la apl…»).
+
+- **Causa**: en la rejilla de la sección, la explicación del color («Color de acento: cabeceras de tarjetas…») está en la tercera columna, en una sola línea. Esa columna se ensancha y la primera, la de las etiquetas, no tiene ancho mínimo.
+- **Arreglo en `Configuracion.fxml`**, solo en esa rejilla:
+  - la primera columna lleva `<ColumnConstraints minWidth="-Infinity"/>` (`USE_PREF_SIZE`): las etiquetas nunca se encogen;
+  - la explicación del color pasa a su propia fila, debajo del `ColorPicker`, en la columna 1 y ocupando dos columnas (`GridPane.columnSpan="2"`), con `wrapText="true"`;
+  - «Tema de la aplicación» y su desplegable bajan una fila.
+  - No cambia ningún texto.
+- **Por qué no lo vio la prueba**: `TextosCompletosTest.textosConfiguracion` solo revisa la sección que se ve al abrir (Empresa); las demás están ocultas y la prueba salta lo que no es visible. Pasa a abrir **cada sección** con su botón (`#btnEmpresa`, `#btnCabecera`, `#btnPdf`, `#btnIva`, `#btnRetenciones` y `#btnSeries`, con `fire()`) y a revisar los textos de cada una, con la ventana al mínimo como las demás. Antes de tocar el FXML, la prueba nueva tiene que fallar en «PDF y apariencia» (se comprueba y se apunta en la tarea). Si en modo *headless* no llega a fallar (allí no se cargan las fuentes de los temas), se apunta también y el arreglo se hace igual.
+
+**Al eliminar en el arranque la empresa elegida, el desplegable se queda vacío**, y `ultima_empresa` sigue apuntando a una empresa que ya no existe.
+
+- **Causa**: `ArranqueController.cargarEmpresas()` cambia la lista con la empresa borrada todavía como valor del `ComboBox`, así que la comprobación «si no hay ninguna elegida, la primera» no se cumple. Y `Empresas.baja` no toca `ultima_empresa`.
+- **Arreglo**:
+  - `cargarEmpresas()` empieza con `cmbEmpresa.setValue(null)`, antes de `setAll`: después se elige la última recordada o, si no está, la primera;
+  - `Empresas.baja` borra la preferencia si la empresa borrada es la recordada: `if (carpeta.equals(PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA))) { recordarUltima(""); }`.
+- **Pruebas**:
+  - `EmpresasTest`: al dar de baja la empresa recordada, `ultima_empresa` queda vacía; al dar de baja otra, no cambia;
+  - `PantallaArranqueTest`: con dos empresas, eligiendo la que no es la demo y eliminándola (`aceptarAviso()`), el desplegable enseña la demo y «Entrar» está activo. Tiene que fallar antes del arreglo (se comprueba y se apunta en la tarea).
+
 ## Riesgos y renuncias
 
 - **Sin hilos, la ventana no responde mientras se copia.** Con bases de este tamaño son décimas de segundo, y restaurar ya pide confirmación antes.
