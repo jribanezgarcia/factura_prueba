@@ -1,4 +1,4 @@
-> Todo el contenido y su orden está en `design.md`. **No se toca el código ni `openspec/specs/`.** Antes de escribir un nombre de clase, método, fichero o cifra, se comprueba en el repositorio (`grep`, `ls`, `git log`). Estilo sobrio: sin emojis en títulos ni tablas. Diagramas en Mermaid válidos para GitHub. Commits **sin líneas de coautoría**.
+> Todo el contenido y su orden está en `design.md`. **Las secciones 1 a 7 son solo documentación; las 9 a 14 tocan código (ver `design.md` D8 a D12).** Antes de escribir un nombre de clase, método, fichero o cifra, se comprueba en el repositorio (`grep`, `ls`, `git log`). Estilo sobrio: sin emojis en títulos ni tablas. Diagramas en Mermaid válidos para GitHub. Commits **sin líneas de coautoría**.
 
 ## 1. Metodología
 
@@ -35,7 +35,42 @@
 - [x] 7.3 Ningún emoji en títulos ni tablas (comprobado con `grep` sobre los rangos Unicode de emoji; solo aparecen flechas `→` y caracteres de árbol `├└│`, que no son emojis).
 - [x] 7.4 Líneas de cada documento: `README.md` 128, `docs/metodologia.md` 208, `docs/tecnico.md` 239, `docs/flujos.md` 113 (688 en total).
 
-## 8. Revisión del alumno
+## 8. Revisión del alumno (al final, después de la sección 15)
 
 - [ ] 8.1 Leer los cuatro documentos en GitHub (en una rama o tras el push) y comprobar que los diagramas se dibujan.
 - [ ] 8.2 Comprobar que lo que se cuenta del flujo de trabajo es como se ha trabajado de verdad.
+
+## 9. Ortografía
+
+- [ ] 9.1 `ConfiguracionVentana`: los cuatro títulos con tilde, y los tests que los comparen, al día. Ver `design.md - D8`.
+- [ ] 9.2 Tildes en los comentarios y el Javadoc de `src/main/java` y `src/test/java` (fuera del paquete `pdf`), sin tocar ningún identificador. Apuntar aquí cuántas líneas se han corregido. Ver `design.md - D8`.
+
+## 10. Logo de la demo
+
+- [ ] 10.1 `src/main/resources/db/logo_demo.png`: el logo reducido a 600 px de ancho. Apuntar aquí su peso.
+- [ ] 10.2 `CargarDemo.cargar` copia el logo y pone `logo_path` y `cabecera_modo = 'LOGO'`. Ver `design.md - D9`.
+- [ ] 10.3 `CargarDemoTest` con los casos de `design.md - D9`.
+
+## 11. Excepciones
+
+- [ ] 11.1 `AGENTS.md`: la norma nueva de excepciones. `CargarDemo`: `IllegalStateException` → `Exception`. Ver `design.md - D10`.
+
+## 12. Errores inesperados
+
+- [ ] 12.1 Nuevo `vista/utilidades/ErroresInesperados.java`; registrarlo en `LanzadorVentanaPrincipal.start` y poner el `try / catch` de `AppCaboFactu.main`. Ver `design.md - D11`.
+- [ ] 12.2 `ErroresInesperadosTest` con los casos de `design.md - D11`, y la prueba de pantalla si es fiable (si no, apuntarlo aquí).
+- [ ] 12.3 En los ficheros de código tocados, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|javafx\.[a-z]+\.[A-Z]|java\.[a-z]+\.[a-z]+\.[A-Z]|new Thread|Task<|static class|enum [A-Z]"` sin contar las líneas `import`: nada nuevo. Borrar `target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo.
+
+## 13. Documentos al día
+
+- [ ] 13.1 `docs/tecnico.md`, `docs/flujos.md` y `README.md` según `design.md - D12`.
+- [ ] 13.2 `openspec validate documentacion-final --strict` sin errores. Actualizar la línea del change en «En curso» de `ESTADO.md`.
+
+## 14. Capturas otra vez (sesión principal, con Computer use)
+
+- [ ] 14.1 Recargar la demo para que traiga el logo y rehacer las siete capturas con los títulos corregidos. Ver `design.md - D12`.
+
+## 15. Pruebas manuales
+
+- [ ] 15.1 La ventana de arranque se titula «CaboFactu® Selección de empresa», y el menú, el histórico y la configuración llevan sus tildes.
+- [ ] 15.2 Con la demo recién cargada, el menú y el editor enseñan el logo, y el PDF de una factura lo lleva a la izquierda, con los datos de la empresa a la derecha.

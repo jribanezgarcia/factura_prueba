@@ -6,7 +6,7 @@ Tres documentos (587 líneas en total) que describen la arquitectura anterior a 
 
 **Objetivo**: un alumno presenta el proyecto a su profesor en GitHub. En menos de diez minutos, el profesor tiene que poder entender tres cosas: qué hace la aplicación, cómo se ha desarrollado con OpenSpec y cómo recorre el código una operación real. Todo lo que se cuente tiene que ser verdad hoy y comprobable en el repositorio.
 
-**Fuera**: el código, las especificaciones, y Jasper y VeriFactu, que se documentarán en sus ramas.
+**Fuera**: el paquete `pdf`, y Jasper y VeriFactu, que se documentarán en sus ramas. Por decisión del alumno, este change incluye además los arreglos de D8 a D11 que salieron al revisar la documentación.
 
 ---
 
@@ -168,6 +168,70 @@ Al terminar se deja el tema como estaba y se borra el PDF de prueba si no está 
 
 - **`AGENTS.md`, «Flujo de trabajo»**: los comandos, en opencode (`/opsx-propose` → `/opsx-apply` → `/opsx-archive`) o en Claude Code (`/opsx:propose` → `/opsx:apply` → `/opsx:archive`). En el mapa de la documentación, una fila para `docs/flujos.md`.
 - **`openspec/config.yaml`, guía de `archive`**: la línea de `git add -A` pasa a «Añade al commit por rutas: `ESTADO.md`, `openspec/specs/`, la carpeta del change y su carpeta en `archive/`; git detecta el movimiento». La de `git status` vacío se queda.
+
+## D8. Ortografía
+
+- **`vista/ConfiguracionVentana.java`**: `Selección de empresa`, `Menú principal`, `Configuración` e `Histórico`. Comprobar con `grep` los tests que comparen esos títulos y ponerlos al día.
+- **Comentarios y Javadoc** de `src/main/java` y `src/test/java`: poner las tildes a las palabras en español («conexión», «configuración», «aplicación», «número», «también», «después»…). **Nunca** a los nombres de clases, métodos, variables o claves (`Configuracion`, `conexion`, `ultima_carpeta_export`, la carpeta `Facturacion`), aunque salgan en un comentario.
+  - Sobre todo en `Conexion`, `Configuracion`, `Series`, `Dialogos`, `MenuPrincipalController`, `Calculos`, `Botones`, `ArranqueController`, `Ventanas`, `LogoMarco`, `Formatos` y `PreferenciasGlobales`.
+  - No se toca el paquete `pdf`, que irá con Jasper.
+- Los textos que ve el usuario ya se revisaron uno a uno (1.652 textos): solo fallaban los cuatro títulos.
+
+## D9. La demo trae logo
+
+- **Imagen**: `logos/ChatGPT Image 2 sept 2026, 20_35_35.png` (fuera de git) reducida a **600 px de ancho**, manteniendo la proporción, y guardada como `src/main/resources/db/logo_demo.png`, junto a `seed_demo.sql`. Se reduce con un script de Python fuera del proyecto (PIL, `Image.LANCZOS`); en el repositorio solo entra la imagen.
+- **`CargarDemo.cargar`**, después de ejecutar `seed_demo.sql`:
+  1. copia el recurso a `logo.png`, dentro de la carpeta de datos de la demo (`Conexion.rutaBaseDe(CARPETA).getParent()`), reemplazándolo si existe;
+  2. guarda en la empresa `logo_path` (la ruta absoluta de esa copia) y `cabecera_modo = 'LOGO'`, con un `UPDATE empresa ... WHERE id = 1` y `PreparedStatement`.
+  - Si el recurso no está: `Exception` con `No se encontró el logo de la demostración dentro de la aplicación.`
+- **`CargarDemoTest`**: tras cargar, la empresa tiene `cabecera_modo` `LOGO` y su `logo_path` apunta a un fichero que existe dentro de la carpeta de la demo; cargar dos veces deja un solo `logo.png`.
+
+## D10. Excepciones
+
+- **`AGENTS.md`, «Estilo del código»**: la línea «Solo `Exception`: nada de excepciones propias…» pasa a:
+  > Por defecto, `Exception` con el mensaje tal como lo verá el usuario, sin prefijos. Una excepción propia solo cuando aporte algo (un `catch` que la trate aparte), en su propio fichero. Las de Java (`IllegalArgumentException`, `IllegalStateException`) solo para errores de programación que el usuario no puede provocar, como un `null` donde no debe. Todo lo que se escape lo recoge `ErroresInesperados`.
+- **`CargarDemo`**: la `IllegalStateException` de `seed_demo.sql` pasa a `Exception("No se encontró seed_demo.sql dentro de la aplicación.")`.
+- Se quedan como están:
+  - las `IllegalArgumentException` de los constructores de `Controlador` y `Vista`, porque un `null` ahí es un error de programación;
+  - la `RuntimeException` de `Vista.mostrar`, que salta con un FXML roto;
+  - las del paquete `pdf`.
+
+## D11. Errores inesperados
+
+**`vista/utilidades/ErroresInesperados.java`**: herramienta `static` sin datos propios. Lleva un párrafo «Cómo funciona» que explica `Thread.setDefaultUncaughtExceptionHandler`: Java llama a ese método con cualquier excepción que se escape sin `catch`, también las de los botones de JavaFX.
+
+- `public static void registrar()`: `Thread.setDefaultUncaughtExceptionHandler((hilo, error) -> tratar(error));`
+- `public static void tratar(Throwable error)`:
+  1. `guardar(error)`;
+  2. si `Platform.isFxApplicationThread()`, `Dialogos.mostrarDialogoError("Error inesperado", texto)` con `String.format("Ha ocurrido un error inesperado:%n%s%n%nLa aplicación sigue abierta. Si se repite, revisa errores.log en la carpeta de datos.", mensaje)`. `mensaje` es `error.getMessage()` o, si es `null` o vacío, `error.getClass().getSimpleName()`;
+  3. todo dentro de un `try / catch (Exception e)` que solo escribe en `System.err`, para que un fallo al avisar no provoque otro error.
+- `public static void guardar(Throwable error)`: añade una entrada a `Conexion.carpetaRaiz().resolve("errores.log")`, creando el fichero si no existe (`StandardOpenOption.CREATE` y `APPEND`):
+  ```
+  2026-09-27 18:45:12  NullPointerException: <mensaje>
+      <detalle completo, con StringWriter y printStackTrace(PrintWriter)>
+  ```
+  Si no se puede escribir, lo cuenta en `System.err` y sigue.
+- **Dónde se registra**: en la primera línea de `LanzadorVentanaPrincipal.start`, antes de nada, para que los avisos ya se puedan mostrar.
+- **`AppCaboFactu.main`**: sus cuatro líneas van dentro de un `try / catch (Exception e)` que llama a `ErroresInesperados.guardar(e)`, para los fallos antes de que exista la ventana.
+- No se usa `Platform.runLater`: la aplicación no tiene hilos propios, así que los errores de pantalla llegan ya en el hilo de JavaFX.
+
+**`ErroresInesperadosTest`** (nuevo):
+
+- `guardar` crea `errores.log` en la carpeta de datos temporal, con la fecha, el tipo, el mensaje y una línea `at `;
+- dos errores seguidos dejan dos entradas;
+- `tratar`, fuera del hilo de JavaFX, guarda sin mostrar aviso;
+- un error sin mensaje se apunta con su tipo.
+- Si se puede hacer de forma fiable, una prueba de pantalla que registra el manejador, provoca un error dentro de `Platform.runLater` y comprueba el aviso «Error inesperado» con `textoAviso()`; al terminar, deja el manejador como estaba. Si en *headless* no es fiable, se apunta en la tarea y se queda como prueba manual.
+
+## D12. Documentos y capturas al día
+
+- **`docs/tecnico.md`**:
+  - la fila «Solo `Exception`» de las decisiones pasa a la norma de D10;
+  - fila nueva: «Manejador global de errores con aviso y `errores.log`», frente a «dejar que el error salga por consola»;
+  - en paquetes: `ErroresInesperados` en `vista/utilidades` y `logo_demo.png` en `db/`.
+- **`docs/flujos.md`**, primer arranque: el paso `ErroresInesperados.registrar()` al principio de `start`, y `CargarDemo` copiando el logo. En los conceptos, el manejador global.
+- **`README.md`**: «Demostración» con logo, y una línea en «Lo que he aprendido» sobre el manejador global de errores.
+- **Capturas**: se rehacen **las siete** siguiendo D6, con la demo recién cargada (con logo) y los títulos corregidos. Antes hay que borrar la carpeta de la demo de `%APPDATA%\Facturacion`, o recargarla, para que traiga el logo; el resto de empresas no se toca.
 
 ## Riesgos y renuncias
 
