@@ -78,5 +78,6 @@
 
 ## 15. Pruebas manuales
 
-- [ ] 15.1 La ventana de arranque se titula «CaboFactu® Selección de empresa», y el menú, el histórico y la configuración llevan sus tildes.
-- [ ] 15.2 Con la demo recién cargada, el menú y el editor enseñan el logo, y el PDF de una factura lo lleva a la izquierda, con los datos de la empresa a la derecha.
+- [x] 15.1 La ventana de arranque se titula «CaboFactu® Selección de empresa», y el menú, el histórico y la configuración llevan sus tildes.
+- [x] 15.2 Con la demo recién cargada, el menú y el editor enseñan el logo, y el PDF de una factura lo lleva a la izquierda, con los datos de la empresa a la derecha.
+  - Comprobadas con Computer use al hacer las capturas de la 14.1 (títulos en la barra de cada ventana; logo en menú, editor y PDF).
