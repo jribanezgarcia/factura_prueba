@@ -37,8 +37,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Histórico rehecho: año de trabajo puesto al entrar, filtros que se comprueban y se marcan en rojo, «Eliminar» en toda la pantalla, resumen de anular/eliminar con el número de cada factura, exportar sin hilos con aviso de tres botones y menú del clic derecho en el FXML y legible en todos los temas; 435 pruebas.
 - Facturación mensual rehecha: siempre en el año de trabajo, casilla única «Añadir mes», `PlantillaMensual` que se valida sola, `FacturacionMensual` singleton, números libres con dos botones y ventana con `Vista.crearVentanaModal` y legible en los temas oscuros; 451 pruebas.
 - Módulo de copias: botón único «Crear copia…» con la carpeta recordada y el nombre con la empresa, comprobación de la copia contra `crear_tablas.sql` en vez de listas escritas a mano, reemplazar solo con el mismo NIF, vuelta al arranque al cambiar de empresa desde una copia, `CopiaSeguridad` pasa a singleton de `modelo/negocio` con `ResumenCopia` en `modelo/dominio` (fuera `CopiaSeguridadDAO`, `DatosException`, el paquete `fichero` y `Controlador.getModelo()`) y la pantalla sin hilos; de paso arregla las etiquetas cortadas de «PDF y apariencia» en Configuración y el borrado de la empresa elegida en el arranque; 469 pruebas.
+- Documentación final: `README.md`, `docs/metodologia.md`, `docs/tecnico.md` reescritos y `docs/flujos.md` nuevo, con capturas rehechas de la aplicación real; ortografía corregida (títulos de ventana con tilde y comentarios); logo de la demostración en menú, editor y PDF; norma de excepciones suavizada (`CargarDemo` pasa a `Exception`); manejador global de errores inesperados (`ErroresInesperados`, con aviso y `errores.log`); `Controlador` y `Modelo` explicados de verdad y sin las fugas hacia el negocio que tenían tres pantallas; `LanzadorVentanaPrincipal.start` más corto, como en Biblioteca8; 475 pruebas.
 
-Último cambio archivado: `2026-09-27-modulo-copias`.
+Último cambio archivado: `2026-09-27-documentacion-final`.
 
 ## En curso
 
@@ -51,13 +52,10 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
-**`documentacion-final`**: reescribe `README.md`, `docs/metodologia.md` y `docs/tecnico.md`, añade `docs/flujos.md`, rehace las capturas y pone `AGENTS.md` y `openspec/config.yaml` al día con el flujo de trabajo real. Además corrige los cuatro títulos de ventana y las tildes de los comentarios, añade el logo a la demostración, suaviza la norma de excepciones (`CargarDemo` pasa a `Exception`) y añade un manejador global de errores inesperados (`ErroresInesperados`, con aviso y `errores.log`). También reescribe `LanzadorVentanaPrincipal.start` con `Vista.mostrarArranque` (sin `setOnShown`), quita las tres fugas de las pantallas hacia el negocio (`ultimaEmpresa`, `esEmpresaDemo`, `carpetaEmpresa` y `carpetaDatosEmpresa` en `Controlador`/`Modelo`) y explica en el Javadoc y en la documentación para qué sirven de verdad el `Controlador` y el `Modelo`.
-
 ## Qué toca ahora
 
-1. **`documentacion-final`**.
-2. La rama `pdf-jasper` (plan en `borrador_changes/plan-pdf-jasper.md`): el PDF se hace con JasperReports en vez de con OpenPDF.
-3. VeriFactu, al final, en otra rama.
+1. La rama `pdf-jasper` (plan en `borrador_changes/plan-pdf-jasper.md`): el PDF se hace con JasperReports en vez de con OpenPDF.
+2. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
 
@@ -95,3 +93,7 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **`TextosCompletosTest` solo revisa lo que está visible**: las secciones ocultas (Configuración) hay que abrirlas con su botón en la prueba.
 - **En un `GridPane`, un texto largo en una columna estrecha las demás**: las columnas de etiquetas y botones llevan `ColumnConstraints minWidth="-Infinity"` y los textos largos van en su propia fila con `wrapText`.
 - **El diseño de una operación que reutiliza otra pública puede arrastrar efectos**: la copia de rescate usaba `crear()` y pisaba la carpeta recordada; lo común va a un privado.
+- **Los textos que ve el usuario se revisan también en los títulos de ventana** (`ConfiguracionVentana`): cuatro títulos sin tilde pasaron todas las pruebas y se veían en las capturas.
+- **Si un change con `skip_specs: true` acaba cambiando comportamiento, hay que quitar esa marca del `.openspec.yaml` y añadir el delta**; si no, el requisito nuevo no llega a la especificación.
+- **El aviso de `ErroresInesperados` no se puede probar de forma fiable en headless**: lo cubren los tests de `errores.log` y queda como comprobación manual.
+- **Para rehacer las capturas con la demo nueva hay que apartar la carpeta de la demo de `%APPDATA%\Facturacion`, sin borrarla**, para que la aplicación la recree; al terminar, devolver el tema y la última carpeta de exportación del usuario.

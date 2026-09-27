@@ -940,7 +940,7 @@ La aplicación SHALL abrir su ventana siempre a 1024x768 y centrada en la pantal
 
 ### Requirement: Identidad de la aplicación en la interfaz
 
-La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus ventanas. El icono SHALL aplicarse a la ventana principal y a las ventanas secundarias (`Stage`) que la aplicación abre, de modo que se vea en la barra de tareas, en la esquina de la ventana y en la vista minimizada. La ventana principal SHALL mostrarse siempre con un título compuesto por la marca «CaboFactu®», un espacio y el nombre de la pantalla activa. Las ventanas secundarias SHALL mostrar el mismo prefijo de marca delante de su propio título («CaboFactu® » + título).
+La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus ventanas. El icono SHALL aplicarse a la ventana principal y a las ventanas secundarias (`Stage`) que la aplicación abre, de modo que se vea en la barra de tareas, en la esquina de la ventana y en la vista minimizada. La ventana principal SHALL mostrarse siempre con un título compuesto por la marca «CaboFactu®», un espacio y el nombre de la pantalla activa, escrito con sus tildes. Las ventanas secundarias SHALL mostrar el mismo prefijo de marca delante de su propio título («CaboFactu® » + título).
 
 #### Scenario: Icono en la ventana principal
 - **WHEN** la aplicación inicia su ventana principal
@@ -953,7 +953,7 @@ La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus v
 #### Scenario: Título de la ventana principal por pantalla
 - **WHEN** el usuario navega entre las pantallas de la aplicación (Menú Principal, Histórico, Configuración, Editor, Clientes o Copias)
 - **THEN** la ventana principal se titula «CaboFactu® <nombre de la pantalla actual>»
-- **AND** la ventana de arranque, que es una ventana propia, se titula «CaboFactu® Seleccion de empresa»
+- **AND** la ventana de arranque, que es una ventana propia, se titula «CaboFactu® Selección de empresa»
 
 #### Scenario: Título con prefijo de marca en ventanas secundarias
 - **WHEN** se abre una ventana secundaria de tipo `Stage` con su propio título
@@ -1148,6 +1148,8 @@ Cuando la demostración no se pueda recrear porque su base está en uso, la carg
 
 Los datos de demostración SHALL ser ficticios y SHALL NOT contener datos reales de ningún cliente.
 
+La empresa de demostración SHALL traer un logo ficticio y la cabecera del PDF en modo logo, para que se vea cómo queda el logo en el menú, en el editor y en el PDF sin configurar nada. El logo SHALL ir dentro de la aplicación y SHALL copiarse a la carpeta de datos de la demostración al cargarla.
+
 La demostración SHALL cubrir los casos que cuestan de montar a mano: varias series, una factura con varios tipos de IVA, una con descuento global, una con retención, una con suplido, una anulada y una rectificativa.
 
 #### Scenario: Cargar la demostración
@@ -1171,3 +1173,25 @@ La demostración SHALL cubrir los casos que cuestan de montar a mano: varias ser
 #### Scenario: Los datos de demostración son ficticios
 - **WHEN** alguien revisa la empresa de demostración
 - **THEN** ningún cliente, NIF ni dirección corresponde a una persona o empresa real
+
+#### Scenario: La demostración trae logo
+- **WHEN** se carga la empresa de demostración
+- **THEN** la empresa tiene un logo que existe en su carpeta de datos y la cabecera del PDF en modo logo
+- **AND** el menú principal, el editor y el PDF de sus facturas muestran ese logo
+
+### Requirement: Errores inesperados
+
+Cuando se produzca un error que ninguna pantalla haya previsto, la aplicación SHALL mostrar un aviso «Error inesperado» con el mensaje del error, o con su tipo si no tiene mensaje, y SHALL seguir abierta. La aplicación SHALL añadir al fichero `errores.log` de su carpeta de datos la fecha y la hora, el tipo, el mensaje y el detalle completo de cada error inesperado, para poder saber qué pasó aunque no se repita. Si el fichero no se puede escribir, la aplicación SHALL seguir funcionando igualmente.
+
+#### Scenario: Error no previsto en una pantalla
+- **WHEN** una acción del usuario provoca un error que la pantalla no captura
+- **THEN** la aplicación muestra el aviso «Error inesperado» con el mensaje del error
+- **AND** la aplicación sigue abierta y se puede seguir trabajando
+
+#### Scenario: El error queda registrado
+- **WHEN** se produce un error inesperado
+- **THEN** en `errores.log` de la carpeta de datos se añade una entrada con la fecha y la hora, el tipo del error, su mensaje y el detalle de dónde ocurrió
+
+#### Scenario: Error sin mensaje
+- **WHEN** el error inesperado no trae mensaje
+- **THEN** el aviso muestra el tipo del error en su lugar
