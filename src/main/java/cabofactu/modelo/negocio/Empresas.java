@@ -94,8 +94,13 @@ public class Empresas {
         Conexion.cerrarConexion();
         Conexion.establecerConexion();
         Sesion.getSesion().iniciar(carpeta, fecha);
-        PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, carpeta);
+        recordarUltima(carpeta);
         recordarTema();
+    }
+
+    /** Recordamos esta carpeta como la última empresa abierta, para el arranque. */
+    public void recordarUltima(String carpeta) {
+        PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, carpeta);
     }
 
     /** Cerramos la empresa en uso, para poder volver al arranque. */

@@ -1,22 +1,21 @@
 package cabofactu.modelo;
 
-import cabofactu.modelo.negocio.sqlite.CopiaSeguridadDAO;
-
-import java.time.Clock;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
-import cabofactu.fichero.CopiaSeguridad;
 import cabofactu.modelo.dominio.Cliente;
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.dominio.Factura;
 import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.PlantillaMensual;
+import cabofactu.modelo.dominio.ResumenCopia;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.Clientes;
 import cabofactu.modelo.negocio.Configuracion;
+import cabofactu.modelo.negocio.CopiaSeguridad;
 import cabofactu.modelo.negocio.Empresas;
 import cabofactu.modelo.negocio.Facturas;
 import cabofactu.modelo.negocio.FacturacionMensual;
@@ -30,16 +29,6 @@ import cabofactu.modelo.negocio.Series;
  * con una sola línea.
  */
 public class Modelo {
-
-    private final CopiaSeguridad copiaSeguridad;
-
-    public Modelo() {
-        this(Clock.systemDefaultZone());
-    }
-
-    public Modelo(Clock clock) {
-        copiaSeguridad = new CopiaSeguridad(new CopiaSeguridadDAO(), Facturas.getFacturas(), clock);
-    }
 
     public LocalDate fechaTrabajo() {
         return Sesion.getSesion().getFechaTrabajo();
@@ -269,7 +258,31 @@ public class Modelo {
         return FacturacionMensual.getFacturacionMensual().mesesConFactura(plantilla);
     }
 
-    public CopiaSeguridad getCopiaSeguridad() {
-        return copiaSeguridad;
+    public Path crearCopia(Path carpeta) throws Exception {
+        return CopiaSeguridad.getCopiaSeguridad().crear(carpeta);
+    }
+
+    public Path carpetaCopias() {
+        return CopiaSeguridad.getCopiaSeguridad().carpetaCopias();
+    }
+
+    public ResumenCopia leerCopia(Path origen) throws Exception {
+        return CopiaSeguridad.getCopiaSeguridad().leer(origen);
+    }
+
+    public boolean puedeReemplazarEmpresa(ResumenCopia resumen) throws Exception {
+        return CopiaSeguridad.getCopiaSeguridad().puedeReemplazar(resumen);
+    }
+
+    public Path restaurarCopia(Path origen) throws Exception {
+        return CopiaSeguridad.getCopiaSeguridad().restaurar(origen);
+    }
+
+    public EmpresaDisponible restaurarCopiaComoEmpresa(Path origen, String nombre) throws Exception {
+        return CopiaSeguridad.getCopiaSeguridad().restaurarComoEmpresa(origen, nombre);
+    }
+
+    public void recordarUltimaEmpresa(String carpeta) {
+        Empresas.getEmpresas().recordarUltima(carpeta);
     }
 }

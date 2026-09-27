@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 <BorderPane prefHeight="768.0" prefWidth="1024.0"
             xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="cabofactu.vista.controlador.CopiaSeguridadController">
@@ -17,20 +24,16 @@
             <VBox spacing="12">
                 <VBox spacing="8" styleClass="card, zona-contenido">
                     <Label styleClass="titulo" text="Copia de seguridad"/>
-                    <Label text="La copia guarda una fotografía completa de la base de datos (facturas_AAAAMMDD_HHMMSS.db)."/>
-                    <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Button onAction="#seleccionarDestino" styleClass="default-button, btn-suave" text="Seleccionar carpeta de destino..."/>
-                        <Label fx:id="lblDestino" text="(ninguna carpeta seleccionada)" styleClass="muted"/>
-                    </HBox>
-                    <Button fx:id="btnCrear" disable="true" onAction="#crear" styleClass="primary-button, btn-suave" text="Crear copia"/>
-                    <Label fx:id="lblResultado" wrapText="true"/>
+                    <Label text="La copia guarda todos los datos de la empresa en un solo archivo."/>
+                    <Button fx:id="btnCrear" onAction="#crearCopia" styleClass="primary-button, btn-suave" text="Crear copia…"/>
+                    <Label fx:id="lblCarpeta" wrapText="true" styleClass="muted"/>
                 </VBox>
                 <VBox spacing="8" styleClass="card, zona-contenido">
                     <Label styleClass="titulo" text="Restaurar una copia"/>
                     <Label styleClass="muted" wrapText="true" text="Restaurar reemplaza los datos de la empresa activa. Antes se guarda una copia de rescate automática."/>
                     <HBox spacing="8" alignment="CENTER_LEFT">
-                        <Button onAction="#seleccionarOrigen" styleClass="default-button, btn-suave" text="Seleccionar copia a restaurar..."/>
-                        <Label fx:id="lblOrigen" text="(ninguna copia seleccionada)" styleClass="muted"/>
+                        <Button onAction="#elegirCopia" styleClass="default-button, btn-suave" text="Elegir copia…"/>
+                        <Label fx:id="lblOrigen" text="(ninguna copia elegida)" styleClass="muted"/>
                     </HBox>
                     <VBox fx:id="cajaResumen" visible="false" managed="false" spacing="4" styleClass="card, zona-contenido">
                         <Label fx:id="lblResumen" wrapText="true"/>
@@ -39,15 +42,14 @@
                         <ToggleGroup fx:id="grupoDestino"/>
                     </fx:define>
                     <HBox spacing="16" alignment="CENTER_LEFT">
-                        <RadioButton fx:id="rbReemplazar" toggleGroup="$grupoDestino" text="Reemplazar la empresa activa"/>
-                        <RadioButton fx:id="rbCrearNueva" toggleGroup="$grupoDestino" text="Crear una empresa nueva con estos datos"/>
+                        <RadioButton fx:id="rbReemplazar" toggleGroup="$grupoDestino" onAction="#cambiarDestino" text="Reemplazar la empresa activa"/>
+                        <RadioButton fx:id="rbCrearNueva" toggleGroup="$grupoDestino" onAction="#cambiarDestino" text="Crear una empresa nueva con estos datos"/>
                     </HBox>
                     <HBox fx:id="filaNombreEmpresa" spacing="8" alignment="CENTER_LEFT" visible="false" managed="false">
                         <Label text="Nombre de la nueva empresa:"/>
                         <TextField fx:id="txtNombreEmpresa" prefWidth="300"/>
                     </HBox>
                     <Button fx:id="btnRestaurar" disable="true" onAction="#restaurar" styleClass="primary-button, btn-suave" text="Restaurar"/>
-                    <Label fx:id="lblResultadoRestauracion" wrapText="true"/>
                 </VBox>
             </VBox>
         </ScrollPane>

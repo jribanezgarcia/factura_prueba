@@ -9,6 +9,7 @@ import cabofactu.modelo.dominio.EmpresaDisponible;
 import cabofactu.modelo.dominio.Factura;
 import cabofactu.modelo.dominio.FiltrosHistorial;
 import cabofactu.modelo.dominio.PlantillaMensual;
+import cabofactu.modelo.dominio.ResumenCopia;
 import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
@@ -16,6 +17,7 @@ import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.vista.Vista;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -306,11 +308,31 @@ public class Controlador {
         return modelo.fechaTrabajo();
     }
 
-    /**
-     * Damos el modelo mientras quedan pantallas por rehacer. Cuando todas llamen
-     * a las operaciones del controlador, este método desaparece.
-     */
-    public Modelo getModelo() {
-        return modelo;
+    public Path crearCopia(Path carpeta) throws Exception {
+        return modelo.crearCopia(carpeta);
+    }
+
+    public Path carpetaCopias() {
+        return modelo.carpetaCopias();
+    }
+
+    public ResumenCopia leerCopia(Path origen) throws Exception {
+        return modelo.leerCopia(origen);
+    }
+
+    public boolean puedeReemplazarEmpresa(ResumenCopia resumen) throws Exception {
+        return modelo.puedeReemplazarEmpresa(resumen);
+    }
+
+    public Path restaurarCopia(Path origen) throws Exception {
+        return modelo.restaurarCopia(origen);
+    }
+
+    public EmpresaDisponible restaurarCopiaComoEmpresa(Path origen, String nombre) throws Exception {
+        return modelo.restaurarCopiaComoEmpresa(origen, nombre);
+    }
+
+    public void recordarUltimaEmpresa(String carpeta) {
+        modelo.recordarUltimaEmpresa(carpeta);
     }
 }

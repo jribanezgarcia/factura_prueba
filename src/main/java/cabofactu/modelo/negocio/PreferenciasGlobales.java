@@ -18,6 +18,7 @@ public final class PreferenciasGlobales {
 
     public static final String ULTIMA_EMPRESA = "ultima_empresa";
     public static final String TEMA = "tema";
+    public static final String CARPETA_COPIAS = "carpeta_copias";
 
     private PreferenciasGlobales() {
     }

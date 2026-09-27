@@ -50,12 +50,13 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
+**`modulo-copias`**: botón único «Crear copia…» con la carpeta recordada y el nombre con la empresa, comprobación de la copia contra `crear_tablas.sql` en vez de listas escritas a mano, reemplazar solo con el mismo NIF, vuelta al arranque al cambiar de empresa desde una copia, `CopiaSeguridad` pasa a singleton de `modelo/negocio` con `ResumenCopia` en `modelo/dominio` (fuera `CopiaSeguridadDAO`, `DatosException`, el paquete `fichero` y `Controlador.getModelo()`) y la pantalla sin hilos.
+
 ## Qué toca ahora
 
-1. **`modulo-copias`**.
-2. Después, `documentacion-final`.
-3. La rama `pdf-jasper` (plan en `borrador_changes/plan-pdf-jasper.md`): el PDF se hace con JasperReports en vez de con OpenPDF.
-4. VeriFactu, al final, en otra rama.
+1. **`documentacion-final`**.
+2. La rama `pdf-jasper` (plan en `borrador_changes/plan-pdf-jasper.md`): el PDF se hace con JasperReports en vez de con OpenPDF.
+3. VeriFactu, al final, en otra rama.
 
 ## Trampas conocidas
 

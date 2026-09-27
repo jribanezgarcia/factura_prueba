@@ -1,5 +1,6 @@
 package cabofactu.modelo.negocio.sqlite;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,13 +13,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
 
 /**
- * Gestiona la conexion SQLite compartida y la carpeta de datos de la aplicacion
- * (%APPDATA%/Facturacion), separada de la instalacion. Cada empresa tiene su
- * propia base de datos en una subcarpeta de BASE_DATA_DIR.
+ * Gestionamos la conexión SQLite compartida y la carpeta de datos de la
+ * aplicación (%APPDATA%/Facturacion), separada de la instalación. Cada
+ * empresa tiene su propia base de datos en una subcarpeta de la raíz.
  */
 public final class Conexion {
 
@@ -33,24 +34,28 @@ public final class Conexion {
 
     private static Path carpetaRaizPorDefecto() {
         String appdata = System.getenv("APPDATA");
-        Path base = appdata != null && !appdata.isBlank()
-                ? Path.of(appdata)
-                : Path.of(System.getProperty("user.home"));
+        Path base;
+        if (appdata != null && !appdata.isBlank()) {
+            base = Path.of(appdata);
+        } else {
+            base = Path.of(System.getProperty("user.home"));
+        }
         return base.resolve("Facturacion");
     }
 
-    /** Raiz fija de datos: %APPDATA%/Facturacion (o la carpeta de pruebas). */
+    /** Raíz fija de datos: %APPDATA%/Facturacion (o la carpeta de pruebas). */
     public static Path carpetaRaiz() {
         return carpetaRaiz;
     }
 
+    /** Carpeta de datos de la empresa activa. */
     public static Path carpetaEmpresa() {
         return carpetaEmpresa;
     }
 
     /**
-     * Redirige la carpeta de datos (uso en pruebas): fija la raiz y la carpeta
-     * activa sin empresa. Debe llamarse antes de la primera conexion.
+     * Redirigimos la carpeta de datos (uso en pruebas): fijamos la raíz y la
+     * carpeta activa sin empresa. Hay que llamarlo antes de la primera conexión.
      */
     public static void setCarpetaRaiz(Path dir) {
         carpetaRaiz = dir;
@@ -58,42 +63,41 @@ public final class Conexion {
     }
 
     /**
-     * Activa la empresa cuyo slug da nombre a la subcarpeta de datos. La
-     * conexion anterior, si existe, queda cerrada.
+     * Activamos la empresa cuyo slug da nombre a la subcarpeta de datos. La
+     * conexión anterior, si existe, queda cerrada.
      */
     public static void setEmpresaActiva(String slug) {
         carpetaEmpresa = carpetaRaiz.resolve(slug);
         cerrarConexion();
     }
 
-    /**
-     * Subcarpetas de la raiz de datos que contienen una base de empresas.
-     */
+    /** Subcarpetas de la raíz de datos que contienen una base de empresa, ordenadas. */
     public static List<String> getEmpresasDisponibles() {
         List<String> lista = new ArrayList<>();
-        if (!Files.isDirectory(carpetaRaiz)) {
+        File[] carpetas = carpetaRaiz.toFile().listFiles();
+        if (carpetas == null) {
             return lista;
         }
-        try (Stream<Path> carpetas = Files.list(carpetaRaiz)) {
-            carpetas.filter(Files::isDirectory)
-                    .filter(d -> Files.exists(d.resolve(FICHERO_BASE)))
-                    .sorted()
-                    .forEach(d -> lista.add(d.getFileName().toString()));
-        } catch (IOException ignored) {
+        for (File carpeta : carpetas) {
+            if (carpeta.isDirectory() && new File(carpeta, FICHERO_BASE).exists()) {
+                lista.add(carpeta.getName());
+            }
         }
+        Collections.sort(lista);
         return lista;
     }
 
-    /** Lock de instancia unica global, independiente de la empresa activa. */
+    /** Lock de instancia única global, independiente de la empresa activa. */
     public static Path rutaBloqueoGlobal() {
         return carpetaRaiz.resolve("facturas.lock");
     }
 
+    /** Cerramos la conexión activa, si la hay. */
     public static void cerrarConexion() {
         if (conexion != null) {
             try {
                 conexion.close();
-            } catch (SQLException ignored) {
+            } catch (SQLException ignorada) {
             }
         }
         conexion = null;
@@ -103,9 +107,7 @@ public final class Conexion {
         return carpetaEmpresa().resolve(FICHERO_BASE);
     }
 
-    /**
-     * Ruta de la base de datos de una empresa cualquiera, sin activarla.
-     */
+    /** Ruta de la base de datos de una empresa cualquiera, sin activarla. */
     public static Path rutaBaseDe(String slug) {
         return carpetaRaiz.resolve(slug).resolve(FICHERO_BASE);
     }
@@ -114,7 +116,8 @@ public final class Conexion {
         return carpetaEmpresa().resolve("facturas.lock");
     }
 
-    public static synchronized Connection establecerConexion() throws SQLException {
+    /** Abrimos la conexión de la empresa activa, creando su base si hace falta. */
+    public static Connection establecerConexion() throws SQLException {
         if (conexion == null || conexion.isClosed()) {
             try {
                 Files.createDirectories(carpetaEmpresa());
@@ -135,17 +138,17 @@ public final class Conexion {
         return c;
     }
 
-    /** Crea una base nueva en la ruta indicada, con su carpeta y sus tablas. */
-    public static void crearBase(Path destinoDb) {
+    /** Creamos una base nueva en la ruta indicada, con su carpeta y sus tablas. */
+    public static void crearBase(Path destinoDb) throws Exception {
         try {
             Files.createDirectories(destinoDb.getParent());
         } catch (IOException e) {
-            throw new DatosException("No se pudo crear la carpeta de datos", e);
+            throw new Exception("No se pudo crear la carpeta de datos: " + e.getMessage());
         }
         try (Connection c = abrir(destinoDb)) {
             crearTablasSiFaltan(c);
         } catch (SQLException e) {
-            throw new DatosException(e);
+            throw new Exception("Error SQLite: " + e.getMessage());
         }
     }
 
@@ -171,8 +174,8 @@ public final class Conexion {
     }
 
     /**
-     * Ejecuta cada sentencia del script por separado (una unica llamada a
-     * execute no garantiza que el driver procese todas las sentencias).
+     * Ejecutamos cada sentencia del script por separado: una única llamada a
+     * execute no garantiza que el driver procese todas las sentencias.
      */
     private static void ejecutarScript(Connection conn, String sql) throws SQLException {
         for (String sentencia : sql.split(";")) {
@@ -186,58 +189,14 @@ public final class Conexion {
         }
     }
 
-    private static String leerScript(String resource) {
-        try (InputStream in = Conexion.class.getClassLoader().getResourceAsStream(resource)) {
-            if (in == null) {
-                throw new IllegalStateException("Script no encontrado: " + resource);
+    private static String leerScript(String recurso) throws SQLException {
+        try (InputStream entrada = Conexion.class.getClassLoader().getResourceAsStream(recurso)) {
+            if (entrada == null) {
+                throw new SQLException("No se encontró el script de tablas.");
             }
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            return new String(entrada.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new IllegalStateException("Error al leer el script " + resource, e);
-        }
-    }
-
-    public static void confirmar() {
-        try {
-            Connection c = establecerConexion();
-            if (!c.getAutoCommit()) {
-                c.commit();
-            }
-        } catch (SQLException e) {
-            throw new DatosException("Error al confirmar la transaccion", e);
-        }
-    }
-
-    public static void deshacer() {
-        try {
-            Connection c = establecerConexion();
-            if (!c.getAutoCommit()) {
-                c.rollback();
-            }
-        } catch (SQLException e) {
-            throw new DatosException("Error al revertir la transaccion", e);
-        }
-    }
-
-    public static void iniciarTransaccion() {
-        try {
-            Connection c = establecerConexion();
-            if (c.getAutoCommit()) {
-                c.setAutoCommit(false);
-            }
-        } catch (SQLException e) {
-            throw new DatosException("Error al iniciar la transaccion", e);
-        }
-    }
-
-    public static void terminarTransaccion() {
-        try {
-            Connection c = establecerConexion();
-            if (!c.getAutoCommit()) {
-                c.setAutoCommit(true);
-            }
-        } catch (SQLException e) {
-            throw new DatosException("Error al finalizar la transaccion", e);
+            throw new SQLException("No se pudo leer el script de tablas.");
         }
     }
 }

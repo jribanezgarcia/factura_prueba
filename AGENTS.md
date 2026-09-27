@@ -73,7 +73,7 @@ vista/controlador/      un *Controller por FXML
   - `Clientes` → `cliente`. `Facturas` → `factura`, `factura_linea`. `Series` → `serie` (incluida toda la numeración, que se calcula a partir de las facturas). `TiposIva`, `TiposRetencion`, `Configuracion`, `Empresas`, `CopiaSeguridad`.
   - Dentro del negocio los métodos llevan solo el verbo: `alta`, `baja`, `modificar`, `buscar`, `listado`.
 - `Calculos` (fórmulas de importes) y las herramientas (`Conexion`, `Dialogos`, `Formatos`, `ValidadorNif`…) son `static` y no guardan datos propios.
-- Paquetes: `cabofactu` (App, `InstanciaUnica`, `PreparacionDatos`), `.controlador`, `.modelo`, `.modelo.dominio`, `.modelo.negocio`, `.modelo.negocio.sqlite` (`Conexion` y el script de tablas), `.vista`, `.vista.controlador`, `.vista.recursos` (`LocalizadorRecursos`), `.vista.utilidades`, `.fichero`, `.pdf`, `.utilidades`.
+- Paquetes: `cabofactu` (App, `InstanciaUnica`, `PreparacionDatos`), `.controlador`, `.modelo`, `.modelo.dominio`, `.modelo.negocio`, `.modelo.negocio.sqlite` (`Conexion` y el script de tablas), `.vista`, `.vista.controlador`, `.vista.recursos` (`LocalizadorRecursos`), `.vista.utilidades`, `.pdf`, `.utilidades`.
 
 ## Clases de datos (`modelo/dominio`)
 
@@ -156,6 +156,6 @@ Y dos de apariencia: `TemasTest` comprueba que cada tema define su paleta y `Tex
 
 ## Transición
 
-El código de hoy **no** cumple estas normas del todo: queda el DAO de las copias (`CopiaSeguridadDAO`) y `DatosException` de `Conexion`. El esqueleto (AppCaboFactu, Controlador, Vista y pantallas) ya las cumple. Estas normas describen **adónde vamos**, y el proyecto se rehace módulo a módulo (ver `ESTADO.md`).
+Todo el código cumple ya estas normas: el proyecto se rehizo módulo a módulo (ver `ESTADO.md`).
 
-Mientras tanto: en cada change se hace **solo** lo que pide su `tasks.md`, y **ningún código nuevo o modificado puede introducir algo que estas normas prohíben**. Antes de dar un change por terminado, busca en los ficheros tocados `record`, `? :`, `var`, `::`, `.stream()`, clases anónimas y nombres completos de clase: no debe haberse añadido ninguno.
+En cada change se hace **solo** lo que pide su `tasks.md`, y **ningún código nuevo o modificado puede introducir algo que estas normas prohíben**. Antes de dar un change por terminado, busca en los ficheros tocados `record`, `? :`, `var`, `::`, `.stream()`, clases anónimas y nombres completos de clase: no debe haberse añadido ninguno.

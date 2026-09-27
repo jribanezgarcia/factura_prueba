@@ -2,11 +2,11 @@ package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.Empresa;
 import cabofactu.modelo.dominio.EmpresaDisponible;
-import cabofactu.fichero.CopiaSeguridad;
-import cabofactu.modelo.negocio.Sesion;
-import javafx.concurrent.Task;
+import cabofactu.modelo.dominio.ResumenCopia;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.RadioButton;
@@ -25,12 +25,14 @@ import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
 import cabofactu.vista.utilidades.Dialogos;
 
+/**
+ * Pantalla de copias de seguridad: crear una copia de la empresa activa y
+ * restaurar una, sobre la propia empresa o como una empresa nueva.
+ */
 public class CopiaSeguridadController implements Pantalla, Initializable {
 
     @FXML
-    private Label lblDestino;
-    @FXML
-    private Label lblResultado;
+    private Label lblCarpeta;
     @FXML
     private Button btnCrear;
     // Cómo funciona: JavaFX inyecta aquí el controlador del <fx:include fx:id="barra">;
@@ -56,251 +58,182 @@ public class CopiaSeguridadController implements Pantalla, Initializable {
     private TextField txtNombreEmpresa;
     @FXML
     private Button btnRestaurar;
-    @FXML
-    private Label lblResultadoRestauracion;
 
-    private Path origenSeleccionado;
-    private CopiaSeguridad.ResumenCopia resumen;
+    private Path origen;
+    private ResumenCopia resumen;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         barraController.marcarActivo("copiaSeguridad");
-        grupoDestino.selectedToggleProperty().addListener((obs, old, sel) -> {
-            boolean nueva = sel == rbCrearNueva;
-            filaNombreEmpresa.setVisible(nueva);
-            filaNombreEmpresa.setManaged(nueva);
-        });
+        mostrarCarpeta();
+        limpiarRestauracion();
     }
 
     @FXML
-    private void seleccionarDestino() {
-        DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("Carpeta de destino de la copia de seguridad");
-        File dir = chooser.showDialog(Vista.getInstancia().getVentana());
-        if (dir != null) {
-            lblDestino.setText(dir.getAbsolutePath());
-            btnCrear.setDisable(false);
+    private void crearCopia() {
+        DirectoryChooser selector = new DirectoryChooser();
+        selector.setTitle("Carpeta para la copia de seguridad");
+        Path carpetaRecordada = Vista.getInstancia().getControlador().carpetaCopias();
+        if (carpetaRecordada != null) {
+            selector.setInitialDirectory(carpetaRecordada.toFile());
         }
-    }
-
-    @FXML
-    private void crear() {
-        String destino = lblDestino.getText();
-        if (destino == null || destino.isBlank()) {
-            Dialogos.mostrarDialogoError("Copia de seguridad", "Seleccione primero la carpeta de destino.");
+        File carpeta = selector.showDialog(Vista.getInstancia().getVentana());
+        if (carpeta == null) {
             return;
         }
-        btnCrear.setDisable(true);
-        Task<Path> t = new Task<>() {
-            @Override
-            protected Path call() throws Exception {
-                return Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().crearCopia(Path.of(destino));
-            }
-        };
-        t.setOnSucceeded(e -> {
-            btnCrear.setDisable(false);
-            lblResultado.setText("Copia creada:\n" + t.getValue());
-            Dialogos.mostrarDialogoInformacion("Copia de seguridad", "Copia de seguridad creada en:\n" + t.getValue());
-        });
-        t.setOnFailed(e -> {
-            btnCrear.setDisable(false);
-            Dialogos.mostrarDialogoError("Copia de seguridad", "No se pudo crear la copia: "
-                    + (t.getException() == null ? "error desconocido" : t.getException().getMessage()));
-        });
-        new Thread(t).start();
+        esperar();
+        try {
+            Path ruta = Vista.getInstancia().getControlador().crearCopia(carpeta.toPath());
+            Dialogos.mostrarDialogoInformacion("Copia de seguridad", String.format("Copia creada en:%n%s", ruta));
+            mostrarCarpeta();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Copia de seguridad", e.getMessage());
+        } finally {
+            terminarEspera();
+        }
     }
 
     @FXML
-    private void seleccionarOrigen() {
-        FileChooser chooser = new FileChooser();
-        chooser.setTitle("Seleccionar copia a restaurar");
-        chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Bases de datos SQLite", "*.db"));
-        File archivo = chooser.showOpenDialog(Vista.getInstancia().getVentana());
+    private void elegirCopia() {
+        FileChooser selector = new FileChooser();
+        selector.setTitle("Elegir la copia que se va a restaurar");
+        selector.getExtensionFilters().add(new FileChooser.ExtensionFilter("Copias de CaboFactu", "*.db"));
+        Path carpetaRecordada = Vista.getInstancia().getControlador().carpetaCopias();
+        if (carpetaRecordada != null) {
+            selector.setInitialDirectory(carpetaRecordada.toFile());
+        }
+        File archivo = selector.showOpenDialog(Vista.getInstancia().getVentana());
         if (archivo == null) {
             return;
         }
-        origenSeleccionado = archivo.toPath();
-        lblOrigen.setText(archivo.getName());
-        btnRestaurar.setDisable(true);
-        lblResultadoRestauracion.setText("");
-        cajaResumen.setVisible(false);
-        cajaResumen.setManaged(false);
-
-        Task<CopiaSeguridad.ResumenCopia> t = new Task<>() {
-            @Override
-            protected CopiaSeguridad.ResumenCopia call() throws Exception {
-                return Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().leerResumen(origenSeleccionado);
-            }
-        };
-        t.setOnSucceeded(e -> {
-            resumen = t.getValue();
-            mostrarResumen(resumen);
-            aplicarReglaNif(resumen);
-        });
-        t.setOnFailed(e -> {
-            String msg = "No se pudo leer la copia: " + t.getException().getMessage();
-            if (t.getException() instanceof Exception) {
-                msg = t.getException().getMessage();
-            }
-            Dialogos.mostrarDialogoError("Restaurar copia", msg);
-            origenSeleccionado = null;
-            lblOrigen.setText("(ninguna copia seleccionada)");
-        });
-        new Thread(t).start();
+        esperar();
+        try {
+            origen = archivo.toPath();
+            resumen = Vista.getInstancia().getControlador().leerCopia(origen);
+            lblOrigen.setText(archivo.getName());
+            lblResumen.setText(resumen.getTexto());
+            cajaResumen.setVisible(true);
+            cajaResumen.setManaged(true);
+            prepararDestino();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Copia de seguridad", e.getMessage());
+            limpiarRestauracion();
+        } finally {
+            terminarEspera();
+        }
     }
 
-    private void mostrarResumen(CopiaSeguridad.ResumenCopia r) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Empresa: ").append(r.nombreEmpresa()).append("\n");
-        sb.append("NIF: ").append(r.nif().isEmpty() ? "(sin NIF)" : r.nif()).append("\n");
-        sb.append("Facturas: ").append(r.numFacturas()).append("\n");
-        sb.append("Última fecha: ");
-        if (r.ultimaFecha() == null) {
-            sb.append("(ninguna)");
-        } else {
-            sb.append(r.ultimaFecha());
-        }
-        if (!r.logoExiste() && !r.logoPath().isEmpty()) {
-            sb.append("\n⚠ El logo del backup no se encontrará en esta máquina.");
-        }
-        lblResumen.setText(sb.toString());
-        cajaResumen.setVisible(true);
-        cajaResumen.setManaged(true);
-    }
-
-    private void aplicarReglaNif(CopiaSeguridad.ResumenCopia r) {
-        String nifBackup = normalizarNif(r.nif());
-        String nifActiva = normalizarNif(obtenerNifActiva());
-
-        boolean activaVacia = nifActiva.isEmpty() && contarFacturasActivas() == 0;
-        if (activaVacia || nifBackup.equals(nifActiva)) {
-            rbReemplazar.setDisable(false);
-            rbCrearNueva.setDisable(false);
+    /** Activamos las opciones de destino según si la copia es de la misma empresa. */
+    private void prepararDestino() throws Exception {
+        boolean puedeReemplazar = Vista.getInstancia().getControlador().puedeReemplazarEmpresa(resumen);
+        rbReemplazar.setDisable(!puedeReemplazar);
+        rbCrearNueva.setDisable(false);
+        if (puedeReemplazar) {
             grupoDestino.selectToggle(rbReemplazar);
         } else {
-            rbReemplazar.setDisable(true);
-            rbCrearNueva.setDisable(false);
             grupoDestino.selectToggle(rbCrearNueva);
         }
+        cambiarDestino(null);
         btnRestaurar.setDisable(false);
     }
 
-    private String normalizarNif(String nif) {
-        if (nif == null) {
-            return "";
-        }
-        return nif.replaceAll("[\\s\\-]", "").toUpperCase();
-    }
-
-    private String obtenerNifActiva() {
-        try {
-            Empresa empresa = Vista.getInstancia().getControlador().buscarEmpresa();
-            return empresa == null ? "" : nz(empresa.getNif());
-        } catch (Exception e) {
-            return "";
-        }
-    }
-
-    private String nz(String texto) {
-        return texto == null ? "" : texto;
-    }
-
-    private int contarFacturasActivas() {
-        try {
-            return Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().facturasEmpresaActiva();
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-
-    private String nombreEmpresaActiva() {
-        String carpeta = Sesion.getSesion().getCarpetaEmpresa();
-        try {
-            for (EmpresaDisponible empresa : Vista.getInstancia().getControlador().listadoEmpresas()) {
-                if (empresa.getCarpeta().equals(carpeta)) {
-                    return empresa.getNombre();
-                }
-            }
-        } catch (Exception ignored) {
-        }
-        return carpeta;
+    @FXML
+    private void cambiarDestino(ActionEvent event) {
+        boolean nueva = grupoDestino.getSelectedToggle() == rbCrearNueva;
+        filaNombreEmpresa.setVisible(nueva);
+        filaNombreEmpresa.setManaged(nueva);
     }
 
     @FXML
     private void restaurar() {
-        if (origenSeleccionado == null) {
-            return;
-        }
-        boolean reemplazar = grupoDestino.getSelectedToggle() == rbReemplazar;
-        String nombre = reemplazar ? null : txtNombreEmpresa.getText();
-        if (!reemplazar && (nombre == null || nombre.isBlank())) {
-            Dialogos.mostrarDialogoError("Restaurar copia", "Introduce un nombre para la nueva empresa.");
-            return;
-        }
-
-        String empresaActiva = nombreEmpresaActiva();
-        String msg = reemplazar
-                ? "¿Reemplazar los datos de la empresa activa (" + empresaActiva + ") con la copia seleccionada?\n"
-                        + "Se guardará una copia de rescate antes de continuar. Esta operación no se puede deshacer desde la aplicación."
-                : "¿Crear una nueva empresa \"" + nombre + "\" con los datos de la copia?";
-        if (!Dialogos.mostrarDialogoConfirmacion("Restaurar copia", msg)) {
-            return;
-        }
-
-        btnRestaurar.setDisable(true);
-        lblResultadoRestauracion.setText("Restaurando...");
-
-        Task<?> t = new Task<>() {
-            @Override
-            protected Object call() throws Exception {
-                if (reemplazar) {
-                    Path rescate = Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().restaurarEnEmpresaActiva(origenSeleccionado);
-                    return new Object[]{"reemplazar", rescate};
-                } else {
-                    EmpresaDisponible nueva = Vista.getInstancia().getControlador().getModelo().getCopiaSeguridad().restaurarComoEmpresaNueva(origenSeleccionado, nombre);
-                    return new Object[]{"nueva", nueva};
-                }
-            }
-        };
-        t.setOnSucceeded(e -> {
-            btnRestaurar.setDisable(false);
-            Object[] resultado = (Object[]) t.getValue();
-            String tipo = (String) resultado[0];
-            if ("reemplazar".equals(tipo)) {
-                Path rescate = (Path) resultado[1];
-                lblResultadoRestauracion.setText("");
-                Dialogos.mostrarDialogoInformacion("Restaurar copia",
-                        "Copia restaurada. Copia de rescate guardada en:\n" + rescate);
-                Vista.getInstancia().mostrarInicio();
+        try {
+            if (grupoDestino.getSelectedToggle() == rbReemplazar) {
+                reemplazarEmpresa();
             } else {
-                EmpresaDisponible nueva = (EmpresaDisponible) resultado[1];
-                lblResultadoRestauracion.setText("");
-                boolean cambiar = Dialogos.mostrarDialogoConfirmacion("Empresa creada",
-                        "Empresa \"" + nueva.getNombre() + "\" creada correctamente.\n¿Quieres cambiar a ella ahora?");
-                if (cambiar) {
-                    try {
-                        Vista.getInstancia().getControlador().abrirEmpresa(nueva.getCarpeta(), Sesion.getSesion().getFechaTrabajo());
-                    } catch (Exception ex) {
-                        Dialogos.mostrarDialogoError("Restaurar copia", "No se pudo conectar: " + ex.getMessage());
-                        return;
-                    }
-                    Vista.getInstancia().mostrarInicio();
-                } else {
-                    Vista.getInstancia().mostrar("CopiaSeguridad.fxml");
-                }
+                crearEmpresaDesdeCopia();
             }
-        });
-        t.setOnFailed(e -> {
-            btnRestaurar.setDisable(false);
-            Dialogos.mostrarDialogoError("Restaurar copia",
-                    "No se pudo restaurar: " + (t.getException() == null ? "error desconocido" : t.getException().getMessage()));
-            lblResultadoRestauracion.setText("");
-        });
-        new Thread(t).start();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Restaurar copia", e.getMessage());
+        } finally {
+            terminarEspera();
+        }
+    }
+
+    /** Reemplazamos los datos de la empresa activa con los de la copia elegida. */
+    private void reemplazarEmpresa() throws Exception {
+        Empresa activa = Vista.getInstancia().getControlador().buscarEmpresa();
+        String nombreEmpresa = "";
+        if (activa != null) {
+            nombreEmpresa = activa.getNombre();
+        }
+        boolean confirmado = Dialogos.mostrarDialogoConfirmacion("Restaurar copia", String.format(
+                "¿Reemplazar los datos de %s con los de la copia?%n%nAntes guardaremos una copia de rescate del estado actual.",
+                nombreEmpresa));
+        if (!confirmado) {
+            return;
+        }
+        esperar();
+        Path rescate = Vista.getInstancia().getControlador().restaurarCopia(origen);
+        Dialogos.mostrarDialogoInformacion("Restaurar copia",
+                String.format("Copia restaurada. La copia de rescate está en:%n%s", rescate));
+        Vista.getInstancia().mostrarInicio();
+    }
+
+    /** Creamos una empresa nueva con los datos de la copia elegida. */
+    private void crearEmpresaDesdeCopia() throws Exception {
+        String nombre = txtNombreEmpresa.getText().trim();
+        if (nombre.isBlank()) {
+            throw new Exception("Escriba el nombre de la nueva empresa.");
+        }
+        boolean confirmado = Dialogos.mostrarDialogoConfirmacion("Restaurar copia",
+                String.format("¿Crear la empresa «%s» con los datos de la copia?", nombre));
+        if (!confirmado) {
+            return;
+        }
+        esperar();
+        EmpresaDisponible nueva = Vista.getInstancia().getControlador().restaurarCopiaComoEmpresa(origen, nombre);
+        boolean cambiar = Dialogos.mostrarDialogoConfirmacion("Restaurar copia", String.format(
+                "Se ha creado la empresa «%s».%n%n¿Quieres cambiar a ella? Se cerrará esta empresa y volverás a la pantalla de arranque con la nueva elegida.",
+                nombre));
+        if (cambiar) {
+            Vista.getInstancia().getControlador().recordarUltimaEmpresa(nueva.getCarpeta());
+            Vista.getInstancia().volverAlArranque();
+        } else {
+            limpiarRestauracion();
+        }
     }
 
     @FXML
     private void volver() {
         Vista.getInstancia().mostrar("MenuPrincipal.fxml");
+    }
+
+    private void mostrarCarpeta() {
+        Path carpeta = Vista.getInstancia().getControlador().carpetaCopias();
+        if (carpeta == null) {
+            lblCarpeta.setText("Todavía no se ha elegido la carpeta de las copias.");
+        } else {
+            lblCarpeta.setText(String.format("Las copias se guardan en %s", carpeta));
+        }
+    }
+
+    private void limpiarRestauracion() {
+        origen = null;
+        resumen = null;
+        lblOrigen.setText("(ninguna copia elegida)");
+        cajaResumen.setVisible(false);
+        cajaResumen.setManaged(false);
+        filaNombreEmpresa.setVisible(false);
+        filaNombreEmpresa.setManaged(false);
+        txtNombreEmpresa.setText("");
+        btnRestaurar.setDisable(true);
+    }
+
+    private void esperar() {
+        Vista.getInstancia().getVentana().getScene().setCursor(Cursor.WAIT);
+    }
+
+    private void terminarEspera() {
+        Vista.getInstancia().getVentana().getScene().setCursor(Cursor.DEFAULT);
     }
 }

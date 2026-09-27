@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -83,6 +84,17 @@ class ConexionTest {
             assertEquals(1, contar(c, "SELECT COUNT(*) FROM empresa"));
         }
         assertTrue(Files.isRegularFile(destino));
+    }
+
+    @Test
+    void getEmpresasDisponiblesDevuelveOrdenadasSoloLasCarpetasConBase() throws Exception {
+        Conexion.crearBase(tempDir.resolve("zeta").resolve("facturas.db"));
+        Conexion.crearBase(tempDir.resolve("alfa").resolve("facturas.db"));
+        Files.createDirectories(tempDir.resolve("sin_base"));
+
+        List<String> empresas = Conexion.getEmpresasDisponibles();
+
+        assertEquals(List.of("alfa", "zeta"), empresas);
     }
 
     private int contar(Connection c, String sql) throws Exception {
