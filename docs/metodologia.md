@@ -117,7 +117,7 @@ La configuración de Claude Code (`.claude/`) es local y no se sube al repositor
 
 ```mermaid
 flowchart TD
-    A["Idea o problema"] --> B["Preguntas<br/>una a una, decide el alumno"]
+    A["Idea o problema"] --> B["Preguntas<br/>una a una, decido yo"]
     B --> C["propose<br/>commit docs(openspec): propuesta ..."]
     C --> D["apply<br/>commit refactor(...)"]
     D --> E["Revisión<br/>diff + normas + mvn test"]
@@ -149,7 +149,7 @@ Los cambios sensibles (una rama entera de trabajo, como `pdf-jasper` o VeriFactu
 
 ## Commits y ramas
 
-Un commit por paso, con prefijo y alcance entre paréntesis: `docs(openspec): propuesta <nombre>` al proponer, `refactor(<alcance>): <nombre>` al aplicar, `fix(<alcance>): <qué arregla>` si algo falla en la revisión o en las pruebas manuales, `docs(openspec): archivar <nombre>` (o `refactor(openspec):`) al archivar, y `chore` para tareas sueltas de mantenimiento.
+Un commit por paso, con prefijo y alcance entre paréntesis: `docs(openspec): propuesta <nombre>` al proponer, `refactor(<alcance>): <nombre>` al aplicar, `fix(<alcance>): <qué arregla>` si algo falla en la revisión o en las pruebas manuales, `refactor(openspec): archivar <nombre>` al archivar, y `chore` para tareas sueltas de mantenimiento.
 
 El `git log` real de `modulo-copias`, de la propuesta al archivado:
 
@@ -178,7 +178,7 @@ Las ramas: `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriF
 - **El change escrito** (`ba86f45`): `proposal.md` explicaba por qué el módulo no cumplía `AGENTS.md` (un `record`, un DAO con listas de columnas a mano, una excepción propia, tres `Task` con hilos) y qué cambiaba.
 - **La implementación** (`5f2ef5a`): [`CopiaSeguridad`](../src/main/java/cabofactu/modelo/negocio/CopiaSeguridad.java) pasó a singleton de `modelo/negocio` con el SQL dentro, [`ResumenCopia`](../src/main/java/cabofactu/modelo/dominio/ResumenCopia.java) a `modelo/dominio`, y la pantalla se quedó sin hilos. 465 pruebas en verde.
 - **La revisión encontró un fallo del propio diseño**: la copia de rescate (al restaurar) reutilizaba el método `crear()` y de paso pisaba la carpeta recordada por el usuario. Se corrigió compartiendo un privado (`copiarEn`) y dejando que solo `crear()` guarde la preferencia (`d6665a8`).
-- **Las pruebas manuales con Computer use encontraron dos fallos fuera del módulo**: unas etiquetas cortadas en «PDF y apariencia» de Configuración, y que eliminar la empresa elegida en el arranque no se quitaba de la preferencia recordada.
+- **Las pruebas manuales con Computer use encontraron dos fallos fuera del módulo**: unas etiquetas cortadas en «PDF y apariencia» de Configuración, y que, al eliminar en el arranque la empresa elegida, el desplegable se quedaba vacío y la aplicación seguía recordando una empresa que ya no existía.
 - **El change se amplió con una sección 8** en `tasks.md`: primero se comprobó que un test fallaba con el error real (por ejemplo, `EmpresasTest.bajaDeLaEmpresaRecordadaBorraLaPreferencia` con `expected: <> but was: <recordada>`), y solo después se aplicó el arreglo, para no corregir «a ciegas» (`aeee8f6`, `b677bb6`).
 - **El archivado** (`4bf36c0`): 469 pruebas en verde, sin fallos, y la spec `invoicing` con el requisito «Copia de seguridad» actualizado.
 
@@ -186,18 +186,18 @@ Las ramas: `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriF
 
 ## Historia del proyecto por fases
 
-1. **Primera versión**, con capas de servicios y DAO (un `ClienteDAO`, un `ClienteService`... por cada entidad), al estilo de un proyecto empresarial más grande que lo que necesitaba CaboFactu.
+1. **Primera versión**, con una capa de servicios y otra de DAO por cada entidad, al estilo de un proyecto empresarial más grande de lo que necesitaba CaboFactu.
 2. **Auditoría de la arquitectura con IA**: la lección de esa fase fue que un modelo se inventó clases que no existían en el código al responder sobre la arquitectura, y hubo que comprobar cada hallazgo en el código real antes de actuar.
 3. **Reescritura módulo a módulo** al estilo de Biblioteca8: sin DAO (el SQL vive dentro de cada clase de negocio, que es un singleton), sin `record`, sin streams ni operador ternario, clases de datos que se validan solas en sus setters, para que el código sea defendible a nivel de 1º de DAM.
 4. **Lo que viene**: la rama `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriFactu.
 
-Cifras reales a día de hoy: `ls openspec/changes/archive | wc -l` da **121** changes archivados, y `mvn test` pasa **469** pruebas.
+Cifras reales a día de hoy: más de **120** changes archivados en `openspec/changes/archive/`, y **469** pruebas que pasan con `mvn test`.
 
 ## Documentos de trabajo
 
 - **`AGENTS.md`**: las normas del proyecto (arquitectura, estilo de código, tests, comentarios) y el flujo de trabajo con OpenSpec. Es lo único que se lee entero al empezar cualquier tarea.
 - **`ESTADO.md`**: qué está hecho, qué change está en curso y qué toca ahora, más la sección «Trampas conocidas».
-- **Las «trampas»**: en `ESTADO.md`, una lista creciente de lo que ha salido mal alguna vez (un CSS roto, una comparación de fechas que no funcionaba en SQLite, un test que no detectaba un cambio) para no repetirlo. No es una guía de estilo: es un historial de errores ya resueltos.
+- **Las «trampas»**: en `ESTADO.md`, una lista creciente de lo que ha salido mal alguna vez (una clase CSS propia que chocaba con una de JavaFX, colores fijos que dejaban ilegibles los temas oscuros, un test que no revisaba las secciones ocultas) para no repetirlo. No es una guía de estilo: es un historial de errores ya resueltos.
 
 ---
 

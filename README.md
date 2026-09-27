@@ -85,7 +85,7 @@ Paquetes, modelo de datos y decisiones técnicas, en **[docs/tecnico.md](docs/te
 
 ## Cómo se ha hecho
 
-Cada cambio se escribe antes de programarlo con **OpenSpec**: primero una ronda de preguntas y decisiones, después el `change` (por qué, cómo y los pasos), luego se implementa y se revisa, y al final la especificación de `openspec/specs/` se actualiza sola. Cómo se reparte el trabajo entre yo y las herramientas de IA, con un ejemplo real (`modulo-copias`) y la historia del proyecto por fases, en **[docs/metodologia.md](docs/metodologia.md)**. Dos recorridos por el código, clase a clase, en **[docs/flujos.md](docs/flujos.md)**.
+Cada cambio se escribe antes de programarlo con **OpenSpec**: primero una ronda de preguntas y decisiones, después el `change` (por qué, cómo y los pasos), luego se implementa y se revisa, y al final la especificación de `openspec/specs/` se actualiza sola. Cómo se reparte el trabajo entre las herramientas de IA y yo, con un ejemplo real (`modulo-copias`) y la historia del proyecto por fases, en **[docs/metodologia.md](docs/metodologia.md)**. Dos recorridos por el código, clase a clase, en **[docs/flujos.md](docs/flujos.md)**.
 
 ## Cómo arrancarlo
 

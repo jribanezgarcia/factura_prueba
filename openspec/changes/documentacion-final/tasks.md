@@ -25,8 +25,8 @@
 
 ## 6. Capturas (sesión principal, con Computer use)
 
-- [ ] 6.1 Rehacer `arranque.png`, `menu.png`, `editor.png`, `historico.png` y `clientes.png` y añadir `copias.png` y `pdf.png` en `docs/capturas/`, con la demo y el tema biblioteca8. Ver `design.md - D6`.
-  - Al aplicar la sección 7, las siete imágenes ya estaban en `docs/capturas/` (creadas el mismo día, en paralelo, por la sesión principal). No las he tocado ni las he generado yo: dejo la tarea sin marcar para que la sesión principal la confirme.
+- [x] 6.1 Rehacer `arranque.png`, `menu.png`, `editor.png`, `historico.png` y `clientes.png` y añadir `copias.png` y `pdf.png` en `docs/capturas/`, con la demo y el tema biblioteca8. Ver `design.md - D6`.
+  - Hechas por la sesión principal con Computer use sobre la aplicación real (demo y tema biblioteca8), recortando solo la ventana. `pdf.png` es la primera página del PDF de la factura A-1/9, convertida a imagen con Ghostscript. Al terminar, el tema volvió a omarchy y la última carpeta de exportación de la demo, a la de antes.
 
 ## 7. Repaso
 

@@ -43,9 +43,9 @@ flowchart TD
 | **[`Controlador`](../src/main/java/cabofactu/controlador/Controlador.java)** | Repetir cada operación del `Modelo` en un método de una línea | Lógica propia: solo reenvía |
 | **[`Modelo`](../src/main/java/cabofactu/modelo/Modelo.java)** | Repetir cada operación del negocio en un método de una línea | SQL ni validaciones |
 | **Negocio** (`modelo/negocio`) | Decidir: comprobar, calcular totales, numerar, transacciones. El SQL de sus tablas vive dentro | Saber qué pantalla la llama |
-| **`Conexion`** | Abrir la conexión SQLite, crear las tablas, `commit` y `rollback` | Nada más |
+| **`Conexion`** | Abrir y cerrar la conexión SQLite y crear las tablas con el script | Transacciones ni consultas: eso es de cada clase de negocio |
 
-`AppCaboFactu.main` en tres líneas:
+`AppCaboFactu.main` en cuatro líneas:
 
 ```java
 Modelo modelo = new Modelo();
@@ -174,7 +174,7 @@ erDiagram
 
 **Por qué la factura guarda una copia del cliente y cada línea una copia del IVA**: `factura` guarda columnas `cli_*` con el nombre, NIF y dirección del cliente tal como estaban al emitirla, y `factura_linea` guarda `iva_porcentaje` además de `tipo_iva_id`. Así, si mañana cambia la dirección del cliente o se desactiva un tipo de IVA, las facturas ya emitidas siguen mostrando exactamente lo que se facturó.
 
-No hay tabla de versiones ni de huecos de numeración: el siguiente número de una serie se calcula consultando `MAX(correlativo)` en `factura` para ese año, y `factura` es una única fila por factura (sin historial de cambios).
+No hay tabla de versiones ni de huecos de numeración: el siguiente número de una serie se calcula en [`Series`](../src/main/java/cabofactu/modelo/negocio/Series.java) a partir de los correlativos ya usados en ese año (el mayor más uno), los huecos que dejan las facturas eliminadas se ofrecen como números libres, y `factura` es una única fila por factura (sin historial de cambios).
 
 ## Tests
 
@@ -210,7 +210,7 @@ JavaFX se arranca una sola vez por proceso de pruebas, desde `PruebasJavaFx` (co
 | Instancia única con bloqueo de fichero | Permitir varias ventanas | SQLite con un solo usuario: dos ventanas escribiendo a la vez podrían pisarse |
 | Datos en `%APPDATA%` | Junto al programa | Windows no deja escribir en `Program Files`, y reinstalar no borra las facturas |
 | Sin versiones de factura | Guardar cada cambio como una versión nueva | Una fila por factura; simplifica el modelo mientras el proyecto está en desarrollo |
-| OpenPDF | JasperReports (de momento) | Librería Java libre para dibujar cabecera, tablas y pie a medida; la rama `pdf-jasper` lo revisará |
+| OpenPDF, por ahora | JasperReports | Librería Java libre para dibujar cabecera, tablas y pie a medida. La rama `pdf-jasper` lo sustituirá por JasperReports, con plantillas diseñadas en Jaspersoft Studio |
 
 ## VeriFactu
 
