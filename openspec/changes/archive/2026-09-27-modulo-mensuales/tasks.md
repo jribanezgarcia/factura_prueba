@@ -34,7 +34,7 @@
 - [x] 5.1 `grep -rn "LineaDialogo\|LineaPlantilla\|FacturacionMensual.Resultado\|FacturacionMensual.ModoDia\|detectarDuplicados\|spinnerAnio\|colAnadirMes" src/`: sin resultados (el único acierto es la comprobación de `PantallaMensualesTest` de que `#spinnerAnio` ya no existe).
 - [x] 5.2 En los ficheros tocados, `grep -nE "\bvar \b|\.stream\(\)|::|record |\? .*: |new [A-Za-z<>]+\([^)]*\) *\{|instanceof [A-Za-z<>?]+ [a-z]|javafx\.[a-z]+\.[A-Z]|java\.[a-z]+\.[a-z]+\.[A-Z]|new Thread|Task<|StringBuilder|static class|enum [A-Z]"` sin contar las líneas `import` (en `ModoDia.java` el `enum` es el propio fichero): nada nuevo (los dos ternarios de `Formatos.java` son de antes de este change).
 - [x] 5.3 `GenerarFacturasMensualesController.java`: 389 líneas. `FacturacionMensual.java`: 112 líneas.
-- [x] 5.4 Con la aplicación cerrada, borrar `target` y `mvn test`: todo en verde, sin `ClassCastException`. 451 pruebas, 17:34 min.
+- [x] 5.4 Con la aplicación cerrada, borrar `target` y `mvn test`: todo en verde, sin `ClassCastException`. 451 pruebas, 17:34 min. Repetido tras `ca85d1f`: 451 pruebas, 7:40 min, sin `ClassCastException`.
 - [x] 5.5 `openspec validate modulo-mensuales --strict` sin errores.
 
 ## 6. Estado
@@ -46,14 +46,14 @@
 
 > La base de datos no cambia: no hace falta borrar `%APPDATA%\Facturacion`.
 
-- [ ] 7.1 Abrir «Facturar mes» desde el menú y desde el histórico (el botón dice ahora «Facturar mes»): se abre el diálogo con el tema de la empresa.
-- [ ] 7.2 El diálogo enseña el año de trabajo y no deja cambiarlo.
-- [ ] 7.3 Dos líneas («cuota» y «gestoría») con «Añadir mes» marcada, de enero a marzo: salen tres facturas y las dos líneas de cada una terminan en «- mes de enero», «febrero» y «marzo». Sin la casilla, las descripciones no cambian.
-- [ ] 7.4 Día fijo 31: la factura de febrero lleva el último día de febrero. Primer día y último día del mes: las fechas cuadran.
-- [ ] 7.5 IVA del 21 % y retención del 15 %: los totales de las facturas generadas cuadran.
-- [ ] 7.6 Generar para un cliente que ya tiene factura en algún mes: avisa con los meses. Cancelar no genera nada; Aceptar genera todos.
-- [ ] 7.7 Borrar una factura que no sea la última de la serie y generar: el aviso ofrece «Usar los números libres» y «Continuar sin ellos», y cada botón hace lo que dice.
-- [ ] 7.8 Escribir una cantidad o un precio que no valen en la tabla de líneas: la línea se queda como estaba.
-- [ ] 7.9 Cancelar cierra sin generar nada, y el diálogo se ve bien.
-- [ ] 7.10 Tras la 3.7: el botón del histórico dice «Fact. mes» completo, también con omarchy, y al pasar el ratón sale «Facturar mes».
-- [ ] 7.11 Tras la 3.8: con omarchy (y neon o negro-dorado), la ventana de facturar mes es oscura y todos sus textos se leen. Con biblioteca8 se ve como antes.
+- [x] 7.1 Abrir «Facturar mes» desde el menú y desde el histórico (el botón dice ahora «Facturar mes»): se abre el diálogo con el tema de la empresa.
+- [x] 7.2 El diálogo enseña el año de trabajo y no deja cambiarlo.
+- [x] 7.3 Dos líneas («cuota» y «gestoría») con «Añadir mes» marcada, de enero a marzo: salen tres facturas y las dos líneas de cada una terminan en «- mes de enero», «febrero» y «marzo». Sin la casilla, las descripciones no cambian.
+- [x] 7.4 Día fijo 31: la factura de febrero lleva el último día de febrero. Primer día y último día del mes: las fechas cuadran.
+- [x] 7.5 IVA del 21 % y retención del 15 %: los totales de las facturas generadas cuadran.
+- [x] 7.6 Generar para un cliente que ya tiene factura en algún mes: avisa con los meses. Cancelar no genera nada; Aceptar genera todos.
+- [x] 7.7 Borrar una factura que no sea la última de la serie y generar: el aviso ofrece «Usar los números libres» y «Continuar sin ellos», y cada botón hace lo que dice.
+- [x] 7.8 Escribir una cantidad o un precio que no valen en la tabla de líneas: la línea se queda como estaba.
+- [x] 7.9 Cancelar cierra sin generar nada, y el diálogo se ve bien.
+- [x] 7.10 Tras la 3.7: el botón del histórico dice «Fact. mes» completo, también con omarchy, y al pasar el ratón sale «Facturar mes».
+- [x] 7.11 Tras la 3.8: con omarchy (y neon o negro-dorado), la ventana de facturar mes es oscura y todos sus textos se leen. Con biblioteca8 se ve como antes.

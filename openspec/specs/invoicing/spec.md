@@ -949,7 +949,7 @@ La aplicación SHALL mostrar un icono de aplicación propio en cada una de sus v
 
 ### Requirement: Facturación mensual por cliente
 
-La aplicación SHALL permitir generar múltiples facturas mensuales para un único cliente desde un diálogo específico. El usuario SHALL seleccionar el cliente, el año, el rango de meses, la serie de numeración y el día del mes que se usará como fecha de cada factura, pudiendo elegir entre un día fijo editable, el primer día del mes o el último día del mes. El usuario SHALL poder configurar las líneas de concepto que se replicarán en cada factura, con la opción de añadir automáticamente el nombre del mes a la descripción de cada línea. El usuario SHALL seleccionar el tipo de IVA y, opcionalmente, el tipo de retención IRPF que se aplicarán a todas las facturas generadas. El sistema SHALL crear una factura por cada mes del rango, asignando a cada una el siguiente número de la serie seleccionado y la fecha correspondiente. Si para un mes ya existe una factura para ese cliente y año, el sistema SHALL mostrar una advertencia con los meses afectados y SHALL permitir al usuario decidir si genera las facturas de todos modos o cancela la operación. Las facturas generadas SHALL aparecer en el histórico y SHALL poder exportarse a PDF.
+La aplicación SHALL permitir generar múltiples facturas mensuales para un único cliente desde un diálogo específico. El usuario SHALL seleccionar el cliente, el rango de meses, la serie de numeración y el día del mes que se usará como fecha de cada factura, pudiendo elegir entre un día fijo editable, el primer día del mes o el último día del mes. El año SHALL ser siempre el de la fecha de trabajo y SHALL NOT poder cambiarse en el diálogo. El usuario SHALL poder configurar las líneas de concepto que se replicarán en cada factura, con una única casilla «Añadir mes» que, marcada, añade el nombre del mes a la descripción de todas las líneas. El usuario SHALL seleccionar el tipo de IVA y, opcionalmente, el tipo de retención IRPF que se aplicarán a todas las facturas generadas. El sistema SHALL crear una factura por cada mes del rango, asignando a cada una el siguiente número de la serie seleccionado y la fecha correspondiente. Si para un mes ya existe una factura para ese cliente y año, el sistema SHALL mostrar una advertencia con los meses afectados y SHALL permitir al usuario decidir si genera las facturas de todos modos o cancela la operación. Si la serie tiene números libres en ese año, el sistema SHALL ofrecerlos con dos botones, uno para usarlos primero y otro para continuar sin ellos; cerrar el aviso SHALL equivaler a continuar sin ellos. Las facturas generadas SHALL aparecer en el histórico y SHALL poder exportarse a PDF.
 
 #### Scenario: Acceso desde el menú principal
 - **WHEN** el usuario pulsa la opción "Facturar mes" en el menú principal
@@ -960,11 +960,11 @@ La aplicación SHALL permitir generar múltiples facturas mensuales para un úni
 - **THEN** se abre el diálogo de facturación mensual
 
 #### Scenario: Configuración de la generación
-- **WHEN** el usuario selecciona un cliente, un año, un mes de inicio, un mes de fin, una serie de numeración y un día del mes
-- **THEN** el diálogo muestra los datos completos y habilita el botón de generar
+- **WHEN** el usuario selecciona un cliente, un mes de inicio, un mes de fin, una serie de numeración y un día del mes
+- **THEN** el diálogo indica cuántas facturas se generarán en el año de trabajo
 
 #### Scenario: Líneas con descripción mensual
-- **WHEN** el usuario añade una línea con descripción "contabilidad y laboral" y marca la opción "Añadir mes"
+- **WHEN** el usuario añade una línea con descripción "contabilidad y laboral" y marca la casilla "Añadir mes"
 - **THEN** las facturas generadas contendrán una línea con descripción "contabilidad y laboral - mes de enero", "contabilidad y laboral - mes de febrero", etc.
 
 #### Scenario: Aplicación de IVA y retención
@@ -1003,8 +1003,20 @@ La aplicación SHALL permitir generar múltiples facturas mensuales para un úni
 
 #### Scenario: Uso de huecos de numeración al generar mensualmente
 - **WHEN** el usuario genera 12 facturas mensuales, las borra y vuelve a generar 12 facturas del mismo año
-- **THEN** el sistema detecta los 12 huecos libres y pregunta si se deben rellenar
-- **AND** si el usuario acepta, las nuevas facturas usan los números 1 a 12 en lugar de empezar por el 13
+- **THEN** el sistema avisa de los números libres con los botones «Usar los números libres» y «Continuar sin ellos»
+- **AND** si el usuario elige usarlos, las nuevas facturas usan los números 1 a 12 en lugar de empezar por el 13
+
+#### Scenario: Continuar sin los números libres
+- **WHEN** la serie tiene números libres en el año de trabajo y el usuario elige «Continuar sin ellos»
+- **THEN** las facturas generadas usan los números siguientes al mayor de la serie y los libres siguen libres
+
+#### Scenario: Siempre en el año de trabajo
+- **WHEN** el usuario abre el diálogo con la fecha de trabajo en 2026
+- **THEN** el diálogo no permite elegir el año y todas las facturas se generan con fecha de 2026
+
+#### Scenario: Añadir mes a todas las líneas
+- **WHEN** el usuario añade dos líneas, "cuota" y "gestoría", y marca la casilla "Añadir mes"
+- **THEN** en la factura de marzo las dos líneas terminan en " - mes de marzo"
 
 ### Requirement: Anulación y borrado de facturas desde el histórico
 

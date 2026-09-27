@@ -1,6 +1,6 @@
 # CaboFactu: estado del proyecto
 
-Actualizado: **26/09/2026**
+Actualizado: **27/09/2026**
 
 Por dónde va el proyecto y qué toca ahora. Las normas de cómo se escribe el código y cómo se trabaja están en [AGENTS.md](AGENTS.md).
 
@@ -35,12 +35,11 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Módulo de facturas: una fila por factura, sin versiones, sin DAO de facturas y sin `ValidacionException`; 403 pruebas en unos 5 min.
 - Editor de facturas reescrito: celdas explicadas dentro del editor (`CeldaTexto` y sus subclases), cliente por NIF con aviso de cliente nuevo, número libre al guardar con dos botones, descripción de tres renglones; fuera `Reloj` y `ValidacionCliente`; 423 pruebas.
 - Histórico rehecho: año de trabajo puesto al entrar, filtros que se comprueban y se marcan en rojo, «Eliminar» en toda la pantalla, resumen de anular/eliminar con el número de cada factura, exportar sin hilos con aviso de tres botones y menú del clic derecho en el FXML y legible en todos los temas; 435 pruebas.
+- Facturación mensual rehecha: siempre en el año de trabajo, casilla única «Añadir mes», `PlantillaMensual` que se valida sola, `FacturacionMensual` singleton, números libres con dos botones y ventana con `Vista.crearVentanaModal` y legible en los temas oscuros; 451 pruebas.
 
-Último cambio archivado: `2026-09-26-modulo-historico`.
+Último cambio archivado: `2026-09-27-modulo-mensuales`.
 
 ## En curso
-
-**`modulo-mensuales`**: el diálogo de facturación mensual siempre en el año de trabajo (sin `Spinner` de año), una única casilla «Añadir mes» para todas las líneas, `PlantillaMensual` como clase de datos que se valida sola, `FacturacionMensual` como singleton sin la opción de omitir meses repetidos, números libres con dos botones (`Usar los números libres` / `Continuar sin ellos`) y el botón del histórico pasa a decir «Facturar mes».
 
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
@@ -88,3 +87,6 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **En TestFX headless, el foco no llega al editor de una celda recién puesto como graphic sin un `Platform.runLater`.**
 - **No uses como clase de estilo propia un nombre que JavaFX ya usa** (`menu-item`, `context-menu`, `button`…): las reglas del tema se aplican también a los controles de JavaFX. Con `.menu-item:hover` del menú principal, las opciones del clic derecho quedaban ilegibles en cinco temas.
 - **En TestFX headless, el clic derecho no abre el menú contextual**: Monocle no genera el `ContextMenuEvent`. El test lo lanza a mano sobre la tabla.
+- **`TextosCompletosTest` no se fiaba de un ancho fijo**: con `-fx-pref-width` en el CSS (como `.btn-ribbon`), el ancho preferido es el fijo y la comparación de anchos no ve el texto cortado. Ahora mira también si JavaFX ha puesto «…» en el `Text` del control.
+- **No escribas colores fijos en `base.css`**: `base.css` es de todos los temas. Un `#F6F6F6` en `.panel-neutro` dejaba la ventana de facturar mes ilegible en los temas oscuros. Usa las variables del `.root` del tema (`-fx-control-inner-background`, `-fx-base`…).
+- **En headless se puede ver la pantalla**: `scene.snapshot(null)` dibuja la ventana o un menú, y leyendo sus píxeles o guardándola como imagen se comprueban colores y textos cortados sin abrir la aplicación. La fuente de cada tema no se carga en headless (sale la del sistema).
