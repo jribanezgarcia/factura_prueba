@@ -73,7 +73,8 @@
 
 ## 14. Capturas otra vez (sesión principal, con Computer use)
 
-- [ ] 14.1 Recargar la demo para que traiga el logo y rehacer las siete capturas con los títulos corregidos. Ver `design.md - D12`.
+- [x] 14.1 Recargar la demo para que traiga el logo y rehacer las siete capturas con los títulos corregidos. Ver `design.md - D12`.
+  - Hechas con Computer use: la demo se recreó desde cero (la anterior quedó apartada fuera de la carpeta de datos) y trae el logo en el menú, el editor y el PDF; los títulos salen con tilde. Al terminar, la demo nueva quedó con el tema omarchy y la última carpeta de exportación de antes.
 
 ## 15. Pruebas manuales
 
