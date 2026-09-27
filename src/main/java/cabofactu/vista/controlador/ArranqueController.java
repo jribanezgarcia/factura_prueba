@@ -1,8 +1,6 @@
 package cabofactu.vista.controlador;
 
 import cabofactu.modelo.dominio.EmpresaDisponible;
-import cabofactu.modelo.negocio.sqlite.CargarDemo;
-import cabofactu.modelo.negocio.PreferenciasGlobales;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -127,7 +125,7 @@ public class ArranqueController implements Pantalla, Initializable {
             List<EmpresaDisponible> empresas = Vista.getInstancia().getControlador().listadoEmpresas();
             cmbEmpresa.setValue(null);
             cmbEmpresa.getItems().setAll(empresas);
-            String ultima = PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA);
+            String ultima = Vista.getInstancia().getControlador().ultimaEmpresa();
             if (ultima != null) {
                 for (EmpresaDisponible empresa : empresas) {
                     if (empresa.getCarpeta().equals(ultima)) {
@@ -143,7 +141,7 @@ public class ArranqueController implements Pantalla, Initializable {
                 lblAyudaEmpresa.setVisible(true);
                 lblAyudaEmpresa.setManaged(true);
             } else if (cmbEmpresa.getItems().size() == 1
-                    && cmbEmpresa.getItems().get(0).getCarpeta().equals(CargarDemo.CARPETA)) {
+                    && Vista.getInstancia().getControlador().esEmpresaDemo(cmbEmpresa.getItems().get(0).getCarpeta())) {
                 lblAyudaEmpresa.setText("Empresa de demostración con datos ficticios. Crea la tuya con «Nueva…».");
                 lblAyudaEmpresa.setVisible(true);
                 lblAyudaEmpresa.setManaged(true);

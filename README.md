@@ -74,7 +74,7 @@ Soy **[@jribanezgarcia](https://github.com/jribanezgarcia)**, estudiante de DAM.
 
 ## Cómo está montado
 
-La aplicación sigue un **MVC como el proyecto Biblioteca8**: `Controlador` y `Modelo` repiten cada operación en un método de una línea, y las clases de `modelo/negocio` (`Facturas`, `Clientes`, `Series`...) son singletons que llevan dentro el SQL de sus propias tablas, sin capas de DAO ni de servicios.
+La aplicación sigue un **MVC como el proyecto Biblioteca8**: el `Controlador` es la única puerta de las pantallas hacia los datos, y arranca y cierra la aplicación; el `Modelo` reúne todas las operaciones y sabe a qué clase de negocio le toca cada una. Las clases de `modelo/negocio` (`Facturas`, `Clientes`, `Series`...) son singletons que llevan dentro el SQL de sus propias tablas, sin capas de DAO ni de servicios. Por qué se reparten así, en [«Para qué sirven el Controlador y el Modelo»](docs/tecnico.md#para-qué-sirven-el-controlador-y-el-modelo).
 
 ```mermaid
 flowchart LR

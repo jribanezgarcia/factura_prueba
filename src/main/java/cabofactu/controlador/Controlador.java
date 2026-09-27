@@ -22,8 +22,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 /**
- * Une el modelo y la vista: arranca la aplicación, prepara la carpeta de datos
- * y la cierra al terminar.
+ * Une la vista y el modelo. Arranca la aplicación y la cierra, y es la única
+ * puerta de las pantallas hacia los datos: cada operación que la aplicación
+ * sabe hacer tiene aquí su método.
  */
 public class Controlador {
 
@@ -334,5 +335,21 @@ public class Controlador {
 
     public void recordarUltimaEmpresa(String carpeta) {
         modelo.recordarUltimaEmpresa(carpeta);
+    }
+
+    public String ultimaEmpresa() {
+        return modelo.ultimaEmpresa();
+    }
+
+    public boolean esEmpresaDemo(String carpeta) {
+        return modelo.esEmpresaDemo(carpeta);
+    }
+
+    public String carpetaEmpresa() {
+        return modelo.carpetaEmpresa();
+    }
+
+    public Path carpetaDatosEmpresa() {
+        return modelo.carpetaDatosEmpresa();
     }
 }

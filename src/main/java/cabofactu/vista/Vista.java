@@ -118,6 +118,29 @@ public class Vista {
     }
 
     /**
+     * Cargamos la demostración si hace falta, preparamos la pantalla de arranque,
+     * la mostramos y, ya con la ventana visible, pedimos el aviso de bienvenida
+     * para que quede encima.
+     */
+    public void mostrarArranque(Stage ventanaArranque) {
+        boolean demoCargada = cargarDemostracion();
+        ArranqueController arranque = prepararArranque(ventanaArranque);
+        ventanaArranque.show();
+        arranque.mostrarAvisoInicial(demoCargada);
+    }
+
+    /** Cargamos la empresa de demostración; si falla, avisamos y devolvemos false. */
+    private boolean cargarDemostracion() {
+        try {
+            return controlador.cargarDemostracion();
+        } catch (Exception e) {
+            Dialogos.mostrarDialogoError("Facturación",
+                    "No se pudo cargar la empresa de demostración:\n" + e.getMessage());
+            return false;
+        }
+    }
+
+    /**
      * Cerramos la empresa en uso y volvemos a la pantalla de arranque. Abrimos la
      * ventana de arranque antes de cerrar la principal para que nunca se queden
      * cero ventanas, porque entonces JavaFX cerraría la aplicación.

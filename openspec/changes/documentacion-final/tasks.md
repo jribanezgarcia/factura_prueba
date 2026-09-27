@@ -84,9 +84,9 @@
 
 ## 16. Controlador, Modelo y arranque
 
-- [ ] 16.1 `LanzadorVentanaPrincipal.start` como en `design.md - D13`, con `Vista.mostrarArranque` y `Vista.cargarDemostracion` nuevos, sin `setOnShown` ni la variable copiada.
-- [ ] 16.2 Las tres fugas de `design.md - D14`: `ultimaEmpresa`, `esEmpresaDemo`, `carpetaEmpresa` y `carpetaDatosEmpresa` en `Controlador` y `Modelo`, y `Empresas.ultima()`. Comprobar con el `grep` de D14 que las pantallas solo importan `Calculos` de `modelo/negocio`.
-- [ ] 16.3 Javadoc de `Controlador` y `Modelo`, y `AGENTS.md`, según `design.md - D15`.
-- [ ] 16.4 `docs/tecnico.md`, `README.md` y `docs/flujos.md` según `design.md - D15`, incluido el apartado nuevo «Para qué sirven el `Controlador` y el `Modelo`». `grep -rn -i "repite\|repetir\|reenv" README.md docs/ AGENTS.md`: no queda nada que describa el `Controlador` o el `Modelo` así.
-- [ ] 16.5 El `grep` de estilo de la 12.3 sobre los ficheros tocados: nada nuevo. `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo.
+- [x] 16.1 `LanzadorVentanaPrincipal.start` como en `design.md - D13`, con `Vista.mostrarArranque` y `Vista.cargarDemostracion` nuevos, sin `setOnShown` ni la variable copiada.
+- [x] 16.2 Las tres fugas de `design.md - D14`: `ultimaEmpresa`, `esEmpresaDemo`, `carpetaEmpresa` y `carpetaDatosEmpresa` en `Controlador` y `Modelo`, y `Empresas.ultima()`. Comprobar con el `grep` de D14 que las pantallas solo importan `Calculos` de `modelo/negocio`.
+- [x] 16.3 Javadoc de `Controlador` y `Modelo`, y `AGENTS.md`, según `design.md - D15`.
+- [x] 16.4 `docs/tecnico.md`, `README.md` y `docs/flujos.md` según `design.md - D15`, incluido el apartado nuevo «Para qué sirven el `Controlador` y el `Modelo`». `grep -rn -i "repite\|repetir\|reenv" README.md docs/ AGENTS.md`: no queda nada que describa el `Controlador` o el `Modelo` así.
+- [x] 16.5 El `grep` de estilo de la 12.3 sobre los ficheros tocados: nada nuevo. `rm -rf target` y `mvn test` completo: todo en verde. 475 pruebas, 0 fallos, 7:45 min.
 - [ ] 16.6 Prueba manual: arrancar la aplicación borrando antes la carpeta de la demo. Sale el aviso de bienvenida encima de la ventana de arranque y la demo queda elegida. Sin borrar nada, arranca sin aviso.

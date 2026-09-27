@@ -58,8 +58,8 @@ Este fichero es lo único que se lee entero siempre. Lo demás se consulta **cua
 
 ```
 AppCaboFactu            crea Modelo, Vista y Controlador, y arranca
-controlador/Controlador arranca y cierra la aplicación; repite las operaciones del modelo
-modelo/Modelo           repite las operaciones del negocio
+controlador/Controlador une vista y modelo; arranca y cierra la aplicación
+modelo/Modelo           reúne todas las operaciones con los datos
 modelo/negocio/         Clientes, Facturas, Series… singletons con el SQL dentro
 modelo/dominio/         Cliente, Factura, LineaFactura… clases de datos que se validan solas
 vista/Vista             singleton: guarda la ventana y cambia de pantalla
@@ -69,7 +69,8 @@ vista/controlador/      un *Controller por FXML
 - `AppCaboFactu.main`: `Modelo modelo = new Modelo(); Vista vista = Vista.getInstancia(); Controlador controlador = new Controlador(modelo, vista); controlador.comenzar();`
 - `Vista` es singleton (`Vista.getInstancia()`), guarda el `Controlador` y la ventana, y cambia de pantalla con `mostrar("Clientes.fxml")`. `LanzadorVentanaPrincipal extends Application` arranca JavaFX.
 - **Las pantallas llaman siempre así**: `Vista.getInstancia().getControlador().altaCliente(cliente);`
-- `Controlador` y `Modelo` **repiten cada operación** con un método de una línea, como en Biblioteca8. Nombres **verbo + entidad**: `altaCliente`, `bajaCliente`, `modificarCliente`, `buscarCliente`, `listadoClientes`, `anularFactura`…
+- `Controlador` y `Modelo` tienen **una operación por cada cosa que la aplicación sabe hacer**, casi siempre de una línea, como en Biblioteca8: el `Controlador` es la única puerta de las pantallas hacia los datos y el `Modelo` sabe a qué clase de negocio le toca cada una. Nombres **verbo + entidad**: `altaCliente`, `bajaCliente`, `modificarCliente`, `buscarCliente`, `listadoClientes`, `anularFactura`…
+- Las pantallas **no importan nada de `modelo/negocio`**, salvo `Calculos`; lo que necesiten lo piden al `Controlador`.
 - Las clases de negocio son **singletons** (`Clientes.getClientes()`, `Facturas.getFacturas()`) y **llevan dentro el SQL de sus propias tablas**. No hay clases DAO.
   - `Clientes` → `cliente`. `Facturas` → `factura`, `factura_linea`. `Series` → `serie` (incluida toda la numeración, que se calcula a partir de las facturas). `TiposIva`, `TiposRetencion`, `Configuracion`, `Empresas`, `CopiaSeguridad`.
   - Dentro del negocio los métodos llevan solo el verbo: `alta`, `baja`, `modificar`, `buscar`, `listado`.

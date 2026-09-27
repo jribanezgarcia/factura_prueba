@@ -23,10 +23,13 @@ import cabofactu.modelo.negocio.Sesion;
 import cabofactu.modelo.negocio.TiposRetencion;
 import cabofactu.modelo.negocio.TiposIva;
 import cabofactu.modelo.negocio.Series;
+import cabofactu.modelo.negocio.sqlite.CargarDemo;
+import cabofactu.modelo.negocio.sqlite.Conexion;
 
 /**
- * Puerta de entrada única al negocio: cada operación delega en su singleton
- * con una sola línea.
+ * Reúne todas las operaciones con los datos de la aplicación y sabe a qué clase
+ * de negocio le toca cada una (clientes a Clientes, facturas a Facturas…). Las
+ * pantallas no lo usan directamente: pasan por el Controlador.
  */
 public class Modelo {
 
@@ -284,5 +287,21 @@ public class Modelo {
 
     public void recordarUltimaEmpresa(String carpeta) {
         Empresas.getEmpresas().recordarUltima(carpeta);
+    }
+
+    public String ultimaEmpresa() {
+        return Empresas.getEmpresas().ultima();
+    }
+
+    public boolean esEmpresaDemo(String carpeta) {
+        return CargarDemo.CARPETA.equals(carpeta);
+    }
+
+    public String carpetaEmpresa() {
+        return Sesion.getSesion().getCarpetaEmpresa();
+    }
+
+    public Path carpetaDatosEmpresa() {
+        return Conexion.carpetaEmpresa();
     }
 }

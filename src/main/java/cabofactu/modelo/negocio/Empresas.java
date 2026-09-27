@@ -106,6 +106,11 @@ public class Empresas {
         PreferenciasGlobales.set(PreferenciasGlobales.ULTIMA_EMPRESA, carpeta);
     }
 
+    /** Leemos la carpeta de la última empresa abierta, para elegirla en el arranque. */
+    public String ultima() {
+        return PreferenciasGlobales.get(PreferenciasGlobales.ULTIMA_EMPRESA);
+    }
+
     /** Cerramos la empresa en uso, para poder volver al arranque. */
     public void cerrar() {
         Conexion.cerrarConexion();

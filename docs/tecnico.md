@@ -40,10 +40,19 @@ flowchart TD
 |---|---|---|
 | **Pantallas** (`vista/controlador`) | Leer lo que escribe el usuario, llamar al controlador y mostrar el resultado | SQL ni reglas de negocio |
 | **[`Vista`](../src/main/java/cabofactu/vista/Vista.java)** | Guardar la ventana y la pantalla actual, y cambiar de pantalla (`mostrar`, `crearVentanaModal`) | Reglas de negocio |
-| **[`Controlador`](../src/main/java/cabofactu/controlador/Controlador.java)** | Repetir cada operación del `Modelo` en un método de una línea | Lógica propia: solo reenvía |
-| **[`Modelo`](../src/main/java/cabofactu/modelo/Modelo.java)** | Repetir cada operación del negocio en un método de una línea | SQL ni validaciones |
+| **[`Controlador`](../src/main/java/cabofactu/controlador/Controlador.java)** | Une la vista y el modelo. Arranca la aplicación (carpeta de datos, instancia única, demo) y la cierra (suelta el bloqueo y la base). Es **la única puerta** de las pantallas hacia los datos: una pantalla solo conoce `Vista.getInstancia().getControlador()` | Guardar ni decidir nada: no sabe cómo ni dónde se guardan los datos |
+| **[`Modelo`](../src/main/java/cabofactu/modelo/Modelo.java)** | Reúne en un solo sitio todo lo que la aplicación sabe hacer con sus datos, y sabe a qué clase de negocio le toca cada operación: `altaFactura` a `Facturas`, `siguienteCorrelativo` a `Series`. También guarda la sesión (fecha de trabajo) | SQL ni pantallas |
 | **Negocio** (`modelo/negocio`) | Decidir: comprobar, calcular totales, numerar, transacciones. El SQL de sus tablas vive dentro | Saber qué pantalla la llama |
 | **`Conexion`** | Abrir y cerrar la conexión SQLite y crear las tablas con el script | Transacciones ni consultas: eso es de cada clase de negocio |
+
+### Para qué sirven el `Controlador` y el `Modelo`
+
+La mayoría de sus métodos tienen una línea, y es buena señal: cada decisión está en su sitio. Las reglas están en el negocio, y las pantallas solo leen y enseñan. Si un método del `Controlador` necesitara diez líneas, sería que alguna regla se ha colado donde no toca.
+
+- **Separan las capas**. Las 13 pantallas no importan nada de `modelo/negocio` ni de SQLite; solo hablan con el `Controlador`. Si mañana cambia cómo se guarda algo (otra base de datos, o el PDF con JasperReports), el cambio se queda en el negocio y no se toca ninguna pantalla.
+- **Son el índice de la aplicación**. Leyendo el `Controlador` se ven todas las operaciones que hay, con nombres de verbo y entidad (`altaCliente`, `anularFactura`, `restaurarCopia`…), sin abrir ninguna pantalla.
+- **Son el sitio para lo que afecta a todas las operaciones**. Si hubiera que comprobar la sesión o apuntar cada operación en un registro, se haría en un único punto, sin tocar pantallas ni negocio.
+- Es el MVC de Biblioteca8, el que se ve en clase: Vista, Controlador y Modelo, cada uno con su papel.
 
 `AppCaboFactu.main` en cuatro líneas:
 
@@ -63,8 +72,8 @@ src/main/java/cabofactu/
 ├── AppCaboFactu             → punto de entrada: crea Modelo, Vista y Controlador
 ├── PreparacionDatos         → crea la carpeta de datos y carga la demo en una instalación nueva
 ├── InstanciaUnica           → bloqueo de fichero para que solo haya una ventana abierta
-├── controlador/             → Controlador: repite cada operación del Modelo
-├── modelo/                  → Modelo: repite cada operación del negocio
+├── controlador/             → Controlador: une vista y modelo; arranca y cierra la aplicación
+├── modelo/                  → Modelo: todas las operaciones con los datos, en un solo sitio
 ├── modelo/dominio/          → clases de datos: Cliente, Factura, Serie, LineaFactura, Empresa...
 ├── modelo/negocio/          → singletons con el SQL dentro: Clientes, Facturas, Series, Empresas,
 │                              Configuracion, TiposIva, TiposRetencion, CopiaSeguridad, Calculos,

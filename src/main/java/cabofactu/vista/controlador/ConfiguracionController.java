@@ -7,7 +7,6 @@ import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.ExportadorPdf;
 import cabofactu.pdf.DisposicionCabecera;
-import cabofactu.modelo.negocio.Sesion;
 import cabofactu.vista.recursos.LocalizadorRecursos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -246,7 +245,7 @@ public class ConfiguracionController implements Pantalla, Initializable {
 
     private String nombreVisibleEmpresaActiva() {
         try {
-            String carpeta = Sesion.getSesion().getCarpetaEmpresa();
+            String carpeta = Vista.getInstancia().getControlador().carpetaEmpresa();
             for (EmpresaDisponible disponible : Vista.getInstancia().getControlador().listadoEmpresas()) {
                 if (disponible.getCarpeta().equals(carpeta)) {
                     return disponible.getNombre();

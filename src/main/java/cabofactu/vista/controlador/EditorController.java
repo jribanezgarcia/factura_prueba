@@ -11,7 +11,6 @@ import cabofactu.modelo.dominio.Serie;
 import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.modelo.negocio.Calculos;
-import cabofactu.modelo.negocio.sqlite.Conexion;
 import cabofactu.pdf.ExportadorPdf;
 import cabofactu.utilidades.Formatos;
 import cabofactu.utilidades.LogoMarco;
@@ -1505,7 +1504,7 @@ public class EditorController implements Pantalla, Initializable {
         }
         Path base = Path.of(carpeta);
         if (!base.isAbsolute()) {
-            base = Conexion.carpetaEmpresa().resolve(base);
+            base = Vista.getInstancia().getControlador().carpetaDatosEmpresa().resolve(base);
         }
         String nombre = Formatos.nombreArchivoPdf(factura.getNumero());
         Serie serie = factura.getSerie();

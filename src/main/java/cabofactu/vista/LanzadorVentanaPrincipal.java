@@ -1,7 +1,5 @@
 package cabofactu.vista;
 
-import cabofactu.controlador.Controlador;
-import cabofactu.vista.controlador.ArranqueController;
 import cabofactu.vista.utilidades.Dialogos;
 import cabofactu.vista.utilidades.ErroresInesperados;
 import javafx.application.Application;
@@ -22,24 +20,13 @@ public class LanzadorVentanaPrincipal extends Application {
     @Override
     public void start(Stage stage) {
         ErroresInesperados.registrar();
-        Controlador controlador = Vista.getInstancia().getControlador();
         try {
-            controlador.prepararDatos();
+            Vista.getInstancia().getControlador().prepararDatos();
         } catch (Exception e) {
             Dialogos.mostrarDialogoError("Facturación", e.getMessage());
             Platform.exit();
             return;
         }
-        boolean demoCargada = false;
-        try {
-            demoCargada = controlador.cargarDemostracion();
-        } catch (Exception e) {
-            Dialogos.mostrarDialogoError("Facturación",
-                    "No se pudo cargar la empresa de demostración:\n" + e.getMessage());
-        }
-        ArranqueController arranque = Vista.getInstancia().prepararArranque(stage);
-        boolean demo = demoCargada;
-        stage.setOnShown(e -> arranque.mostrarAvisoInicial(demo));
-        stage.show();
+        Vista.getInstancia().mostrarArranque(stage);
     }
 }
