@@ -11,6 +11,10 @@
 - [x] 2.2 Tildes del Javadoc de `ConfiguracionVentana`, y los ternarios de `Clientes.listado` y `PreferenciasGlobales.get`, según `design.md - D4`.
 - [x] 2.3 Los once ternarios de `Formatos`, `LogoMarco`, `ConfiguracionController` y `PreviaCabecera`, según `design.md - D4`.
 - [x] 2.4 El `grep` de ternarios de `design.md - D4` solo devuelve el paquete `pdf`. El `grep` de estilo de siempre (`record`, `var`, `::`, `.stream()`, clases anónimas, nombres completos) sobre los ficheros tocados: nada nuevo (el `var` de `LogoMarco.java` línea 65 ya estaba antes de este change, fuera de lo que pedía `design.md`).
+- [ ] 2.5 `LogoMarco` según `design.md - D6`: `TipoFondoLogo`, `FondoLogo` y `MuestrasMarco` en su fichero, sin `var` ni `computeIfAbsent` ni `removeIf`; `LogoMarcoTest` adaptado.
+- [ ] 2.6 `CeldaFechaEjercicio` y `ArranqueController.restringirAlEjercicio` según `design.md - D6`.
+- [ ] 2.7 `ConfiguracionController.cambiarTema`, `Ventanas` y `Formatos.fechaHora` según `design.md - D6`.
+- [ ] 2.8 `AGENTS.md`, «Transición», según `design.md - D6`. Los comandos de D6 sobre todo `src/main` salvo `pdf`: solo salen las excepciones escritas. Pegar aquí la salida.
 
 ## 3. Imágenes (sesión principal)
 
@@ -33,12 +37,12 @@
 
 ## 6. Repaso
 
-- [x] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
+- [ ] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
   - Primera pasada: 475 pruebas, 0 fallos, 0 errores, en 7 min 41 s.
   - Segunda pasada (tras 2.3 y 5.2): 475 pruebas, 0 fallos, 0 errores, en 7 min 44 s. Sin `ClassCastException` en la salida. La cifra no cambió; ya estaba puesta en `README.md` y `docs/metodologia.md`.
-- [x] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
-- [x] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
-- [x] 6.4 `openspec validate documentacion-diseno --strict` en verde.
+- [ ] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
+- [ ] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
+- [ ] 6.4 `openspec validate documentacion-diseno --strict` en verde.
 
 ## 7. Revisión del alumno (al final)
 

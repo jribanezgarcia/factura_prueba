@@ -227,6 +227,42 @@ Sin cambiar lo que hace la aplicación.
   - «En curso» al aplicar;
   - al archivar, la trampa: «Una guía de `openspec/config.yaml` con `: ` en medio se lee como un par clave-valor y OpenSpec ignora todas las de esa operación: van entre comillas».
 
+## D6. El resto de `AGENTS.md`, en todo `src/main`
+
+Al revisar la 2.3 salió un `var` que no buscaba nadie. Una auditoría completa de `src/main` (sin `pdf`), hecha por la sesión principal, encontró cuatro ficheros más que no cumplen. Se arreglan aquí, sin cambiar lo que hace la aplicación:
+
+- **`utilidades/LogoMarco`**:
+  - tres tipos que viven dentro de la clase pasan a su propio fichero en `utilidades`:
+    - `enum Tipo` → `TipoFondoLogo` (`PLANO`, `DIFUMINADO`, `TRANSPARENTE`);
+    - `class Resultado` → `FondoLogo`, con campos privados, constructor y `getTipo()` / `getColor()` en vez de campos públicos;
+    - `class Muestras` → `MuestrasMarco`, clase del paquete (sin `public`);
+  - `var muestras` → `MuestrasMarco muestras`;
+  - `cubos.computeIfAbsent(cubo, k -> new long[4])` → `get`, `if (acc == null)` y `put`;
+  - `removeIf(n -> ...)` en `limpiar` → un bucle que recoge los nodos marcados y los quita después;
+  - `LogoMarcoTest` se adapta a los nombres nuevos (`FondoLogo`, `TipoFondoLogo`, `getTipo()`, `getColor()`) sin cambiar lo que comprueba.
+- **`vista/controlador/ArranqueController.restringirAlEjercicio`**:
+  - las dos clases anónimas (`Callback` y `DateCell`), escritas con nombres completos, pasan a una clase con nombre, `vista/utilidades/CeldaFechaEjercicio extends DateCell`;
+  - el constructor recibe el ejercicio y `updateItem` desactiva los días de otro año;
+  - en el controlador queda `fechaTrabajo.setDayCellFactory(calendario -> new CeldaFechaEjercicio(ejercicio));`;
+  - `CeldaFechaEjercicio` lleva el párrafo «Cómo funciona» (qué es una celda y cuándo llama JavaFX a `updateItem`).
+- **`vista/controlador/ConfiguracionController.cargarTema`**: el cuerpo del `addListener` (cinco líneas) pasa a un método privado `cambiarTema(String nombre)`, y la lambda solo lo llama.
+- **`vista/Ventanas`**: `try (var in = ...)` → `try (InputStream in = ...)`.
+- **`utilidades/Formatos.fechaHora`**: `java.time.LocalDateTime` con su `import`.
+- **Excepción que se queda**: las celdas dentro de `EditorController`, como dice `AGENTS.md`.
+
+**Para que no vuelva a pasar**, en «Transición» de `AGENTS.md`:
+- la búsqueda de siempre se hace sobre los ficheros tocados y además, **antes de archivar, sobre todo `src/main` salvo `pdf`**;
+- se añaden los tipos dentro de otra clase y las lambdas de más de una llamada;
+- los comandos, en un bloque:
+  ```bash
+  F=$(find src/main/java/cabofactu -name "*.java" -not -path "*/pdf/*")
+  grep -nE "var [a-zA-Z]|record [A-Z]|\.stream\(\)|[A-Za-z)]::[a-z]" $F
+  grep -nE "[^?]\? [^?]*[^:]: " $F | grep -vE "LIKE \?|= \?|\?,|\?\)"
+  grep -nE "^\s+(public |private |protected |static |final )*(class|enum|interface|record) [A-Z]" $F
+  grep -nE "new [A-Z][A-Za-z<>]*\([^;]*\)\s*\{|removeIf|computeIfAbsent|->\s*\{" $F
+  ```
+- lo que salga, o se arregla o es una excepción escrita en `AGENTS.md`: las celdas del editor, `case X -> {`, `jdbc:sqlite::memory:` y un `new File(...)` dentro de una condición (`Conexion`). El comentario `// clave cubo -> {...}` de `LogoMarco` se reescribe sin `->` para que no salga.
+
 ## Riesgos y renuncias
 
 - **Contar el proceso sin enseñar los prototipos**: las imágenes anonimizadas lo cubren. Los prototipos originales siguen fuera de git.
