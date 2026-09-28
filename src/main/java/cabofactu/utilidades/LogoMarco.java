@@ -166,8 +166,8 @@ public final class LogoMarco {
 
     private static void aplicarDifuminado(StackPane pane, Image imagen) {
         fijarTamano(pane);
-        double ancho = pane.getWidth() > 0 ? pane.getWidth() : pane.getPrefWidth();
-        double alto = pane.getHeight() > 0 ? pane.getHeight() : pane.getPrefHeight();
+        double ancho = valorOPreferido(pane.getWidth(), pane.getPrefWidth());
+        double alto = valorOPreferido(pane.getHeight(), pane.getPrefHeight());
 
         ImageView respaldo = new ImageView(imagen);
         respaldo.setUserData(MARCA_RESPALDO);
@@ -186,6 +186,14 @@ public final class LogoMarco {
         pane.setClip(clip);
 
         pane.getChildren().add(0, respaldo);
+    }
+
+    /** El valor si es positivo, o el preferido si todavía no hay tamaño calculado. */
+    private static double valorOPreferido(double valor, double preferido) {
+        if (valor > 0) {
+            return valor;
+        }
+        return preferido;
     }
 
     private static void fijarTamano(StackPane pane) {

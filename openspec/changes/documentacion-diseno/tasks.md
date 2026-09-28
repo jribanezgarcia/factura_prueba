@@ -9,8 +9,8 @@
 
 - [x] 2.1 `GestorTemas` según `design.md - D4`: sin ternario, `guardar()` con `throws Exception` y sin el `catch` vacío, Javadoc de la clase y de los públicos, y «Neón».
 - [x] 2.2 Tildes del Javadoc de `ConfiguracionVentana`, y los ternarios de `Clientes.listado` y `PreferenciasGlobales.get`, según `design.md - D4`.
-- [ ] 2.3 Los once ternarios de `Formatos`, `LogoMarco`, `ConfiguracionController` y `PreviaCabecera`, según `design.md - D4`.
-- [ ] 2.4 El `grep` de ternarios de `design.md - D4` solo devuelve el paquete `pdf`. El `grep` de estilo de siempre (`record`, `var`, `::`, `.stream()`, clases anónimas, nombres completos) sobre los ficheros tocados: nada nuevo.
+- [x] 2.3 Los once ternarios de `Formatos`, `LogoMarco`, `ConfiguracionController` y `PreviaCabecera`, según `design.md - D4`.
+- [x] 2.4 El `grep` de ternarios de `design.md - D4` solo devuelve el paquete `pdf`. El `grep` de estilo de siempre (`record`, `var`, `::`, `.stream()`, clases anónimas, nombres completos) sobre los ficheros tocados: nada nuevo (el `var` de `LogoMarco.java` línea 65 ya estaba antes de este change, fuera de lo que pedía `design.md`).
 
 ## 3. Imágenes (sesión principal)
 

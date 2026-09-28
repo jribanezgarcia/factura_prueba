@@ -30,11 +30,17 @@ public final class Formatos {
     }
 
     public static String fecha(LocalDate fecha) {
-        return fecha == null ? "" : FECHA.format(fecha);
+        if (fecha == null) {
+            return "";
+        }
+        return FECHA.format(fecha);
     }
 
     public static String fechaHora(java.time.LocalDateTime fechaHora) {
-        return fechaHora == null ? "" : FECHA_HORA.format(fechaHora);
+        if (fechaHora == null) {
+            return "";
+        }
+        return FECHA_HORA.format(fechaHora);
     }
 
     /** Nombre del mes en español y en minúscula, por ejemplo «enero». */

@@ -807,10 +807,16 @@ public class ConfiguracionController implements Pantalla, Initializable {
     }
 
     private String trim(TextField f) {
-        return f.getText() == null ? "" : f.getText().trim();
+        if (f.getText() == null) {
+            return "";
+        }
+        return f.getText().trim();
     }
 
     private String nz(String s) {
-        return s == null ? "" : s;
+        if (s == null) {
+            return "";
+        }
+        return s;
     }
 }

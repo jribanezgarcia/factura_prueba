@@ -37,7 +37,11 @@ public class PreviaCabecera extends Pane {
 
     public void mostrar(Empresa empresa, Color acento) {
         this.empresa = empresa;
-        this.acento = acento != null ? acento : Color.web("#296796");
+        if (acento != null) {
+            this.acento = acento;
+        } else {
+            this.acento = Color.web("#296796");
+        }
         if (this.empresa == null) {
             this.logo = null;
         } else {
@@ -48,8 +52,8 @@ public class PreviaCabecera extends Pane {
 
     public void repintar() {
         getChildren().clear();
-        double w = getWidth() > 0 ? getWidth() : getPrefWidth();
-        double h = getHeight() > 0 ? getHeight() : getPrefHeight();
+        double w = valorOPreferido(getWidth(), getPrefWidth());
+        double h = valorOPreferido(getHeight(), getPrefHeight());
         if (w <= 0 || h <= 0) {
             return;
         }
@@ -150,7 +154,13 @@ public class PreviaCabecera extends Pane {
 
     private Text texto(String contenido, double x, double y, double tamano, Color color, boolean negrita) {
         Text t = new Text(contenido);
-        t.setFont(Font.font("System", negrita ? FontWeight.BOLD : FontWeight.NORMAL, tamano));
+        FontWeight peso;
+        if (negrita) {
+            peso = FontWeight.BOLD;
+        } else {
+            peso = FontWeight.NORMAL;
+        }
+        t.setFont(Font.font("System", peso, tamano));
         t.setFill(color);
         t.setX(x);
         t.setY(y);
@@ -188,6 +198,17 @@ public class PreviaCabecera extends Pane {
     }
 
     private String nz(String s) {
-        return s == null ? "" : s;
+        if (s == null) {
+            return "";
+        }
+        return s;
+    }
+
+    /** El valor si es positivo, o el preferido si todavía no hay tamaño calculado. */
+    private double valorOPreferido(double valor, double preferido) {
+        if (valor > 0) {
+            return valor;
+        }
+        return preferido;
     }
 }
