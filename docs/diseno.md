@@ -174,7 +174,7 @@ Dónde está:
 - `logo1.png` y `logo1.svg` son los originales, en la carpeta `logos/`, fuera de git como los prototipos;
 - la aplicación usa `src/main/resources/cabofactu/vista/recursos/imagenes/icono-aplicacion.png`, que es también el icono de la cabecera del `README.md`.
 
-El logo de la empresa de demostración (`logo_demo.png`) es otro dibujo, con una torre, hecho también con ChatGPT el 02/09, que sirve para ver cómo queda una empresa con logo en las pantallas y en el PDF. No se explica qué representa la torre.
+El logo de la empresa de demostración (`logo_demo.png`) es otro dibujo, con una torre, hecho también con ChatGPT el 02/09, que sirve para ver cómo queda una empresa con logo en las pantallas y en el PDF.
 
 ## Los iconos
 
