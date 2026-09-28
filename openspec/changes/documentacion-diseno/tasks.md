@@ -13,7 +13,8 @@
 
 ## 3. Imagen de las paletas (sesión principal)
 
-- [ ] 3.1 `docs/capturas/paletas.png` según `design.md - D3`.
+- [x] 3.1 `docs/capturas/paletas.png` según `design.md - D3`.
+  - Hecha por la sesión principal: 980×636, 33 KB, colores leídos del `.root` de cada CSS.
 
 ## 4. Documento de diseño
 
