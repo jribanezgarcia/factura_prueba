@@ -49,7 +49,7 @@ Soy **[@jribanezgarcia](https://github.com/jribanezgarcia)**, estudiante de DAM.
 | PDF | Exportación con cabecera de texto o logo, pie legal y color de acento |
 | Empresas | Varias, con sus datos fiscales obligatorios antes de empezar |
 | Copias de seguridad | Un botón, y restauración en la empresa activa o como empresa nueva |
-| Apariencia | 7 temas: biblioteca8, omarchy, esmeralda, terracota, negro-dorado, sakura y Neón |
+| Apariencia | 7 temas: Biblioteca8, Omarchy, Esmeralda, Terracota, Negro y dorado, Sakura y Neón |
 | Demostración | Empresa de datos ficticios con logo que se carga sola en una instalación nueva |
 
 ## Capturas

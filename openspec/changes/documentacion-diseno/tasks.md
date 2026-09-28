@@ -26,18 +26,19 @@
 ## 5. Enlaces y normas
 
 - [x] 5.1 `README.md`, `docs/tecnico.md`, `docs/metodologia.md`, `docs/flujos.md` y `AGENTS.md` según `design.md - D5`.
-- [ ] 5.2 Retoques de la revisión:
+- [x] 5.2 Retoques de la revisión:
   - `README.md`, fila «Apariencia»: los nombres visibles de los temas («Biblioteca8, Omarchy, Esmeralda, Terracota, Negro y dorado, Sakura y Neón»);
   - `docs/diseno.md`, apartado «El resultado»: un solo párrafo para «Cómo funcionan los temas» (hoy hay un «Cómo funciona:» repetido justo debajo);
-  - `docs/metodologia.md`: la cifra de pruebas («469») pasa a la real de la 6.1.
+  - `docs/metodologia.md`: la cifra de pruebas («469») pasa a la real de la 6.1 (475).
 
 ## 6. Repaso
 
-- [ ] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
-  - Primera pasada: 475 pruebas, 0 fallos, 0 errores, en 7 min 41 s. Se repite tras las 2.3 y 5.2.
-- [ ] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
-- [ ] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
-- [ ] 6.4 `openspec validate documentacion-diseno --strict` en verde.
+- [x] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
+  - Primera pasada: 475 pruebas, 0 fallos, 0 errores, en 7 min 41 s.
+  - Segunda pasada (tras 2.3 y 5.2): 475 pruebas, 0 fallos, 0 errores, en 7 min 44 s. Sin `ClassCastException` en la salida. La cifra no cambió; ya estaba puesta en `README.md` y `docs/metodologia.md`.
+- [x] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
+- [x] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
+- [x] 6.4 `openspec validate documentacion-diseno --strict` en verde.
 
 ## 7. Revisión del alumno (al final)
 

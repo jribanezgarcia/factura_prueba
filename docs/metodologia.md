@@ -192,7 +192,7 @@ Las ramas: `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriF
 4. **Reescritura módulo a módulo** al estilo de Biblioteca8: sin DAO (el SQL vive dentro de cada clase de negocio, que es un singleton), sin `record`, sin streams ni operador ternario, clases de datos que se validan solas en sus setters, para que el código sea defendible a nivel de 1º de DAM.
 5. **Lo que viene**: la rama `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriFactu.
 
-Cifras reales a día de hoy: más de **120** changes archivados en `openspec/changes/archive/`, y **469** pruebas que pasan con `mvn test`.
+Cifras reales a día de hoy: más de **120** changes archivados en `openspec/changes/archive/`, y **475** pruebas que pasan con `mvn test`.
 
 ## Documentos de trabajo
 

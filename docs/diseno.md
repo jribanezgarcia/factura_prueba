@@ -193,9 +193,7 @@ En `proceso-final.png` se ve cómo llegué al icono en SVG: primero probé emoji
 
 Cada empresa guarda su propio tema, y lo copiamos a las preferencias globales para que la pantalla de arranque salga con el último elegido.
 
-**Cómo funcionan los temas**: cada pantalla carga dos hojas de estilos, `base.css` (la estructura común, igual para todos) y `tema-<nombre>.css` (solo colores), juntadas por `GestorTemas.hojas()`.
-
-Cómo funciona: el estilo de JavaFX calcula los colores de sus propios controles (botones, campos, tablas) a partir de unas pocas variables del `.root`, como `-fx-base` o `-fx-accent`, así que basta con cambiar esas variables para que todos se tiñan solos. Las piezas propias de CaboFactu, como los iconos del menú, llevan su color aparte en cada tema.
+**Cómo funcionan los temas**: cada pantalla carga dos hojas de estilos, `base.css` (la estructura común, igual para todos) y `tema-<nombre>.css` (solo colores), juntadas por `GestorTemas.hojas()`. El estilo de JavaFX calcula los colores de sus propios controles (botones, campos, tablas) a partir de unas pocas variables del `.root`, como `-fx-base` o `-fx-accent`, así que basta con cambiar esas variables para que todos se tiñan solos. Las piezas propias de CaboFactu, como los iconos del menú, llevan su color aparte en cada tema.
 
 **Cómo se añade un tema nuevo**, en cuatro pasos:
 
