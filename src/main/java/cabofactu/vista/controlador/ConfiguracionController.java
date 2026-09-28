@@ -197,12 +197,15 @@ public class ConfiguracionController implements Pantalla, Initializable {
     private void cargarTema() {
         comboTema.getItems().setAll(GestorTemas.nombres());
         comboTema.setValue(GestorTemas.etiqueta(GestorTemas.temaActivo()));
-        comboTema.valueProperty().addListener((propiedad, anterior, nuevo) -> {
-            if (nuevo != null) {
-                GestorTemas.seleccionar(Vista.getInstancia().getVentana().getScene(),
-                        GestorTemas.claveDe(nuevo));
-            }
-        });
+        comboTema.valueProperty().addListener((propiedad, anterior, nuevo) -> cambiarTema(nuevo));
+    }
+
+    /** Aplicamos a la ventana el tema elegido en el desplegable. */
+    private void cambiarTema(String nombre) {
+        if (nombre != null) {
+            GestorTemas.seleccionar(Vista.getInstancia().getVentana().getScene(),
+                    GestorTemas.claveDe(nombre));
+        }
     }
 
     // ------------------------------------------------------------------

@@ -3,6 +3,8 @@ package cabofactu.vista;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
+import java.io.InputStream;
+
 /**
  * Utilidades de identidad visual de la aplicación: el prefijo de marca del
  * título y el icono propio de las ventanas.
@@ -22,7 +24,7 @@ public final class Ventanas {
         if (!stage.getIcons().isEmpty()) {
             return;
         }
-        try (var in = Ventanas.class.getResourceAsStream(ICONO)) {
+        try (InputStream in = Ventanas.class.getResourceAsStream(ICONO)) {
             if (in != null) {
                 stage.getIcons().add(new Image(in));
             }

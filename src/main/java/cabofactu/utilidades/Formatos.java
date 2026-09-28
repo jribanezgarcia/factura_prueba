@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Month;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
@@ -36,7 +37,7 @@ public final class Formatos {
         return FECHA.format(fecha);
     }
 
-    public static String fechaHora(java.time.LocalDateTime fechaHora) {
+    public static String fechaHora(LocalDateTime fechaHora) {
         if (fechaHora == null) {
             return "";
         }
