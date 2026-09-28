@@ -7,6 +7,7 @@ import cabofactu.modelo.dominio.TipoIva;
 import cabofactu.modelo.dominio.TipoRetencion;
 import cabofactu.pdf.ExportadorPdf;
 import cabofactu.pdf.DisposicionCabecera;
+import cabofactu.utilidades.LogoMarco;
 import cabofactu.vista.recursos.LocalizadorRecursos;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -30,6 +31,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -50,9 +52,10 @@ import cabofactu.vista.utilidades.PreviaCabecera;
 import cabofactu.vista.utilidades.GestorTemas;
 
 /**
- * Configuracion por secciones con lista lateral: Empresa, Cabecera y pie, PDF
- * y apariencia se guardan con un botón global; IVA, Retenciones y Series
- * se administran con sus propias acciones.
+ * Configuracion por secciones con lista lateral: Datos fiscales y Logotipo,
+ * Tipos de IVA, Retenciones IRPF y Series de numeración, Diseño del PDF, y
+ * Apariencia y Carpetas. Todas salvo las tres de administración por filas se
+ * guardan con el botón «Guardar cambios».
  */
 public class ConfiguracionController implements Pantalla, Initializable {
 
@@ -72,11 +75,9 @@ public class ConfiguracionController implements Pantalla, Initializable {
     @FXML
     private ToggleGroup grupoSecciones;
     @FXML
-    private ToggleButton btnEmpresa;
+    private ToggleButton btnDatosFiscales;
     @FXML
-    private ToggleButton btnCabecera;
-    @FXML
-    private ToggleButton btnPdf;
+    private ToggleButton btnLogotipo;
     @FXML
     private ToggleButton btnIva;
     @FXML
@@ -84,13 +85,17 @@ public class ConfiguracionController implements Pantalla, Initializable {
     @FXML
     private ToggleButton btnSeries;
     @FXML
+    private ToggleButton btnDisenoPdf;
+    @FXML
+    private ToggleButton btnApariencia;
+    @FXML
+    private ToggleButton btnCarpetas;
+    @FXML
     private StackPane pilaSecciones;
     @FXML
-    private VBox seccionEmpresa;
+    private VBox seccionDatosFiscales;
     @FXML
-    private VBox seccionCabeceraPie;
-    @FXML
-    private VBox seccionPdfApariencia;
+    private VBox seccionLogotipo;
     @FXML
     private VBox seccionIva;
     @FXML
@@ -98,7 +103,17 @@ public class ConfiguracionController implements Pantalla, Initializable {
     @FXML
     private VBox seccionSeries;
     @FXML
+    private VBox seccionDisenoPdf;
+    @FXML
+    private VBox seccionApariencia;
+    @FXML
+    private VBox seccionCarpetas;
+    @FXML
     private HBox barraGuardar;
+    @FXML
+    private StackPane logoPrevia;
+    @FXML
+    private ImageView imgLogoPrevia;
     @FXML
     private PreviaCabecera previaCabecera;
     @FXML
@@ -191,7 +206,7 @@ public class ConfiguracionController implements Pantalla, Initializable {
         cargarRetenciones();
         cargarSeries();
         cablearPrevia();
-        mostrarSeccion(seccionEmpresa, btnEmpresa, true);
+        mostrarSeccion(seccionDatosFiscales, btnDatosFiscales, true);
     }
 
     private void cargarTema() {
@@ -303,6 +318,38 @@ public class ConfiguracionController implements Pantalla, Initializable {
     }
 
     @FXML
+    void quitarLogotipo(ActionEvent event) {
+        txtLogoPath.setText("");
+    }
+
+    /** Repintamos la vista previa del logotipo con lo que haya en la ruta, como en el menú principal. */
+    private void repintarLogoPrevia() {
+        String ruta = txtLogoPath.getText();
+        if (ruta == null || ruta.isBlank()) {
+            imgLogoPrevia.setImage(null);
+            LogoMarco.limpiar(logoPrevia);
+            return;
+        }
+        File f = new File(ruta);
+        if (!f.exists()) {
+            imgLogoPrevia.setImage(null);
+            LogoMarco.limpiar(logoPrevia);
+            return;
+        }
+        Image imagen = new Image(f.toURI().toString());
+        if (imagen.isError()) {
+            imgLogoPrevia.setImage(null);
+            LogoMarco.limpiar(logoPrevia);
+            return;
+        }
+        imgLogoPrevia.setImage(imagen);
+        imgLogoPrevia.setFitWidth(260);
+        imgLogoPrevia.setFitHeight(100);
+        imgLogoPrevia.setPreserveRatio(true);
+        LogoMarco.aplicar(logoPrevia, imagen);
+    }
+
+    @FXML
     private void seleccionarCarpetaAuto() {
         DirectoryChooser chooser = new DirectoryChooser();
         chooser.setTitle("Carpeta automática de almacenamiento de PDF");
@@ -316,7 +363,7 @@ public class ConfiguracionController implements Pantalla, Initializable {
     void guardar(ActionEvent event) {
         String error = marcarCamposMalos();
         if (error != null) {
-            mostrarSeccion(seccionEmpresa, btnEmpresa, true);
+            mostrarSeccion(seccionDatosFiscales, btnDatosFiscales, true);
             Dialogos.mostrarDialogoError("Datos de la empresa", error);
             return;
         }
@@ -414,18 +461,13 @@ public class ConfiguracionController implements Pantalla, Initializable {
     // ------------------------------------------------------------------
 
     @FXML
-    void verEmpresa(ActionEvent event) {
-        mostrarSeccion(seccionEmpresa, btnEmpresa, true);
+    void verDatosFiscales(ActionEvent event) {
+        mostrarSeccion(seccionDatosFiscales, btnDatosFiscales, true);
     }
 
     @FXML
-    void verCabecera(ActionEvent event) {
-        mostrarSeccion(seccionCabeceraPie, btnCabecera, true);
-    }
-
-    @FXML
-    void verPdf(ActionEvent event) {
-        mostrarSeccion(seccionPdfApariencia, btnPdf, true);
+    void verLogotipo(ActionEvent event) {
+        mostrarSeccion(seccionLogotipo, btnLogotipo, true);
     }
 
     @FXML
@@ -441,6 +483,21 @@ public class ConfiguracionController implements Pantalla, Initializable {
     @FXML
     void verSeries(ActionEvent event) {
         mostrarSeccion(seccionSeries, btnSeries, false);
+    }
+
+    @FXML
+    void verDisenoPdf(ActionEvent event) {
+        mostrarSeccion(seccionDisenoPdf, btnDisenoPdf, true);
+    }
+
+    @FXML
+    void verApariencia(ActionEvent event) {
+        mostrarSeccion(seccionApariencia, btnApariencia, true);
+    }
+
+    @FXML
+    void verCarpetas(ActionEvent event) {
+        mostrarSeccion(seccionCarpetas, btnCarpetas, true);
     }
 
     /**
@@ -467,9 +524,16 @@ public class ConfiguracionController implements Pantalla, Initializable {
     private void cablearPrevia() {
         grupoCabecera.selectedToggleProperty().addListener((propiedad, anterior, nuevo) -> repintarPrevia());
         txtNombre.textProperty().addListener((propiedad, anterior, nuevo) -> repintarPrevia());
-        txtLogoPath.textProperty().addListener((propiedad, anterior, nuevo) -> repintarPrevia());
+        txtLogoPath.textProperty().addListener((propiedad, anterior, nuevo) -> repintarPreviaYLogo());
         colorPdf.valueProperty().addListener((propiedad, anterior, nuevo) -> repintarPrevia());
         repintarPrevia();
+        repintarLogoPrevia();
+    }
+
+    /** La ruta del logo alimenta la vista previa de la cabecera y la del logotipo: repintamos ambas. */
+    private void repintarPreviaYLogo() {
+        repintarPrevia();
+        repintarLogoPrevia();
     }
 
     /** Pintamos la cabecera con los datos de los campos, o el aviso si están incompletos. */
@@ -680,7 +744,7 @@ public class ConfiguracionController implements Pantalla, Initializable {
         try {
             serieElegida = null;
             tablaSeries.getSelectionModel().clearSelection();
-            colSerieSiguiente.setText("Siguiente (" + anioTrabajo() + ")");
+            colSerieSiguiente.setText("Siguiente n.º (" + anioTrabajo() + ")");
             series.setAll(Vista.getInstancia().getControlador().listadoSeries());
             tablaSeries.setItems(series);
         } catch (Exception e) {
