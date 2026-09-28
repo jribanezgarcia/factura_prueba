@@ -31,7 +31,8 @@
 
 ## 6. Capturas (sesión principal, con Computer use)
 
-- [ ] 6.1 Rehacer `docs/capturas/menu.png` y añadir `docs/capturas/configuracion.png` (D8), con la demo y el tema biblioteca8.
+- [x] 6.1 Rehacer `docs/capturas/menu.png` y añadir `docs/capturas/configuracion.png` (D8), con la demo y el tema biblioteca8.
+  - Hechas por la sesión principal con Computer use (28/09): menú sin bordes y Configuración en Datos fiscales, 1010 × 761. Revisadas también Logotipo y Diseño del PDF: caben enteras.
 
 ## 7. Repaso
 
