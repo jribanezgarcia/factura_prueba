@@ -67,5 +67,6 @@
 
 ## 7. Revisión del alumno (al final)
 
-- [ ] 7.1 El alumno lee `docs/diseno.md` y la sección «Diseño» del `README.md` en GitHub, con los diagramas y las imágenes.
-- [ ] 7.2 En la aplicación, el desplegable de temas dice «Neón». Cambiar el tema en Configuración y guardar: se guarda sin avisos, y al volver a abrir la empresa sale el tema elegido.
+- [x] 7.1 El alumno lee `docs/diseno.md` y la sección «Diseño» del `README.md` en GitHub, con los diagramas y las imágenes.
+- [x] 7.2 En la aplicación, el desplegable de temas dice «Neón». Cambiar el tema en Configuración y guardar: se guarda sin avisos, y al volver a abrir la empresa sale el tema elegido.
+  - Comprobadas por el alumno el 28/09/2026: correctas.
