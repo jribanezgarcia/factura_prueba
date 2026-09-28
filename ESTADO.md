@@ -53,6 +53,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
 
+**`menu-y-configuracion`**: el menú principal recupera sus opciones sin fondo ni borde (arreglo del cambio de `menu-item` a `opcion-menu`); Configuración se reorganiza en 4 grupos y 8 secciones, cada una con su icono, su título y su ayuda, con la sección Logotipo separada y el botón «Quitar logotipo» nuevo.
+
 ## Qué toca ahora
 
 1. La rama `pdf-jasper` (plan en `borrador_changes/plan-pdf-jasper.md`): el PDF se hace con JasperReports en vez de con OpenPDF.
