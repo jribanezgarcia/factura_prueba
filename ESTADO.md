@@ -39,8 +39,9 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Módulo de copias: botón único «Crear copia…» con la carpeta recordada y el nombre con la empresa, comprobación de la copia contra `crear_tablas.sql` en vez de listas escritas a mano, reemplazar solo con el mismo NIF, vuelta al arranque al cambiar de empresa desde una copia, `CopiaSeguridad` pasa a singleton de `modelo/negocio` con `ResumenCopia` en `modelo/dominio` (fuera `CopiaSeguridadDAO`, `DatosException`, el paquete `fichero` y `Controlador.getModelo()`) y la pantalla sin hilos; de paso arregla las etiquetas cortadas de «PDF y apariencia» en Configuración y el borrado de la empresa elegida en el arranque; 469 pruebas.
 - Documentación final: `README.md`, `docs/metodologia.md`, `docs/tecnico.md` reescritos y `docs/flujos.md` nuevo, con capturas rehechas de la aplicación real; ortografía corregida (títulos de ventana con tilde y comentarios); logo de la demostración en menú, editor y PDF; norma de excepciones suavizada (`CargarDemo` pasa a `Exception`); manejador global de errores inesperados (`ErroresInesperados`, con aviso y `errores.log`); `Controlador` y `Modelo` explicados de verdad y sin las fugas hacia el negocio que tenían tres pantallas; `LanzadorVentanaPrincipal.start` más corto, como en Biblioteca8; 475 pruebas.
 - Documentación de diseño: `docs/diseno.md` nuevo con el proceso de las maquetas (siete rondas), el logo de la aplicación (el torreón y las tres rondas de prompts) y los iconos SVG, enlazado desde el `README.md` y los otros documentos; `GestorTemas` cumple `AGENTS.md` (sin ternario, `guardar()` sin el `catch` vacío, Javadoc) y el tema `neon` se muestra como «Neón»; quitados los ternarios sueltos de `Clientes`, `PreferenciasGlobales`, `Formatos`, `LogoMarco`, `ConfiguracionController` y `PreviaCabecera`, y el resto de `AGENTS.md` en todo `src/main` salvo `pdf` (tipos dentro de otra clase, clases anónimas, `var`); auditoría de las cuatro búsquedas de «Transición» repetida antes de archivar; 475 pruebas.
+- Menú y configuración: el menú principal recupera sus opciones sin fondo ni borde, con la prueba que lo vigila (`PantallaMenuPrincipalTest`); Configuración se reorganiza en 4 grupos y 8 secciones (Datos fiscales, Logotipo, Tipos de IVA, Retenciones IRPF, Series de numeración, Diseño del PDF, Apariencia, Carpetas), cada una con su icono, su título y su frase de ayuda; textos más profesionales en toda la pantalla y «…» como único carácter de puntos suspensivos; 480 pruebas.
 
-Último cambio archivado: `2026-09-28-documentacion-diseno`.
+Último cambio archivado: `2026-09-28-menu-y-configuracion`.
 
 ## En curso
 
@@ -52,8 +53,6 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - **Decisiones cerradas** (20/09): sin versiones de factura; VeriFactu más adelante en otra rama y hasta entonces todo lo que choca con él se queda igual; negocio con el SQL dentro (sin DAO); clases de datos que se validan en sus setters; solo `Exception`; `Dialogos` como en clase; pantallas de tabla con formulario modal reutilizable; `Factura` con `Serie`, `Cliente` y sus líneas dentro. Todas están en `AGENTS.md`. **(22/09) Revertida F8**: una empresa sin sus datos obligatorios vuelve a bloquear (directo a Configuración, barra solo con Salir, «Cambiar de empresa» disponible).
 
 Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-modelo`.
-
-**`menu-y-configuracion`**: el menú principal recupera sus opciones sin fondo ni borde (arreglo del cambio de `menu-item` a `opcion-menu`); Configuración se reorganiza en 4 grupos y 8 secciones, cada una con su icono, su título y su ayuda, con la sección Logotipo separada y el botón «Quitar logotipo» nuevo.
 
 ## Qué toca ahora
 
@@ -102,3 +101,5 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **Para rehacer las capturas con la demo nueva hay que apartar la carpeta de la demo de `%APPDATA%\Facturacion`, sin borrarla**, para que la aplicación la recree; al terminar, devolver el tema y la última carpeta de exportación del usuario.
 - **Una guía de `openspec/config.yaml` con `: ` en medio se lee como un par clave-valor y OpenSpec ignora todas las de esa operación: van entre comillas**.
 - **En los comandos de auditoría de «Transición» (`AGENTS.md`), `var` y `record` necesitan un `\b` delante**: sin él, `var [a-zA-Z]` casa también con texto normal como «llevar su» dentro de un comentario, y sale un falso positivo que no es código.
+- **Un botón con clase propia (como `opcion-menu`) se ve como un botón estándar si nadie le quita fondo y borde**: antes lo hacía por casualidad el estilo de `menu-item` de JavaFX. Lo vigila `PantallaMenuPrincipalTest` (`design.md` de `menu-y-configuracion`, D8).
+- **Al cambiar el texto de un botón de la barra lateral de Configuración fallan las pruebas que lo pulsan por su texto** (`PantallaIvaTest`, `PantallaRetencionesTest`…): hay que buscar el texto viejo con `grep` en `src/test` antes de dar el cambio por terminado.

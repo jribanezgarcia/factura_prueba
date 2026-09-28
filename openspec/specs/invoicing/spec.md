@@ -515,7 +515,7 @@ La aplicación SHALL proporcionar los atajos Ctrl+N para Nueva factura, Ctrl+S p
 
 La aplicación SHALL tener una pantalla de Configuración que permita configurar: los datos de la empresa (nombre, NIF, dirección, código postal, localidad, provincia y resto de datos necesarios para la cabecera); la cabecera del documento en dos modos, texto con datos de empresa o imagen/logo; el pie con texto legal libre configurable por el usuario; el tema de apariencia de la interfaz; los tipos de IVA; los tipos de retención de IRPF; las series (crear y configurar en su ficha, ver el siguiente número y eliminar series sin facturas); las carpetas de PDF; el color de acento usado en los PDF exportados; y la acción «Cambiar de empresa», que vuelve a la pantalla de arranque. El color SHALL guardarse como preferencia `color_pdf`; si nunca se configura, los PDF SHALL usar arena Alcazaba (`#B08D57`), y del color elegido SHALL derivarse el resto de tonos del documento. La aplicación SHALL recordar preferencias de trabajo: última serie utilizada, última carpeta de exportación y tema de apariencia. El tema SHALL guardarse en cada empresa, igual que el color del PDF, de modo que cada empresa conserve su propio tema. Al entrar en una empresa o cambiar a otra SHALL aplicarse el tema guardado en ella y, si nunca se ha guardado ninguno, el tema biblioteca8. La pantalla de arranque, que se muestra antes de elegir empresa, SHALL usar el tema de la última empresa abierta. El tamaño y la posición de la ventana SHALL NOT recordarse: cada pantalla se abre con el tamaño que le corresponde.
 
-En el tamaño mínimo de ventana (1024×768), todos los campos de la sección Empresa SHALL verse completos, sin recortes por el borde derecho.
+En el tamaño mínimo de ventana (1024×768), todos los campos de la sección Datos fiscales SHALL verse completos, sin recortes por el borde derecho.
 
 #### Scenario: Configurar empresa
 - **WHEN** el usuario guarda los datos de la empresa en Configuración
@@ -530,7 +530,7 @@ En el tamaño mínimo de ventana (1024×768), todos los campos de la sección Em
 - **THEN** el nuevo texto se repite en las páginas de los PDF generados
 
 #### Scenario: Modificar siguiente número
-- **WHEN** el usuario abre Configuración → Series
+- **WHEN** el usuario abre Configuración → Series de numeración
 - **THEN** ve el siguiente número de cada serie, calculado a partir de sus facturas del año de trabajo, y no puede cambiarlo a mano
 
 #### Scenario: Cambiar el tema de la interfaz
@@ -564,8 +564,8 @@ En el tamaño mínimo de ventana (1024×768), todos los campos de la sección Em
 - **THEN** ese tipo queda disponible para seleccionar en las facturas de esa empresa
 
 #### Scenario: Campos de empresa legibles a 1024×768
-- **WHEN** el usuario abre la sección Empresa de Configuración en el tamaño mínimo de ventana
-- **THEN** los campos Nombre / razón social, Actividad y Localidad se ven enteros, sin recortes
+- **WHEN** el usuario abre la sección Datos fiscales de Configuración en el tamaño mínimo de ventana
+- **THEN** los campos Nombre o razón social, Actividad y Localidad se ven enteros, sin recortes
 
 #### Scenario: La ventana no recuerda posición ni tamaño
 - **WHEN** el usuario cierra la aplicación con la ventana movida y vuelve a abrirla
@@ -573,19 +573,39 @@ En el tamaño mínimo de ventana (1024×768), todos los campos de la sección Em
 
 ### Requirement: Configuración organizada por secciones
 
-La pantalla de Configuración SHALL organizarse en secciones navegables desde una lista lateral, en lugar de pestañas. Las secciones SHALL ser: Empresa, Cabecera y pie, PDF y apariencia, IVA, Retenciones y Series. El botón de guardado general SHALL mostrarse únicamente en las secciones cuyos datos guarda (Empresa, Cabecera y pie, y PDF y apariencia) y SHALL ocultarse en las secciones que se administran fila a fila (IVA, Retenciones y Series), donde cada una conserva sus propias acciones. El tema de la aplicación SHALL presentarse en la sección PDF y apariencia, junto al color del PDF, por tratarse de una preferencia de la empresa activa.
+La pantalla de Configuración SHALL organizarse en secciones navegables desde una lista lateral, en lugar de pestañas. La lista SHALL agrupar las secciones en cuatro grupos, en este orden:
+
+- DATOS DE LA EMPRESA: Datos fiscales y Logotipo;
+- FISCALIDAD: Tipos de IVA, Retenciones IRPF y Series de numeración;
+- FACTURA EN PDF: Diseño del PDF;
+- PREFERENCIAS: Apariencia y Carpetas.
+
+Cada sección SHALL tener un único cometido: Datos fiscales, los datos de la empresa; Logotipo, la imagen de la empresa con su vista previa; Diseño del PDF, la cabecera, el pie legal y el color de acento de los PDF con la vista previa de la cabecera; Apariencia, el tema de la aplicación; Carpetas, la carpeta de los PDF y la última carpeta usada.
+
+Cada sección SHALL mostrarse en la lista con un icono pequeño junto a su nombre, y la sección elegida SHALL distinguirse sin usar negrita. Al abrirse, cada sección SHALL empezar por su icono, su título, que es el mismo nombre de la lista, y una frase que explique para qué sirve.
+
+El botón de guardado general SHALL mostrarse únicamente en las secciones cuyos datos guarda (Datos fiscales, Logotipo, Diseño del PDF, Apariencia y Carpetas) y SHALL ocultarse en las secciones que se administran fila a fila (Tipos de IVA, Retenciones IRPF y Series de numeración), donde cada una conserva sus propias acciones. El tema de la aplicación SHALL presentarse en la sección Apariencia por tratarse de una preferencia de la empresa activa.
 
 #### Scenario: Navegación entre secciones
 - **WHEN** el usuario selecciona una sección en la lista lateral
 - **THEN** el contenido de esa sección ocupa la zona derecha y el resto de secciones queda oculto
 
 #### Scenario: El botón de guardado solo donde aplica
-- **WHEN** el usuario abre las secciones de IVA, Retenciones o Series
+- **WHEN** el usuario abre las secciones de Tipos de IVA, Retenciones IRPF o Series de numeración
 - **THEN** el botón de guardado general no se muestra, y las acciones disponibles son las propias de la sección
 
 #### Scenario: Cada sección cabe sin scroll
 - **WHEN** el usuario recorre las secciones con la ventana en su tamaño mínimo de 1024×768
 - **THEN** el contenido de cada sección es visible completo sin necesidad de desplazarse
+
+#### Scenario: Cada sección se presenta sola
+- **WHEN** el usuario abre la sección Diseño del PDF
+- **THEN** ve su icono, el título «Diseño del PDF» y la frase que explica para qué sirve
+- **AND** en esa sección están la cabecera, el pie legal, el color de acento y la vista previa, y no el tema de la aplicación ni las carpetas
+
+#### Scenario: Quitar el logotipo
+- **WHEN** el usuario pulsa «Quitar logotipo» en la sección Logotipo y guarda
+- **THEN** la empresa queda sin logo, la vista previa del logotipo queda vacía y los PDF usan la cabecera de texto
 
 ### Requirement: Retención de IRPF
 
@@ -713,17 +733,17 @@ Cuando al abrir la aplicación no exista ninguna empresa, la aplicación SHALL c
 
 La aplicación SHALL exigir que la empresa activa tenga completos sus datos obligatorios antes de permitir trabajar con ella: nombre o razón social, NIF válido, dirección, código postal válido, localidad, provincia, email válido y teléfono.
 
-Al entrar en una empresa a la que le falte alguno de esos datos, sea desde la pantalla de arranque o al restaurar una copia, la aplicación SHALL abrir Configuración en la sección Empresa en lugar del menú principal, SHALL mostrar un texto que explique que para empezar a usar el programa hay que completar los datos de la empresa, y SHALL desactivar el botón de volver al menú y toda la barra de navegación salvo la opción de salir. Mientras tanto SHALL seguir disponibles todas las secciones de Configuración, el guardado de la configuración y la acción «Cambiar de empresa». Si el nombre de la empresa está vacío, SHALL proponerse el nombre con el que se creó.
+Al entrar en una empresa a la que le falte alguno de esos datos, sea desde la pantalla de arranque o al restaurar una copia, la aplicación SHALL abrir Configuración en la sección Datos fiscales en lugar del menú principal, SHALL mostrar un texto que explique que para empezar a usar el programa hay que completar los datos de la empresa, y SHALL desactivar el botón de volver al menú y toda la barra de navegación salvo la opción de salir. Mientras tanto SHALL seguir disponibles todas las secciones de Configuración, el guardado de la configuración y la acción «Cambiar de empresa». Si el nombre de la empresa está vacío, SHALL proponerse el nombre con el que se creó.
 
-Los campos obligatorios de la sección Empresa SHALL marcarse con un asterisco. Guardar la configuración SHALL NOT ser posible mientras falte algún dato obligatorio o no sea válido: la aplicación SHALL marcar como erróneos todos los campos incorrectos y SHALL mostrar un único aviso, el del primer dato incorrecto. Cuando se completan unos datos que estaban pendientes, la aplicación SHALL pasar al menú principal.
+Los campos obligatorios de la sección Datos fiscales SHALL marcarse con un asterisco. Guardar la configuración SHALL NOT ser posible mientras falte algún dato obligatorio o no sea válido: la aplicación SHALL marcar como erróneos todos los campos incorrectos y SHALL mostrar un único aviso, el del primer dato incorrecto. Cuando se completan unos datos que estaban pendientes, la aplicación SHALL pasar al menú principal.
 
 #### Scenario: Entrar en una empresa recién creada
 - **WHEN** el usuario entra en una empresa que acaba de crear
-- **THEN** se abre Configuración en la sección Empresa con el texto explicativo y el nombre de la empresa ya propuesto
+- **THEN** se abre Configuración en la sección Datos fiscales con el texto explicativo y el nombre de la empresa ya propuesto
 - **AND** la barra de navegación solo permite salir
 
 #### Scenario: Guardar con datos incompletos
-- **WHEN** el usuario pulsa Guardar configuración sin haber rellenado el teléfono y con un NIF no válido
+- **WHEN** el usuario pulsa Guardar cambios sin haber rellenado el teléfono y con un NIF no válido
 - **THEN** la configuración no se guarda
 - **AND** los campos NIF y Teléfono quedan marcados como erróneos y se muestra un único aviso, el del NIF
 
@@ -733,7 +753,7 @@ Los campos obligatorios de la sección Empresa SHALL marcarse con un asterisco. 
 
 #### Scenario: Empresa existente incompleta
 - **WHEN** el usuario entra en una empresa que ya tenía facturas pero no tiene email
-- **THEN** se abre Configuración en la sección Empresa en lugar del menú principal
+- **THEN** se abre Configuración en la sección Datos fiscales en lugar del menú principal
 
 #### Scenario: Empresa completa
 - **WHEN** el usuario entra en una empresa con todos los datos obligatorios válidos

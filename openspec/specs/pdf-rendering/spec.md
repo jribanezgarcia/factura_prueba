@@ -7,15 +7,15 @@ Composicion y dibujo del documento PDF de factura a partir de los datos ya resue
 
 ### Requirement: Vista previa de la cabecera del PDF
 
-La sección Cabecera y pie SHALL mostrar una previsualización de la cabecera del PDF que refleje el modo elegido, el logo con su posición y tamaño efectivos y el color de acento configurado, actualizándose al modificar cualquiera de esos valores. La previsualización SHALL usar las mismas reglas de geometría que emplea la generación del PDF, de modo que el tamaño efectivo del logo mostrado coincida con el impreso. La aplicación SHALL indicar junto a los campos de tamaño el tamaño efectivo resultante, y SHALL advertir de que la previsualización es aproximada.
+La sección Diseño del PDF SHALL mostrar una vista previa de la cabecera del PDF que refleje el modo elegido, el logo de la empresa con su posición y tamaño efectivos y el color de acento configurado, actualizándose al modificar cualquiera de esos valores. La vista previa SHALL usar las mismas reglas de geometría que emplea la generación del PDF, de modo que el tamaño efectivo del logo mostrado coincida con el impreso.
 
 #### Scenario: La previsualización refleja el tamaño real del logo
-- **WHEN** el usuario configura un logo de 120 × 60 pt
-- **THEN** la previsualización lo muestra al tamaño efectivo con el que se imprime, que es el doble del configurado, y la pantalla indica ese tamaño efectivo
+- **WHEN** la empresa tiene un logo y el usuario elige la cabecera con logotipo
+- **THEN** la vista previa muestra el logo al tamaño con el que se imprime dentro de la caja fija del logo
 
 #### Scenario: La previsualización reacciona a los cambios
-- **WHEN** el usuario cambia la imagen del logo, su posición, su tamaño o el color de acento
-- **THEN** la previsualización se actualiza sin necesidad de guardar ni de exportar una factura
+- **WHEN** el usuario cambia la imagen del logo, el modo de cabecera o el color de acento
+- **THEN** la vista previa se actualiza sin necesidad de guardar ni de exportar una factura
 
 #### Scenario: Modo texto
 - **WHEN** el usuario elige el modo de cabecera con datos de empresa
@@ -257,12 +257,12 @@ El resto se mantiene como estaba: descripciones largas ajustadas automáticament
 
 ### Requirement: Aviso de logo de baja resolución
 
-Al seleccionar un logo en la sección Cabecera y pie, la aplicación SHALL comprobar si la imagen tiene resolución suficiente para imprimirse dentro de la caja fija del logo. Cuando la imagen tenga menos de 1,5 píxeles por punto del tamaño con el que se dibuja en el PDF, la aplicación SHALL mostrar un aviso informativo indicando que el logo puede verse borroso al imprimir. El aviso SHALL NOT impedir usar la imagen: el logo queda seleccionado igualmente.
+Al seleccionar un logo en la sección Logotipo, la aplicación SHALL comprobar si la imagen tiene resolución suficiente para imprimirse dentro de la caja fija del logo. Cuando la imagen tenga menos de 1,5 píxeles por punto del tamaño con el que se dibuja en el PDF, la aplicación SHALL mostrar un aviso informativo indicando que el logo puede verse borroso al imprimir. El aviso SHALL NOT impedir usar la imagen: el logo queda seleccionado igualmente.
 
 #### Scenario: Logo pequeño
 - **WHEN** el usuario selecciona como logo una imagen de 128 × 128 píxeles
 - **THEN** la aplicación avisa de que el logo puede verse borroso al imprimir
-- **AND** la ruta del logo queda puesta y la vista previa lo muestra
+- **AND** la ruta del logo queda puesta y la vista previa del logotipo lo muestra
 
 #### Scenario: Logo con resolución suficiente
 - **WHEN** el usuario selecciona como logo una imagen de 1254 × 1254 píxeles
