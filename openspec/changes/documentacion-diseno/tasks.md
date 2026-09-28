@@ -37,11 +37,13 @@
   - Hechas por la sesión principal: 41 maquetas recuperadas del historial de opencode, anonimizadas fuera del proyecto y capturadas con Edge headless. Entre 35 y 220 KB cada una.
 - [x] 3.3 `docs/capturas/proceso-logo.png` según `design.md - D3`.
   - Hecha por la sesión principal con los originales de `logos/` (fuera de git): 972×799, unos 50 KB.
+- [x] 3.4 `docs/capturas/proceso-torreon.png`, `logo-ronda-1.png` y `logo-ronda-2.png` según `design.md - D3`, y `proceso-logo.png` con el primer rótulo corregido.
 
 ## 4. Documento de diseño
 
 - [x] 4.1 Nuevo `docs/diseno.md` con los cuatro apartados de `design.md - D2`, con las ocho imágenes y los enlaces a `capturas/pdf.png` y `capturas/editor.png`. La tabla de changes que citan su maqueta, sacada del `grep` de D2.
 - [x] 4.2 Apartado «El logo de la aplicación» en `docs/diseno.md` según `design.md - D2` (2 bis), con `proceso-logo.png`, en el índice; y «La excepción» de «Los iconos» remite a él. En el `README.md`, en la sección «Diseño», una frase sobre la F (Facturación, colores del Cabo de Gata).
+- [ ] 4.3 En «El logo de la aplicación», el torreón y las tres rondas de prompts según `design.md - D2` (2 bis), con sus tres imágenes y los prompts como citas. La frase de la torre de la demo, según 2 bis.
 
 ## 5. Enlaces y normas
 
@@ -58,9 +60,9 @@
   - Segunda pasada (tras 2.3 y 5.2): 475 pruebas, 0 fallos, 0 errores, en 7 min 44 s. Sin `ClassCastException` en la salida. La cifra no cambió; ya estaba puesta en `README.md` y `docs/metodologia.md`.
   - Tercera pasada (tras 2.5 a 2.8): 475 pruebas, 0 fallos, 0 errores, en 24 min 35 s (máquina más cargada que en las pasadas anteriores; sin relación con el código). Sin `ClassCastException` en la salida. Cifra sin cambios.
   - Sin cambios de código después de la tercera pasada (la 4.2 es solo documentación): no se repite `mvn test`.
-- [x] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe, incluida `capturas/proceso-logo.png`.
-- [x] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
-- [x] 6.4 `openspec validate documentacion-diseno --strict` en verde.
+- [ ] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe, incluida `capturas/proceso-logo.png`.
+- [ ] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
+- [ ] 6.4 `openspec validate documentacion-diseno --strict` en verde.
 
 ## 7. Revisión del alumno (al final)
 

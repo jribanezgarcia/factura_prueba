@@ -39,7 +39,7 @@
 | 5 | Paletas | Imagen con muestras (`docs/capturas/paletas.png`) y tabla con los códigos |
 | 6 | Herramientas | Como consta en el historial, con fechas:<br>• `javafx-design`, skill propia creada el 20/08 a imitación del flujo de Claude Design;<br>• `apple-design`, de Emil Kowalski, aplicada el 24/08;<br>• el editor definitivo se diseñó en Claude Design.<br>Nada que no se pueda comprobar |
 | 7 | Limpieza | En este change: `GestorTemas`, la tilde de `ConfiguracionVentana`, los ternarios de `Clientes` y `PreferenciasGlobales`, y «Neon» → «Neón» |
-| 8 | Logo de la aplicación | Apartado nuevo con la lámina `proceso-logo.png`. Contado como lo explica el alumno: la F es de Facturación, minimalista para que sea reconocible y moderna, y sus colores se inspiran en el mar, el sol y la playa del Cabo de Gata, de donde sale «CaboFactu». La torre de la demo no se explica |
+| 8 | Logo de la aplicación | Apartado nuevo con la lámina `proceso-logo.png`. Contado como lo explica el alumno: la F es de Facturación, minimalista para que sea reconocible y moderna, y sus colores se inspiran en el mar, el sol y la playa del Cabo de Gata, de donde sale «CaboFactu». Primero el torreón del Cabo de Gata en varios colores; después tres rondas de prompts en ChatGPT, con los prompts copiados |
 
 **Reglas para el texto**: las de `documentacion-final`.
 - Español; primera persona del singular cuando habla el alumno («elegí», «descarté») e impersonal en lo técnico.
@@ -148,23 +148,30 @@ Cada ronda con fecha, qué se propuso, qué elegí y qué descarté, y su imagen
 
 ### 2 bis. El logo de la aplicación
 
-Va entre «Las rondas» y «Los iconos», con la imagen `proceso-logo.png`. En el índice, como apartado propio.
+Va entre «Las rondas» y «Los iconos», con las imágenes `proceso-torreon.png`, `logo-ronda-1.png`, `logo-ronda-2.png` y `proceso-logo.png`. En el índice, como apartado propio.
 
 - **Qué es**: una F de tres franjas, dos azules y una dorada. **La F es de Facturación**. Es un diseño minimalista, para que la aplicación sea reconocible y moderna.
 - **Por qué esos colores y ese nombre**: se inspiran en el mar, el sol y la playa del **Cabo de Gata**, y de ahí sale el nombre **CaboFactu**.
-- **Cómo se hizo**, con fechas:
-  1. 03/09 por la mañana: pruebas con ChatGPT (varias versiones de la F y la F grande);
-  2. `logo1.png`, la elegida, con degradados y un brillo en el borde para que se vea bien sobre fondos oscuros;
-  3. esa tarde, en una sesión de Claude Code, pregunté qué ventajas tenía el SVG. Se recreó a mano como `logo1.svg`: tres trazados con degradados, unos 2,5 KB frente a los casi 600 KB del PNG, nítido a cualquier tamaño;
-  4. **me quedé con el PNG para el icono**:
+- **Cómo se hizo**, con fechas. Primero, el torreón y después las tres rondas de prompts, cada una con su imagen:
+  0. **El torreón del Cabo de Gata (02/09)**, `proceso-torreon.png`: varias versiones con ChatGPT, en distintos colores. La última, con la palabra «caboFactu», es hoy el logo de la empresa de demostración.
+  1. **Prompt 1** (`logo-ronda-1.png`), 20 diseños. Se copia como cita, con este texto:
+     > Ayúdame a diseñar un icono para una aplicación de facturación. Los colores quiero que sean marrón claro `#bd8343` y azul `#004d90`. El icono tiene que ser sencillo, minimalista y moderno. A poder ser, inspirado en el Cabo de Gata, pero que represente a una empresa seria. Hazme 20 diseños distintos con esa paleta de colores; el icono puede tener cualquier forma.
+  2. **Prompt 2** (`logo-ronda-2.png`): de la primera ronda guardé el 5 y el 12 (marcados en verde) y descarté el resto:
+     > Guarda el 12 y el 5; el resto no me gusta ninguno. Vuelve a rehacerlos todos, pero mejor. Inspírate en los iconos del rebranding de las marcas más famosas del mundo, que han hecho iconos o logos muy minimalistas. Puedes incluir letras en alguno para que sea más sencillo. Toma todos los ejemplos modernos que puedas y hazme 20 más.
+  3. **Prompt 3** (03/09 por la mañana): de la segunda ronda elegí el 11 y el 20 (marcados en verde):
+     > Nos quedamos con el 11 y el 20. Házmelos individuales: el 11 sin fondo y el 20 con la forma que tiene.
+     Salen las dos primeras casillas de `proceso-logo.png`.
+  4. `logo1.png`, la elegida, con degradados y un brillo en el borde para que se vea bien sobre fondos oscuros;
+  5. esa tarde, en una sesión de Claude Code, pregunté qué ventajas tenía el SVG. Se recreó a mano como `logo1.svg`: tres trazados con degradados, unos 2,5 KB frente a los casi 600 KB del PNG, nítido a cualquier tamaño;
+  6. **me quedé con el PNG para el icono**:
      - el SVG pierde el brillo del borde, y sobre un fondo oscuro se nota (imagen, casillas 5 y 6);
      - además, Windows y JavaFX solo aceptan una imagen como icono de ventana (`Stage.getIcons()`), no un SVG;
-  5. el icono se redujo desde `logo1.png` a 256×256 con LANCZOS, el remuestreo que mejor conserva la calidad al reducir, y es `icono-aplicacion.png`;
-  6. change `icono-app-y-titulos-ventana` (03/09): el icono en todas las ventanas y el título «CaboFactu® + pantalla».
+  7. el icono se redujo desde `logo1.png` a 256×256 con LANCZOS, el remuestreo que mejor conserva la calidad al reducir, y es `icono-aplicacion.png`;
+  8. change `icono-app-y-titulos-ventana` (03/09): el icono en todas las ventanas y el título «CaboFactu® + pantalla».
 - **Dónde está**:
   - `logo1.png` y `logo1.svg` son los originales, en la carpeta `logos/`, fuera de git como los prototipos;
   - la aplicación usa `src/main/resources/cabofactu/vista/recursos/imagenes/icono-aplicacion.png`, que es también el icono de la cabecera del `README.md`.
-- **La torre del logo de la demo**: una frase. El logo de la empresa de demostración (`logo_demo.png`) es otro dibujo, hecho también con ChatGPT el 02/09, que sirve para ver cómo queda una empresa con logo en las pantallas y en el PDF. No se explica qué representa.
+- **La torre del logo de la demo**: es el torreón del paso 0. Sirve para ver cómo queda una empresa con logo en las pantallas y en el PDF.
 
 ### 3. Los iconos
 
@@ -208,6 +215,7 @@ Va entre «Las rondas» y «Los iconos», con la imagen `proceso-logo.png`. En e
   - capturadas con Edge en modo headless;
   - revisadas por el alumno;
   - cada una de menos de 250 KB.
+- **`docs/capturas/proceso-torreon.png`, `logo-ronda-1.png` y `logo-ronda-2.png`**, preparadas por la sesión principal: las tres versiones del torreón y las dos hojas de 20 diseños que aportó el alumno, con los elegidos marcados en verde.
 - **`docs/capturas/proceso-logo.png`**, hecha por la sesión principal con los originales de `logos/`: pruebas de ChatGPT, `logo1.png`, `logo1.svg`, el SVG y el PNG sobre fondo oscuro, y el icono en 16, 32, 64 y 96 px.
 - Nada del proceso (scripts, maquetas recuperadas) queda en el repositorio.
 
