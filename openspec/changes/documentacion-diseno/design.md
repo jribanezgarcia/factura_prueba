@@ -202,7 +202,13 @@ Sin cambiar lo que hace la aplicación.
 - **`ConfiguracionVentana`**: el Javadoc de la clase con tilde, y se revisan las tildes del resto de comentarios del fichero.
 - **`Clientes.listado`**: `(texto == null ? "" : texto.trim())` pasa a una variable con `if / else`.
 - **`PreferenciasGlobales.get(clave, porDefecto)`**: `if / else`.
-- **Comprobación**: `grep -rnE "\? [^?]*: " src/main/java --include=*.java`, quitando los `?` de SQL, solo devuelve ficheros del paquete `pdf`.
+- **Los otros once ternarios fuera de `pdf`**, a `if / else` sin cambiar lo que hacen (salieron al aplicar, porque el primer `grep` estaba mal hecho):
+  - `utilidades/Formatos.java` (dos: fecha y fecha con hora);
+  - `utilidades/LogoMarco.java` (dos: ancho y alto);
+  - `vista/controlador/ConfiguracionController.java` (dos: al leer un campo y un texto que puede ser `null`);
+  - `vista/utilidades/PreviaCabecera.java` (cinco: el color de acento por defecto, ancho, alto, la negrita y un texto que puede ser `null`).
+  - Si una misma forma se repite (`s == null ? "" : s`), puede quedar en un método privado de ayuda con nombre, en su clase.
+- **Comprobación**: `grep -rnE "[^?]\? [^?]*[^:]: " src/main/java --include=*.java | grep -vE "LIKE \?|= \?|\?,|\?\)"` solo devuelve ficheros del paquete `pdf`.
 
 ## D5. Enlaces y normas
 
