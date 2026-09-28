@@ -43,6 +43,8 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 
 ## En curso
 
+**Documentación del diseño** (28/09/2026): `docs/diseno.md` nuevo con el proceso de las maquetas, las rondas, los iconos y los temas; enlazado desde el `README.md` y los otros documentos; de paso, `GestorTemas` cumple `AGENTS.md`, «Neon» pasa a «Neón» y se quitan dos ternarios sueltos.
+
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).

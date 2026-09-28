@@ -2,14 +2,14 @@
 
 ## 1. Configuración y estado
 
-- [ ] 1.1 `openspec/config.yaml`: la guía de `archive` con «rutas: », entre comillas dobles. `openspec status --change documentacion-diseno` ya no da el aviso «Guidance for operation 'archive'…». Ver `design.md - D5`.
-- [ ] 1.2 Añadir este change a «En curso» en `ESTADO.md`.
+- [x] 1.1 `openspec/config.yaml`: la guía de `archive` con «rutas: », entre comillas dobles. `openspec status --change documentacion-diseno` ya no da el aviso «Guidance for operation 'archive'…». Ver `design.md - D5`.
+- [x] 1.2 Añadir este change a «En curso» en `ESTADO.md`.
 
 ## 2. Código
 
-- [ ] 2.1 `GestorTemas` según `design.md - D4`: sin ternario, `guardar()` con `throws Exception` y sin el `catch` vacío, Javadoc de la clase y de los públicos, y «Neón».
-- [ ] 2.2 Tildes del Javadoc de `ConfiguracionVentana`, y los ternarios de `Clientes.listado` y `PreferenciasGlobales.get`, según `design.md - D4`.
-- [ ] 2.3 El `grep` de ternarios de `design.md - D4` solo devuelve el paquete `pdf`. El `grep` de estilo de siempre (`record`, `var`, `::`, `.stream()`, clases anónimas, nombres completos) sobre los ficheros tocados: nada nuevo.
+- [x] 2.1 `GestorTemas` según `design.md - D4`: sin ternario, `guardar()` con `throws Exception` y sin el `catch` vacío, Javadoc de la clase y de los públicos, y «Neón».
+- [x] 2.2 Tildes del Javadoc de `ConfiguracionVentana`, y los ternarios de `Clientes.listado` y `PreferenciasGlobales.get`, según `design.md - D4`.
+- [ ] 2.3 El `grep` de ternarios de `design.md - D4` **no** solo devuelve el paquete `pdf`: además de `pdf/`, hay ternarios previos (no tocados por este change) en `Formatos.java`, `LogoMarco.java`, `ConfiguracionController.java` y `PreviaCabecera.java`. Sin marcar; ver informe. El `grep` de estilo de siempre (`record`, `var`, `::`, `.stream()`, clases anónimas, nombres completos) sobre los ficheros tocados: nada nuevo.
 
 ## 3. Imágenes (sesión principal)
 

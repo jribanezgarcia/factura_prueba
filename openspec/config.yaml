@@ -30,6 +30,6 @@ operations:
   archive:
     guidance:
       - Pasa el change a "Hecho" en ESTADO.md, actualiza "Que toca ahora" y apunta en "Trampas conocidas" lo que haya salido mal.
-      - Archivar es mover una carpeta. Anade al commit por rutas: ESTADO.md, openspec/specs/, la carpeta del change y su carpeta en archive/; git detecta el movimiento.
+      - "Archivar es mover una carpeta. Anade al commit por rutas: ESTADO.md, openspec/specs/, la carpeta del change y su carpeta en archive/; git detecta el movimiento."
       - Antes de terminar, git status --short debe quedar vacio y git ls-tree no debe devolver la carpeta origen.
       - Tras archivar, haz commit automaticamente. Despues pregunta al usuario si hace push; no hagas push sin su confirmacion.
