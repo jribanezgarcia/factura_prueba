@@ -39,6 +39,7 @@
 | 5 | Paletas | Imagen con muestras (`docs/capturas/paletas.png`) y tabla con los códigos |
 | 6 | Herramientas | Como consta en el historial, con fechas:<br>• `javafx-design`, skill propia creada el 20/08 a imitación del flujo de Claude Design;<br>• `apple-design`, de Emil Kowalski, aplicada el 24/08;<br>• el editor definitivo se diseñó en Claude Design.<br>Nada que no se pueda comprobar |
 | 7 | Limpieza | En este change: `GestorTemas`, la tilde de `ConfiguracionVentana`, los ternarios de `Clientes` y `PreferenciasGlobales`, y «Neon» → «Neón» |
+| 8 | Logo de la aplicación | Apartado nuevo con la lámina `proceso-logo.png`. Contado como lo explica el alumno: la F es de Facturación, minimalista para que sea reconocible y moderna, y sus colores se inspiran en el mar, el sol y la playa del Cabo de Gata, de donde sale «CaboFactu». La torre de la demo no se explica |
 
 **Reglas para el texto**: las de `documentacion-final`.
 - Español; primera persona del singular cuando habla el alumno («elegí», «descarté») e impersonal en lo técnico.
@@ -145,6 +146,26 @@ Cada ronda con fecha, qué se propuso, qué elegí y qué descarté, y su imagen
    - El 07/09 hubo cuatro maquetas más para el final de la hoja: `pdf-cierre-anclado-al-pie`, `pdf-multipagina-cliente-repetido`, `pdf-marco-y-pie-final` y `pdf-cabecera-y-tarjetas`.
 - **Al final del apartado**, una línea: hubo otras maquetas pequeñas, como `colores-historico-clientes.html` (03/09), que salió en `ajuste-colores-historico-clientes-editor`.
 
+### 2 bis. El logo de la aplicación
+
+Va entre «Las rondas» y «Los iconos», con la imagen `proceso-logo.png`. En el índice, como apartado propio.
+
+- **Qué es**: una F de tres franjas, dos azules y una dorada. **La F es de Facturación**. Es un diseño minimalista, para que la aplicación sea reconocible y moderna.
+- **Por qué esos colores y ese nombre**: se inspiran en el mar, el sol y la playa del **Cabo de Gata**, y de ahí sale el nombre **CaboFactu**.
+- **Cómo se hizo**, con fechas:
+  1. 03/09 por la mañana: pruebas con ChatGPT (varias versiones de la F y la F grande);
+  2. `logo1.png`, la elegida, con degradados y un brillo en el borde para que se vea bien sobre fondos oscuros;
+  3. esa tarde, en una sesión de Claude Code, pregunté qué ventajas tenía el SVG. Se recreó a mano como `logo1.svg`: tres trazados con degradados, unos 2,5 KB frente a los casi 600 KB del PNG, nítido a cualquier tamaño;
+  4. **me quedé con el PNG para el icono**:
+     - el SVG pierde el brillo del borde, y sobre un fondo oscuro se nota (imagen, casillas 5 y 6);
+     - además, Windows y JavaFX solo aceptan una imagen como icono de ventana (`Stage.getIcons()`), no un SVG;
+  5. el icono se redujo desde `logo1.png` a 256×256 con LANCZOS, el remuestreo que mejor conserva la calidad al reducir, y es `icono-aplicacion.png`;
+  6. change `icono-app-y-titulos-ventana` (03/09): el icono en todas las ventanas y el título «CaboFactu® + pantalla».
+- **Dónde está**:
+  - `logo1.png` y `logo1.svg` son los originales, en la carpeta `logos/`, fuera de git como los prototipos;
+  - la aplicación usa `src/main/resources/cabofactu/vista/recursos/imagenes/icono-aplicacion.png`, que es también el icono de la cabecera del `README.md`.
+- **La torre del logo de la demo**: una frase. El logo de la empresa de demostración (`logo_demo.png`) es otro dibujo, hecho también con ChatGPT el 02/09, que sirve para ver cómo queda una empresa con logo en las pantallas y en el PDF. No se explica qué representa.
+
 ### 3. Los iconos
 
 - **Cómo se llegó a SVG**, con `proceso-final.png`: primero emojis de colores; luego símbolos Unicode (✎ ⌕ ☺ ⚙) de un solo color; al final, dibujos SVG.
@@ -158,7 +179,7 @@ Cada ronda con fecha, qué se propuso, qué elegí y qué descarté, y su imagen
   - el color, desde el tema: `.opcion-menu .icono { -fx-fill: ... }` en cada `tema-*.css`. Por eso los iconos cambian de color con el tema;
   - en la barra de navegación, cada icono va en una caja fija de 26×26 (`BarraNavegacion.fxml`) para que los siete textos queden a la misma altura (`iconos-normalizados`, `escala-iconos-navegacion`);
   - los diálogos llevan también su icono SVG (`iconos-dialogos-aviso`).
-- **La excepción**: el icono de la aplicación (`icono-aplicacion.png`) es una imagen, porque Windows lo pide así para la barra de tareas (`icono-app-y-titulos-ventana`).
+- **La excepción**: el icono de la aplicación (`icono-aplicacion.png`) es una imagen, porque Windows lo pide así para la barra de tareas. Se remite al apartado del logo.
 
 ### 4. El resultado
 
@@ -187,6 +208,7 @@ Cada ronda con fecha, qué se propuso, qué elegí y qué descarté, y su imagen
   - capturadas con Edge en modo headless;
   - revisadas por el alumno;
   - cada una de menos de 250 KB.
+- **`docs/capturas/proceso-logo.png`**, hecha por la sesión principal con los originales de `logos/`: pruebas de ChatGPT, `logo1.png`, `logo1.svg`, el SVG y el PNG sobre fondo oscuro, y el icono en 16, 32, 64 y 96 px.
 - Nada del proceso (scripts, maquetas recuperadas) queda en el repositorio.
 
 ## D4. Código

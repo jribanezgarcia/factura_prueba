@@ -35,10 +35,13 @@
   - Hecha por la sesión principal: 980×636, 33 KB, colores leídos del `.root` de cada CSS.
 - [x] 3.2 Las siete `docs/capturas/proceso-*.png` según `design.md - D3`, aprobadas por el alumno.
   - Hechas por la sesión principal: 41 maquetas recuperadas del historial de opencode, anonimizadas fuera del proyecto y capturadas con Edge headless. Entre 35 y 220 KB cada una.
+- [x] 3.3 `docs/capturas/proceso-logo.png` según `design.md - D3`.
+  - Hecha por la sesión principal con los originales de `logos/` (fuera de git): 972×799, unos 50 KB.
 
 ## 4. Documento de diseño
 
 - [x] 4.1 Nuevo `docs/diseno.md` con los cuatro apartados de `design.md - D2`, con las ocho imágenes y los enlaces a `capturas/pdf.png` y `capturas/editor.png`. La tabla de changes que citan su maqueta, sacada del `grep` de D2.
+- [ ] 4.2 Apartado «El logo de la aplicación» en `docs/diseno.md` según `design.md - D2` (2 bis), con `proceso-logo.png`, en el índice; y «La excepción» de «Los iconos» remite a él. En el `README.md`, en la sección «Diseño», una frase sobre la F (Facturación, colores del Cabo de Gata).
 
 ## 5. Enlaces y normas
 
@@ -50,13 +53,13 @@
 
 ## 6. Repaso
 
-- [x] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
+- [ ] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
   - Primera pasada: 475 pruebas, 0 fallos, 0 errores, en 7 min 41 s.
   - Segunda pasada (tras 2.3 y 5.2): 475 pruebas, 0 fallos, 0 errores, en 7 min 44 s. Sin `ClassCastException` en la salida. La cifra no cambió; ya estaba puesta en `README.md` y `docs/metodologia.md`.
   - Tercera pasada (tras 2.5 a 2.8): 475 pruebas, 0 fallos, 0 errores, en 24 min 35 s (máquina más cargada que en las pasadas anteriores; sin relación con el código). Sin `ClassCastException` en la salida. Cifra sin cambios.
-- [x] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
-- [x] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
-- [x] 6.4 `openspec validate documentacion-diseno --strict` en verde.
+- [ ] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
+- [ ] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
+- [ ] 6.4 `openspec validate documentacion-diseno --strict` en verde.
 
 ## 7. Revisión del alumno (al final)
 
