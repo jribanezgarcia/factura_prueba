@@ -1,6 +1,6 @@
 # CaboFactu: estado del proyecto
 
-Actualizado: **27/09/2026**
+Actualizado: **28/09/2026**
 
 Por dónde va el proyecto y qué toca ahora. Las normas de cómo se escribe el código y cómo se trabaja están en [AGENTS.md](AGENTS.md).
 
@@ -38,12 +38,11 @@ El historial de lo que hizo cada cambio no se escribe aquí: está en `openspec/
 - Facturación mensual rehecha: siempre en el año de trabajo, casilla única «Añadir mes», `PlantillaMensual` que se valida sola, `FacturacionMensual` singleton, números libres con dos botones y ventana con `Vista.crearVentanaModal` y legible en los temas oscuros; 451 pruebas.
 - Módulo de copias: botón único «Crear copia…» con la carpeta recordada y el nombre con la empresa, comprobación de la copia contra `crear_tablas.sql` en vez de listas escritas a mano, reemplazar solo con el mismo NIF, vuelta al arranque al cambiar de empresa desde una copia, `CopiaSeguridad` pasa a singleton de `modelo/negocio` con `ResumenCopia` en `modelo/dominio` (fuera `CopiaSeguridadDAO`, `DatosException`, el paquete `fichero` y `Controlador.getModelo()`) y la pantalla sin hilos; de paso arregla las etiquetas cortadas de «PDF y apariencia» en Configuración y el borrado de la empresa elegida en el arranque; 469 pruebas.
 - Documentación final: `README.md`, `docs/metodologia.md`, `docs/tecnico.md` reescritos y `docs/flujos.md` nuevo, con capturas rehechas de la aplicación real; ortografía corregida (títulos de ventana con tilde y comentarios); logo de la demostración en menú, editor y PDF; norma de excepciones suavizada (`CargarDemo` pasa a `Exception`); manejador global de errores inesperados (`ErroresInesperados`, con aviso y `errores.log`); `Controlador` y `Modelo` explicados de verdad y sin las fugas hacia el negocio que tenían tres pantallas; `LanzadorVentanaPrincipal.start` más corto, como en Biblioteca8; 475 pruebas.
+- Documentación de diseño: `docs/diseno.md` nuevo con el proceso de las maquetas (siete rondas), el logo de la aplicación (el torreón y las tres rondas de prompts) y los iconos SVG, enlazado desde el `README.md` y los otros documentos; `GestorTemas` cumple `AGENTS.md` (sin ternario, `guardar()` sin el `catch` vacío, Javadoc) y el tema `neon` se muestra como «Neón»; quitados los ternarios sueltos de `Clientes`, `PreferenciasGlobales`, `Formatos`, `LogoMarco`, `ConfiguracionController` y `PreviaCabecera`, y el resto de `AGENTS.md` en todo `src/main` salvo `pdf` (tipos dentro de otra clase, clases anónimas, `var`); auditoría de las cuatro búsquedas de «Transición» repetida antes de archivar; 475 pruebas.
 
-Último cambio archivado: `2026-09-27-documentacion-final`.
+Último cambio archivado: `2026-09-28-documentacion-diseno`.
 
 ## En curso
-
-**Documentación del diseño** (28/09/2026): `docs/diseno.md` nuevo con el proceso de las maquetas, las rondas, los iconos y los temas; enlazado desde el `README.md` y los otros documentos; de paso, `GestorTemas` cumple `AGENTS.md`, «Neon» pasa a «Neón» y se quitan dos ternarios sueltos.
 
 **Replanteo para simplificar todo el proyecto** (19-20/09/2026).
 
@@ -99,3 +98,5 @@ Borrados por quedar obsoletos: `mvc-como-biblioteca8` y `negocio-dentro-del-mode
 - **Si un change con `skip_specs: true` acaba cambiando comportamiento, hay que quitar esa marca del `.openspec.yaml` y añadir el delta**; si no, el requisito nuevo no llega a la especificación.
 - **El aviso de `ErroresInesperados` no se puede probar de forma fiable en headless**: lo cubren los tests de `errores.log` y queda como comprobación manual.
 - **Para rehacer las capturas con la demo nueva hay que apartar la carpeta de la demo de `%APPDATA%\Facturacion`, sin borrarla**, para que la aplicación la recree; al terminar, devolver el tema y la última carpeta de exportación del usuario.
+- **Una guía de `openspec/config.yaml` con `: ` en medio se lee como un par clave-valor y OpenSpec ignora todas las de esa operación: van entre comillas**.
+- **En los comandos de auditoría de «Transición» (`AGENTS.md`), `var` y `record` necesitan un `\b` delante**: sin él, `var [a-zA-Z]` casa también con texto normal como «llevar su» dentro de un comentario, y sale un falso positivo que no es código.
