@@ -29,7 +29,10 @@ public final class PreferenciasGlobales {
 
     public static String get(String clave, String porDefecto) {
         String v = get(clave);
-        return v == null || v.isBlank() ? porDefecto : v;
+        if (v == null || v.isBlank()) {
+            return porDefecto;
+        }
+        return v;
     }
 
     public static Double getDouble(String clave) {

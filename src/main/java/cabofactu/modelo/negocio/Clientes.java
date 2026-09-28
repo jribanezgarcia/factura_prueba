@@ -56,7 +56,13 @@ public class Clientes {
             consulta = consulta + " AND activo = 1";
         }
         consulta = consulta + " ORDER BY nombre LIMIT 100";
-        String parecido = "%" + (texto == null ? "" : texto.trim()) + "%";
+        String textoBuscado;
+        if (texto == null) {
+            textoBuscado = "";
+        } else {
+            textoBuscado = texto.trim();
+        }
+        String parecido = "%" + textoBuscado + "%";
         List<Cliente> lista = new ArrayList<>();
         try (PreparedStatement sentencia = Conexion.establecerConexion().prepareStatement(consulta)) {
             sentencia.setString(1, parecido);

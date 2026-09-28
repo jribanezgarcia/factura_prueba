@@ -3,7 +3,7 @@ package cabofactu.vista;
 import javafx.stage.Stage;
 
 /**
- * Configuracion de tamaño por vista FXML.
+ * Configuración de tamaño por vista FXML.
  */
 public enum ConfiguracionVentana {
 
