@@ -1,4 +1,4 @@
-> Todo el contenido y su orden está en `design.md`. Antes de escribir un nombre de clase, método, fichero, tamaño o color, se comprueba en el repositorio (`grep`, `ls`, `git log`). Estilo sobrio: sin emojis en títulos ni tablas. Commits **sin líneas de coautoría**.
+> Todo el contenido y su orden está en `design.md`. Antes de escribir un nombre de clase, método, fichero, tamaño o color, se comprueba en el repositorio (`grep`, `ls`, `git log`). De las maquetas, solo lo que dice `design.md - D2`: no se inventan motivos. Estilo sobrio: sin emojis en títulos ni tablas. Commits **sin líneas de coautoría**.
 
 ## 1. Configuración y estado
 
@@ -7,18 +7,20 @@
 
 ## 2. Código
 
-- [ ] 2.1 `GestorTemas` según `design.md - D4`: sin ternario, `guardar()` con `throws Exception` y sin el `catch` vacío, Javadoc de la clase y de los públicos.
+- [ ] 2.1 `GestorTemas` según `design.md - D4`: sin ternario, `guardar()` con `throws Exception` y sin el `catch` vacío, Javadoc de la clase y de los públicos, y «Neón».
 - [ ] 2.2 Tildes del Javadoc de `ConfiguracionVentana`, y los ternarios de `Clientes.listado` y `PreferenciasGlobales.get`, según `design.md - D4`.
 - [ ] 2.3 El `grep` de ternarios de `design.md - D4` solo devuelve el paquete `pdf`. El `grep` de estilo de siempre (`record`, `var`, `::`, `.stream()`, clases anónimas, nombres completos) sobre los ficheros tocados: nada nuevo.
 
-## 3. Imagen de las paletas (sesión principal)
+## 3. Imágenes (sesión principal)
 
 - [x] 3.1 `docs/capturas/paletas.png` según `design.md - D3`.
   - Hecha por la sesión principal: 980×636, 33 KB, colores leídos del `.root` de cada CSS.
+- [x] 3.2 Las siete `docs/capturas/proceso-*.png` según `design.md - D3`, aprobadas por el alumno.
+  - Hechas por la sesión principal: 41 maquetas recuperadas del historial de opencode, anonimizadas fuera del proyecto y capturadas con Edge headless. Entre 35 y 220 KB cada una.
 
 ## 4. Documento de diseño
 
-- [ ] 4.1 Nuevo `docs/diseno.md` con los siete apartados de `design.md - D2`. Cada clase CSS, tamaño, color y método nombrado, comprobado con `grep`. La tabla de fases, con la frase sacada del `## Why` de cada change.
+- [ ] 4.1 Nuevo `docs/diseno.md` con los cuatro apartados de `design.md - D2`, con las ocho imágenes y los enlaces a `capturas/pdf.png` y `capturas/editor.png`. La tabla de changes que citan su maqueta, sacada del `grep` de D2.
 
 ## 5. Enlaces y normas
 
@@ -28,9 +30,10 @@
 
 - [ ] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
 - [ ] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
-- [ ] 6.3 `openspec validate documentacion-diseno --strict` en verde.
+- [ ] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
+- [ ] 6.4 `openspec validate documentacion-diseno --strict` en verde.
 
 ## 7. Revisión del alumno (al final)
 
-- [ ] 7.1 El alumno lee `docs/diseno.md` y la sección «Diseño» del `README.md` en GitHub, con los diagramas y la imagen de las paletas.
-- [ ] 7.2 En la aplicación, cambiar el tema en Configuración y guardar: se guarda sin avisos, y al volver a abrir la empresa sale el tema elegido.
+- [ ] 7.1 El alumno lee `docs/diseno.md` y la sección «Diseño» del `README.md` en GitHub, con los diagramas y las imágenes.
+- [ ] 7.2 En la aplicación, el desplegable de temas dice «Neón». Cambiar el tema en Configuración y guardar: se guarda sin avisos, y al volver a abrir la empresa sale el tema elegido.

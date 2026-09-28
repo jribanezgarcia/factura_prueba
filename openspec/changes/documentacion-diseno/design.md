@@ -1,26 +1,29 @@
 ## Situación de partida
 
 - **Qué hay en el código**:
-  - 7 temas en `src/main/resources/cabofactu/vista/recursos/temas/`: `base.css` (522 líneas, la estructura común) y un `tema-*.css` por tema (unas 60 líneas, solo colores);
+  - 7 temas en `src/main/resources/cabofactu/vista/recursos/temas/`: `base.css` (la estructura común) y un `tema-*.css` por tema (solo colores);
   - `GestorTemas` junta las dos hojas;
-  - `ConfiguracionVentana` fija el tamaño de cada pantalla;
   - los iconos son `SVGPath` en los FXML;
   - `TemasTest` y `TextosCompletosTest` vigilan el aspecto.
-- **Qué hay en la documentación**:
-  - el `README.md` nombra los 7 temas;
-  - `docs/tecnico.md` dice dónde están los CSS y en la tabla de pruebas menciona `TemasTest`;
-  - `docs/metodologia.md` cita dos trampas de CSS;
-  - no hay nada más.
-- **Capturas**: las de `docs/capturas/` ya están hechas con la demo y el tema biblioteca8 (`documentacion-final`, tarea 6.1). No se rehacen.
+- **Qué hay en la documentación**: el `README.md` nombra los 7 temas y `docs/metodologia.md` cita dos trampas de CSS. Nada cuenta **cómo se diseñó** la aplicación.
+- **Cómo se diseñó**, reconstruido con el historial de opencode, `openspec/changes/archive/` y la carpeta `prototipos/`:
+  - 41 maquetas HTML entre el 20/08 y el 07/09;
+  - el alumno eligió, corrigió y descartó en cada ronda, y solo lo aprobado se programó.
+  - `prototipos/` está en `.gitignore` porque las maquetas llevan el nombre, el logo y facturas reales de la empresa.
+- **Capturas de pantalla**: las de `docs/capturas/` ya están hechas con biblioteca8 (`documentacion-final`, tarea 6.1) y no se rehacen.
 
 ## Objetivos y lo que queda fuera
 
-**Objetivo**: que el profesor vea que el aspecto de la aplicación también está pensado y organizado. Tiene que ver por qué se ve así, cómo están hechos los temas y cómo se comprueba que ninguno se rompe. Todo lo que se cuente tiene que poder comprobarse en el repositorio.
+**Objetivo**: que el profesor vea que el aspecto de la aplicación está diseñado y no improvisado. Tiene que ver:
+- el método (maquetas, decide el alumno, se programa lo aprobado);
+- las rondas con lo que se eligió y lo que se descartó;
+- por qué los iconos son SVG;
+- en corto, cómo están hechos los temas y cómo se vigila que no se rompan.
 
 **Fuera**:
+- subir los prototipos al repositorio;
 - cambiar colores, temas o pantallas;
-- capturas en otros temas;
-- inventar el origen de los temas que no consta en ningún change;
+- contar herramientas que no dejan rastro comprobable;
 - el paquete `pdf`, que se rehará con Jasper.
 
 ---
@@ -30,135 +33,161 @@
 | # | Tema | Decisión |
 |---|---|---|
 | 1 | Dónde | `docs/diseno.md` nuevo, enlazado desde el `README.md` (barra de enlaces y sección corta «Diseño») |
-| 2 | Capturas | Solo del tema principal, biblioteca8: las que ya hay |
-| 3 | Paletas | Una imagen con muestras de color (`docs/capturas/paletas.png`) y debajo una tabla con los códigos |
-| 4 | Apartados | Idea y cómo nació; cómo funcionan los temas; paletas, letra y componentes; PDF y comprobaciones |
-| 5 | Origen de los temas | Solo lo que consta:<br>• la estructura se inspira en Ajustes de Apple (`redesign-ui-apple`);<br>• biblioteca8 usa el azul `#296796` del proyecto Biblioteca8;<br>• de los demás temas, solo el carácter (claro u oscuro, cálido o frío) |
-| 6 | Limpieza | En este change: `GestorTemas`, la tilde de `ConfiguracionVentana` y los ternarios de `Clientes` y `PreferenciasGlobales` |
+| 2 | Estructura | **Proceso primero**: método, rondas de maquetas, iconos; al final, el resultado en corto (paletas, temas y comprobaciones) |
+| 3 | Maquetas | Siete imágenes anonimizadas de los prototipos, en `docs/capturas/proceso-*.png`. Revisadas y aprobadas por el alumno |
+| 4 | Capturas de la aplicación | Las que ya hay (tema biblioteca8) |
+| 5 | Paletas | Imagen con muestras (`docs/capturas/paletas.png`) y tabla con los códigos |
+| 6 | Herramientas | Como consta en el historial, con fechas:<br>• `javafx-design`, skill propia creada el 20/08 a imitación del flujo de Claude Design;<br>• `apple-design`, de Emil Kowalski, aplicada el 24/08;<br>• el editor definitivo se diseñó en Claude Design.<br>Nada que no se pueda comprobar |
+| 7 | Limpieza | En este change: `GestorTemas`, la tilde de `ConfiguracionVentana`, los ternarios de `Clientes` y `PreferenciasGlobales`, y «Neon» → «Neón» |
 
-**Reglas para el texto**: las mismas de `documentacion-final`.
-- Español; primera persona del singular cuando habla el alumno e impersonal en lo técnico.
-- Estilo sobrio: sin emojis en títulos ni tablas.
-- Frases cortas, y tablas donde haya que comparar.
-- Clases, métodos y ficheros entre comillas invertidas, con enlace relativo la primera vez que salen.
-- Diagramas Mermaid válidos en GitHub.
+**Reglas para el texto**: las de `documentacion-final`.
+- Español; primera persona del singular cuando habla el alumno («elegí», «descarté») e impersonal en lo técnico.
+- Sobrio: sin emojis en títulos ni tablas.
+- Frases cortas y tablas.
+- Clases y ficheros entre comillas invertidas, con enlace relativo la primera vez.
+- Mermaid válido en GitHub.
 - Índice arriba y enlaces a los otros documentos al principio y al final.
-- **Antes de escribir un nombre, un tamaño o un color, se comprueba en el código** (`grep`).
-- **Longitud orientativa**: unas 220 líneas.
+- **Longitud orientativa**: unas 250 líneas.
+- **Todo lo que se afirme sale de este design o se comprueba en el repositorio**:
+  - no se inventa ningún motivo de una elección que no esté aquí;
+  - de los prototipos no se nombra la empresa real ni se copia su contenido;
+  - los nombres de fichero de las maquetas sí se pueden citar.
 
 ## D2. `docs/diseno.md`
 
-### 1. La idea
+### 1. Cómo se trabajó el diseño
 
-- **Por qué es sobria**: es una aplicación de facturación para trabajar muchas horas; lo que importa es que se lea bien y se encuentre cada cosa.
-- **La estructura se inspira en Ajustes de Apple**: tarjetas, bordes redondeados, espacio entre bloques y jerarquía clara con tamaños de letra.
-- **biblioteca8 es el tema por defecto**, con el azul de Biblioteca8.
-- **Cada empresa guarda su propio tema** (`tema-por-empresa`), igual que el color de su PDF.
-- **Cómo nació, por fases**: una tabla corta, con fecha, change (con enlace a su carpeta de `openspec/changes/archive/`) y una frase. Para escribir la frase se lee el `## Why` de cada uno:
-  - `2026-08-20-temas-y-navegacion`
-  - `2026-08-20-alineacion-menu-e-iconos`
-  - `2026-08-31-redesign-ui-apple` y `2026-08-31-fix-ui-spacing`
-  - `2026-09-02-logo-relleno-tema`
-  - `2026-09-03-icono-app-y-titulos-ventana` y `2026-09-03-iconos-dialogos-aviso`
-  - `2026-09-10-marca-en-pantalla-de-arranque`
-  - `2026-09-11-iconos-normalizados` (junto con `escala-iconos-navegacion` e `iconos-en-barra-de-clientes`)
-  - `2026-09-13-prompt-legible-temas-oscuros`
-  - `2026-09-16-tema-por-empresa`
-  - `2026-09-25-pruebas-de-pantalla` (con ella llegan `TemasTest` y `TextosCompletosTest`; comprobarlo con `git log --diff-filter=A` sobre los dos ficheros)
-- **Si falta alguno**: si al buscar con `ls openspec/changes/archive | grep -i -E "tema|icono|ui|diseno|visual|marca|logo"` sale otro que trate del aspecto, se añade.
+- **El método**:
+  1. antes de tocar una pantalla, se hacen maquetas en HTML (un fichero por propuesta, se abre con doble clic en el navegador);
+  2. el alumno las compara, pide cambios y descarta;
+  3. la maqueta aprobada se convierte en un change de OpenSpec que la cita;
+  4. se programa en JavaFX (CSS y FXML);
+  5. se compara con la maqueta.
+  - **Diagrama Mermaid** del ciclo: maqueta → revisión del alumno → (cambios → maqueta) → aprobada → change → implementar → comparar con la maqueta.
+- **Las cifras**:
+  - 41 maquetas entre el 20/08 y el 07/09;
+  - la del menú elegido pasó por 29 versiones en una tarde.
+- **Por qué no están en el repositorio**: las maquetas usan el nombre, el logo y facturas reales de la empresa para la que se hizo la aplicación. `prototipos/` está en `.gitignore`, y las imágenes de este documento están hechas con los datos de la demo.
+- **Changes que citan su maqueta**: una tabla con change y maqueta, sacada de `grep -rhoE "prototipos/[A-Za-z0-9_./-]+" openspec/changes/archive`, para que se vea la relación maqueta → change:
+  - `alineacion-menu-e-iconos`;
+  - `redesign-pdf-factura`;
+  - `pdf-fidelidad-prototipo`;
+  - `fix-pdf-totales-tarjeta-pago`;
+  - `facturacion-mensual-cliente`;
+  - `desglose-totales-matriz-suplidos`;
+  - `pdf-desglose-rejilla-liquidacion`;
+  - `pdf-cierre-anclado-al-pie`;
+  - `pdf-marco-relleno-y-pie-final`;
+  - `pdf-tabla-siempre-visible-y-tarjetas`.
+- **Las herramientas**:
+  - **`javafx-design`**, una skill propia creada el 20/08. Imita el flujo de Claude Design: maquetas HTML primero, código después. Vive fuera del proyecto (`~/.config/opencode/skills/`). Sus reglas:
+    - empezar por las pantallas reales (los FXML), no por la inspiración;
+    - los colores como variables, una paleta por propuesta sobre la misma estructura;
+    - cada maqueta, un HTML autocontenido con datos realistas (importes `1.250,50 €`, fechas `11/08/2026`);
+    - iterar con el usuario y programar solo lo aprobado;
+    - las maquetas en `prototipos/`, sin dejar documentación ni rastro de IA en el proyecto;
+    - las paletas de Omarchy y de Biblioteca8 ya apuntadas como referencia.
+  - **`apple-design`**, de Emil Kowalski ([github.com/emilkowalski/skills](https://github.com/emilkowalski/skills)). El 24/08 le pedí aplicarla para rediseñar la aplicación, y de ahí salió el change `redesign-ui-apple` (31/08): tarjetas, bordes redondeados, espacio y jerarquía, con las mismas paletas.
+  - **Claude Design**: el editor definitivo, después de descartar las cuatro variantes de la ronda 6.
+- **Quién decide**: una frase. La IA propone y hace las maquetas; el alumno elige, corrige y descarta. Los ejemplos están en las rondas.
 
-### 2. Cómo funcionan los temas
+### 2. Las rondas
 
-- **Dos hojas por pantalla**:
-  - `base.css`, común, con tamaños, márgenes, bordes, sombras y las piezas;
-  - `tema-<nombre>.css`, con los colores.
-  - `GestorTemas.hojas()` devuelve las dos, en ese orden.
-- **Las variables del `.root`**. Una tabla con cada variable y para qué sirve:
-  - `-fx-background`, `-fx-base`, `-fx-accent`, `-fx-focus-color`, `-fx-faint-focus-color`;
-  - `-fx-control-inner-background`, `-fx-text-background-color`, `-fx-accent-error`;
-  - `-fx-boton-lavado`, que es nuestra.
-  - Se comprueba en los CSS cuáles define cada tema.
-- **Párrafo «Cómo funciona»**: el estilo de JavaFX (Modena) calcula los colores de todos sus controles a partir de unas pocas variables del `.root`. Si el tema cambia `-fx-base` o `-fx-accent`, los campos, los desplegables y las casillas se tiñen solos. Las piezas propias (barra de navegación, botones, tablas, totales, menú) llevan en cada tema su color concreto.
-- **Cuándo se aplica**:
-  - `Vista` pone las hojas al cargar cada pantalla y en las ventanas modales;
-  - `Dialogos` las pone en los avisos;
-  - en Configuración, al elegir un tema se ve en el momento (`GestorTemas.seleccionar`) y se guarda al pulsar Guardar (`GestorTemas.guardar`).
-  - Se comprueba cada punto con `grep -rn "GestorTemas" src/main/java`.
-- **Dónde se guarda**:
-  - en la base de datos de cada empresa;
-  - y además en las preferencias globales, porque la pantalla de arranque se enseña antes de abrir ninguna empresa (`Empresas.recordarTema`).
-- **Diagrama Mermaid**: Configuración → `GestorTemas` → empresa y preferencias globales; y al abrir una pantalla: `Vista` → `GestorTemas.hojas()` → `base.css` + `tema-x.css`.
-- **Cómo se añade un tema**, en pasos:
-  1. copiar un `tema-*.css` y cambiarle los colores;
-  2. añadir una línea en el bloque `static` de `GestorTemas` (clave y nombre visible);
-  3. pasar `TemasTest`, que encuentra los ficheros solo por su nombre;
-  4. mirarlo a mano en las pantallas y en el PDF.
+Cada ronda con fecha, qué se propuso, qué elegí y qué descarté, y su imagen. **Solo estos datos**:
 
-### 3. Paletas
+1. **Temas (20/08)**. `proceso-temas.png`.
+   - 7 propuestas, cada una con las 7 pantallas (49 pantallas). Cada una cambiaba a la vez paleta, sitio del menú, letra y forma, para poder combinar «los colores de una y la distribución de otra».
+   - Tabla:
 
-- La imagen `docs/capturas/paletas.png` (ver D3).
-- Debajo, una tabla con, para cada tema: nombre, claro u oscuro, fondo (`-fx-background`), base (`-fx-base`), acento (`-fx-accent`), texto (`-fx-text-background-color`) y letra. Los códigos, en comillas invertidas y copiados de los CSS.
-- Una frase por tema con su carácter, sacado solo de sus colores (por ejemplo, «oscuro, azul noche con acento lavanda»). Nada de su origen, salvo biblioteca8.
+     | Propuesta | Paleta | Menú | Letra |
+     |---|---|---|---|
+     | 1 Omarchy | oscuro, azul noche y lavanda | barra lateral | monoespaciada |
+     | 2 Biblioteca8 | azul y gris | iconos arriba | Segoe UI |
+     | 3 Esmeralda | blanco y verde | tarjetas grandes | Inter |
+     | 4 Terracota | crema y terracota | cabecera y menú centrado | Georgia |
+     | 5 Negro y dorado | negro y dorado | pestañas arriba | Playfair Display |
+     | 6 Sakura | rosa pastel | botones redondeados a la derecha | Segoe UI |
+     | 7 Neón | oscuro, violeta y cian | barra abajo | Segoe UI |
 
-### 4. Letra y tamaños
+   - Elegí la 2, Biblioteca8. Las otras seis se quedaron como temas de color que se pueden elegir en Configuración: de aquí salen los 7 temas de la aplicación.
+2. **La elegida, afinada (20/08)**. `proceso-final.png`.
+   - `tema-02-final.html`, 29 versiones.
+   - Lo que pedí:
+     - el logo cuatro veces más grande en el menú y el doble en el editor;
+     - sin enlaces repetidos en el menú principal;
+     - «Salir» en todas las pantallas, con confirmación;
+     - todos los iconos de un mismo color (azul en el menú, blancos sobre la barra azul);
+     - la cara feliz de «Clientes» sustituida por la silueta de persona;
+     - un engranaje más relleno;
+     - un texto de ayuda al pasar el ratón por cada icono;
+     - los botones de la barra de acciones en gris;
+     - el logo a la izquierda con la lista de opciones a la derecha.
+3. **Menú e iconos (20/08)**. `proceso-menu.png` y `proceso-iconos.png`, de `ajustes-menu-iconos.html`.
+   - Alineación del menú: tres variantes (A columnas alineadas arriba, B apilado vertical centrado, C cabecera de empresa). Elegí la A.
+   - Icono del Histórico: la lupa de entonces y tres opciones. La recomendada era el reloj con flecha; **elegí la 3, la lista de documentos**.
+   - Icono de la copia de seguridad: varias opciones (disquete, caja fuerte con dial, con candado, escudo). Se eligió el disquete y después pedí una flecha. El icono de hoy se comprueba en `MenuPrincipal.fxml` y en `git log -S` antes de describirlo.
+   - Ese mismo día, «al ejecutar la aplicación no se ha puesto el logo donde hemos dicho»: de aquí sale la costumbre de comparar la aplicación con la maqueta.
+4. **El PDF (21–22/08)**. `proceso-pdf.png`.
+   - Cinco propuestas; me gustó la 3 (moderno a dos columnas).
+   - Pedí un color arena claro, configurable desde la aplicación, y salieron cinco propuestas en arena. Después, dos alternativas.
+   - La final, `pdf-final-clasica-tarjetas`, parte de la alternativa «hoja clásica», sin datos repetidos (fecha y número solo arriba a la derecha, con serie y número).
+   - Con `pdf-fix-v2` como modelo, el change `pdf-fidelidad-prototipo` ajustó espaciados, bordes redondeados, letra y colores hasta que el PDF fue igual que la maqueta.
+   - Enlace a `capturas/pdf.png` como resultado de hoy.
+5. **La estructura, al estilo Apple (24–31/08)**. Sin imagen.
+   - `apple-design` → `redesign-ui-apple` y `fix-ui-spacing`.
+   - Maquetas `02-editor.html`, `04-configuracion.html` y `generar-facturas-mensuales.html` (31/08).
+6. **El editor a 1024×768 (01/09)**. `proceso-editor.png`.
+   - Cuatro variantes para que la factura cupiera sin barra de desplazamiento: A columna única densa, B tarjetas separadas, C conservador compactado y D franja de totales.
+   - **Las descarté todas** y el editor definitivo lo hice en Claude Design.
+   - Enlace a `capturas/editor.png`.
+7. **Los totales del PDF (06–07/09)**. `proceso-totales.png`.
+   - `totales-desglose.html`, después «Diez maneras de cerrar la factura» (`pdf-totales-r1-diez-propuestas.html`) y dos rondas más (`r2-variantes`, `r3-rejilla`), hasta `pdf-totales-rejilla-hermanas.html` → change `pdf-desglose-rejilla-liquidacion`.
+   - El 07/09 hubo cuatro maquetas más para el final de la hoja: `pdf-cierre-anclado-al-pie`, `pdf-multipagina-cliente-repetido`, `pdf-marco-y-pie-final` y `pdf-cabecera-y-tarjetas`.
+- **Al final del apartado**, una línea: hubo otras maquetas pequeñas, como `colores-historico-clientes.html` (03/09), que salió en `ajuste-colores-historico-clientes-editor`.
 
-- **Letra**:
-  - Segoe UI, la de Windows, fijada en `base.css`;
-  - omarchy usa Cascadia Mono (monoespaciada) y terracota usa Georgia (con serifa).
-- **Tamaños**: una tabla sacada de `base.css` con cada tamaño usado y qué lo usa (título de pantalla, nombre de empresa del menú, textos de ayuda…), de mayor a menor.
+### 3. Los iconos
 
-### 5. Piezas de las pantallas
+- **Cómo se llegó a SVG**, con `proceso-final.png`: primero emojis de colores; luego símbolos Unicode (✎ ⌕ ☺ ⚙) de un solo color; al final, dibujos SVG.
+- **Por qué SVG**:
+  - los emojis traen su propio color y no se pueden pintar con el del tema;
+  - los símbolos Unicode dependen de la fuente de cada equipo y se ven distintos;
+  - un SVG es un trazado: toma cualquier color, escala sin pixelarse y no necesita ficheros de imagen.
+- **De dónde salen**: los trazados son los de los iconos de Material Design de Google, en una rejilla de 24×24 y con licencia libre (Apache 2.0). Por ejemplo, `history`, `settings`, `save_alt`, `info` o `warning`.
+- **Cómo están en el código**:
+  - un `SVGPath` dentro del FXML, con su trazado en `content`. Se copian dos o tres líneas reales de `MenuPrincipal.fxml`;
+  - el color, desde el tema: `.opcion-menu .icono { -fx-fill: ... }` en cada `tema-*.css`. Por eso los iconos cambian de color con el tema;
+  - en la barra de navegación, cada icono va en una caja fija de 26×26 (`BarraNavegacion.fxml`) para que los siete textos queden a la misma altura (`iconos-normalizados`, `escala-iconos-navegacion`);
+  - los diálogos llevan también su icono SVG (`iconos-dialogos-aviso`).
+- **La excepción**: el icono de la aplicación (`icono-aplicacion.png`) es una imagen, porque Windows lo pide así para la barra de tareas (`icono-app-y-titulos-ventana`).
 
-- Apoyado en las capturas que ya hay (`menu.png` y `editor.png`, enlazadas; sin capturas nuevas).
-- **Tabla**: pieza, clase CSS y dónde sale. Se comprueban las clases en `base.css` y en los FXML.
-  - barra de navegación (`nav-bar`, `nav-button`, `activo`);
-  - barra de acciones del editor (`action-bar`, botones con el icono encima del texto);
-  - los tres botones (`primary-button`, `default-button`, `action-button`) y cuándo se usa cada uno;
-  - tarjetas y paneles (`card`, `surface`, `panel-neutro`);
-  - tablas (filas alternas, al pasar el ratón, seleccionada);
-  - totales (`totales`, `total-grande`);
-  - opciones del menú principal (`opcion-menu`);
-  - campos con un dato mal (borde de aviso);
-  - diálogos.
-- **Iconos**:
-  - dibujos vectoriales (`SVGPath`) dentro del FXML, sin ficheros de imagen;
-  - cogen el color del tema con `-fx-fill`;
-  - van en una caja de tamaño fijo para que los textos queden alineados (`iconos-normalizados`).
-  - El icono de la aplicación (`icono-aplicacion.png`) y los títulos «CaboFactu® + pantalla».
-- **Ventanas**:
-  - tabla sacada de `ConfiguracionVentana`, con pantalla, tamaño inicial, mínimo y si se puede agrandar;
-  - una frase: 1024×768 es el mínimo con el que se prueba que ningún texto se corta.
+### 4. El resultado
 
-### 6. El PDF
+- **Paletas**: la imagen `paletas.png` y una tabla con, para cada tema, nombre, claro u oscuro, fondo, base, acento y texto (códigos copiados de los CSS) y letra (Segoe UI salvo omarchy, Cascadia Mono, y terracota, Georgia). Cada empresa guarda su propio tema (`tema-por-empresa`).
+- **Cómo funcionan los temas**, corto:
+  - dos hojas por pantalla, `base.css` (estructura) y `tema-<nombre>.css` (colores), juntadas por `GestorTemas.hojas()`;
+  - un párrafo «Cómo funciona»: el estilo de JavaFX calcula los colores de sus controles a partir de unas pocas variables del `.root` (`-fx-base`, `-fx-accent`, `-fx-background`…), así que al cambiarlas se tiñen solos; las piezas propias llevan su color en cada tema;
+  - dónde se guarda: en la empresa y en las preferencias globales, para la pantalla de arranque;
+  - **cómo se añade un tema** en cuatro pasos:
+    1. copiar un CSS y cambiarle los colores;
+    2. una línea en `GestorTemas`;
+    3. `TemasTest`;
+    4. mirarlo a mano.
+- **Cómo se vigila**:
+  - `TemasTest`: cada tema define su paleta;
+  - `TextosCompletosTest`: a 1024×768 ningún texto se corta;
+  - a mano, el aspecto de cada pantalla y del PDF;
+  - una lista corta de errores de diseño ya corregidos, sacada de «Trampas conocidas» de `ESTADO.md`: colores fijos en `base.css`, la clase `menu-item`, el punto de `.root` y el texto de ayuda ilegible en los temas oscuros.
 
-- Cabecera de texto o con logo: en el modo logo, el logo va a la izquierda y los datos de la empresa a la derecha.
-- Color de acento elegido por cada empresa (`color_pdf`) y pie legal.
-- Letra: Calibri, la de Windows, con Helvetica si no está (`EstiloPdf`).
-- Enlace a `capturas/pdf.png`.
-- Una frase: el PDF se rehará con JasperReports en la rama `pdf-jasper`.
+## D3. Imágenes
 
-### 7. Cómo se vigila el aspecto
-
-- **`TemasTest`**: cada `tema-*.css` define su paleta y cada variable se resuelve.
-- **`TextosCompletosTest`**: en cada pantalla a 1024×768, incluidas las seis secciones de Configuración, ningún texto se corta ni sale con «…».
-- **A mano**: si una pantalla queda bien y el aspecto del PDF (ya lo dice `AGENTS.md`).
-- **Errores de diseño ya corregidos**: una lista corta sacada de «Trampas conocidas» de `ESTADO.md`, contada como aprendizaje:
-  - colores fijos en `base.css` que dejaban ilegibles los temas oscuros;
-  - una clase propia con nombre de JavaFX (`menu-item`);
-  - el punto de `.root` borrado con el BOM;
-  - el CSS manda sobre el FXML;
-  - el texto de ayuda ilegible en temas oscuros.
-
-## D3. `docs/capturas/paletas.png`
-
-- **La hace la sesión principal**, con un script de Python fuera del proyecto que lee el `.root` de los siete CSS. Nada del script queda en el repositorio.
-- **Forma**:
-  - fondo blanco;
-  - una fila por tema, en el orden de `GestorTemas`;
-  - el nombre visible del tema a la izquierda;
-  - cuatro muestras (fondo, base, acento y texto) con su código debajo;
-  - encima de las columnas, sus nombres.
-- **Tamaño**: unos 1000 px de ancho, letra Segoe UI y menos de 100 KB.
+- **`docs/capturas/paletas.png`**, ya hecha: los siete temas con fondo, base, acento y texto.
+- **`docs/capturas/proceso-*.png`**, las siete de las rondas, hechas por la sesión principal:
+  - `temas`, `final`, `menu`, `iconos`, `pdf`, `editor` y `totales`;
+  - maquetas recuperadas del historial de opencode, copiadas fuera del proyecto, con los datos reales cambiados por los de la demo (empresa, NIF, correos, dirección, cliente) y el logo de la demo;
+  - capturadas con Edge en modo headless;
+  - revisadas por el alumno;
+  - cada una de menos de 250 KB.
+- Nada del proceso (scripts, maquetas recuperadas) queda en el repositorio.
 
 ## D4. Código
 
@@ -166,10 +195,11 @@ Sin cambiar lo que hace la aplicación.
 
 - **`GestorTemas`**:
   - `css()`: el ternario pasa a `if / else`;
-  - `guardar()` declara `throws Exception` y quita el `catch` vacío. `ConfiguracionController.guardar` ya lo llama dentro de su `try` y enseña el error. La preferencia global se guarda después de la empresa;
+  - `guardar()` declara `throws Exception` y pierde el `catch` vacío. `ConfiguracionController.guardar` ya lo llama dentro de su `try` y enseña el error. La preferencia global se guarda después de la empresa;
   - Javadoc corto en `temas()`, `etiqueta()`, `temaActivo()`, `aplicar()`, `seleccionar()` y `hojas()`;
-  - Javadoc de la clase: cada tema es un CSS con sus colores que se aplica junto a `base.css`; cada empresa guarda su tema, y lo copiamos a las preferencias globales para que la pantalla de arranque salga con el último.
-- **`ConfiguracionVentana`**: el Javadoc de la clase con tilde. Se revisan las tildes del resto de comentarios del fichero.
+  - Javadoc de la clase: cada tema es un CSS con sus colores que se aplica junto a `base.css`; cada empresa guarda su tema, y lo copiamos a las preferencias globales para que la pantalla de arranque salga con el último;
+  - el nombre visible del tema `neon` pasa a «Neón». La clave guardada sigue siendo `neon`. Se busca `"Neon"` en los tests.
+- **`ConfiguracionVentana`**: el Javadoc de la clase con tilde, y se revisan las tildes del resto de comentarios del fichero.
 - **`Clientes.listado`**: `(texto == null ? "" : texto.trim())` pasa a una variable con `if / else`.
 - **`PreferenciasGlobales.get(clave, porDefecto)`**: `if / else`.
 - **Comprobación**: `grep -rnE "\? [^?]*: " src/main/java --include=*.java`, quitando los `?` de SQL, solo devuelve ficheros del paquete `pdf`.
@@ -178,20 +208,21 @@ Sin cambiar lo que hace la aplicación.
 
 - **`README.md`**:
   - «Diseño» en la barra de enlaces de arriba;
-  - sección «Diseño» después de «Capturas»: dos o tres frases (estructura inspirada en Ajustes de Apple, 7 temas y un tema por empresa), la imagen `paletas.png` y el enlace;
+  - sección «Diseño» después de «Capturas»: dos o tres frases (maquetas antes de programar, 41 maquetas, 7 temas y la estructura inspirada en Ajustes de Apple), la imagen `proceso-temas.png` y el enlace;
+  - en «Apariencia», «Neón»;
   - la cifra de pruebas de «Lo que he aprendido», la real después de `mvn test` (hoy dice 469).
-- **`docs/tecnico.md`**: donde habla de `temas/`, una frase que remite a `diseno.md`.
+- **`docs/metodologia.md`**: en la historia por fases, donde salga el rediseño, una frase que remita a `diseno.md`.
+- **`docs/tecnico.md`**: donde habla de `temas/`, una frase que remita a `diseno.md`.
 - **Los cinco documentos**: `diseno.md` en la línea de enlaces de cabecera y pie.
-- **`AGENTS.md`**: fila nueva en el mapa de la documentación: `docs/diseno.md` | Temas, paletas, piezas de las pantallas y cómo se añade un tema | Si tocas CSS, FXML o el aspecto de una pantalla.
-- **`openspec/config.yaml`**: la guía de `archive` que contiene «rutas: », entre comillas dobles. Se comprueba con `openspec status --change documentacion-diseno`, que no debe dar el aviso «Guidance for operation 'archive'…».
+- **`AGENTS.md`**: fila en el mapa de la documentación:
+  - `docs/diseno.md` | Cómo se diseñó (maquetas), los iconos SVG y los temas | Si tocas CSS, FXML, iconos o el aspecto de una pantalla.
+- **`openspec/config.yaml`**: la guía de `archive` que contiene «rutas: », entre comillas dobles. `openspec status --change documentacion-diseno` no debe dar el aviso «Guidance for operation 'archive'…».
 - **`ESTADO.md`**:
   - «En curso» al aplicar;
   - al archivar, la trampa: «Una guía de `openspec/config.yaml` con `: ` en medio se lee como un par clave-valor y OpenSpec ignora todas las de esa operación: van entre comillas».
 
 ## Riesgos y renuncias
 
-- **Un documento de diseño se queda viejo en cuanto cambia un CSS.** Para que dure:
-  - los colores van solo en la tabla y en la imagen;
-  - los tamaños y las clases, en una tabla que se puede comprobar con `grep`;
-  - la regla del mapa de `AGENTS.md` avisa de actualizarlo.
-- **`guardar()` con `throws`**: si falla guardar el tema, el usuario verá el aviso de Configuración en vez de nada. Es lo que pide la norma.
+- **Contar el proceso sin enseñar los prototipos**: las imágenes anonimizadas lo cubren. Los prototipos originales siguen fuera de git.
+- **La memoria del proceso sale del historial de opencode**, que es local. Lo que no está ahí (por ejemplo, otras herramientas usadas en claude.ai) no se cuenta.
+- **Un documento de diseño se queda viejo en cuanto cambia un CSS**: los colores solo están en la tabla y en la imagen, y la fila del mapa de `AGENTS.md` avisa de actualizarlo.
