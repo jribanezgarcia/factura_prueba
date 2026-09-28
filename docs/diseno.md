@@ -14,8 +14,9 @@
 
 1. [Cómo se trabajó el diseño](#cómo-se-trabajó-el-diseño)
 2. [Las rondas](#las-rondas)
-3. [Los iconos](#los-iconos)
-4. [El resultado](#el-resultado)
+3. [El logo de la aplicación](#el-logo-de-la-aplicación)
+4. [Los iconos](#los-iconos)
+5. [El resultado](#el-resultado)
 
 ---
 
@@ -151,6 +152,30 @@ El 07/09 hice cuatro maquetas más para el final de la hoja: `pdf-cierre-anclado
 
 Hubo otras maquetas más pequeñas, como `colores-historico-clientes.html` (03/09), que dio el change `ajuste-colores-historico-clientes-editor`.
 
+## El logo de la aplicación
+
+<img src="capturas/proceso-logo.png" alt="Proceso de diseño del logo, del PNG al icono final" width="700"/>
+
+El logo es una F de tres franjas, dos azules y una dorada. **La F es de Facturación**. Es un diseño minimalista, para que la aplicación sea reconocible y moderna.
+
+Los colores se inspiran en el mar, el sol y la playa del **Cabo de Gata**, y de ahí sale el nombre **CaboFactu**.
+
+Cómo se hizo, con fechas:
+
+1. 03/09 por la mañana: pruebas con ChatGPT (varias versiones de la F y la F grande);
+2. `logo1.png`, la elegida, con degradados y un brillo en el borde para que se vea bien sobre fondos oscuros;
+3. esa tarde, en una sesión de Claude Code, pregunté qué ventajas tenía el SVG. Se recreó a mano como `logo1.svg`: tres trazados con degradados, unos 2,5 KB frente a los casi 600 KB del PNG, nítido a cualquier tamaño;
+4. **me quedé con el PNG para el icono**: el SVG pierde el brillo del borde, y sobre un fondo oscuro se nota; además, Windows y JavaFX solo aceptan una imagen como icono de ventana (`Stage.getIcons()`), no un SVG;
+5. el icono se redujo desde `logo1.png` a 256×256 con LANCZOS, el remuestreo que mejor conserva la calidad al reducir, y es `icono-aplicacion.png`;
+6. change `icono-app-y-titulos-ventana` (03/09): el icono en todas las ventanas y el título «CaboFactu® + pantalla».
+
+Dónde está:
+
+- `logo1.png` y `logo1.svg` son los originales, en la carpeta `logos/`, fuera de git como los prototipos;
+- la aplicación usa `src/main/resources/cabofactu/vista/recursos/imagenes/icono-aplicacion.png`, que es también el icono de la cabecera del `README.md`.
+
+El logo de la empresa de demostración (`logo_demo.png`) es otro dibujo, con una torre, hecho también con ChatGPT el 02/09, que sirve para ver cómo queda una empresa con logo en las pantallas y en el PDF. No se explica qué representa la torre.
+
 ## Los iconos
 
 En `proceso-final.png` se ve cómo llegué al icono en SVG: primero probé emojis de colores, después símbolos Unicode de un solo color (✎ ⌕ ☺ ⚙), y al final dibujos SVG.
@@ -175,7 +200,7 @@ En `proceso-final.png` se ve cómo llegué al icono en SVG: primero probé emoji
 - en la barra de navegación (`BarraNavegacion.fxml`) cada icono va en una caja fija de 26×26 (`StackPane`), para que los siete textos queden a la misma altura;
 - los diálogos de aviso (`Dialogos`) llevan también su icono en `SVGPath`.
 
-**La excepción**: el icono de la aplicación (`icono-aplicacion.png`) es una imagen, porque Windows lo pide así para la barra de tareas.
+**La excepción**: el icono de la aplicación (`icono-aplicacion.png`) es una imagen, porque Windows lo pide así para la barra de tareas. Cómo se hizo, en [«El logo de la aplicación»](#el-logo-de-la-aplicación).
 
 ## El resultado
 

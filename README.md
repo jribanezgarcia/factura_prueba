@@ -74,7 +74,7 @@ Soy **[@jribanezgarcia](https://github.com/jribanezgarcia)**, estudiante de DAM.
 
 ## Diseño
 
-Antes de programar cada pantalla la diseñé aparte, con maquetas en HTML: 41 maquetas entre el 20/08 y el 07/09, con las que elegí, corregí y descarté hasta dejar los 7 temas de color y una estructura inspirada en Ajustes de Apple.
+Antes de programar cada pantalla la diseñé aparte, con maquetas en HTML: 41 maquetas entre el 20/08 y el 07/09, con las que elegí, corregí y descarté hasta dejar los 7 temas de color y una estructura inspirada en Ajustes de Apple. El logo también es propio: una F de Facturación con los colores del mar, el sol y la playa del Cabo de Gata.
 
 <img src="docs/capturas/proceso-temas.png" alt="Siete propuestas de tema" width="500"/>
 
