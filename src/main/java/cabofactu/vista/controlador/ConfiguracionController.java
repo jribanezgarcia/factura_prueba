@@ -52,7 +52,7 @@ import cabofactu.vista.utilidades.PreviaCabecera;
 import cabofactu.vista.utilidades.GestorTemas;
 
 /**
- * Configuracion por secciones con lista lateral: Datos fiscales y Logotipo,
+ * Configuración por secciones con lista lateral: Datos fiscales y Logotipo,
  * Tipos de IVA, Retenciones IRPF y Series de numeración, Diseño del PDF, y
  * Apariencia y Carpetas. Todas salvo las tres de administración por filas se
  * guardan con el botón «Guardar cambios».
