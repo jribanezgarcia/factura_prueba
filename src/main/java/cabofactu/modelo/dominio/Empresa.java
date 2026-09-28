@@ -253,7 +253,7 @@ public class Empresa {
     /** Decimos qué le pasa a la dirección, o null si está bien. */
     public static String errorDireccion(String valor) {
         if (valor == null || valor.isBlank()) {
-            return "La dirección de la empresa es obligatoria.";
+            return "El domicilio fiscal de la empresa es obligatorio.";
         }
         return null;
     }
@@ -285,10 +285,10 @@ public class Empresa {
         return null;
     }
 
-    /** A diferencia del cliente, el email de la empresa es obligatorio. */
+    /** A diferencia del cliente, el correo electrónico de la empresa es obligatorio. */
     public static String errorEmail(String valor) {
         if (valor == null || valor.isBlank()) {
-            return "El email de la empresa es obligatorio.";
+            return "El correo electrónico de la empresa es obligatorio.";
         }
         if (!ValidadorEmail.esValido(valor.trim())) {
             return "Revise el formato del correo electrónico.";

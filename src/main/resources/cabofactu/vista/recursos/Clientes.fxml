@@ -48,7 +48,7 @@
                     </Button>
                 </HBox>
                 <HBox spacing="8" alignment="CENTER_LEFT">
-                    <TextField fx:id="txtBusqueda" prefWidth="280" promptText="Buscar por nombre o NIF..." onKeyReleased="#buscar"/>
+                    <TextField fx:id="txtBusqueda" prefWidth="280" promptText="Buscar por nombre o NIF…" onKeyReleased="#buscar"/>
                     <Label fx:id="lblConteo" text=""/>
                 </HBox>
             </VBox>
