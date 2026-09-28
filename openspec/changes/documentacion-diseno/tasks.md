@@ -11,10 +11,23 @@
 - [x] 2.2 Tildes del Javadoc de `ConfiguracionVentana`, y los ternarios de `Clientes.listado` y `PreferenciasGlobales.get`, según `design.md - D4`.
 - [x] 2.3 Los once ternarios de `Formatos`, `LogoMarco`, `ConfiguracionController` y `PreviaCabecera`, según `design.md - D4`.
 - [x] 2.4 El `grep` de ternarios de `design.md - D4` solo devuelve el paquete `pdf`. El `grep` de estilo de siempre (`record`, `var`, `::`, `.stream()`, clases anónimas, nombres completos) sobre los ficheros tocados: nada nuevo (el `var` de `LogoMarco.java` línea 65 ya estaba antes de este change, fuera de lo que pedía `design.md`).
-- [ ] 2.5 `LogoMarco` según `design.md - D6`: `TipoFondoLogo`, `FondoLogo` y `MuestrasMarco` en su fichero, sin `var` ni `computeIfAbsent` ni `removeIf`; `LogoMarcoTest` adaptado.
-- [ ] 2.6 `CeldaFechaEjercicio` y `ArranqueController.restringirAlEjercicio` según `design.md - D6`.
-- [ ] 2.7 `ConfiguracionController.cambiarTema`, `Ventanas` y `Formatos.fechaHora` según `design.md - D6`.
-- [ ] 2.8 `AGENTS.md`, «Transición», según `design.md - D6`. Los comandos de D6 sobre todo `src/main` salvo `pdf`: solo salen las excepciones escritas. Pegar aquí la salida.
+- [x] 2.5 `LogoMarco` según `design.md - D6`: `TipoFondoLogo`, `FondoLogo` y `MuestrasMarco` en su fichero, sin `var` ni `computeIfAbsent` ni `removeIf`; `LogoMarcoTest` adaptado.
+- [x] 2.6 `CeldaFechaEjercicio` y `ArranqueController.restringirAlEjercicio` según `design.md - D6`.
+- [x] 2.7 `ConfiguracionController.cambiarTema`, `Ventanas` y `Formatos.fechaHora` según `design.md - D6`.
+- [x] 2.8 `AGENTS.md`, «Transición», según `design.md - D6`. Los comandos de D6 sobre todo `src/main` salvo `pdf`:
+  ```
+  === grep 1: var/record/stream/:: ===
+  src/main/java/cabofactu/modelo/negocio/CopiaSeguridad.java:194:  jdbc:sqlite::memory: (excepción escrita)
+  src/main/java/cabofactu/vista/controlador/FichaClienteController.java:156:  falso positivo del patrón `var [a-zA-Z]` sobre el Javadoc («...llevar su id y vuelve...», "var s" cae dentro de "llevar su"); no hay ningún var real. No es un caso de los escritos en AGENTS.md; se deja así por ser una coincidencia de texto, no código.
+  === grep 2: ternarios ===
+  (nada)
+  === grep 3: tipos anidados ===
+  src/main/java/cabofactu/vista/controlador/EditorController.java: las 5 celdas de la tabla de líneas (CeldaCantidad, CeldaPrecio, CeldaTotal, CeldaDescripcion, CeldaIva) — excepción escrita.
+  === grep 4: new X(){ / removeIf / computeIfAbsent / lambda de bloque ===
+  src/main/java/cabofactu/modelo/negocio/sqlite/Conexion.java:82: new File(...) dentro de un if — excepción escrita.
+  src/main/java/cabofactu/vista/controlador/BarraNavegacionController.java:72: case X -> { — excepción escrita.
+  ```
+  Todo lo que sale son las excepciones ya escritas en `AGENTS.md`, salvo el falso positivo de `FichaClienteController` explicado arriba (no es código, es Javadoc).
 
 ## 3. Imágenes (sesión principal)
 
@@ -37,12 +50,13 @@
 
 ## 6. Repaso
 
-- [ ] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
+- [x] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
   - Primera pasada: 475 pruebas, 0 fallos, 0 errores, en 7 min 41 s.
   - Segunda pasada (tras 2.3 y 5.2): 475 pruebas, 0 fallos, 0 errores, en 7 min 44 s. Sin `ClassCastException` en la salida. La cifra no cambió; ya estaba puesta en `README.md` y `docs/metodologia.md`.
-- [ ] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
-- [ ] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
-- [ ] 6.4 `openspec validate documentacion-diseno --strict` en verde.
+  - Tercera pasada (tras 2.5 a 2.8): 475 pruebas, 0 fallos, 0 errores, en 24 min 35 s (máquina más cargada que en las pasadas anteriores; sin relación con el código). Sin `ClassCastException` en la salida. Cifra sin cambios.
+- [x] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
+- [x] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
+- [x] 6.4 `openspec validate documentacion-diseno --strict` en verde.
 
 ## 7. Revisión del alumno (al final)
 
