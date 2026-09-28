@@ -158,36 +158,36 @@ El logo es una F de tres franjas, dos azules y una dorada. **La F es de Facturac
 
 Los colores se inspiran en el mar, el sol y la playa del **Cabo de Gata**, y de ahí sale el nombre **CaboFactu**.
 
-Cómo se hizo, con fechas. Primero el torreón y después las tres rondas de prompts, cada una con su imagen:
+Cómo se hizo: primero el torreón y después tres rondas de prompts en ChatGPT.
 
-0. **El torreón del Cabo de Gata (02/09)**, `proceso-torreon.png`: varias versiones con ChatGPT, en distintos colores. La última, con la palabra «caboFactu», es hoy el logo de la empresa de demostración.
+0. **El torreón del Cabo de Gata (02/09)**: varias versiones con ChatGPT, en distintos colores. La última, con la palabra «caboFactu», es hoy el logo de la empresa de demostración.
 
    <img src="capturas/proceso-torreon.png" alt="Versiones del torreón del Cabo de Gata en distintos colores" width="600"/>
 
-1. **Prompt 1** (`logo-ronda-1.png`), 20 diseños. Se copia como cita, con este texto:
+1. **Primer prompt**, que dio 20 diseños:
 
    > Ayúdame a diseñar un icono para una aplicación de facturación. Los colores quiero que sean marrón claro `#bd8343` y azul `#004d90`. El icono tiene que ser sencillo, minimalista y moderno. A poder ser, inspirado en el Cabo de Gata, pero que represente a una empresa seria. Hazme 20 diseños distintos con esa paleta de colores; el icono puede tener cualquier forma.
 
-   <img src="capturas/logo-ronda-1.png" alt="Primera ronda: 20 diseños de icono" width="600"/>
+   <img src="capturas/logo-ronda-1.png" alt="Primera ronda: 20 diseños, con el 5 y el 12 marcados en verde" width="600"/>
 
-2. **Prompt 2** (`logo-ronda-2.png`): de la primera ronda guardé el 5 y el 12 (marcados en verde) y descarté el resto:
+2. **Segundo prompt**: de la primera ronda guardé el 5 y el 12 (marcados en verde) y descarté el resto:
 
    > Guarda el 12 y el 5; el resto no me gusta ninguno. Vuelve a rehacerlos todos, pero mejor. Inspírate en los iconos del rebranding de las marcas más famosas del mundo, que han hecho iconos o logos muy minimalistas. Puedes incluir letras en alguno para que sea más sencillo. Toma todos los ejemplos modernos que puedas y hazme 20 más.
 
-   <img src="capturas/logo-ronda-2.png" alt="Segunda ronda: 20 diseños más, con el 5 y el 12 de la ronda anterior marcados en verde" width="600"/>
+   <img src="capturas/logo-ronda-2.png" alt="Segunda ronda: 20 diseños más, con el 11 y el 20 marcados en verde" width="600"/>
 
-3. **Prompt 3** (03/09 por la mañana): de la segunda ronda elegí el 11 y el 20 (marcados en verde):
+3. **Tercer prompt** (03/09 por la mañana): de la segunda ronda elegí el 11 y el 20 (marcados en verde):
 
    > Nos quedamos con el 11 y el 20. Házmelos individuales: el 11 sin fondo y el 20 con la forma que tiene.
 
-   Salen las dos primeras casillas de `proceso-logo.png`:
+   El resultado son las dos primeras casillas de esta lámina:
 
    <img src="capturas/proceso-logo.png" alt="Proceso de diseño del logo, del PNG al icono final" width="700"/>
 
 4. `logo1.png`, la elegida, con degradados y un brillo en el borde para que se vea bien sobre fondos oscuros;
 5. esa tarde, en una sesión de Claude Code, pregunté qué ventajas tenía el SVG. Se recreó a mano como `logo1.svg`: tres trazados con degradados, unos 2,5 KB frente a los casi 600 KB del PNG, nítido a cualquier tamaño;
 6. **me quedé con el PNG para el icono**:
-   - el SVG pierde el brillo del borde, y sobre un fondo oscuro se nota (imagen, casillas 5 y 6);
+   - el SVG pierde el brillo del borde, y sobre un fondo oscuro se nota (casillas 5 y 6 de la lámina);
    - además, Windows y JavaFX solo aceptan una imagen como icono de ventana (`Stage.getIcons()`), no un SVG;
 7. el icono se redujo desde `logo1.png` a 256×256 con LANCZOS, el remuestreo que mejor conserva la calidad al reducir, y es `icono-aplicacion.png`;
 8. change `icono-app-y-titulos-ventana` (03/09): el icono en todas las ventanas y el título «CaboFactu® + pantalla».
