@@ -172,7 +172,8 @@ class TextosCompletosTest {
     }
 
     private static final String[] SECCIONES_CONFIGURACION = {
-            "btnEmpresa", "btnCabecera", "btnPdf", "btnIva", "btnRetenciones", "btnSeries"
+            "btnDatosFiscales", "btnLogotipo", "btnIva", "btnRetenciones", "btnSeries",
+            "btnDisenoPdf", "btnApariencia", "btnCarpetas"
     };
 
     private static void revisarConfiguracion(CountDownLatch latch, AtomicReference<Throwable> error) {

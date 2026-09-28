@@ -19,7 +19,7 @@ class PantallaRetencionesTest extends PruebaDePantalla {
 
     private void abrirRetenciones() throws Exception {
         mostrarPantalla("Configuracion.fxml");
-        pulsar("Retenciones");
+        pulsar("Retenciones IRPF");
         esperarNodo("#tablaRetenciones", TableView.class);
     }
 

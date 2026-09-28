@@ -36,7 +36,7 @@ class PantallaArranqueTest extends PruebaDePantalla {
     @Test
     void nombreVacioNoCreaNada() throws Exception {
         abrirArranque();
-        pulsar("Nueva...");
+        pulsar("Nueva…");
         aceptarAviso();
         assertEquals(1, empresas().getItems().size());
     }
@@ -56,7 +56,7 @@ class PantallaArranqueTest extends PruebaDePantalla {
     @Test
     void crearYEliminarEmpresa() throws Exception {
         abrirArranque();
-        pulsar("Nueva...");
+        pulsar("Nueva…");
         escribirEnAviso("Prueba Uno");
         aceptarAviso();
         assertEquals(2, empresas().getItems().size());

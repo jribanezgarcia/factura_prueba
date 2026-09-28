@@ -56,7 +56,7 @@ class EmpresaTest {
     @Test
     void direccionVacia() throws Exception {
         Exception e = assertThrows(Exception.class, () -> empresaValida().setDireccion(""));
-        assertEquals("La dirección de la empresa es obligatoria.", e.getMessage());
+        assertEquals("El domicilio fiscal de la empresa es obligatorio.", e.getMessage());
     }
 
     @Test
@@ -87,7 +87,7 @@ class EmpresaTest {
     @Test
     void emailVacioFalla() throws Exception {
         Exception e = assertThrows(Exception.class, () -> empresaValida().setEmail("   "));
-        assertEquals("El email de la empresa es obligatorio.", e.getMessage());
+        assertEquals("El correo electrónico de la empresa es obligatorio.", e.getMessage());
     }
 
     @Test
@@ -174,7 +174,7 @@ class EmpresaTest {
                 + "X1234567L (NIE) o B12345674 (CIF).", Empresa.errorNif("123"));
         assertEquals("La letra no es correcta.", Empresa.errorNif("12345678A"));
         assertNull(Empresa.errorNif("12345678Z"));
-        assertEquals("La dirección de la empresa es obligatoria.", Empresa.errorDireccion(""));
+        assertEquals("El domicilio fiscal de la empresa es obligatorio.", Empresa.errorDireccion(""));
         assertNull(Empresa.errorDireccion("Calle 1"));
         assertEquals("El código postal es obligatorio.", Empresa.errorCp(""));
         assertEquals("El código postal debe tener cinco dígitos y comenzar entre 01 y 52.",
@@ -184,7 +184,7 @@ class EmpresaTest {
         assertNull(Empresa.errorLocalidad("Madrid"));
         assertEquals("La provincia de la empresa es obligatoria.", Empresa.errorProvincia(""));
         assertNull(Empresa.errorProvincia("Madrid"));
-        assertEquals("El email de la empresa es obligatorio.", Empresa.errorEmail("   "));
+        assertEquals("El correo electrónico de la empresa es obligatorio.", Empresa.errorEmail("   "));
         assertEquals("Revise el formato del correo electrónico.", Empresa.errorEmail("taller@ejemplo"));
         assertNull(Empresa.errorEmail("taller@ejemplo.es"));
         assertEquals("El teléfono de la empresa es obligatorio.", Empresa.errorTelefono(""));

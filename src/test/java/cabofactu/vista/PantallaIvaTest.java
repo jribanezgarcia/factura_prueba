@@ -19,7 +19,7 @@ class PantallaIvaTest extends PruebaDePantalla {
 
     private void abrirIva() throws Exception {
         mostrarPantalla("Configuracion.fxml");
-        pulsar("IVA");
+        pulsar("Tipos de IVA");
         esperarNodo("#tablaIva", TableView.class);
     }
 
@@ -74,9 +74,9 @@ class PantallaIvaTest extends PruebaDePantalla {
     void tablaMuestraLosCuatroTipos() throws Exception {
         abrirIva();
         assertEquals(4, tabla().getItems().size());
-        assertEquals("21%", textoCelda("IVA 21%", "Tipo"));
+        assertEquals("21%", textoCelda("IVA 21%", "Porcentaje"));
         assertEquals("No", textoCelda("IVA 21%", "Suplido"));
-        assertEquals("Exento", textoCelda("Exento", "Tipo"));
+        assertEquals("Exento", textoCelda("Exento", "Porcentaje"));
         assertEquals("Sí", textoCelda("Suplido", "Suplido"));
     }
 
@@ -88,7 +88,7 @@ class PantallaIvaTest extends PruebaDePantalla {
         escribirEn("#txtPorcentaje", "5");
         pulsar("Añadir");
         assertEquals(5, tabla().getItems().size());
-        assertEquals("5%", textoCelda("IVA 5%", "Tipo"));
+        assertEquals("5%", textoCelda("IVA 5%", "Porcentaje"));
     }
 
     @Test
@@ -131,7 +131,7 @@ class PantallaIvaTest extends PruebaDePantalla {
         doubleClickOn(filaNodo("IVA 10%"));
         escribirEn("#txtNombre", "IVA 10% editado");
         pulsar("Guardar");
-        assertEquals("10%", textoCelda("IVA 10% editado", "Tipo"));
+        assertEquals("10%", textoCelda("IVA 10% editado", "Porcentaje"));
     }
 
     @Test

@@ -23,7 +23,7 @@ class PantallaSeriesTest extends PruebaDePantalla {
 
     private void abrirSeries() throws Exception {
         mostrarPantalla("Configuracion.fxml");
-        pulsar("Series");
+        pulsar("Series de numeración");
         esperarNodo("#tablaSeries", TableView.class);
     }
 
@@ -101,9 +101,9 @@ class PantallaSeriesTest extends PruebaDePantalla {
         assertEquals("No", textoCelda("A", "Rectificativa"));
         assertEquals("R", textoCelda("R", "Código"));
         assertEquals("Sí", textoCelda("R", "Rectificativa"));
-        assertEquals("6", textoCelda("A", "Siguiente (2026)"));
-        Label titulo = buscar("Siguiente (2026)", Label.class);
-        assertEquals("Siguiente (2026)", titulo.getText());
+        assertEquals("6", textoCelda("A", "Siguiente n.º (2026)"));
+        Label titulo = buscar("Siguiente n.º (2026)", Label.class);
+        assertEquals("Siguiente n.º (2026)", titulo.getText());
     }
 
     @Test
