@@ -4,7 +4,7 @@
 
 **Cómo se ha hecho CaboFactu con OpenSpec**
 
-[Volver al README](../README.md) · [Documentación técnica](tecnico.md) · [Flujos](flujos.md)
+[Volver al README](../README.md) · [Documentación técnica](tecnico.md) · [Flujos](flujos.md) · [Diseño](diseno.md)
 
 </div>
 
@@ -188,8 +188,9 @@ Las ramas: `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriF
 
 1. **Primera versión**, con una capa de servicios y otra de DAO por cada entidad, al estilo de un proyecto empresarial más grande de lo que necesitaba CaboFactu.
 2. **Auditoría de la arquitectura con IA**: la lección de esa fase fue que un modelo se inventó clases que no existían en el código al responder sobre la arquitectura, y hubo que comprobar cada hallazgo en el código real antes de actuar.
-3. **Reescritura módulo a módulo** al estilo de Biblioteca8: sin DAO (el SQL vive dentro de cada clase de negocio, que es un singleton), sin `record`, sin streams ni operador ternario, clases de datos que se validan solas en sus setters, para que el código sea defendible a nivel de 1º de DAM.
-4. **Lo que viene**: la rama `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriFactu.
+3. **Rediseño del aspecto**, con maquetas en HTML antes de programar cada pantalla. El proceso completo, ronda a ronda, en [docs/diseno.md](diseno.md).
+4. **Reescritura módulo a módulo** al estilo de Biblioteca8: sin DAO (el SQL vive dentro de cada clase de negocio, que es un singleton), sin `record`, sin streams ni operador ternario, clases de datos que se validan solas en sus setters, para que el código sea defendible a nivel de 1º de DAM.
+5. **Lo que viene**: la rama `pdf-jasper` (sustituir OpenPDF por JasperReports) y, después, VeriFactu.
 
 Cifras reales a día de hoy: más de **120** changes archivados en `openspec/changes/archive/`, y **469** pruebas que pasan con `mvn test`.
 
@@ -203,6 +204,6 @@ Cifras reales a día de hoy: más de **120** changes archivados en `openspec/cha
 
 <div align="center">
 
-[Volver al README](../README.md) · [Documentación técnica](tecnico.md) · [Flujos](flujos.md)
+[Volver al README](../README.md) · [Documentación técnica](tecnico.md) · [Flujos](flujos.md) · [Diseño](diseno.md)
 
 </div>

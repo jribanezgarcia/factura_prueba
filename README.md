@@ -13,7 +13,7 @@
 ![JUnit](https://img.shields.io/badge/JUnit-5-25A162?style=for-the-badge&logo=junit5&logoColor=white)
 ![OpenSpec](https://img.shields.io/badge/metodología-OpenSpec-8A2BE2?style=flat-square)
 
-[Documentación técnica](docs/tecnico.md) · [Metodología](docs/metodologia.md) · [Flujos](docs/flujos.md) · [Especificación](openspec/specs/)
+[Documentación técnica](docs/tecnico.md) · [Metodología](docs/metodologia.md) · [Flujos](docs/flujos.md) · [Diseño](docs/diseno.md) · [Especificación](openspec/specs/)
 
 </div>
 
@@ -49,7 +49,7 @@ Soy **[@jribanezgarcia](https://github.com/jribanezgarcia)**, estudiante de DAM.
 | PDF | Exportación con cabecera de texto o logo, pie legal y color de acento |
 | Empresas | Varias, con sus datos fiscales obligatorios antes de empezar |
 | Copias de seguridad | Un botón, y restauración en la empresa activa o como empresa nueva |
-| Apariencia | 7 temas: biblioteca8, omarchy, esmeralda, terracota, negro-dorado, sakura y neon |
+| Apariencia | 7 temas: biblioteca8, omarchy, esmeralda, terracota, negro-dorado, sakura y Neón |
 | Demostración | Empresa de datos ficticios con logo que se carga sola en una instalación nueva |
 
 ## Capturas
@@ -71,6 +71,14 @@ Soy **[@jribanezgarcia](https://github.com/jribanezgarcia)**, estudiante de DAM.
     <td align="center" colspan="2"><b>PDF de una factura</b><br/><img src="docs/capturas/pdf.png" alt="PDF de una factura" width="400"/></td>
   </tr>
 </table>
+
+## Diseño
+
+Antes de programar cada pantalla la diseñé aparte, con maquetas en HTML: 41 maquetas entre el 20/08 y el 07/09, con las que elegí, corregí y descarté hasta dejar los 7 temas de color y una estructura inspirada en Ajustes de Apple.
+
+<img src="docs/capturas/proceso-temas.png" alt="Siete propuestas de tema" width="500"/>
+
+El proceso completo, ronda a ronda, en **[docs/diseno.md](docs/diseno.md)**.
 
 ## Cómo está montado
 
@@ -105,7 +113,7 @@ En la primera ejecución se carga una **empresa de demostración** con datos fic
 
 - **MVC sencillo, sin capas de más.** Un singleton por entidad con su SQL dentro es menos código que repartir cada regla entre un servicio y un DAO, y sigue siendo fácil de leer.
 - **Transacciones.** Guardar una factura toca varias tablas: o se guarda todo o no se guarda nada (`commit` / `rollback`).
-- **Tests en tres capas.** 469 pruebas con JUnit 5 y TestFX que se pasan antes de dar cada cambio por bueno.
+- **Tests en tres capas.** 475 pruebas con JUnit 5 y TestFX que se pasan antes de dar cada cambio por bueno.
 - **Escribir antes de programar.** Con OpenSpec cada cambio empieza por explicar *por qué* y *qué se descarta*, y la especificación se mantiene siempre al día.
 - **Trabajar con IA revisándolo todo.** Las herramientas ayudan mucho, pero las decisiones y la revisión final son mías: en una auditoría temprana un modelo se inventó clases que no existían, y solo se detectó comprobándolo en el código.
 - **Cambios pequeños.** Mejor muchos cambios pequeños y revisables que uno gigante imposible de probar.

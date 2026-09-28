@@ -20,18 +20,19 @@
 
 ## 4. Documento de diseño
 
-- [ ] 4.1 Nuevo `docs/diseno.md` con los cuatro apartados de `design.md - D2`, con las ocho imágenes y los enlaces a `capturas/pdf.png` y `capturas/editor.png`. La tabla de changes que citan su maqueta, sacada del `grep` de D2.
+- [x] 4.1 Nuevo `docs/diseno.md` con los cuatro apartados de `design.md - D2`, con las ocho imágenes y los enlaces a `capturas/pdf.png` y `capturas/editor.png`. La tabla de changes que citan su maqueta, sacada del `grep` de D2.
 
 ## 5. Enlaces y normas
 
-- [ ] 5.1 `README.md`, `docs/tecnico.md`, `docs/metodologia.md`, `docs/flujos.md` y `AGENTS.md` según `design.md - D5`.
+- [x] 5.1 `README.md`, `docs/tecnico.md`, `docs/metodologia.md`, `docs/flujos.md` y `AGENTS.md` según `design.md - D5`.
 
 ## 6. Repaso
 
-- [ ] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
-- [ ] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
-- [ ] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
-- [ ] 6.4 `openspec validate documentacion-diseno --strict` en verde.
+- [x] 6.1 `rm -rf target` y `mvn test` completo: todo en verde. Apuntar aquí pruebas y tiempo, y poner la cifra en el `README.md`.
+  - 475 pruebas, 0 fallos, 0 errores, en 7 min 41 s. Sin `ClassCastException` en la salida.
+- [x] 6.2 Cada enlace relativo de `docs/diseno.md` y del `README.md` apunta a un fichero que existe.
+- [x] 6.3 `grep -rniE "alcazab|martag|mulian|aurora" docs/ README.md`: nada.
+- [x] 6.4 `openspec validate documentacion-diseno --strict` en verde.
 
 ## 7. Revisión del alumno (al final)
 

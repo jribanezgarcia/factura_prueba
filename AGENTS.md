@@ -38,6 +38,7 @@ Este fichero es lo único que se lee entero siempre. Lo demás se consulta **cua
 | `openspec/changes/<nombre>/` | `proposal.md`, `design.md`, `tasks.md` de un change | Al aplicar o revisar ese change |
 | `docs/tecnico.md` | Arquitectura, paquetes, modelo de datos, decisiones técnicas | Si necesitas el esquema de tablas o cómo fluye una operación |
 | `docs/flujos.md` | Dos recorridos por el código, clase a clase | Si necesitas ver cómo encajan las clases en una operación real |
+| `docs/diseno.md` | Cómo se diseñó (maquetas), los iconos SVG y los temas | Si tocas CSS, FXML, iconos o el aspecto de una pantalla |
 | `docs/metodologia.md`, `README.md` | Explicación del proyecto para GitHub | Solo si hay que actualizarlos |
 | `borrador_changes/` (fuera de git) | Decisiones tomadas con el usuario y análisis | Si necesitas **por qué** se decidió algo |
 | `openspec/changes/archive/` | Los 100+ changes terminados | Solo para rastrear un cambio viejo; antes prueba `git log -S` |

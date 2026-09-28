@@ -4,7 +4,7 @@
 
 **Dos recorridos por el código, clase a clase**
 
-[Volver al README](../README.md) · [Metodología](metodologia.md) · [Documentación técnica](tecnico.md)
+[Volver al README](../README.md) · [Metodología](metodologia.md) · [Documentación técnica](tecnico.md) · [Diseño](diseno.md)
 
 </div>
 
@@ -111,6 +111,6 @@ sequenceDiagram
 
 <div align="center">
 
-[Volver al README](../README.md) · [Metodología](metodologia.md) · [Documentación técnica](tecnico.md)
+[Volver al README](../README.md) · [Metodología](metodologia.md) · [Documentación técnica](tecnico.md) · [Diseño](diseno.md)
 
 </div>

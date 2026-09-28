@@ -4,7 +4,7 @@
 
 **Cómo está construido CaboFactu por dentro**
 
-[Volver al README](../README.md) · [Metodología](metodologia.md) · [Flujos](flujos.md)
+[Volver al README](../README.md) · [Metodología](metodologia.md) · [Flujos](flujos.md) · [Diseño](diseno.md)
 
 </div>
 
@@ -99,6 +99,8 @@ src/main/resources/
     ├── seed_demo.sql         → los datos de la empresa de demostración
     └── logo_demo.png         → el logo de la empresa de demostración
 ```
+
+Cómo se diseñaron los temas y los iconos, antes de programarlos, en [docs/diseno.md](diseno.md).
 
 ## Clases de datos, negocio y pantallas
 
@@ -245,6 +247,6 @@ Se implementará al final, en su propia rama (ver «Qué toca ahora» en [`ESTAD
 
 <div align="center">
 
-[Volver al README](../README.md) · [Metodología](metodologia.md) · [Flujos](flujos.md)
+[Volver al README](../README.md) · [Metodología](metodologia.md) · [Flujos](flujos.md) · [Diseño](diseno.md)
 
 </div>
