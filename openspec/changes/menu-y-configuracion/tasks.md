@@ -41,8 +41,9 @@
 
 ## 8. Pruebas manuales (el alumno)
 
-- [ ] 8.1 Menú principal en biblioteca8 y en un tema oscuro: sin bordes; al pasar el ratón, el icono crece y el nombre se resalta y se subraya. Con el tabulador pasa lo mismo.
-- [ ] 8.2 Configuración: los cuatro grupos y las ocho secciones con sus iconos; la sección elegida con su raya y sin negrita; cada sección con su título y su ayuda; nada cortado.
-- [ ] 8.3 Logotipo: elegir una imagen se ve en la vista previa; «Quitar logotipo» y «Guardar cambios» → el menú principal sin logo y el PDF con cabecera de texto.
-- [ ] 8.4 Diseño del PDF: cambiar cabecera, pie y color se refleja en la vista previa; guardar y exportar una factura.
-- [ ] 8.5 Una empresa nueva abre Configuración en Datos fiscales con el aviso nuevo.
+- [x] 8.1 Menú principal en biblioteca8 y en un tema oscuro: sin bordes; al pasar el ratón, el icono crece y el nombre se resalta y se subraya. Con el tabulador pasa lo mismo.
+- [x] 8.2 Configuración: los cuatro grupos y las ocho secciones con sus iconos; la sección elegida con su raya y sin negrita; cada sección con su título y su ayuda; nada cortado.
+- [x] 8.3 Logotipo: elegir una imagen se ve en la vista previa; «Quitar logotipo» y «Guardar cambios» → el menú principal sin logo y el PDF con cabecera de texto.
+- [x] 8.4 Diseño del PDF: cambiar cabecera, pie y color se refleja en la vista previa; guardar y exportar una factura.
+- [x] 8.5 Una empresa nueva abre Configuración en Datos fiscales con el aviso nuevo.
+  - Comprobadas por el alumno el 28/09/2026: todas correctas.
