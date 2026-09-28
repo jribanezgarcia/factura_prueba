@@ -35,66 +35,66 @@ class LogoMarcoTest {
 
     @Test
     void marcoBlancoProducePlanoBlancoPuro() throws Exception {
-        LogoMarco.Resultado r = enFx(() -> {
+        FondoLogo r = enFx(() -> {
             WritableImage img = creada(100, 100);
             pintarMarco(img, 0xFFFFFFFF, 0xFF000000);
             return LogoMarco.clasificar(img);
         });
-        assertEquals(LogoMarco.Tipo.PLANO, r.tipo);
-        assertEquals(255, canal(r.color, 0), "rojo");
-        assertEquals(255, canal(r.color, 1), "verde");
-        assertEquals(255, canal(r.color, 2), "azul");
+        assertEquals(TipoFondoLogo.PLANO, r.getTipo());
+        assertEquals(255, canal(r.getColor(), 0), "rojo");
+        assertEquals(255, canal(r.getColor(), 1), "verde");
+        assertEquals(255, canal(r.getColor(), 2), "azul");
     }
 
     @Test
     void marcoDeColorProducePlanoExacto() throws Exception {
-        LogoMarco.Resultado r = enFx(() -> {
+        FondoLogo r = enFx(() -> {
             WritableImage img = creada(100, 100);
             pintarMarco(img, 0xFF6496C8, 0xFF000000);
             return LogoMarco.clasificar(img);
         });
-        assertEquals(LogoMarco.Tipo.PLANO, r.tipo);
-        assertEquals(100, canal(r.color, 0));
-        assertEquals(150, canal(r.color, 1));
-        assertEquals(200, canal(r.color, 2));
+        assertEquals(TipoFondoLogo.PLANO, r.getTipo());
+        assertEquals(100, canal(r.getColor(), 0));
+        assertEquals(150, canal(r.getColor(), 1));
+        assertEquals(200, canal(r.getColor(), 2));
     }
 
     @Test
     void marcoTransparenteNoTocaNada() throws Exception {
-        LogoMarco.Resultado r = enFx(() -> {
+        FondoLogo r = enFx(() -> {
             WritableImage img = creada(100, 100);
             pintarEsquina(img, 0, 0, 3, 3, 0xFFFFFFFF);
             return LogoMarco.clasificar(img);
         });
-        assertEquals(LogoMarco.Tipo.TRANSPARENTE, r.tipo);
-        assertNull(r.color);
+        assertEquals(TipoFondoLogo.TRANSPARENTE, r.getTipo());
+        assertNull(r.getColor());
     }
 
     @Test
     void marcoConRuidoProduceDifuminado() throws Exception {
-        LogoMarco.Resultado r = enFx(() -> {
+        FondoLogo r = enFx(() -> {
             WritableImage img = creada(100, 100);
             pintarMarcoRuidoso(img);
             return LogoMarco.clasificar(img);
         });
-        assertEquals(LogoMarco.Tipo.DIFUMINADO, r.tipo);
-        assertNull(r.color);
+        assertEquals(TipoFondoLogo.DIFUMINADO, r.getTipo());
+        assertNull(r.getColor());
     }
 
     @Test
     void imagenNulaProduceTransparente() throws Exception {
-        LogoMarco.Resultado r = enFx(() -> LogoMarco.clasificar(null));
-        assertEquals(LogoMarco.Tipo.TRANSPARENTE, r.tipo);
+        FondoLogo r = enFx(() -> LogoMarco.clasificar(null));
+        assertEquals(TipoFondoLogo.TRANSPARENTE, r.getTipo());
     }
 
     @Test
     void imagenMiniaturaProduceTransparente() throws Exception {
-        LogoMarco.Resultado r = enFx(() -> {
+        FondoLogo r = enFx(() -> {
             WritableImage img = creada(2, 2);
             pintarRect(img, 0, 0, 2, 2, 0xFFFF0000);
             return LogoMarco.clasificar(img);
         });
-        assertEquals(LogoMarco.Tipo.TRANSPARENTE, r.tipo);
+        assertEquals(TipoFondoLogo.TRANSPARENTE, r.getTipo());
     }
 
     @Test

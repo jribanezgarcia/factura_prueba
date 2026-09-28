@@ -1,5 +1,6 @@
 package cabofactu.utilidades;
 
+import javafx.scene.Node;
 import javafx.scene.effect.GaussianBlur;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -23,7 +24,6 @@ import java.util.Map;
 public final class LogoMarco {
 
     private static final double FRACCION_MARCO = 0.06;
-    private static final double ALFA_MINIMO = 0.9;
     private static final double OPACOS_MINIMOS = 0.60;
     private static final double CUBO_DOMINANTE_MINIMO = 0.60;
     private static final double DESBORDE = 60.0;
@@ -31,29 +31,17 @@ public final class LogoMarco {
     private static final double RADIO_DESENFOQUE = 25.0;
     private static final Object MARCA_RESPALDO = new Object();
 
-    public enum Tipo { PLANO, DIFUMINADO, TRANSPARENTE }
-
-    public static final class Resultado {
-        public final Tipo tipo;
-        public final Color color;
-
-        private Resultado(Tipo tipo, Color color) {
-            this.tipo = tipo;
-            this.color = color;
-        }
-    }
-
     private LogoMarco() {
     }
 
     /** Clasifica una imagen y devuelve el caso junto con el color detectado. */
-    public static Resultado clasificar(Image imagen) {
+    public static FondoLogo clasificar(Image imagen) {
         if (imagen == null || imagen.getWidth() < 3 || imagen.getHeight() < 3) {
-            return new Resultado(Tipo.TRANSPARENTE, null);
+            return new FondoLogo(TipoFondoLogo.TRANSPARENTE, null);
         }
         PixelReader pr = imagen.getPixelReader();
         if (pr == null) {
-            return new Resultado(Tipo.TRANSPARENTE, null);
+            return new FondoLogo(TipoFondoLogo.TRANSPARENTE, null);
         }
         int w = (int) imagen.getWidth();
         int h = (int) imagen.getHeight();
@@ -62,7 +50,7 @@ public final class LogoMarco {
         int bAlto = Math.max(1, (int) Math.round(h * FRACCION_MARCO));
 
         List<int[]> opacos = new ArrayList<>();
-        var muestras = new Muestras(pr, paso, opacos);
+        MuestrasMarco muestras = new MuestrasMarco(pr, paso, opacos);
 
         muestras.banda(0, bAlto, 0, w);
         muestras.banda(h - bAlto, h, 0, w);
@@ -70,16 +58,21 @@ public final class LogoMarco {
         muestras.banda(bAlto, h - bAlto, w - bAncho, w);
 
         if (opacos.isEmpty()) {
-            return new Resultado(Tipo.TRANSPARENTE, null);
+            return new FondoLogo(TipoFondoLogo.TRANSPARENTE, null);
         }
         if (opacos.size() / (double) muestras.total() < OPACOS_MINIMOS) {
-            return new Resultado(Tipo.TRANSPARENTE, null);
+            return new FondoLogo(TipoFondoLogo.TRANSPARENTE, null);
         }
 
-        Map<Integer, long[]> cubos = new HashMap<>(); // clave cubo -> {count,sumR,sumG,sumB}
+        // clave del cubo de color con el recuento y la suma de cada canal
+        Map<Integer, long[]> cubos = new HashMap<>();
         for (int[] rgb : opacos) {
             int cubo = ((rgb[0] >> 3) << 10) | ((rgb[1] >> 3) << 5) | (rgb[2] >> 3);
-            long[] acc = cubos.computeIfAbsent(cubo, k -> new long[4]);
+            long[] acc = cubos.get(cubo);
+            if (acc == null) {
+                acc = new long[4];
+                cubos.put(cubo, acc);
+            }
             acc[0]++;
             acc[1] += rgb[0];
             acc[2] += rgb[1];
@@ -97,38 +90,9 @@ public final class LogoMarco {
             int r = (int) Math.round(mejor[1] / (double) mejor[0]);
             int g = (int) Math.round(mejor[2] / (double) mejor[0]);
             int b = (int) Math.round(mejor[3] / (double) mejor[0]);
-            return new Resultado(Tipo.PLANO, Color.rgb(r, g, b));
+            return new FondoLogo(TipoFondoLogo.PLANO, Color.rgb(r, g, b));
         }
-        return new Resultado(Tipo.DIFUMINADO, null);
-    }
-
-    private static final class Muestras {
-        private final PixelReader pr;
-        private final int paso;
-        private final List<int[]> opacos;
-        private int total;
-
-        Muestras(PixelReader pr, int paso, List<int[]> opacos) {
-            this.pr = pr;
-            this.paso = paso;
-            this.opacos = opacos;
-        }
-
-        int total() {
-            return total;
-        }
-
-        void banda(int y0, int y1, int x0, int x1) {
-            for (int y = y0; y < y1; y += paso) {
-                for (int x = x0; x < x1; x += paso) {
-                    total++;
-                    int argb = pr.getArgb(x, y);
-                    if ((argb >>> 24) / 255.0 >= ALFA_MINIMO) {
-                        opacos.add(new int[]{(argb >> 16) & 0xff, (argb >> 8) & 0xff, argb & 0xff});
-                    }
-                }
-            }
-        }
+        return new FondoLogo(TipoFondoLogo.DIFUMINADO, null);
     }
 
     /** Aplica el relleno al recuadro según la imagen, tras limpiar lo anterior. */
@@ -137,12 +101,12 @@ public final class LogoMarco {
         if (imagen == null || imagen.isError()) {
             return;
         }
-        Resultado r = clasificar(imagen);
-        if (r.tipo == Tipo.TRANSPARENTE) {
+        FondoLogo r = clasificar(imagen);
+        if (r.getTipo() == TipoFondoLogo.TRANSPARENTE) {
             return;
         }
-        if (r.tipo == Tipo.PLANO) {
-            aplicarPlano(pane, r.color);
+        if (r.getTipo() == TipoFondoLogo.PLANO) {
+            aplicarPlano(pane, r.getColor());
         } else {
             aplicarDifuminado(pane, imagen);
         }
@@ -152,7 +116,13 @@ public final class LogoMarco {
     public static void limpiar(StackPane pane) {
         pane.setStyle("");
         pane.setClip(null);
-        pane.getChildren().removeIf(n -> n.getUserData() == MARCA_RESPALDO);
+        List<Node> respaldos = new ArrayList<>();
+        for (Node n : pane.getChildren()) {
+            if (n.getUserData() == MARCA_RESPALDO) {
+                respaldos.add(n);
+            }
+        }
+        pane.getChildren().removeAll(respaldos);
     }
 
     private static void aplicarPlano(StackPane pane, Color color) {
