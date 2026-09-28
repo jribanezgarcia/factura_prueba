@@ -9,7 +9,6 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextInputDialog;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -18,6 +17,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import cabofactu.vista.Pantalla;
 import cabofactu.vista.Vista;
+import cabofactu.vista.utilidades.CeldaFechaEjercicio;
 import cabofactu.vista.utilidades.Dialogos;
 
 /**
@@ -106,18 +106,7 @@ public class ArranqueController implements Pantalla, Initializable {
     }
 
     private void restringirAlEjercicio(int ejercicio) {
-        fechaTrabajo.setDayCellFactory(new Callback<>() {
-            @Override
-            public javafx.scene.control.DateCell call(javafx.scene.control.DatePicker param) {
-                return new javafx.scene.control.DateCell() {
-                    @Override
-                    public void updateItem(LocalDate f, boolean vacio) {
-                        super.updateItem(f, vacio);
-                        setDisable(vacio || f.getYear() != ejercicio);
-                    }
-                };
-            }
-        });
+        fechaTrabajo.setDayCellFactory(calendario -> new CeldaFechaEjercicio(ejercicio));
     }
 
     private void cargarEmpresas() {
