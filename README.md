@@ -68,6 +68,7 @@ Soy **[@jribanezgarcia](https://github.com/jribanezgarcia)**, estudiante de DAM.
     <td align="center"><b>Copias de seguridad</b><br/><img src="docs/capturas/copias.png" alt="Copias de seguridad" width="400"/></td>
   </tr>
   <tr>
+    <td align="center"><b>Configuración</b><br/><img src="docs/capturas/configuracion.png" alt="Configuración" width="400"/></td>
     <td align="center" colspan="2"><b>PDF de una factura</b><br/><img src="docs/capturas/pdf.png" alt="PDF de una factura" width="400"/></td>
   </tr>
 </table>
@@ -113,7 +114,7 @@ En la primera ejecución se carga una **empresa de demostración** con datos fic
 
 - **MVC sencillo, sin capas de más.** Un singleton por entidad con su SQL dentro es menos código que repartir cada regla entre un servicio y un DAO, y sigue siendo fácil de leer.
 - **Transacciones.** Guardar una factura toca varias tablas: o se guarda todo o no se guarda nada (`commit` / `rollback`).
-- **Tests en tres capas.** 475 pruebas con JUnit 5 y TestFX que se pasan antes de dar cada cambio por bueno.
+- **Tests en tres capas.** 480 pruebas con JUnit 5 y TestFX que se pasan antes de dar cada cambio por bueno.
 - **Escribir antes de programar.** Con OpenSpec cada cambio empieza por explicar *por qué* y *qué se descarta*, y la especificación se mantiene siempre al día.
 - **Trabajar con IA revisándolo todo.** Las herramientas ayudan mucho, pero las decisiones y la revisión final son mías: en una auditoría temprana un modelo se inventó clases que no existían, y solo se detectó comprobándolo en el código.
 - **Cambios pequeños.** Mejor muchos cambios pequeños y revisables que uno gigante imposible de probar.

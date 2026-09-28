@@ -152,6 +152,18 @@ El 07/09 hice cuatro maquetas más para el final de la hoja: `pdf-cierre-anclado
 
 Hubo otras maquetas más pequeñas, como `colores-historico-clientes.html` (03/09), que dio el change `ajuste-colores-historico-clientes-editor`.
 
+### 8. Configuración y menú principal (28/09)
+
+Esta vez la propuesta no la hice yo con una skill, sino el alumno con **Figma** (Figma Make), en `prototipos/figma/CaboFactu Desktop Billing App.make`, fuera de git como el resto de maquetas.
+
+De la propuesta tomé el estilo, no sus secciones: iconos pequeños en la barra lateral, un título en cada sección y la sección elegida marcada con una raya de acento a la izquierda. No tomé ni sus secciones (la aplicación no tiene Usuarios ni Preferencias de facturación) ni la negrita del título elegido, porque la especificación reserva la negrita a los importes.
+
+Con ese estilo reorganicé Configuración en **cuatro grupos y ocho secciones** (DATOS DE LA EMPRESA, FISCALIDAD, FACTURA EN PDF y PREFERENCIAS), cada una con una sola cosa, su icono, su título y una frase de ayuda; los textos, elegidos uno a uno con el alumno.
+
+De paso arreglé el menú principal: sus opciones se veían como botones con borde y degradado gris desde el 26/09, cuando `modulo-historico` renombró la clase `menu-item` a `opcion-menu` porque `menu-item` es un nombre que JavaFX ya usa. Con el nombre nuevo, las opciones perdieron el estilo que les quitaba el fondo por casualidad y volvieron al aspecto de un botón normal.
+
+Sin imagen de la maqueta de Figma: el resultado en la aplicación, en [`capturas/configuracion.png`](capturas/configuracion.png).
+
 ## El logo de la aplicación
 
 El logo es una F de tres franjas, dos azules y una dorada. **La F es de Facturación**. Es un diseño minimalista, para que la aplicación sea reconocible y moderna.
