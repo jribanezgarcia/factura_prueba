@@ -167,10 +167,10 @@ Además, **antes de archivar** cualquier change, la misma búsqueda se repite so
 
 ```bash
 F=$(find src/main/java/cabofactu -name "*.java" -not -path "*/pdf/*")
-grep -nE "var [a-zA-Z]|record [A-Z]|\.stream\(\)|[A-Za-z)]::[a-z]" $F
+grep -nE "\bvar [a-zA-Z]|\brecord [A-Z]|\.stream\(\)|[A-Za-z)]::[a-z]" $F
 grep -nE "[^?]\? [^?]*[^:]: " $F | grep -vE "LIKE \?|= \?|\?,|\?\)"
-grep -nE "^\s+(public |private |protected |static |final )*(class|enum|interface|record) [A-Z]" $F
+grep -nE "^\s+(public |private |protected |static |final |abstract )*(class|enum|interface|record) [A-Z]" $F
 grep -nE "new [A-Z][A-Za-z<>]*\([^;]*\)\s*\{|removeIf|computeIfAbsent|->\s*\{" $F
 ```
 
-Lo que salga, o se arregla o es una excepción ya escrita aquí: las celdas de la tabla de líneas dentro de `EditorController`, `case X -> {` (switch con flecha), `jdbc:sqlite::memory:` (en los tests de `Conexion`) y un `new File(...)` dentro de una condición (también en `Conexion`).
+Lo que salga, o se arregla o es una excepción ya escrita aquí: las celdas de la tabla de líneas dentro de `EditorController`, `case X -> {` (switch con flecha), `jdbc:sqlite::memory:` (la base en memoria de `CopiaSeguridad`) y un `new File(...)` dentro de una condición (en `Conexion`).

@@ -258,7 +258,7 @@ Al revisar la 2.3 salió un `var` que no buscaba nadie. Una auditoría completa 
   F=$(find src/main/java/cabofactu -name "*.java" -not -path "*/pdf/*")
   grep -nE "var [a-zA-Z]|record [A-Z]|\.stream\(\)|[A-Za-z)]::[a-z]" $F
   grep -nE "[^?]\? [^?]*[^:]: " $F | grep -vE "LIKE \?|= \?|\?,|\?\)"
-  grep -nE "^\s+(public |private |protected |static |final )*(class|enum|interface|record) [A-Z]" $F
+  grep -nE "^\s+(public |private |protected |static |final |abstract )*(class|enum|interface|record) [A-Z]" $F
   grep -nE "new [A-Z][A-Za-z<>]*\([^;]*\)\s*\{|removeIf|computeIfAbsent|->\s*\{" $F
   ```
 - lo que salga, o se arregla o es una excepción escrita en `AGENTS.md`: las celdas del editor, `case X -> {`, `jdbc:sqlite::memory:` y un `new File(...)` dentro de una condición (`Conexion`). El comentario `// clave cubo -> {...}` de `LogoMarco` se reescribe sin `->` para que no salga.

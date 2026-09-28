@@ -27,7 +27,7 @@
   src/main/java/cabofactu/modelo/negocio/sqlite/Conexion.java:82: new File(...) dentro de un if — excepción escrita.
   src/main/java/cabofactu/vista/controlador/BarraNavegacionController.java:72: case X -> { — excepción escrita.
   ```
-  Todo lo que sale son las excepciones ya escritas en `AGENTS.md`, salvo el falso positivo de `FichaClienteController` explicado arriba (no es código, es Javadoc).
+  Todo lo que sale son las excepciones ya escritas en `AGENTS.md`. El falso positivo de `FichaClienteController` venía de que al comando le faltaba `` delante de `var` y `record`; en la revisión se añadió (y `abstract` en el patrón de tipos anidados), y la sesión principal repitió los cuatro comandos: solo salen las excepciones.
 
 ## 3. Imágenes (sesión principal)
 
